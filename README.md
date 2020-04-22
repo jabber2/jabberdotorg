@@ -1,2 +1,4 @@
-# jabberdotorg
-www.jabber.org website
+jabberdotorg
+============
+
+Files for the jabber.org website
