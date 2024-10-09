@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber DevZone News - flea
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20DevZone%20News%20-%20flea&In-Reply-To=%3C200103051117.DAA08301%40kelvin.jeremie.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="065015.html">
+   <LINK REL="Next"  HREF="065017.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber DevZone News - flea</H1>
+    <B>Jabber DevZone</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20DevZone%20News%20-%20flea&In-Reply-To=%3C200103051117.DAA08301%40kelvin.jeremie.com%3E"
+       TITLE="[JDEV] Jabber DevZone News - flea">webmaster at jabber.org
+       </A><BR>
+    <I>Mon Mar  5 05:17:33 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="065015.html">[JDEV] Jabber DevZone News - test
+</A></li>
+        <LI>Next message: <A HREF="065017.html">[JDEV] [patch client.c]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65016">[ date ]</a>
+              <a href="thread.html#65016">[ thread ]</a>
+              <a href="subject.html#65016">[ subject ]</a>
+              <a href="author.html#65016">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>flea
+
+Below you'll find the source for a mostly functional jabber server, in
+less than 4k of C.
+You should be able to cut and paste it into a file, then compile and
+run it, and connect to it with any client and be able to see any other
+clients connected.
+It supports authentication, rosters, presence, and messaging between
+clients, but that's it.  
+I wrote it mostly to prove to myself that it could be done, but also
+as a toy that was fun to create and play with.
+It's also in CVS as 'flea', but I'm not planning any major updates to
+it (next time I get ambitious I might be able to add server-server and
+keep it less than 5k).
+Enjoy!
+
+#include &amp;lt;resolv.h&amp;gt;
+#include &amp;lt;sys/types.h&amp;gt;
+#include &amp;lt;sys/socket.h&amp;gt;
+#include &amp;lt;errno.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+#define U 100
+#define B 8192
+#define N &quot;flea&quot;
+
+typedef struct itch_s{char buf[B],p[256],u[24],r[128]; int fd;} *itch;
+itch i,I[U];
+
+#define WR(x,y) write(x-&amp;gt;fd,y-&amp;gt;r,strlen(y-&amp;gt;r));
+write(x-&amp;gt;fd,y-&amp;gt;p,strlen(y-&amp;gt;p))
+itch scratch(char *s, int l){ int f;
+ for(f=0; f&amp;lt;U; f++){
+  if(I[f] == NULL || I[f]-&amp;gt;u[0] == '\0') continue;
+  if(s == NULL){ if(I[f]-&amp;gt;p[0] != '\0'){ WR(I[f],i); if(I[i-&amp;gt;fd]
+!= NULL){ WR(i,I[f]); }} continue; }
+  if(*s == '&amp;lt;') write(f,s,l); else if(strncmp(s,I[f]-&amp;gt;u,l) == 0)
+return I[f];}
+ return NULL;}
+
+#define NEXT(s) memmove(i-&amp;gt;buf,s,strlen(s)+1); continue
+#define CHR(s,c) (s = strchr(i-&amp;gt;buf,c)) != NULL &amp;amp;&amp;amp; s++
+#define IQ(t) if((ad = strstr(sp,&quot;id=&quot;)) != NULL &amp;amp;&amp;amp; (sp =
+strstr(ad,&quot;xmlns=&quot;)) != NULL){ ad+=3; sp+=6; sprintf(n,&quot;&amp;lt;iq
+type='%s' id=%.*s&amp;gt;&amp;lt;query
+xmlns=%.*s/&amp;gt;&amp;lt;/iq&amp;gt;&quot;,t,strchr(ad+1,*ad)-ad+1,ad,strchr(sp+1,*sp)-sp+1,sp);
+}else sprintf(n,&quot;&amp;lt;iq type='%s'/&amp;gt;&quot;,t);
+write(i-&amp;gt;fd,n,strlen(n)); NEXT(end)
+parse(){ char *lt, *gt, *sp, *ad, *end, n[64]; itch i2;
+ while(CHR(lt,'&amp;lt;') &amp;amp;&amp;amp; CHR(gt,'&amp;gt;')){ if((sp = strchr(lt,'
+')) == NULL || sp &amp;gt; gt) sp = gt - 1;
+  if(gt[-2] == '?'){ NEXT(gt); } /* &amp;lt;?xml ?&amp;gt; PI */
+  if(*lt == 's'){ write(i-&amp;gt;fd,&quot;&amp;lt;stream:stream
+xmlns='jabber:client' from='&quot; N &quot;'&amp;gt;&quot;,49); NEXT(gt); } /*
+&amp;lt;stream:stream&amp;gt; header */
+  if(gt[-2] == '/'){ if(sp == (gt - 1)) sp -= 1; end = gt; } /* empty
+tag detector */
+  else{ sprintf(n,&quot;&amp;lt;/%.*s&amp;gt;&quot;,sp - lt, lt); if((end =
+strstr(gt,n)) == NULL) return; end += strlen(n);} /* end tag detector
+*/
+  if(i-&amp;gt;u[0] == '\0'){ if(*lt != 'i'){ NEXT(end); } /* no user yet,
+get &amp;lt;username&amp;gt; from iq */
+   if((lt = strstr(gt,&quot;&amp;lt;username&amp;gt;&quot;)) == NULL || (ad =
+strstr(sp,&quot;set&quot;)) == NULL || ad &amp;gt; gt){ IQ(&quot;error&quot;); }
+   gt = lt + 10; lt = strchr(gt,'&amp;lt;'); if(scratch(gt,lt-gt) != NULL)
+{ IQ(&quot;error&quot;); } /* existing user */
+   memcpy(i-&amp;gt;u,gt,lt-gt); IQ(&quot;result&quot;); }
+  if((ad = strstr(sp,&quot;from=&quot;)) == NULL || ad &amp;gt; gt){ /* insert a
+from='' if none and reset */
+   sprintf(n,&quot; from='%s@&quot; N &quot;'&quot;,i-&amp;gt;u); memmove(sp + strlen(n), sp,
+strlen(sp)+1); memcpy(sp,n,strlen(n)); continue; }
+  if((ad = strstr(sp,&quot;to=&quot;)) != NULL &amp;amp;&amp;amp; ad &amp;lt; gt &amp;amp;&amp;amp;
+strchr(ad,'@') != NULL){ /* send direct if a to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at foo</A>' */
+   ad+=4; if((i2 = scratch(ad,strchr(ad,'@')-ad)) != NULL)
+write(i2-&amp;gt;fd,--lt, end - lt + 1); NEXT(end); }
+  if(*lt == 'i'){ IQ(&quot;result&quot;); }
+  if(*lt != 'p'){ NEXT(end); } /* handle presence */
+  if(i-&amp;gt;p[0] == '\0'){ sprintf(i-&amp;gt;r,&quot;&amp;lt;iq
+type='set'&amp;gt;&amp;lt;query xmlns='jabber:iq:roster'&amp;gt;&amp;lt;item jid='%s@&quot;
+N &quot;' subscription='both'/&amp;gt;&amp;lt;/query&amp;gt;&amp;lt;/iq&amp;gt;&quot;,i-&amp;gt;u);
+scratch(NULL,0);}
+  --lt;sprintf(i-&amp;gt;p,&quot;%.*s&quot;,end-lt,lt);
+scratch(i-&amp;gt;p,strlen(i-&amp;gt;p)); NEXT(end);
+ }}
+
+main(int argc, char **argv){ fd_set fdr,fda; struct sockaddr_in sa;
+int max=0,l,x,f,sz=1,sai=sizeof(sa); char *buf;
+ memset(&amp;amp;sa,0,sai); sa.sin_family = AF_INET; sa.sin_port =
+htons(5222);
+ if((l = socket(AF_INET,SOCK_STREAM,0)) &amp;lt; 0 ||
+setsockopt(l,SOL_SOCKET,SO_REUSEADDR,&amp;amp;sz,sizeof(sz)) &amp;lt; 0 ||
+bind(l,&amp;amp;sa,sai) &amp;lt; 0 || listen(l,10) &amp;lt; 0){
+  printf(&quot;unable to listen: %s\n&quot;,strerror(errno)); exit(1);}
+ FD_ZERO(&amp;amp;fdr); FD_ZERO(&amp;amp;fda); max = l; FD_SET(l,&amp;amp;fda);
+memset(I,0,sizeof(I));
+ while((fdr = fda),select(max+1, &amp;amp;fdr, NULL, NULL, NULL) &amp;gt; 0){
+for(x = 0; x &amp;lt;= max; x++){ if(!FD_ISSET(x,&amp;amp;fdr)) continue;
+  if(x == l){ f = accept(l,&amp;amp;sa,&amp;amp;sai); if(f &amp;gt; max) max = f;
+FD_SET(f,&amp;amp;fda); I[f] = (itch)malloc(sizeof(struct itch_s));
+memset(I[f],0,sizeof(struct itch_s)); I[f]-&amp;gt;fd = f; continue; }
+  i = I[x]; sz = strlen(i-&amp;gt;buf); buf = i-&amp;gt;buf + sz;
+  if((sz = read(x,buf,B - sz - 100)) &amp;lt;= 0){ FD_CLR(x,&amp;amp;fda);
+I[x] = NULL; 
+   if(i-&amp;gt;p[0] != '\0'){ sprintf(i-&amp;gt;p + 9,&quot; from='%s@&quot; N &quot;'
+type='unavailable'/&amp;gt;&quot;,i-&amp;gt;u); sprintf(i-&amp;gt;r +
+(strlen(i-&amp;gt;r)-20),&quot;remove'/&amp;gt;&amp;lt;/query&amp;gt;&amp;lt;/iq&amp;gt;&quot;);
+scratch(NULL,0); }
+   free(i); close(x); continue; }
+  buf[sz] = '\0'; parse();
+ }}}
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="065015.html">[JDEV] Jabber DevZone News - test
+</A></li>
+	<LI>Next message: <A HREF="065017.html">[JDEV] [patch client.c]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65016">[ date ]</a>
+              <a href="thread.html#65016">[ thread ]</a>
+              <a href="subject.html#65016">[ subject ]</a>
+              <a href="author.html#65016">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

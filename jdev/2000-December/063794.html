@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] NAT Issues
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20NAT%20Issues&In-Reply-To=%3C3A3D49BE.B5733744%40netvoice.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="063793.html">
+   <LINK REL="Next"  HREF="063795.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] NAT Issues</H1>
+    <B>Charles Forsythe</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20NAT%20Issues&In-Reply-To=%3C3A3D49BE.B5733744%40netvoice.net%3E"
+       TITLE="[JDEV] NAT Issues">forsythe at netvoice.net
+       </A><BR>
+    <I>Sun Dec 17 17:18:22 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="063793.html">[JDEV] NAT Issues
+</A></li>
+        <LI>Next message: <A HREF="063795.html">[JDEV] NAT Issues
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63794">[ date ]</a>
+              <a href="thread.html#63794">[ thread ]</a>
+              <a href="subject.html#63794">[ subject ]</a>
+              <a href="author.html#63794">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Bernd Eckenfels wrote:
+&gt;<i> 
+</I>&gt;<i> On Sun, Dec 17, 2000 at 02:59:13PM -0600, Charles Forsythe wrote:
+</I>&gt;<i> &gt; Why would you not know which port to send to?  The NAT does not change
+</I>&gt;<i> &gt; the port number, only the IP address.
+</I>&gt;<i> 
+</I>&gt;<i> Of course it does.
+</I>
+You're right, it *can*, but it isn't required.  The whitepaper
+specifically mentions that the UDP hack only works if the UDP port is
+not translated.  I was confused and thought that was in RFC 2663; my
+mistake.
+
+&gt;<i> Ever wondered what the number in brackets in the output of netstat -M for
+</I>&gt;<i> Linux is?
+</I>
+My NAT is on a Cisco PIX.  netstat -M doesn't output anything on my
+Linux system, Mr. Smart Guy.  Anyway, if you'd bother to read the
+whitepaper carefully, you'll notice that the author tested the UDP hack
+using Linux IP Masquerading.
+
+&gt;<i> Dynamic NAT needs to use unique local ports, it chooses them from
+</I>&gt;<i> the range of the local masq ports, usually above 60000.
+</I>
+Dynamic port translation doesn't break TCP services but it does break
+some UDP services.  Even without NAT, TCP is already designed to
+negotiated connections in which a dynamic port number is assigned.  
+
+UDP is connectionless and this allows a UDP service to asynchronously
+receive data from any number of senders.  A two-party UDP protocol, such
+as TFTP can negotiate dynamic &quot;session&quot; ports, but a multi-party
+protocol, such as the game listed in the whitepaper, must establish a
+known listening port as the destination for all packets.  Because UDP is
+unreliable, most two-party protocols use TCP connections.  This means
+that applications for which UDP's connectionless behavior is most
+important will be broken by a NAT that translates UDP ports.  Hence it
+is a better design tradeoff *not* to translate UDP ports in a NAT.
+
+The UDP hack is only one of several options to deal with two peers
+behind two NATs.  Although it has been shown to work in many real-world
+situations, it may fail for several reasons.  One reason is that as a
+security &quot;best practice&quot; many enterprises block *all* incoming UDP
+traffic.  Another reason might be that a particular NAT does, in fact,
+translate UDP ports.  Finally, if multiple peer-to-peer sessions need to
+be formed between communities that are both behind two particular NATs,
+then it is unclear how the NAT will route the UDP packets.  The external
+negotiating server will need to detect multiple peers behind a NAT and
+implement a mechanism to assign them each a unique UDP port.
+
+-- Charles
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="063793.html">[JDEV] NAT Issues
+</A></li>
+	<LI>Next message: <A HREF="063795.html">[JDEV] NAT Issues
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63794">[ date ]</a>
+              <a href="thread.html#63794">[ thread ]</a>
+              <a href="subject.html#63794">[ subject ]</a>
+              <a href="author.html#63794">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

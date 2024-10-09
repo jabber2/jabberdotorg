@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] conferencing with all services - distributed chat room
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20conferencing%20with%20all%20services%20-%20distributed%20chat%20room&In-Reply-To=%3C20010825122826.B25891%40Nightbird.TZoNE.ORG%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="067662.html">
+   <LINK REL="Next"  HREF="067606.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] conferencing with all services - distributed chat room</H1>
+    <B>Fabien Ninoles</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20conferencing%20with%20all%20services%20-%20distributed%20chat%20room&In-Reply-To=%3C20010825122826.B25891%40Nightbird.TZoNE.ORG%3E"
+       TITLE="[JDEV] conferencing with all services - distributed chat room">fabien at Nightbird.Dynamic.TZoNE.ORG
+       </A><BR>
+    <I>Sat Aug 25 11:28:27 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="067662.html">[JDEV] conferencing with all services - distributed chat room
+</A></li>
+        <LI>Next message: <A HREF="067606.html">[JDEV] Re: OOB filetransfer negotiation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67722">[ date ]</a>
+              <a href="thread.html#67722">[ thread ]</a>
+              <a href="subject.html#67722">[ subject ]</a>
+              <a href="author.html#67722">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>First, sorry for the late answer, I was quite busy last weeks.
+
+On Fri, Aug 17, 2001 at 01:26:08PM +0530, Ashvil wrote:
+&gt;<i> &gt; &gt; From: &quot;Fabien Ninoles&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">fabien at Nightbird.Dynamic.TZoNE.ORG</A>&gt;
+</I>&gt;<i> &gt; &gt; &gt; I can see three different kinds of &quot;room proxy&quot;.
+</I>&gt;<i> &gt; &gt; This way all the users can join a local chat room which has a
+</I>&gt;<i> &gt; &gt; proxy to the main chat room on a different server. Is this one of
+</I>&gt;<i> &gt; &gt; the requirements for the conferencing group.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I'm not sure I understand the last sentence but I don't think that
+</I>&gt;<i> &gt; it anything we discuss until then is a requirements for the
+</I>&gt;<i> &gt; conferencing service.
+</I>&gt;<i> 
+</I>&gt;<i> Let's see if I can explain this better. It could be that the
+</I>&gt;<i> functionality that I am asking for is already implemented but I have
+</I>&gt;<i> not found this in any documentation.
+</I>&gt;<i> 
+</I>&gt;<i> Let assume there are 100 users connected to Jabber.com and another 100
+</I>&gt;<i> users connected to Jabber.org. There is a user 'John' connected to
+</I>&gt;<i> Jabber.com.  Now, there is an important conference at a room hosted by
+</I>&gt;<i> jabber.org called 'dev-conf'. So, all the 200 users connected to the
+</I>&gt;<i> room at Jabber.org.
+</I>&gt;<i> 
+</I>&gt;<i> Now 'John' sends 'Hi' to the room. So, the Jabber.com server will send
+</I>&gt;<i> the 'Hi' message to 'dev-conf' at Jabber.org. What does the conference
+</I>&gt;<i> room do now -
+</I>&gt;<i> a) Sends out 200 messages out to all the users connected or
+</I>&gt;<i> b) Sends out 101 messages (100 messages to it locally connected users
+</I>&gt;<i> and 1 message to the proxy room at Jabber.com)
+</I>
+OK, with the current implementation, there is no proxy room. So, the
+jabber server really sent 200 messages, part of it going through the S2S
+connection.  AFAIK, no digest is send.
+
+The proposition I made for an implementation of proxy room has a goal to
+implement this kind of digest over the current protocol in a sample
+manner.  The digest is done because the jabber.com server has also a
+room with the same name and both room interconnected each other.  So in
+fact, you have:
+
+1- A room in jabber.org, with 101 users connected, 1 of them being the
+jabber.com room.
+2- A room in jabber.com, with 101 users connected, 1 of them being the
+jabber.org room.
+
+There is no difference between room 1 and room 2, and, for most
+application, room 1 see room 2 simply as another user with multiple
+nicks.
+
+&gt;<i> Can someone who understands the conference part answer the above question.
+</I>&gt;<i> If the answer is b, then I think we can expand the similar concept to
+</I>&gt;<i> external IM systems. If the answer is a, then there is a scalability problem
+</I>&gt;<i> for Information distribution. Side topic - How does SIP handle this.
+</I>
+The answer is A and it's what I try to circumvent with the proxy-room
+(that's it, a proxy between two rooms) proposition.
+
+&gt;<i> This concept is present in IRC where they have S2S connections and where
+</I>&gt;<i> channels can span across multiple servers.
+</I>
+Some automation could be expand in a latter time, so that the user
+always connected to the right server... but then, you'll need a network
+of server/transport, interconnected with each other, with rooms sending
+presence to all the network and doing a kind of negociations of room
+names...  Really, I think this should be a different kind of rooms since
+it ask for so much negociation (with trusted/untrusted network peers,
+etc.)  At least, adding the room proxy, is simply a question of adding a
+new users, with nickname negociation being resume to suffix all proxy
+nicknames with @otherroom, for example.
+
+&gt;<i> 
+</I>&gt;<i> Regards,
+</I>&gt;<i> Ashvil
+</I>&gt;<i> 
+</I>
+Regards,
+Fabien
+--
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">fabien at tzone.org</A>                 <A HREF="http://www.tzone.org/~fabien">http://www.tzone.org/~fabien</A>
+GPG KeyID: C15D FE9E BB35 F596 127F  BF7D 8F1F DFC9 BCE0 9436
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="067662.html">[JDEV] conferencing with all services - distributed chat room
+</A></li>
+	<LI>Next message: <A HREF="067606.html">[JDEV] Re: OOB filetransfer negotiation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67722">[ date ]</a>
+              <a href="thread.html#67722">[ thread ]</a>
+              <a href="subject.html#67722">[ subject ]</a>
+              <a href="author.html#67722">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

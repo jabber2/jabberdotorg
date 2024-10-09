@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabberd crash after dnsrv read error
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%20crash%20after%20dnsrv%20read%20error&In-Reply-To=%3C200103090039.SAA48206%40cliss.austin.ibm.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="035827.html">
+   <LINK REL="Next"  HREF="035826.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabberd crash after dnsrv read error</H1>
+    <B>David Clissold</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%20crash%20after%20dnsrv%20read%20error&In-Reply-To=%3C200103090039.SAA48206%40cliss.austin.ibm.com%3E"
+       TITLE="[JDEV] jabberd crash after dnsrv read error">cliss at austin.ibm.com
+       </A><BR>
+    <I>Thu Mar  8 18:39:07 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="035827.html">[JDEV] about encoding
+</A></li>
+        <LI>Next message: <A HREF="035826.html">[JDEV] jabberd crash after dnsrv read error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35817">[ date ]</a>
+              <a href="thread.html#35817">[ thread ]</a>
+              <a href="subject.html#35817">[ subject ]</a>
+              <a href="author.html#35817">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I am seeing the jabberd server (1.4) occasionally crash.  The most likely
+situation to cause it seems to be a newly created user registering, and then
+exiting the client (or logging out) -- though this does not happen
+consistently.  If users are logged in and sending messages, all appears to
+be fine.
+
+First, has anyone else experienced this?
+
+I am trying to aquaint myself with the code and could use a pointer
+in investigating it.  What I have found so far:
+
+I have rebuilt libpth in debug mode (-DPTH_DEBUG), and am running jabberd
+in debug mode (-D) as well.
+Within the dnsrv module, the process is running in the infinite loop in
+dnsrv_child_main(), around line 140, where it is repeatedly reading from
+a dns_io.  The server runs fine as long as there is not a read error here.
+As soon as we get a read error, this dnsrv child process exits with the
+expectation that the parent process will restart it.  The parent goes through
+the libpth code --- via pth_spawn(), to pth_connect_ev(), then pth_wait(),
+then pth_yield(), which gives a floating point exception calling
+pth_mctx_switch() at line 466 of pth_lib.c.  (This is just a macro that
+calls swapcontext() -- see pth_p.h).
+
+My first instinct was that I was probably seeing a libpth problem,
+not a jabberd problem.  But a couple of factors are making this
+seem less likely:
+ 1) With the libpth debug, I see that we go through this pth_yield() code
+    many, many times without trouble.
+ 2) Using the same libpth, but with jabber 1.2, the problem did not
+    occur.  (same server: AIX 4.3.3, Linux clients running Gabber).
+ 3) This happens ONLY when there is a dnsrv read error, and it happens
+    EVERY time there is a dnsrv read error (1-to-1 correspondence); it isn't
+    super common... but I wouldn't say it is rare either.
+
+The last debug entry from the main jabberd process is always from mio.c
+&quot;calling the connect handler for mio object...&quot; in _mio_connect().
+
+Now, I don't know if I should continue tackling the parent/pth problem,
+or if the problem is really this: why the dnsrv read error in the first
+place?  That is, is it expected as normal that the read will occasionally fail,
+and restarting dnsrv is just a part of normal operation?  Or is it the case
+that the dnsrv read should NOT ever fail, and the restart is just an
+emergency attempt to keep things rolling?  (And if the latter, has anyone
+tested the case of read failure; e.g. break out of the read loop after
+a few dozen reads via a counter and see if things start up OK again)?
+
+Anybody have any ideas on this?
+
+David Clissold
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cliss at austin.ibm.com</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="035827.html">[JDEV] about encoding
+</A></li>
+	<LI>Next message: <A HREF="035826.html">[JDEV] jabberd crash after dnsrv read error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35817">[ date ]</a>
+              <a href="thread.html#35817">[ thread ]</a>
+              <a href="subject.html#35817">[ subject ]</a>
+              <a href="author.html#35817">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

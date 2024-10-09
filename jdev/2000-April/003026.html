@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Performance
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Performance&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003025.html">
+   <LINK REL="Next"  HREF="003027.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Performance</H1>
+    <B>Stuart Adamson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Performance&In-Reply-To="
+       TITLE="[JDEV] Performance">stuart.adamson at evolution-plc.com
+       </A><BR>
+    <I>Wed Apr 26 11:20:39 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003025.html">[JDEV] Performance
+</A></li>
+        <LI>Next message: <A HREF="003027.html">[JDEV] Performance
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3026">[ date ]</a>
+              <a href="thread.html#3026">[ thread ]</a>
+              <a href="subject.html#3026">[ subject ]</a>
+              <a href="author.html#3026">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> | I agree that a pool of threads (shoot, 1000 enough?) 
+</I>&gt;<i> servicing all TCP
+</I>&gt;<i> | connections would be enough. And I wouldn't doubt there 
+</I>&gt;<i> could be a change to
+</I>&gt;<i> | the TCP/IP layer in Linux and other operating systems to 
+</I>&gt;<i> support a massive
+</I>&gt;<i> | number of TCP sockets
+</I>
+Each TCP socket uses memory.  You open a large number of sockets
+and you see a slight performance drop off.
+
+Take a look at ircd code to see other problems with dealing with
+massive numbers of connection (hint, you can't use select()
+anymore).
+
+&gt;<i> - the problem is that it wasn't 
+</I>&gt;<i> really until recently
+</I>&gt;<i> | (HTTP) that people had to deal with massive number of TCP 
+</I>&gt;<i> sockets at all,
+</I>
+Look at ircd - that handles a large number of TCP sockets and boy is
+the code ugly.
+
+&gt;<i> | And 
+</I>&gt;<i> having these user
+</I>&gt;<i> | threads in 'groups' of native threads will help utilize 
+</I>&gt;<i> multiprocessor
+</I>&gt;<i> | machines
+</I>
+Yes and no - threads are good under medium load.  Under high
+load threads give poor performance.  To handle MP boxes you want
+one thread / process per CPU - no more, no less. 
+
+&gt;<i> Long lived connections that are idle most of the time is a silly thing
+</I>&gt;<i> to support if it's expensive.
+</I>
+Are a silly thing to support whether they're expensive or not.  
+Either get the client / server to disconnect after a period of 
+inactivity or use UDP.
+
+
+Just my 2 pence
+
+Stuart
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003025.html">[JDEV] Performance
+</A></li>
+	<LI>Next message: <A HREF="003027.html">[JDEV] Performance
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3026">[ date ]</a>
+              <a href="thread.html#3026">[ thread ]</a>
+              <a href="subject.html#3026">[ subject ]</a>
+              <a href="author.html#3026">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

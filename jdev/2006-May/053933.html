@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: VTD-XML version 1.6
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20VTD-XML%20version%201.6&In-Reply-To=%3C12468.1148116760.675707%40peirce.dave.cridland.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="053932.html">
+   <LINK REL="Next"  HREF="053939.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: VTD-XML version 1.6</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20VTD-XML%20version%201.6&In-Reply-To=%3C12468.1148116760.675707%40peirce.dave.cridland.net%3E"
+       TITLE="[jdev] Re: VTD-XML version 1.6">dave at cridland.net
+       </A><BR>
+    <I>Sat May 20 04:19:19 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="053932.html">[jdev] Re: VTD-XML version 1.6
+</A></li>
+        <LI>Next message: <A HREF="053939.html">[jdev] Re: VTD-XML version 1.6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53933">[ date ]</a>
+              <a href="thread.html#53933">[ thread ]</a>
+              <a href="subject.html#53933">[ subject ]</a>
+              <a href="author.html#53933">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sat May 20 05:56:19 2006, Justin Karneges wrote:
+&gt;<i> On Friday 19 May 2006 20:39, Peter Saint-Andre wrote:
+</I>&gt;<i> &gt; But it turns out that streaming XML has some inherent benefits, 
+</I>&gt;<i> one of
+</I>&gt;<i> &gt; which is that you don't have to create a new parser instance 
+</I>&gt;<i> every time
+</I>&gt;<i> &gt; you want to send, receive, or route a message.
+</I>&gt;<i> 
+</I>&gt;<i> More importantly, XMPP-specific parsing code doesn't need to be 
+</I>&gt;<i> written.  Any other wire protocol would require writing a parser, 
+</I>&gt;<i> but with XMPP you can just throw SAX at it.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>Ah, you see I approached XMPP looking for the framing for the 
+messages, because every other protocol I deal with has explicit 
+framing for the messages.
+
+So, I do string matches to pull out the stanzas, and turn them into 
+complete XML documents by wrapping them in the real &lt;stream&gt; and 
+faked &lt;/stream&gt;, and use DOM on the resultant docs. In other words, I 
+treat them as framed messages to pull out and parse, where the 
+framing depends on the opening bytes (up to the first space or &gt;). 
+Maybe I'm weird, but it seems to work well. :-)
+
+There's a potential problem where you end up finding a closing tag 
+that's actually not closing the stanza, because of namespace 
+redefinitions or whatever, but that's relatively easy to deal with, 
+you just find the next candidate end-of-stanza tag. You get similar 
+problems if you want to isolate messages in IMAP, too, where the 
+framing changes depending on the type of message.
+
+My favourite benefit to XML streams over XML messages, though, is 
+that namespace declarations can be moved out of the messages and into 
+the root element. That's very cool for octet-obsessives like me.
+
+(For compression people: Although moving the namespace declarations 
+further toward the root of the document tree to remove repetitions is 
+simply a representational change, the longevity of the impact 
+relative to the stream is large, so you tend to run out of the 
+reference length limit for Ziv/Lempel type compressions, and the 
+namespace strings themselves are sufficiently long that statistical 
+modelling compression algorithms won't have a good enough effect. 
+Also, because the namespace declaration strings tend to be 
+self-similar, putting them all together makes them compress better, 
+too.)
+
+
+&gt;<i> Granted, I'm also one of those guys that &quot;wouldn't have designed it 
+</I>&gt;<i> that way&quot;, but I still think XML streams are cool in that geeky 
+</I>&gt;<i> sort of way.  Look mom, no parser.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>I think I probably would have gone for explicit framing, but I put 
+that down to reflex rather than any particularly sound principles. I 
+treat the data as if it does have explicit framing anyway, so it 
+doesn't actually really matter, and different parsing techniques mean 
+that there's advantage in letting the XML do the framing for you in 
+the protocol.
+
+
+&gt;<i> I agree with Peter though, talking about the rationale in 2006 is 
+</I>&gt;<i> kind of pointless.
+</I>
+Well, it's pointless from the point of view of XMPP, certainly, but 
+it's interesting from a more philosophical protocol design kind of 
+way. Which could be pointless, but may not be.
+
+Dave.
+-- 
+Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at jabber.org</A>
+  - <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+  - <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="053932.html">[jdev] Re: VTD-XML version 1.6
+</A></li>
+	<LI>Next message: <A HREF="053939.html">[jdev] Re: VTD-XML version 1.6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53933">[ date ]</a>
+              <a href="thread.html#53933">[ thread ]</a>
+              <a href="subject.html#53933">[ subject ]</a>
+              <a href="author.html#53933">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

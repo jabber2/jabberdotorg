@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] 406 presence error
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20406%20presence%20error&In-Reply-To=%3CCFEIKBLOMOAMNENJICMDMEDCCBAA.agames%40sbcglobal.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="075870.html">
+   <LINK REL="Next"  HREF="075836.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] 406 presence error</H1>
+    <B>Andy Ames</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20406%20presence%20error&In-Reply-To=%3CCFEIKBLOMOAMNENJICMDMEDCCBAA.agames%40sbcglobal.net%3E"
+       TITLE="[JDEV] 406 presence error">agames at sbcglobal.net
+       </A><BR>
+    <I>Sun Aug  3 22:04:37 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="075870.html">[JDEV] 2.0.0-a5 on Solaris 9
+</A></li>
+        <LI>Next message: <A HREF="075836.html">[JDEV] 406 presence error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75835">[ date ]</a>
+              <a href="thread.html#75835">[ thread ]</a>
+              <a href="subject.html#75835">[ subject ]</a>
+              <a href="author.html#75835">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I cannot seem to make sense of the protocol for presence stanzas. In each
+case below, I get a 406 - &quot;Not Acceptable&quot; error. The stream is opened and
+the user is authenticated with no problem. Following are the various
+presence stanzas I attempted. At the bottom of this post is the
+authentication stanzas that occurred before I attempted presence.
+
+1) According to XMPP (and the Exodus XML debug output window), the following
+should work. Or am I missing something?
+
+SENT: &lt;presence/&gt;
+RECV: &lt;presence type='error'&gt;
+        &lt;error code='406'&gt;Not Acceptable&lt;/error&gt;
+      &lt;/presence&gt;
+
+2) I also attempted filling out the details.
+
+SENT: &lt;presence&gt;
+        &lt;show&gt;chat&lt;/show&gt;
+        &lt;status&gt;Online&lt;/status&gt;
+        &lt;priority&gt;1&lt;/priority&gt;
+      &lt;/presence&gt;
+RECV: &lt;presence type='error'&gt;
+        &lt;show&gt;chat&lt;/show&gt;
+        &lt;status&gt;Online&lt;/status&gt;
+        &lt;priority&gt;1&lt;/priority&gt;
+        &lt;error code='406'&gt;Not Acceptable&lt;/error&gt;
+      &lt;/presence&gt;
+
+3) I tried using the &quot;to&quot; attribute.
+
+SENT: &lt;presence to=&quot;jabber.org&quot;&gt;
+        &lt;show&gt;chat&lt;/show&gt;
+        &lt;status&gt;Online&lt;/status&gt;
+        &lt;priority&gt;1&lt;/priority&gt;
+      &lt;/presence&gt;
+RECV: &lt;presence type='error'&gt;
+        &lt;show&gt;chat&lt;/show&gt;
+        &lt;status&gt;Online&lt;/status&gt;
+        &lt;priority&gt;1&lt;/priority&gt;
+        &lt;error code='406'&gt;Not Acceptable&lt;/error&gt;
+      &lt;/presence&gt;
+
+I must be doing something fundamentally wrong. Can someone spot it?
+
+Andy
+
+Authentication business...
+
+SENT: &lt;?xml version=&quot;1.0&quot;?&gt;
+      &lt;stream:stream xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A>
+                     xmlns=&quot;jabber:client&quot;
+                     to=&quot;jabber.org&quot;&gt;
+RECV: &lt;stream:stream xmlns='jabber:client'
+                     xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>
+                     from='jabber.org'
+                     id='0123456789'&gt;
+SENT: &lt;iq type=&quot;get&quot; to=&quot;jabber.org&quot; id=&quot;0123456789&quot;&gt;
+        &lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+          &lt;username&gt;myusername&lt;/username&gt;
+        &lt;/query&gt;
+      &lt;/iq&gt;
+RECV: &lt;iq type='result' id='0123456789'&gt;
+        &lt;query xmlns='jabber:iq:auth'&gt;
+          &lt;username&gt;myusername&lt;/username&gt;
+          &lt;password/&gt;
+          &lt;digest/&gt;
+          &lt;sequence&gt;0&lt;/sequence&gt;
+          &lt;token&gt;A1B2C3D4&lt;/token&gt;
+          &lt;resource/&gt;
+        &lt;/query&gt;
+      &lt;/iq&gt;
+SENT: &lt;iq type=&quot;get&quot; to=&quot;jabber.org&quot; id=&quot;0123456789&quot;&gt;
+        &lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+          &lt;username&gt;myusername&lt;/username&gt;
+          &lt;password&gt;mypassword&lt;/password&gt;
+        &lt;/query&gt;
+      &lt;/iq&gt;
+RECV: &lt;iq type='result' id='0123456789'&gt;
+        &lt;query xmlns='jabber:iq:auth'&gt;
+          &lt;username&gt;myusername&lt;/username&gt;
+          &lt;username&gt;mypassword&lt;/username&gt;
+          &lt;password/&gt;
+          &lt;digest/&gt;
+          &lt;sequence&gt;0&lt;/sequence&gt;
+          &lt;token&gt;A1B2C3D4&lt;/token&gt;
+          &lt;resource/&gt;
+        &lt;/query&gt;
+      &lt;/iq&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="075870.html">[JDEV] 2.0.0-a5 on Solaris 9
+</A></li>
+	<LI>Next message: <A HREF="075836.html">[JDEV] 406 presence error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75835">[ date ]</a>
+              <a href="thread.html#75835">[ thread ]</a>
+              <a href="subject.html#75835">[ subject ]</a>
+              <a href="author.html#75835">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

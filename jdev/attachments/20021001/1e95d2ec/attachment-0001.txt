@@ -1,0 +1,102 @@
+Patch for Jabber-1.4 to allow logs to be rotated automatically.
+2002-Oct-01 by Ralph Siemsen <ralphs@blueairnetworks.com>
+
+Adds a new commandline flag "-L filename" for specifying the log file name.
+Output for stdout/stderr is redirected to the log file automatically.
+When SIGHUP signal is received by the server, the log file is closed and
+reopened.  Also the default action of reloading jabber.xml has been disabled
+because it causes memory leaks.  I'm not going to fix those ;)
+
+
+--- jabberd/jabberd.c	Fri Feb  8 02:44:13 2002
++++ jabberd.orig/jabberd.c	Tue Oct  1 15:38:04 2002
+@@ -58,6 +58,7 @@
+ pool jabberd__runtime = NULL;
+ static char *cfgfile = NULL;
+ int jabberd__signalflag = 0;
++char *logfilename = 0;
+ 
+ /*** internal functions ***/
+ int configurate(char *file);
+@@ -72,7 +73,7 @@
+ int  instance_startup(xmlnode x, int exec);
+ void instance_shutdown(instance i);
+ void _jabberd_signal(int sig);
+-
++void redirect_logs(char *filename);
+ 
+ int main (int argc, char** argv)
+ {
+@@ -112,14 +113,7 @@
+             }
+             else if(*c == 'B')
+             {
+-                if (do_debug)
+-                {
+-                    printf("Debug output is enabled, can not background.\n");
+-                }
+-                else
+-                {
+-                    do_background = 1;
+-                }
++                do_background = 1;
+                 continue;
+             }
+ 
+@@ -158,7 +152,7 @@
+     /* were there any bad parameters? */
+     if(help)
+     {
+-        fprintf(stderr,"Usage:\n%s [params]\n Optional Parameters:\n -c\t\tconfiguration file\n -D\t\tenable debug output (disables background)\n -H\t\tlocation of home folder\n -B\t\tbackground the server process\n -Z\t\tdebug zones\n -v\t\tserver version\n -V\t\tserver version\n", argv[0]);
++        fprintf(stderr,"Usage:\n%s [params]\n Optional Parameters:\n -c\t\tconfiguration file\n -D\t\tenable debug output (disables background)\n -H\t\tlocation of home folder\n -B\t\tbackground the server process\n -Z\t\tdebug zones\n -v\t\tserver version\n -V\t\tserver version\n -L\t\tlog file name\n", argv[0]);
+         exit(0);
+     }
+ 
+@@ -199,6 +193,12 @@
+     if(home != NULL && chdir(home))
+         fprintf(stderr,"Unable to access home folder %s: %s\n",home,strerror(errno));
+ 
++    /* The -L option allows a log file to be specified. */
++    if ((logfilename = ghash_get(cmd__line, "L")) != NULL)
++    {
++    	redirect_logs(logfilename);
++    }
++
+     /* background ourselves if we have been flagged to do so */
+     if(do_background != 0)
+     {
+@@ -272,6 +272,14 @@
+ 
+     log_notice(NULL, "reloading configuration");
+ 
++    /* Close and re-open the log file */
++    if (logfilename) {
++	redirect_logs(logfilename);
++    }
++
++    /* Skip the greymatter reload to avoid leaking memory. */
++    return;
++    
+     /* keep greymatter around till we are sure the reload is OK */
+     temp_greymatter = greymatter__;
+ 
+@@ -344,3 +352,19 @@
+     }
+     _jabberd_shutdown();
+ }
++
++/* Redirect stdout/stderr to a logfile instead */
++void redirect_logs(char *filename)
++{
++	/* Try to open the specified logfile for writing */
++	int fd;
++	fd = open(logfilename, O_WRONLY|O_CREAT|O_APPEND|O_SYNC, 0640);
++	if (fd == -1) {
++		printf("Fatal: could not open logfile %s\n", logfilename);
++		exit(0);
++	}
++	/* Re-open the stdout/stderr streams on the logfile instead */
++	dup2(fd, STDOUT_FILENO);
++	dup2(fd, STDERR_FILENO);
++	close(fd);
++}

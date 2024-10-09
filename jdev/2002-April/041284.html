@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Leak, bug --  fixed -- maybe
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Leak%2C%20bug%20--%20%20fixed%20--%20maybe&In-Reply-To=%3C00c201c1da4a%244feef520%244d00a8c0%40catamount%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="041283.html">
+   <LINK REL="Next"  HREF="041256.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Leak, bug --  fixed -- maybe</H1>
+    <B>Glenn MacGregor</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Leak%2C%20bug%20--%20%20fixed%20--%20maybe&In-Reply-To=%3C00c201c1da4a%244feef520%244d00a8c0%40catamount%3E"
+       TITLE="[JDEV] Leak, bug --  fixed -- maybe">gtm at oracom.com
+       </A><BR>
+    <I>Tue Apr  2 07:28:44 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="041283.html">[JDEV] Leak, bug --  fixed -- maybe
+</A></li>
+        <LI>Next message: <A HREF="041256.html">[JDEV] hi ho, my first official beta :)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#41284">[ date ]</a>
+              <a href="thread.html#41284">[ thread ]</a>
+              <a href="subject.html#41284">[ subject ]</a>
+              <a href="author.html#41284">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>----- Original Message -----
+From: &quot;Jeremie&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jeremie at jabber.org</A>&gt;
+To: &quot;Glenn MacGregor&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gtm at oracom.com</A>&gt;
+Cc: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabberd at jabberstudio.org</A>&gt;
+Sent: Tuesday, April 02, 2002 1:44 AM
+Subject: Re: [JDEV] Leak, bug -- fixed -- maybe
+
+
+&gt;<i> Hey Glenn, few questions to clarify here, and following up to the
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabberd at jabberstudio.org</A> list as well.
+</I>&gt;<i>
+</I>&gt;<i> &gt; jsm/session.c at _js_session_from you will see at line 252 or so that we
+</I>&gt;<i> &gt; create a new jid struct using jid_full with the session-&gt;id meaning that
+</I>the
+&gt;<i> &gt; new jid is allocated from the session pool, not good.
+</I>&gt;<i>
+</I>&gt;<i> Are you talking about this code? (and the line marked with -&gt;)
+</I>&gt;<i>
+</I>&gt;<i>     /* if you use to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">yourself at yourhost</A>&quot; it's the same as not having a ...
+</I>*/
+&gt;<i> -&gt;  uid = jid_user(s-&gt;id);
+</I>&gt;<i>     if(jid_cmp(p-&gt;to,uid) == 0)
+</I>&gt;<i>     {
+</I>&gt;<i>         /* xmlnode_hide_attrib(p-&gt;x,&quot;to&quot;); */
+</I>&gt;<i>         p-&gt;to = NULL;
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i> Just curious, because yes, that is a leak with using the jid_user()
+</I>&gt;<i> function on the session id... but from your wording:
+</I>&gt;<i>
+</I>&gt;<i> &gt; So we have created a new jid_full function, jid_full_from_pool(pool,
+</I>jid).
+&gt;<i>
+</I>&gt;<i> ... it sounds like you are saying a call to jid_full(s-&gt;id) would leak,
+</I>&gt;<i> and it doesn't because the implementation in jid.c 'caches' the results:
+</I>&gt;<i>
+</I>&gt;<i>     /* use cached copy */
+</I>&gt;<i>     if(id-&gt;full != NULL)
+</I>&gt;<i>         return id-&gt;full;
+</I>&gt;<i>
+</I>&gt;<i> So it is safe to use jid_full() many numbers of times on a &quot;static&quot; jid
+</I>&gt;<i> like the one in the session.
+</I>
+Sorry for that wording, but the main leak in the jid_user function using the
+session pool.  So I noticed in 1.4.2 you added the jid_cmpx function, I just
+replaced:
+    uid = jid_user(s-&gt;id);
+    if(jid_cmp(p-&gt;to,uid) == 0)
+
+with:
+    if (jid_cmpx(p-&gt;to, s-&gt;id,JID_USER|JID_SERVER)) {
+
+I guess I am not quite sure of the call stack getting to _js_session_from, I
+was thinking that it would be different for each sender.  Now I see that is
+not the case.
+
+&gt;<i>
+</I>&gt;<i> &gt; changed much so if the plan was to reuse some of the jsm and jabberd
+</I>stuff
+&gt;<i> &gt; in the 1.5 it maybe good to get it in.
+</I>&gt;<i>
+</I>&gt;<i> Yes, much of the jsm code is going to be reused, at least initially to get
+</I>&gt;<i> 1.5 rolling. Since you pointed this out I looked at other suspect uses of
+</I>&gt;<i> jid_user, and there are numerous other problems in the modules (my bad)
+</I>&gt;<i> that I'll look at and make sure are fixed for 1.5.
+</I>&gt;<i>
+</I>&gt;<i> If you want to work up a patch without having to figure out where it's
+</I>&gt;<i> used incorrectly in jsm, the easiest fix for jid_user might be to make it
+</I>&gt;<i> work like jid_full, cache the returned user-only jid in the struct so that
+</I>&gt;<i> it is only ever generated once.  Just post it to the jdev and jabberd
+</I>&gt;<i> lists, if you plan on having any more patches then cvs access is available
+</I>&gt;<i> as well (just ask).
+</I>I don't think you want to malloc anything on the session pool, because that
+pool may never be freed.  It is definatly a toss up, do you do the work
+every time or do you cache result.  There is no easy answer for that one.
+We use the jabber server to pass about 100 messages a second with 700-800
+users logged in, it is a very regirious testing ground.
+
+I will take out the jid_full_from_pool and see how that effects it and post
+my current patch.  I will also remake jid_user and run the tests.
+
+Like you will see in the patch, the way we got around the jid_user problem
+is by removing it totally and using jid_cmpx instead of creating the jid and
+using jid_cmp.
+&gt;<i>
+</I>&gt;<i> Thanks for finding this, so far 1.5 is getting a pretty serious overhaul
+</I>&gt;<i> and it'll be easier for us all to track down and fix some of these
+</I>&gt;<i> problems :)
+</I>&gt;<i>
+</I>&gt;<i> Jer
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="041283.html">[JDEV] Leak, bug --  fixed -- maybe
+</A></li>
+	<LI>Next message: <A HREF="041256.html">[JDEV] hi ho, my first official beta :)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#41284">[ date ]</a>
+              <a href="thread.html#41284">[ thread ]</a>
+              <a href="subject.html#41284">[ subject ]</a>
+              <a href="author.html#41284">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

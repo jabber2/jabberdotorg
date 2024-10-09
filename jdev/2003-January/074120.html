@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] xdbcache, jabber 1.4.2 segfault
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20xdbcache%2C%20jabber%201.4.2%20segfault&In-Reply-To=%3C02cc01c2bbf5%249e66bcf0%244d00a8c0%40catamount%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="074135.html">
+   <LINK REL="Next"  HREF="074122.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] xdbcache, jabber 1.4.2 segfault</H1>
+    <B>Glenn MacGregor</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20xdbcache%2C%20jabber%201.4.2%20segfault&In-Reply-To=%3C02cc01c2bbf5%249e66bcf0%244d00a8c0%40catamount%3E"
+       TITLE="[JDEV] xdbcache, jabber 1.4.2 segfault">gtm at highstreetnetworks.com
+       </A><BR>
+    <I>Tue Jan 14 11:51:21 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="074135.html">[JDEV] xdbcache problem on jabber 1.4.2
+</A></li>
+        <LI>Next message: <A HREF="074122.html">[JDEV] 405 error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74120">[ date ]</a>
+              <a href="thread.html#74120">[ thread ]</a>
+              <a href="subject.html#74120">[ subject ]</a>
+              <a href="author.html#74120">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi All,
+
+I am running jabber 1.4.2, not the latest from cvs but fairly new. I have a test application which in an async manner logs into a jabber server. Async meaning that if I give this app 200 users too login as it doesn't do the logins in a linear manner, it is a state machine so any user can be in any state of login at any time during the login process. During the login I get a segfault in xdb_thump because it is trying to remove an entry from the linked list that is already gone (I assume due to the state of the login). Problem code I believe:
+
+result xdb_thump(void *arg)
+{
+    xdbcache xc = (xdbcache)arg;
+    xdbcache cur, next;
+    int now = time(NULL);
+
+    /* spin through the cache looking for stale requests */
+    cur = xc-&gt;next;
+    while(cur != xc)
+    {
+        next = cur-&gt;next;
+
+++++30 seconds old
+        /* really old ones get wacked */
+        if((now - cur-&gt;sent) &gt; 30)
+        {
+            /* remove from ring */
+            cur-&gt;prev-&gt;next = cur-&gt;next;
+            cur-&gt;next-&gt;prev = cur-&gt;prev;
+
+            /* make sure it's null as a flag for xdb_set's */
+            cur-&gt;data = NULL;
+
+            /* free the thread! */
+            cur-&gt;preblock = 0;
+            if(cur-&gt;cond != NULL)
+                pth_cond_notify(cur-&gt;cond, FALSE);
+
+            cur = next;
+            continue;
+        }
+
+        /* resend the waiting ones every so often */
+        if((now - cur-&gt;sent) &gt; 10)
+            xdb_deliver(xc-&gt;i, cur);
+
+        /* cur could have been free'd already on it's thread */
+        cur = next;
+    }
+
+    return r_DONE;
+}
+
+
+Gets invoked by the following code:
+
+xdbcache xdb_cache(instance id)
+{
+    xdbcache newx;
+
+    if(id == NULL)
+    {
+        fprintf(stderr, &quot;Programming Error: xdb_cache() called with NULL\n&quot;);
+        return NULL;
+    }
+
+    newx = pmalloco(id-&gt;p, sizeof(_xdbcache));
+    newx-&gt;i = id; /* flags it as the top of the ring too */
+    newx-&gt;next = newx-&gt;prev = newx; /* init ring */
+
+++++++ We register a handler here to handle requests, which in the correct case removes the cache from the list
+    /* register the handler in the instance to filter out xdb results */
+    register_phandler(id, o_PRECOND, xdb_results, (void *)newx);
+
++++++We register a beat here to check the cache for entries that are over 30 seconds old and remove them
+    /* heartbeat to keep a watchful eye on xdb_cache */
+    register_beat(10,xdb_thump,(void *)newx);
+
+    return newx;
+}
+
+NOTE: ++++++ are my comments
+
+I believe that there is a thread handling the beat and a different thread handling the phandler, if that is not true then my theory is shot. If it is true then what is stopping the handler thread from removing the same entry that the beat removed?
+
+
+Any insight would be great.
+
+    Thanks
+
+            Glenn
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20030114/946106c5/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20030114/946106c5/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="074135.html">[JDEV] xdbcache problem on jabber 1.4.2
+</A></li>
+	<LI>Next message: <A HREF="074122.html">[JDEV] 405 error
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74120">[ date ]</a>
+              <a href="thread.html#74120">[ thread ]</a>
+              <a href="subject.html#74120">[ subject ]</a>
+              <a href="author.html#74120">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

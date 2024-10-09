@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Security in XMPP/Jabber: some questions &amp;&amp; Re: [xmppwg] SASL vs TLS
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Security%20in%20XMPP/Jabber%3A%20some%20questions%20%26%26%20Re%3A%20%5Bxmppwg%5D%0A%20SASL%20vs%20TLS&In-Reply-To=%3C3ECE1042.9000408%40Reigm.Com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="075056.html">
+   <LINK REL="Next"  HREF="075058.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Security in XMPP/Jabber: some questions &amp;&amp; Re: [xmppwg] SASL vs TLS</H1>
+    <B>Matthew Beacher</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Security%20in%20XMPP/Jabber%3A%20some%20questions%20%26%26%20Re%3A%20%5Bxmppwg%5D%0A%20SASL%20vs%20TLS&In-Reply-To=%3C3ECE1042.9000408%40Reigm.Com%3E"
+       TITLE="[JDEV] Security in XMPP/Jabber: some questions &amp;&amp; Re: [xmppwg] SASL vs TLS">SyOp at Reigm.Com
+       </A><BR>
+    <I>Fri May 23 07:12:50 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="075056.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+        <LI>Next message: <A HREF="075058.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75055">[ date ]</a>
+              <a href="thread.html#75055">[ thread ]</a>
+              <a href="subject.html#75055">[ subject ]</a>
+              <a href="author.html#75055">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Well, it is just my view, but I feel their should be 2 completely 
+different systems for encryption.
+
+1) Client-Server Encryption, based on SASL as stated in some of the XMPP 
+standered.  It is already in the log in part of the standered, and after 
+log in, is transparent to both the server and client.  While the 
+cyrusSASL code is EASY to work with, but the code is not the easyest to 
+compile.  To your question, having worked with cyrusSASL, unless you 
+force it, the cyrusSASLClient chooses whatever it wants, based on the 
+internal code, and you don't get a choice in the matter.  The only way 
+to define what it uses is a matter of hard coding it into the program.  
+Also, be carful when doing something like that, while cyrusSASL comes 
+with a lot, the &quot;Good&quot; encryption is not avalible for distrubtion.  You 
+must get it independantly from OpenSSL.  You see cyrusSASL is a project 
+of CMU in Pittsburg, PA USA.  So US law gets in the way, as always.
+
+2) Client-Client Message Encryption.  There should be a end to end 
+encryption that the server dose not know, to insure message security.  
+This is the only way to be 100% sure that no one is reading the 
+messages.  I vote for some type of PGP.  Security is 100% known, and the 
+server could act as a public key ring.  Just a thought.
+FYI: I figure it would look like:
+&lt;body&gt;&lt;encrypted&gt;djshf;ksdhfsdfhsadufhsuiodfhsdhfkjsdhf&lt;/encrypted&gt;&lt;/body&gt;
+Just imagin the Message tage and every other tage I just ignoted.  Also, 
+I'm not 100% on the standred but, this might not require changing the 
+servers much if at all, if the server knows to ignore everything between 
+the body tags.
+
+3)Server-Sercer, I feel there should be an addition in the form of SASL 
+for server server, but the question is how?  It would need to be an 
+addition to the server dialback procedure.  I admit there is a need for 
+it, but that is something that XMPPWG needs to work on.
+
+As to SASL not being up to &quot;Par&quot;,  the only whay it will be is if 2 
+things happen.
+1) The installers download the &quot;good&quot; encryption from openSSL, because 
+unless a project is 100% outside the US, they, can't destrubte that code.
+2) Every Server and Every Client will have to include a minimum level of 
+encryption (I think it is 50 in cyrusSASL) this will force at least some 
+encryption to be used including a full stream encryption (as per the 
+XMPP and SASL protocols).
+
+Also, we may what to move this descution over to the XMPPWG mailing 
+list, because this really is more to XMPPWG then JDEV.
+
+-Matt
+
+(2 messages being replyed to below)
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber_jdev at aeiou.pt</A> wrote:
+
+&gt;<i>hi all
+</I>&gt;<i>
+</I>&gt;<i>first of all i would like to say thx to everyone who have answered
+</I>&gt;<i>this mail with some explanation, that's the best way to beeing lerning
+</I>&gt;<i>about this...
+</I>&gt;<i>
+</I>&gt;<i>after reading your mail and all the answers, from David, Rob, etc,
+</I>&gt;<i>i've made myself a little research too and i would like to keep asking
+</I>&gt;<i>about xmpp/jabber security:
+</I>&gt;<i>
+</I>&gt;<i>if we take a closer look about SASL there's kerberos, tsl - that is
+</I>&gt;<i>the ietf version of netscape's ssl ver 3 , GSSAPI - i've to admit that
+</I>&gt;<i>i didnt understand this mechanism much , s/key and external mechanisms
+</I>&gt;<i>of authentication... and my question is, why not a simple
+</I>&gt;<i>authentication using the pki and based on certification authorities?
+</I>&gt;<i>public keys, diffie-helman agreement to create session kyes,
+</I>&gt;<i>zero-knowledge agreement between servers and clients (note, not
+</I>&gt;<i>between clients and servers, server must identify himself first),
+</I>&gt;<i>chalange-answer between clients and servers, and one of this two
+</I>&gt;<i>between servers and servers ... i think this is pretty much secure
+</I>&gt;<i>than anything ...
+</I>&gt;<i>
+</I>&gt;<i>i would like to have your oppinion about this
+</I>&gt;<i>
+</I>&gt;<i>thx
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> 
+</I>&gt;<i>_________________________________________________________
+</I>&gt;<i>
+</I>&gt;<i>Bolsa de Emprego AEIOU: simples, r&#225;pido, resultados imediatos.
+</I>&gt;<i><A HREF="http://emprego.aeiou.pt">http://emprego.aeiou.pt</A>
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>RL 'Bob' Morgan wrote:
+
+&gt;<i>On 22 May 2003, Eric Rescorla wrote:
+</I>&gt;<i>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>Justin Karneges &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">justin-jdev at affinix.com</A>&gt; writes:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>The SASL security layer is not up to par.
+</I>&gt;&gt;&gt;&gt;<i>        
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>Care to elaborate?
+</I>&gt;&gt;&gt;<i>      
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i>It's an ad hoc mess.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>The most serious problem is that there isn't a &quot;SASL Security Layer&quot;.
+</I>&gt;&gt;<i>Each mechanism may or may not provide it's own channel security layer
+</I>&gt;&gt;<i>and they're going to be different. Worse yet, some of the individual
+</I>&gt;&gt;<i>mechanism layers are... questionable.
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>This is FUD, as Eric is well aware.  TLS also is merely a framework via
+</I>&gt;<i>which various specific crypto methods may be negotiated (they need not
+</I>&gt;<i>even be public-key-based, see RFC 2712), and some TLS/SSL ciphersuites
+</I>&gt;<i>might equally be called &quot;questionable&quot;.  (This is independent of the fact
+</I>&gt;<i>that there are some legitimate issues with RFC 2831 that are being
+</I>&gt;<i>addressed in its revision.)
+</I>&gt;<i>
+</I>&gt;<i>In an ideal world TLS, SASL, and the various SASL-supporting security
+</I>&gt;<i>methods wouldn't have been defined at different times by different people
+</I>&gt;<i>with different abstractions and limitations, then forced to fit together
+</I>&gt;<i>later.  But this is what we have.  A whole bunch of other application
+</I>&gt;<i>protocols are defined to work in a more or less consistent way with SASL
+</I>&gt;<i>and TLS (IMAP, POP, SMTP, LDAP, BEEP) and it works OK.  Not every
+</I>&gt;<i>implementation provides every feature, but in general deployers get to
+</I>&gt;<i>choose which mechanisms suit their needs.  It's a big world out there,
+</I>&gt;<i>there is no one-size fits all for security mechanisms.  I'm not intimate
+</I>&gt;<i>with XMPP scenarios, but I'd encourage folks to let your protocol spec, as
+</I>&gt;<i>do the others above, just provide the ability to use TLS and SASL, and let
+</I>&gt;<i>implementors and deployers work out which ones will win based on their
+</I>&gt;<i>requirements.
+</I>&gt;<i>
+</I>&gt;<i> - RL &quot;Bob&quot;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>xmppwg mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">xmppwg at jabber.org</A>
+</I>&gt;<i><A HREF="http://jabber.org/cgi-bin/mailman/listinfo/xmppwg">http://jabber.org/cgi-bin/mailman/listinfo/xmppwg</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="075056.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+	<LI>Next message: <A HREF="075058.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75055">[ date ]</a>
+              <a href="thread.html#75055">[ thread ]</a>
+              <a href="subject.html#75055">[ subject ]</a>
+              <a href="author.html#75055">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

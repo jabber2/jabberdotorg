@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] nonblocking RPCCall() in Net::Jabber, can it work?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20nonblocking%20RPCCall%28%29%20in%20Net%3A%3AJabber%2C%20can%20it%20work%3F&In-Reply-To=%3C40559B0B.9010903%40jabber.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="077560.html">
+   <LINK REL="Next"  HREF="077562.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] nonblocking RPCCall() in Net::Jabber, can it work?</H1>
+    <B>Ryan Eatmon</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20nonblocking%20RPCCall%28%29%20in%20Net%3A%3AJabber%2C%20can%20it%20work%3F&In-Reply-To=%3C40559B0B.9010903%40jabber.org%3E"
+       TITLE="[jdev] nonblocking RPCCall() in Net::Jabber, can it work?">reatmon at jabber.org
+       </A><BR>
+    <I>Mon Mar 15 06:01:15 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="077560.html">[jdev] nonblocking RPCCall() in Net::Jabber, can it work?
+</A></li>
+        <LI>Next message: <A HREF="077562.html">[jdev] sm in Jabber2 dies
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77561">[ date ]</a>
+              <a href="thread.html#77561">[ thread ]</a>
+              <a href="subject.html#77561">[ subject ]</a>
+              <a href="author.html#77561">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+First, are you using the new mode=&gt;'nonblock' argument to the RPCCall 
+function?  This causes RPCCall (and several other functions) to return 
+the id that the packet was sent with.
+
+In this case it just calls SendWithID which does NOT register the id and 
+packet tag in the id table.  So CheckID() will not return anything 
+because it was never registered.
+
+The idea behind this method of operations is that you would register an 
+XPath callback on that id that would call a function of your devising 
+to handle just the return packet call.
+
+$client-&gt;SetXPathCallBacks(&quot;/iq[\@id='$id']&quot;=&gt;&amp;yourFunction);
+
+yourFunction would then call RPCParse to get back a data structure for 
+the return value.
+
+This *should* be as close to nonblocking as we can get.  Your code will 
+return to the Process() loop and let you do whatever while waiting for 
+the return.  Since you know what was going on at the time the RPC call 
+was sent, you can tie that state information in a hash with the id 
+returned from RPCCall as the key.  Then you can look up the state 
+information in yourFunction.
+
+One caveat.  If this is a long running program.  Make sure you 
+unregister the XPath callback in your function since the id will never 
+be recycled.
+
+$client-&gt;SetXPathCallBacks(&quot;/iq[\@id='$id']&quot;=&gt;undef);
+
+Hope this helps.
+
+
+Scott Bolte wrote:
+&gt;<i> 	As far as I can tell, it is not possible to use CheckID() to
+</I>&gt;<i> 	retrieve the answer to a non-blocking RPCCall() call.
+</I>&gt;<i> 
+</I>&gt;<i> 	CheckID() requires an object tag and an id. Unfortunately,
+</I>&gt;<i> 	RPCCall() returns just an id. The iq object it creates goes out
+</I>&gt;<i> 	of scope, taking the tag with it, when RPCCall() returns.
+</I>&gt;<i> 
+</I>&gt;<i> 	I've only been using Jabber for two days so I suspect I'm
+</I>&gt;<i> 	missing something. Is there any way to do non-blocking RPC and
+</I>&gt;<i> 	later retrieve the answer packet?
+</I>&gt;<i> 
+</I>&gt;<i> 		Scott
+</I>&gt;<i> 
+</I>&gt;<i> 	P.S. I am using version 1.29 of Net::Jabber.
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>
+-- 
+Ryan Eatmon
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">reatmon at jabber.org</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="077560.html">[jdev] nonblocking RPCCall() in Net::Jabber, can it work?
+</A></li>
+	<LI>Next message: <A HREF="077562.html">[jdev] sm in Jabber2 dies
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77561">[ date ]</a>
+              <a href="thread.html#77561">[ thread ]</a>
+              <a href="subject.html#77561">[ subject ]</a>
+              <a href="author.html#77561">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] dialback question
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20dialback%20question&In-Reply-To=%3C20060710162425.GI1311%40bturner%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="083518.html">
+   <LINK REL="Next"  HREF="083522.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] dialback question</H1>
+    <B>Ben Turner</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20dialback%20question&In-Reply-To=%3C20060710162425.GI1311%40bturner%3E"
+       TITLE="[jdev] dialback question">ben.turner at siemens.com
+       </A><BR>
+    <I>Mon Jul 10 11:24:25 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="083518.html">[jdev] PyMSNt 0.11.1 released!
+</A></li>
+        <LI>Next message: <A HREF="083522.html">[jdev] M2M
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83520">[ date ]</a>
+              <a href="thread.html#83520">[ thread ]</a>
+              <a href="subject.html#83520">[ subject ]</a>
+              <a href="author.html#83520">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Hi,
+
+I have a dialback question - I am having an issue performing dialback with googletalk.
+
+* This is the sequence of events; i open a stream [1] to googletalk:
+
+ME-&gt;GT
+&lt;stream:stream
+  xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>
+  xmlns='jabber:server'
+  xmlns:db='jabber:server:dialback'&gt;
+
+GT-&gt;ME
+&lt;stream:stream
+  xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>
+  xmlns:db='jabber:server:dialback'
+  id='C2D2EF0B00D13632'&gt;
+
+ME-&gt;GT
+&lt;db:result
+  to='gmail.com'
+  from='jabber.siemens.be'&gt;
+  4aa794a86656843ae9a0580497c45a12
+&lt;/db:result&gt;
+
+* So far so good. At this point in time I am expecting googletalk to open a
+  dialback connection to me for verification of the dialback key. However instead,
+  googletalk opens a new 'normal' stream [2]:
+
+GT-&gt;ME
+&lt;stream:stream
+  xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>
+  xmlns:db='jabber:server:dialback'
+  id='8B11EEEFE7046D1E'&gt;
+
+ME-&gt;GT
+&lt;stream:stream xmlns='jabber:server'
+  xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>
+  xmlns:db='jabber:server:dialback'
+  id='3437323135393534'&gt;
+
+GT-&gt;ME
+&lt;db:result xmlns:db='jabber:server:dialback' to='jabber.siemens.be' from='gmail.com'&gt;
+  CAESBxDE/vfFxSEaEIxxpRZq+hQWtLd9PTOHyVI=
+&lt;/db:result&gt;
+
+* At this point I open a new socket to googletalk for verification of the dialback
+key. After verification, I close the socket:
+
+ME-&gt;GT
+&lt;stream:stream
+  xmlns='jabber:server'
+  mlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>
+  xmlns:db='jabber:server:dialback'&gt;
+
+GT-&gt;ME
+&lt;stream:stream
+  xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>
+  xmlns:db='jabber:server:dialback'
+  id='3937C492372878F6'&gt;
+
+ME-&gt;GT
+&lt;db:verify
+  from='jabber.siemens.be'
+  to='gmail.com'
+  id='3437323135393534'&gt;
+  CAESBxDE/vfFxSEaEIxxpRZq+hQWtLd9PTOHyVI=
+&lt;/db:verify&gt;
+
+GT-&gt;ME
+&lt;db:verify
+  xmlns:db='jabber:server:dialback'
+  to='jabber.siemens.be'
+  from='gmail.com'
+  type='valid'
+  id='3437323135393534'/&gt;
+
+ME-&gt;GT
+&lt;/stream&gt;
+
+* I inform stream [2] that dialback was succesful:
+
+ME-&gt;GT
+&lt;db:result from='jabber.siemens.be' to='gmail.com' type='valid'/&gt;
+
+* And now, to my surprise, instead of having opened a separate dialback
+  connection to verify the dialback key, googletalk sends the verification
+  stanza on stream [2] after the entire handshake has been completed:
+
+GT-&gt;ME
+&lt;db:verify
+  xmlns:db=&quot;jabber:server:dialback&quot;
+  to=&quot;jabber.siemens.be&quot;
+  from=&quot;gmail.com&quot;
+  id=&quot;C2D2EF0B00D13632&quot;&gt;
+  4aa794a86656843ae9a0580497c45a12
+&lt;/db:verify&gt;
+
+Note that the verification key is the same as I sent in stream [1].
+
+Is this normal behaviour? Can I not expect a dialback partner to open a new
+connection for server dialback? Is this only done in case the receiving server
+determines the originating server is the same as the authoritative server?
+
+Thanks a lot,
+
+Ben
+
+-- 
+Ben Turner
+SIEMENS - COM D MN B
+tel: +32 14 252326
+
+~ Scientia Vincere Tenebras ~
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="083518.html">[jdev] PyMSNt 0.11.1 released!
+</A></li>
+	<LI>Next message: <A HREF="083522.html">[jdev] M2M
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83520">[ date ]</a>
+              <a href="thread.html#83520">[ thread ]</a>
+              <a href="subject.html#83520">[ subject ]</a>
+              <a href="author.html#83520">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

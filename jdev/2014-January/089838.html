@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] [Security]  Spoofing of iq ids and misbehaving servers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%5BSecurity%5D%20%20Spoofing%20of%20iq%20ids%20and%20misbehaving%20servers&In-Reply-To=%3C530AC7C4-377F-4A08-9FEB-AC9BFF39D9B2%40thijsalkema.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089837.html">
+   <LINK REL="Next"  HREF="089835.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] [Security]  Spoofing of iq ids and misbehaving servers</H1>
+    <B>Thijs Alkemade</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%5BSecurity%5D%20%20Spoofing%20of%20iq%20ids%20and%20misbehaving%20servers&In-Reply-To=%3C530AC7C4-377F-4A08-9FEB-AC9BFF39D9B2%40thijsalkema.de%3E"
+       TITLE="[jdev] [Security]  Spoofing of iq ids and misbehaving servers">me at thijsalkema.de
+       </A><BR>
+    <I>Fri Jan 31 21:51:17 UTC 2014</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089837.html">[jdev] Spoofing of iq ids and misbehaving servers
+</A></li>
+        <LI>Next message: <A HREF="089835.html">[jdev] Spoofing of iq ids and misbehaving servers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89838">[ date ]</a>
+              <a href="thread.html#89838">[ thread ]</a>
+              <a href="subject.html#89838">[ subject ]</a>
+              <a href="author.html#89838">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>To see which clients are vulnerable, I spent some time looking over the source
+code of various libraries and clients. For most of these it was the first time
+I've looked at the source (or even that programming language), so I may have
+overlooked something.
+
+Every single one of them had a way to send an iq and registering a callback
+to be called when a reply comes in. Most of these set the id of the iqs only
+when the id wasn't set yet, the id generation I mention here therefore only
+covers this automatic generation - they can be overridden.
+
+There could also be some 'from' checking in the callback itself, not in the
+code that calls it, I have not looked into that.
+
+
+These use an incrementing counter to generate ids, starting from 0. This means
+that, for example, roster retrieval always gets the same id and could be
+spoofed by a fast enough attacker:
+
+* Gajim (python-nbxmpp)
+* Strophe
+* Miranda
+* InstantBird
+
+Some randomness, but observing one value makes it possible to predict further
+values:
+
+* sleekxmpp: fixed UUID per session, concatenated with an incrementing counter
+  starting from 0
+
+* yaxim, ChatSecure Android and others (SMACK): random 5 characters(?) per
+  session, concatenated with an incrementing counter
+
+These seem to actually be sufficiently unpredictable between different iqs:
+
+* ChatSecure iOS (XMPPFramework): UUID
+* tkabber: incrementing counter, concatenated with 6 random decimal digits
+
+Only two clients I've looked at verify that the 'from' actually matches the
+'to' the iq was sent to:
+
+* Pidgin (libpurple): incrementing counter starting from a random value
+* Swift: UUID
+
+Thijs
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 801 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20140131/778c3b7d/attachment.pgp">https://www.jabber.org/jdev/attachments/20140131/778c3b7d/attachment.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089837.html">[jdev] Spoofing of iq ids and misbehaving servers
+</A></li>
+	<LI>Next message: <A HREF="089835.html">[jdev] Spoofing of iq ids and misbehaving servers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89838">[ date ]</a>
+              <a href="thread.html#89838">[ thread ]</a>
+              <a href="subject.html#89838">[ subject ]</a>
+              <a href="author.html#89838">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

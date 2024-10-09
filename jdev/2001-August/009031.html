@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: OOB filetransfer negotiation
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20OOB%20filetransfer%20negotiation&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="009147.html">
+   <LINK REL="Next"  HREF="009033.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: OOB filetransfer negotiation</H1>
+    <B>Robert Temple</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20OOB%20filetransfer%20negotiation&In-Reply-To="
+       TITLE="[JDEV] Re: OOB filetransfer negotiation">Robert.Temple at dig.com
+       </A><BR>
+    <I>Tue Aug 14 15:32:15 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="009147.html">[JDEV] conferencing with all services - distributed chat room
+</A></li>
+        <LI>Next message: <A HREF="009033.html">[JDEV] roster managment and server-side components
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9031">[ date ]</a>
+              <a href="thread.html#9031">[ thread ]</a>
+              <a href="subject.html#9031">[ subject ]</a>
+              <a href="author.html#9031">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The jabber:iq:oob packets can be used along with the mini-HTTP server
+to ensure that only the intended person downloads the file, even if 
+someone is sniffing the Jabber messages.
+
+Here is the sequence of events that we use when client A wants to 
+send client B a file.  
+
+1. Client A starts up its mini-web server, generates a unique URI 
+for that file and sends a jabber:iq:oob packet through the Jabber 
+server, with the URL for that file.
+
+2. Client B reads the jabber:iq:oob packet and tries to connect to
+that URL.
+
+3. Client A's HTTP server gets the new connection and request for that
+URI and sends its HTTP headers back to client B.  After sending the 
+headers, the HTTP server waits for a response to the original iq 
+before sending the file.  It waits to make sure that it is client B 
+that is trying to download that file.
+
+4. Client B reads the HTTP headers and sends a jabber:iq:oob with
+a type='result' attribute packet back through the jabber server.
+This tells client A that it has successfully connected and 
+successfully requested the file from the web server.
+
+5. Client A reads the iq result packet from the jabber server and 
+proceeds with sending the file through the HTTP server.
+
+6. Client A shuts down its mini-web server if no more file transfers
+are pending.
+
+If for some reason client B cannot connect to client A's HTTP server,
+or if client B decides it doesn't want to download the file, then client 
+B sends an error as the response to the iq and A rejects any downloading
+from that URI.
+
+As far as I know, this is the correct way to send files in Jabber and
+ensure that the files go to the right person.
+
+There was a good discussion jabber:iq:oob about it in November, look 
+for the jabber:iq:oob thread.
+<A HREF="http://mailman.jabber.org/pipermail/jdev/2000-November/thread.html">http://mailman.jabber.org/pipermail/jdev/2000-November/thread.html</A>
+
+-Robert
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Jens Alfke [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jens at mac.com</A>]
+</I>&gt;<i> Sent: Tuesday, August 14, 2001 9:24 AM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: [JDEV] Re: OOB filetransfer negotiation
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> On Monday, August 13, 2001, at 05:05 PM, Julie wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt;   From my understanding of the descriptions of the two iq 
+</I>&gt;<i> tags, they 
+</I>&gt;<i> &gt; are used only
+</I>&gt;<i> &gt; to send the URL to the client.  The client then goes to the URL to 
+</I>&gt;<i> &gt; retrieve the
+</I>&gt;<i> &gt; file.  Am I right?  Is there anyway to do a direct client-to-client 
+</I>&gt;<i> &gt; file transfer?
+</I>&gt;<i> 
+</I>&gt;<i> Yes &#8212; run a tiny HTTP server on the sending client that can 
+</I>&gt;<i> deliver the 
+</I>&gt;<i> file to the recipient. Then the sender just creates a URL 
+</I>&gt;<i> with its own 
+</I>&gt;<i> IP address as the host. In my client I use a random port 
+</I>&gt;<i> number and also 
+</I>&gt;<i> make up a random 64-bit number to put in the URL before the 
+</I>&gt;<i> name of the 
+</I>&gt;<i> file, just to make it harder for a 3rd party to find the file (unless 
+</I>&gt;<i> they intercept the Jabber message, in which case all bets are 
+</I>&gt;<i> off.) So 
+</I>&gt;<i> the URL I send would look like:
+</I>&gt;<i> 	
+</I>&gt;<i> <A HREF="http://my.ip.address:randomportnumber/sixteenrandomhexdigits/n">http://my.ip.address:randomportnumber/sixteenrandomhexdigits/n</A>
+</I>&gt;<i> ameoffile
+</I>&gt;<i> However, this only works if the receiver can make an HTTP 
+</I>&gt;<i> connection to 
+</I>&gt;<i> the sender, i.e. the sender is not behind a firewall or NAT.
+</I>&gt;<i> 
+</I>&gt;<i> --Jens
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20010814/bfeecbb7/attachment.htm">https://www.jabber.org/jdev/attachments/20010814/bfeecbb7/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="009147.html">[JDEV] conferencing with all services - distributed chat room
+</A></li>
+	<LI>Next message: <A HREF="009033.html">[JDEV] roster managment and server-side components
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9031">[ date ]</a>
+              <a href="thread.html#9031">[ thread ]</a>
+              <a href="subject.html#9031">[ subject ]</a>
+              <a href="author.html#9031">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

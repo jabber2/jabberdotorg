@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] phew
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20phew&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004950.html">
+   <LINK REL="Next"  HREF="004954.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] phew</H1>
+    <B>David Le Corfec</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20phew&In-Reply-To="
+       TITLE="[JDEV] phew">david.le-corfec at idealx.com
+       </A><BR>
+    <I>Fri Dec  1 10:08:41 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004950.html">[JDEV] KVM/JVM jabber libaray
+</A></li>
+        <LI>Next message: <A HREF="004954.html">[JDEV] Jabber for PocketPC / WindowsCE
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4952">[ date ]</a>
+              <a href="thread.html#4952">[ thread ]</a>
+              <a href="subject.html#4952">[ subject ]</a>
+              <a href="author.html#4952">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Schuyler Heath wrote:
+
+&gt;<i> &gt; &gt;From the jabberd -D point of view:
+</I>&gt;<i> &gt;  logging in went fine
+</I>&gt;<i> &gt;  received the roster information from xdbperl, sent it to jabber
+</I>&gt;<i> &gt;  received the &lt;presence/&gt; tag from gabber
+</I>&gt;<i> &gt;  delivering to instance xdbperl
+</I>&gt;<i> &gt;  base_load.c:323 xdb_get() waiting for <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at domain</A> jabber:iq:roster
+</I>&gt;<i> &gt;  at this point jabberd has died. No segfault, no error, just gone
+</I>&gt;<i> 
+</I>&gt;<i> Is your connection lost before you send the result?  If so, your result is
+</I>&gt;<i> never received so the request is timed out.  You will still see the
+</I>&gt;<i> &quot;delivering to instance xdbperl&quot; even though packet are not reaching your
+</I>&gt;<i> script.  Packet are buffered for a default of 30 seconds before they
+</I>&gt;<i> are bounced.  This is to give the client a chance to reconnect.  Unfortunately,
+</I>&gt;<i> there seems to be a bug that makes jabberd die when a xdb request is resent after
+</I>&gt;<i> 5 seconds (or something along those lines).
+</I>
+I've posted about this some time ago :
+<A HREF="http://mailman.jabber.org/pipermail/jdev/2000-November/003768.html">http://mailman.jabber.org/pipermail/jdev/2000-November/003768.html</A>
+
+Here's the related patch to avoid segfault on the xdb_get :
+
+--- jsm/modules.c.orig  Mon Oct 23 11:08:27 2000
++++ jsm/modules.c   Mon Nov 20 10:44:34 2000
+@@ -121,6 +121,8 @@ int js_mapi_call(jsmi si, event e, jpack
+     mlist l;
+     _mapi m;           /* mapi structure to be passed to the call back */
+ 
++    if (user)
++        user-&gt;ref++;
+     log_debug(ZONE,&quot;mapi_call %d&quot;,e);
+ 
+     /* this is a session event */
+@@ -155,11 +157,15 @@ log_debug(ZONE,&quot;MAPI %X&quot;,l);
+             break;
+         /* this module handled the packet */
+         case M_HANDLED:
++            if (user)
++                user-&gt;ref--;
+             return 1;
+         default:
+         }
+     }
+ 
++    if (user)
++        user-&gt;ref--;
+     log_debug(ZONE,&quot;mapi_call returning unhandled&quot;);
+ 
+     /* if we got here, no module handled the packet */
+
+
+However, in the case where you have a xdb_get followed by a xdb_set
+(eg. to store an offline message), the xdb_get will timeout nicely,
+then the xdb_set will do a segfault on the following line :
+
+[jabberd/io/base_load.c:xdb_set()]
+
+        pth_mutex_acquire(&amp;mutex, FALSE, NULL);
+
+But there I've no clue :(
+
+For now, handling correctly all namespaces seems the safest way ...
+
+-- 
+David Le Corfec
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004950.html">[JDEV] KVM/JVM jabber libaray
+</A></li>
+	<LI>Next message: <A HREF="004954.html">[JDEV] Jabber for PocketPC / WindowsCE
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4952">[ date ]</a>
+              <a href="thread.html#4952">[ thread ]</a>
+              <a href="subject.html#4952">[ subject ]</a>
+              <a href="author.html#4952">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] request for ideas: RFC822 to JID mapping
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20request%20for%20ideas%3A%20RFC822%20to%20JID%20mapping&In-Reply-To=%3C3D4424B9.5070904%40tthias.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="072211.html">
+   <LINK REL="Next"  HREF="072205.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] request for ideas: RFC822 to JID mapping</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20request%20for%20ideas%3A%20RFC822%20to%20JID%20mapping&In-Reply-To=%3C3D4424B9.5070904%40tthias.net%3E"
+       TITLE="[JDEV] request for ideas: RFC822 to JID mapping">m at tthias.net
+       </A><BR>
+    <I>Sun Jul 28 12:07:05 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="072211.html">[JDEV] request for ideas: RFC822 to JID mapping
+</A></li>
+        <LI>Next message: <A HREF="072205.html">[JDEV] request for ideas: RFC822 to JID mapping
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72213">[ date ]</a>
+              <a href="thread.html#72213">[ thread ]</a>
+              <a href="subject.html#72213">[ subject ]</a>
+              <a href="author.html#72213">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi David!
+
+David Waite wrote:
+
+&gt;&gt;<i> Yeah, but I think this is a minor problem as most people won't use 
+</I>&gt;&gt;<i> node with more then 64 bytes. BTW: I think nodes can have up to 256 
+</I>&gt;&gt;<i> bytes and I think it's strange to limit it based on bytes instead of 
+</I>&gt;&gt;<i> characters ... *g*)
+</I>&gt;<i>
+</I>&gt;<i> Oh, it's more complicated than that. One character can be composed of 
+</I>&gt;<i> multiple codepoints, which (in UTF-8 encoding) can be composed of 
+</I>&gt;<i> multiple bytes. What you probably meant was codepoints, which is even 
+</I>&gt;<i> a weirder place to stand than bytes - the computer has difficulty 
+</I>&gt;<i> using fixed-length fields for the username, and clients still have to 
+</I>&gt;<i> figure out how many characters can be represented based on the # of 
+</I>&gt;<i> codepoints.
+</I>
+Yes ... I meant codepoints. It's just a problem with my limited ability 
+to express everything correctly when I write English.
+I am German and we have letters with modifieres to. E.g. the letter &quot;&#220;&quot; 
+can be encoded as U+00DC or as U+0055 U+0308.
+It would be nice to have a logic in the Jabber server that notices that 
+these two encodings are the same letter and treat nodes that contain one 
+of the two encodings as identical. But this is hard work to be 
+implemented and I won't volunteer for that job. ;)
+
+&gt;<i> (A hopefully correct example)
+</I>&gt;<i> 1 word in US7ASCII could be 8 bytes , 8 codepoints and would be 8 
+</I>&gt;<i> characters.
+</I>&gt;<i> 1 word in some asian languages could be 1 character, 3 codepoints and 
+</I>&gt;<i> 12 bytes.
+</I>&gt;<i>
+</I>&gt;<i> The Chinese speaker has used 1/8th the # of characters as the English 
+</I>&gt;<i> speaker, but has conveyed the same amount of information.
+</I>
+That's true for Chinese. But there are other alphabets too. E.g. the 
+Thai alphabet that has codepoints U+0E?? (4 bytes per character in 
+UTF-8) and uses (AFAIK) about the same number of letters per word.
+An other problem is if you transfer Jabber in an other encoding, let's 
+say UCS-2. (I know that this is not valid due to the Jabber specs, but 
+there are people that would like to do this and I can imagine that this 
+meight be done some time). To check if a node is valid (not to long) 
+they have to convert the JID to UTF-8 first. It's probably to late to 
+change it but I still think it is a strange definition if you see it 
+from the user's side. - And if you implement a Jabber client and you 
+offer the user a text field where he can enter his node: the client has 
+to update the valid length of this text box based on the characters that 
+the user has already entered.
+
+&gt;<i> At least with bytes, its (computationally) easy for everyone to figure 
+</I>&gt;<i> out what the limit is.
+</I>
+I think with codepoints it wouldn't have been much harder to implement 
+the server and it would be easier to implement a user interface.
+Also bytes are very C centric. If you use a language that supports 
+unicode (e.g. Java) you will most likely use a unicode string to store a 
+node and the language will convert the UTF-8 string when it is read from 
+the network. When you then check the length of a node to decide if it is 
+valid you will always have to convert it back to UTF-8.
+
+&gt;<i> Finally - I think it would be interesting to be able to 'limit' a 
+</I>&gt;<i> server to a subset of the full JID scheme with a server setting; 
+</I>&gt;<i> perhaps a subset which corresponds with a subset of RFC 2822. I know I 
+</I>&gt;<i> would probably turn this on just to guarantee that I can migrate the 
+</I>&gt;<i> user information storage and authentication mechanisms around to 
+</I>&gt;<i> systems which do not support unicode.
+</I>
+Maybe this could be an interesting feature, but I don't think I would 
+use it. Even here in Germany where there is no big need for unicode node 
+names (because you only use modified latin characters) I have 20 users 
+(out of about 14000) that have registered with non-ASCII characters in 
+their ID (and even more with invalid IDs if you would limit it to RFC822).
+
+&gt;<i> Finally RFC 2822 allows for quoted literals, and quotes are not legal 
+</I>&gt;<i> in JIDs - so even declaring a subset you still would still not be able 
+</I>&gt;<i> to get a 1:1 mapping without ammending  the JEP for JIDs. Since this 
+</I>&gt;<i> is for allowing email to users on the jabber server, having the local 
+</I>&gt;<i> JIDs as a subset of RFC2822 is fine.
+</I>
+For the mapping of JIDs to E-Mail-Adresses I don't care about mail 
+addresses that can't be mapped to JIDs. - For mapping mail addresses to 
+JIDs (a Jabber user has to address his e-mail) I can use other ways of 
+quoting. For this direction it isn't that important to have nice JIDs 
+because they can be translated by jabber:iq:gateway.
+
+
+Tot kijk
+    Matthias
+
+-- 
+Fon: +49-700 77007770		<A HREF="http://matthias-wimmer.de/">http://matthias-wimmer.de/</A>
+Fax: +49-89 312 88654		<A HREF="jabber://mawis@charente.de">jabber://mawis@charente.de</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="072211.html">[JDEV] request for ideas: RFC822 to JID mapping
+</A></li>
+	<LI>Next message: <A HREF="072205.html">[JDEV] request for ideas: RFC822 to JID mapping
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72213">[ date ]</a>
+              <a href="thread.html#72213">[ thread ]</a>
+              <a href="subject.html#72213">[ subject ]</a>
+              <a href="author.html#72213">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] message ack jsm
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20message%20ack%20jsm&In-Reply-To=%3C200207140517.g6E5HiW30775%40dave2.dave.tj%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="071963.html">
+   <LINK REL="Next"  HREF="071964.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] message ack jsm</H1>
+    <B>Dave</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20message%20ack%20jsm&In-Reply-To=%3C200207140517.g6E5HiW30775%40dave2.dave.tj%3E"
+       TITLE="[JDEV] message ack jsm">dave at dave.tj
+       </A><BR>
+    <I>Sun Jul 14 00:17:44 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="071963.html">[JDEV] message ack jsm
+</A></li>
+        <LI>Next message: <A HREF="071964.html">[JDEV] sending CC &amp; BCC msg
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71992">[ date ]</a>
+              <a href="thread.html#71992">[ thread ]</a>
+              <a href="subject.html#71992">[ subject ]</a>
+              <a href="author.html#71992">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks ... this is invaluable for anybody writing a transport from
+another system to Jabber :-)
+
+ - Dave
+
+
+Tom Waters wrote:
+&gt;<i> 
+</I>&gt;<i> with a ton of help from rob, i wrote my first jsm tonight...
+</I>&gt;<i> 
+</I>&gt;<i> i've been wanting to get acks from my messages... ... you get a nak in 
+</I>&gt;<i> the form of a message type='error' when the user you send the message to 
+</I>&gt;<i> doesn't exist, but there's no positive acknowledge, (other than the 
+</I>&gt;<i> absence of an error!).
+</I>&gt;<i> 
+</I>&gt;<i> this jsm works for me...
+</I>&gt;<i> 
+</I>&gt;<i> /*
+</I>&gt;<i>   * Jabber JSM message ack module
+</I>&gt;<i>   *
+</I>&gt;<i>   * Copyright (C) 2002 Tom Waters &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tom_waters at mac.com</A>&gt;
+</I>&gt;<i>   * Released under the LGPL v2. See <A HREF="http://www.gnu.org/copyleft/lgpl.html">http://www.gnu.org/copyleft/lgpl.html</A>
+</I>&gt;<i>   */
+</I>&gt;<i> 
+</I>&gt;<i> /* $Id: mod_message_ack.c,v 1.0 2002/07/10 17:20:32 waters Exp $ */
+</I>&gt;<i> 
+</I>&gt;<i> /*
+</I>&gt;<i>   * Installation:
+</I>&gt;<i>   *
+</I>&gt;<i>   * 1. Place mod_message_ack.c in jabber/jsm/modules
+</I>&gt;<i>   * 2. Add &quot;mod_message_ack.o&quot; to jsm_modules_OBJECTS in 
+</I>&gt;<i> jabber/jsm/modules/Makefile
+</I>&gt;<i>   * 3. Add &quot;modules/mod_message_ack.o&quot; to jsm_EXOBJECTS in 
+</I>&gt;<i> jabber/jsm/Makefile
+</I>&gt;<i>   * 5. &quot;make all&quot; in jabber/jsm, or (re)compile entire server
+</I>&gt;<i>   * 6. Add &lt;mod_message_ack&gt;./jsm/jsm.so&lt;/mod_message_ack&gt; (or similar) 
+</I>&gt;<i> to the
+</I>&gt;<i>   *    &lt;load main=&quot;jsm&quot;&gt; section of jabber.xml. I add it just before 
+</I>&gt;<i> &lt;mod_filter&gt;
+</I>&gt;<i>   */
+</I>&gt;<i> 
+</I>&gt;<i> /*
+</I>&gt;<i>   * Usage:
+</I>&gt;<i>   *
+</I>&gt;<i>   * You send something like this:
+</I>&gt;<i>   *
+</I>&gt;<i>   *    &lt;message type='chat' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bob at jabber.example.com</A>'&gt;
+</I>&gt;<i>   *      &lt;body&gt;hello&lt;/body&gt;
+</I>&gt;<i>   *      &lt;ack xmlns='message:ack' id=42/&gt;
+</I>&gt;<i>   *    &lt;/message&gt;
+</I>&gt;<i>   *
+</I>&gt;<i>   * Server will respond with something like:
+</I>&gt;<i>   *
+</I>&gt;<i>   *    &lt;message type='chat' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">you at jabber.example.com</A>' 
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bob at jabber.example.com</A>'&gt;
+</I>&gt;<i>   *      &lt;body&gt;hello&lt;/body&gt;
+</I>&gt;<i>   *      &lt;ack xmlns='message:ack' id=42/&gt;
+</I>&gt;<i>   *    &lt;/message&gt;
+</I>&gt;<i>   *
+</I>&gt;<i>   * And <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bob at jabber.example.com</A> will get this:
+</I>&gt;<i>   *
+</I>&gt;<i>   *    &lt;message type='chat' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bob at jabber.example.com</A>' 
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">you at jabber.example.com</A>'&gt;
+</I>&gt;<i>   *      &lt;body&gt;hello&lt;/body&gt;
+</I>&gt;<i>   *    &lt;/message&gt;
+</I>&gt;<i>   *
+</I>&gt;<i>   * If the recipient doesn't exist, you will not get an ack, you'll get 
+</I>&gt;<i> an error.
+</I>&gt;<i>   */
+</I>&gt;<i> 
+</I>&gt;<i> #include &lt;jsm.h&gt;
+</I>&gt;<i> 
+</I>&gt;<i> #define NS_MESSAGE_ACK &quot;message:ack&quot;
+</I>&gt;<i> 
+</I>&gt;<i> mreturn mod_message_ack_handler(mapi m, void *arg) {
+</I>&gt;<i>    xmlnode ack;
+</I>&gt;<i>    jpacket ret;
+</I>&gt;<i> 
+</I>&gt;<i>    if(m-&gt;packet-&gt;type != JPACKET_MESSAGE)
+</I>&gt;<i>      return M_IGNORE;
+</I>&gt;<i> 
+</I>&gt;<i>    ack = xmlnode_get_tag(m-&gt;packet-&gt;x, &quot;ack&quot;);
+</I>&gt;<i> 
+</I>&gt;<i>    if (ack == NULL || !NSCHECK(ack, NS_MESSAGE_ACK))
+</I>&gt;<i>      return M_PASS;
+</I>&gt;<i> 
+</I>&gt;<i>    if (xmlnode_get_attrib(ack, &quot;delivered&quot;) != NULL)
+</I>&gt;<i>      return M_PASS;
+</I>&gt;<i> 
+</I>&gt;<i>    if (js_user(m-&gt;si, m-&gt;packet-&gt;to, NULL) == NULL) {
+</I>&gt;<i>      log_debug(&quot;mod_message_ack&quot;,&quot;not sending ack because %s doesn't 
+</I>&gt;<i> exist&quot;,
+</I>&gt;<i>                jid_full(m-&gt;packet-&gt;to));
+</I>&gt;<i>      return M_PASS;
+</I>&gt;<i>    }
+</I>&gt;<i> 
+</I>&gt;<i>    log_debug(&quot;mod_message_ack&quot;,&quot;sending message ack to %s from %s&quot;,
+</I>&gt;<i>              jid_user(m-&gt;packet-&gt;from), jid_user(m-&gt;packet-&gt;to));
+</I>&gt;<i> 
+</I>&gt;<i>    ret = jpacket_new(xmlnode_dup(m-&gt;packet-&gt;x));
+</I>&gt;<i> 
+</I>&gt;<i>    jutil_tofrom(ret-&gt;x);
+</I>&gt;<i>    xmlnode_put_attrib(xmlnode_get_tag(ret-&gt;x, &quot;ack&quot;), &quot;delivered&quot;, &quot;yes&quot;);
+</I>&gt;<i> 
+</I>&gt;<i>    jpacket_reset(ret);
+</I>&gt;<i>    js_deliver(m-&gt;si, ret);
+</I>&gt;<i> 
+</I>&gt;<i>    xmlnode_hide(ack);
+</I>&gt;<i>    return M_PASS;
+</I>&gt;<i> }
+</I>&gt;<i> 
+</I>&gt;<i> void mod_message_ack(jsmi si) {
+</I>&gt;<i>    js_mapi_register(si, e_SERVER, mod_message_ack_handler, NULL);
+</I>&gt;<i>    js_mapi_register(si, e_DELIVER, mod_message_ack_handler, NULL);
+</I>&gt;<i>    js_mapi_register(si, e_OFFLINE, mod_message_ack_handler, NULL);
+</I>&gt;<i> }
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="071963.html">[JDEV] message ack jsm
+</A></li>
+	<LI>Next message: <A HREF="071964.html">[JDEV] sending CC &amp; BCC msg
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71992">[ date ]</a>
+              <a href="thread.html#71992">[ thread ]</a>
+              <a href="subject.html#71992">[ subject ]</a>
+              <a href="author.html#71992">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: Info (or long rant about client/server division)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Info%20%28or%20long%20rant%20about%20client/server%20division%29&In-Reply-To=%3C369C1F6D.33E96447%40umich.edu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058681.html">
+   <LINK REL="Next"  HREF="058685.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: Info (or long rant about client/server division)</H1>
+    <B>Dan DeMaggio</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Info%20%28or%20long%20rant%20about%20client/server%20division%29&In-Reply-To=%3C369C1F6D.33E96447%40umich.edu%3E"
+       TITLE="[JDEV] Re: Info (or long rant about client/server division)">dmag at umich.edu
+       </A><BR>
+    <I>Tue Jan 12 22:22:05 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058681.html">[JDEV] Info
+</A></li>
+        <LI>Next message: <A HREF="058685.html">[JDEV] Protocol (client/server division)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58684">[ date ]</a>
+              <a href="thread.html#58684">[ thread ]</a>
+              <a href="subject.html#58684">[ subject ]</a>
+              <a href="author.html#58684">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Donovan Schulteis wrote:
+&gt;<i> I don't agree that the Jabber client should have email and SMTP integrated
+</I>
+I second that. 
+
+&gt;<i> Send and receive messages for particular systems (i.e., AIM, ICQ, etc).
+</I>&gt;<i> If the intended recipient is not available (not connected to his/her Jabber
+</I>&gt;<i> server), then the Jabber client should ask if the sender wishes to send the
+</I>&gt;<i> message as email, or place on que (a la, ICQ).  This preserves an ack/deny
+</I>&gt;<i> simplicity in the client.
+</I>
+I'll expand on this: Only the remote (destination) server knows about the
+different ways to contact the user. The server can say &quot;He's not in right
+now, but you can reach him via e-mail or text pager&quot;. The client would get
+this info and will address the message to the e-mail transport of the
+REMOTE server. 
+
+There would be no client code for e-mail (or AIM or ICQ for that matter),
+as these are figments of the remote server's  imagination. New transports
+can be added to (or removed from) the remote server at run time, without
+changing any clients. In fact, the client should not know about e-mail at
+compile time, only at run-time. As far as the client is concerned, it
+doesn't know the difference between e-mail and AIM. It just knows that they
+are different methods/transports reported on the remote server.
+
+&gt;<i> The receiving Jabber server then sends the message text as email via
+</I>&gt;<i> it's own SMTP engine to the registered email address of the
+</I>&gt;<i> recipient [..] thus removing SMTP from the client.
+</I>
+Exactly: the receiving server has a transport module called 'email'. If a
+server doesn't want the 'security risk' of generating e-mail, then they
+don't install it.  The remote server decides where to send the e-mail too.
+In fact, this way the client isn't privy to the actual e-mail address.
+
+&gt;<i> It also assumes that users would have a permanent email account 
+</I>
+&lt;sidenote&gt; The E-mail transport would have the following configurations:
+- Mail sent to local users only, with same name as their jabber/unix name.
+Mail disabled by default. Users enable it, and add optional filters (size,
+keywords, times, etc.) Users can't control WHERE the mail goes, because it
+always gets delivered locally to that user. ISPs would like this.
+- Mail sent to configurable e-mail address. For example, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">alice at alice.org</A>
+could have her e-mail sent to her 'real' e-mail of <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">alice at hotmail.com.</A>
+People who run a jabber server for their friends would like this.
+Of course, if the mail transport isn't installed, no mail can be sent.
+&lt;/sidenote&gt;
+
+Receiving e-mail would also be a &quot;remote server&quot; issue. Your jabber server
+may or may not have e-mail, but you can communicate 2-way if my jabber
+server can send/rcv mail. Receiving mail can be configured a number of
+ways. Again, that's a transport configuration issue.. (could be SMTP
+listener on deticated computer, could be sendmail filter for virtual
+domain, etc etc...)
+
+&gt;<i> that the different protocols for messaging could be verified that it is
+</I>&gt;<i> possible to que messages.  Also, that each user would be registered on one
+</I>
+Message que and auto-email will be server side configs. In fact, each user
+will probably want something different. For instance:
+
+alice.org runs jabber with 4 server transports:
+1) e-mail (send/rcv)
+2) answering machine 
+3) ICQ
+4) text pager
+
+- <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">alice at alice.org</A> enables e-mail, her pager and ICQ. If she's not logged
+in, there is no default (messages are bounced). She can be e-mailed or
+paged only by explicitly routing to that transport. To prevent abuse, only
+her buddies can page her. (Others don't see the pager transport.) The ICQ
+transport is only active if she's reachable on ICQ.
+
+- <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jane at alice.org</A> enables e-mail, and makes it the default when she's not
+logged in. When she is logged in, jabber becomes the default.
+
+- <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">roger at alice.org</A> enables e-mail, and also enables caching of messages via
+a transport called &quot;answering machine&quot;. When he's not logged in, clients
+see &quot;answering machine&quot; and e-mail, with &quot;answering machine&quot; being default.
+The answering machine transport stores all messages, and replies (with a
+low-priority reply) with &quot;Your message has been safely stored.&quot;. When he is
+logged in, &quot;answering machine&quot; is disabled, and jabber becomes the default.
+
+&gt;<i> There must be a sort of a tag in the
+</I>&gt;<i> header of the message stating send as email.  
+</I>
+Instead of smtp%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host.com</A> (which I find hard to parse and remember), I
+propose using the nicknames, maybe with some special indication that it's a
+transport nickname. For example, the user display on a client might look
+like this:
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Alice at alice.org</A>
+- Home
+- Away
++ email
++ pager
++ ICQ
+
+Which would mean that alice is on in 2 locations (Home and Away), and that
+3 alternate transports are available. One could send a message directly to
+her pager without sending a message to Home or Away. A different user might
+get a different display because Alice said &quot;Only my buddies can use my
+pager&quot;
+
+Here's some senarios, with <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bob at bob.gov</A> (his server doesn't have ANY
+transports enabled. He can only send pure jabber messages). Bob is dialed
+in thru UUNET, but his client must send messages thru bob.gov.
+
+- Bob starts a message to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">alice at alice.org</A>
+- Bob's client checks with alice.org to find what nicknames/transports are
+available
+- Bob's client defaults to sending to alice's &quot;Home&quot; nickname (because
+alice made it high priority), but allows him to choose a different
+nick/transport.
+- Bob chooses 'pager' and sends the message.
+- The messages goes out as:
+    &lt;J type='Message'&gt;
+      &lt;to nick='pager'&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">alice at alice.org</A>&lt;/to&gt;
+      ...
+
+I'm not sure if it's a Good Idea to overload the nick parameter. However
+it's done, the client needs to distinguish between 'normal' nicknames and
+'transport' nicknames. The server gets to decide what the default
+transport/nick will be, and the client gets to override it (based on
+available transports only).
+
+&lt;sidenote&gt; the config screen for a <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">roger at alice.org</A> would look like this:
+
+Transport          Priority  Enabled when logged in or out
+---------          --------  -------
+e-mail             10        IN and OUT
+answering machine  20        OUT only
+ICQ                0         neither
+text pager         0         neither
+Home client        50        IN only (duh)
+
+&lt;/sidenote&gt;
+
+Enough ranting. More coding!! ;) Seriously, whatcha think?
+-=Dan=-
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058681.html">[JDEV] Info
+</A></li>
+	<LI>Next message: <A HREF="058685.html">[JDEV] Protocol (client/server division)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58684">[ date ]</a>
+              <a href="thread.html#58684">[ thread ]</a>
+              <a href="subject.html#58684">[ subject ]</a>
+              <a href="author.html#58684">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

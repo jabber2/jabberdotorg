@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Spoofing of iq ids and misbehaving servers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Spoofing%20of%20iq%20ids%20and%20misbehaving%20servers&In-Reply-To=%3C93CB9F79-4A13-4BD9-A1FF-5529D5B34C77%40thijsalkema.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089821.html">
+   <LINK REL="Next"  HREF="089825.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Spoofing of iq ids and misbehaving servers</H1>
+    <B>Thijs Alkemade</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Spoofing%20of%20iq%20ids%20and%20misbehaving%20servers&In-Reply-To=%3C93CB9F79-4A13-4BD9-A1FF-5529D5B34C77%40thijsalkema.de%3E"
+       TITLE="[jdev] Spoofing of iq ids and misbehaving servers">me at thijsalkema.de
+       </A><BR>
+    <I>Thu Jan 30 12:49:24 UTC 2014</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089821.html">[jdev] File transfer between online and offline user
+</A></li>
+        <LI>Next message: <A HREF="089825.html">[jdev] Spoofing of iq ids and misbehaving servers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89824">[ date ]</a>
+              <a href="thread.html#89824">[ thread ]</a>
+              <a href="subject.html#89824">[ subject ]</a>
+              <a href="author.html#89824">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello!
+
+Some time ago I wrote a patch for Pidgin for CVE-2013-6483
+(<A HREF="https://pidgin.im/news/security/?id=78">https://pidgin.im/news/security/?id=78</A>):
+
+   The XMPP protocol plugin failed to ensure that iq replies came from the
+   person they were sent to. A remote user could send a spoofed iq reply and
+   attempt to guess the iq id. This could allow an attacker to inject fake
+   data or trigger a null pointer dereference.
+
+As probably many other XMPP clients, Pidgin can register callbacks to be
+called when iq replies come in. These didn't keep track of the intended
+recipient, only of the iq's id. I patched that to also keep track of the JID
+with some special casing for iqs sent without a 'to' (no 'to' is equivalent of
+addressing your own account). I tested that against my own server, which
+worked and then I didn't spend much more time on it, as I assumed other
+clients would get this right.
+
+But now that Pidgin 2.10.8 is released, we're running into a pile of trouble:
+
+The worst offenders are iChat server (I have no version number) and ejabberd
+(2.1.10, I think). These reply to iqs with no 'to' with a 'from' of the full
+JID of the client's resource:
+
+C: &lt;iq type='get' id='purple24c740bb'&gt;&lt;vCard xmlns='vcard-temp'/&gt;&lt;/iq&gt;
+S: &lt;iq type='result' id='purple24c740bb' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at chat.company.com</A>/Office'&gt;...&lt;/iq&gt;
+
+Then we have Facebook. All replies to iqs without 'to' have
+from='chat.facebook.com':
+
+C: &lt;iq type='get' id='purple3a6232a6'&gt;&lt;ping xmlns='urn:xmpp:ping'/&gt;&lt;/iq&gt;
+S: &lt;iq from='chat.facebook.com' id='purple3a6232a6' type='result'/&gt;
+
+jabber.org itself shows a similar problem:
+
+C: &lt;iq type='set' id='purplec5ae5254'&gt;
+      &lt;session xmlns='urn:ietf:params:xml:ns:xmpp-session'/&gt;
+   &lt;/iq&gt;
+S: &lt;iq from='jabber.org' type='result' id='purplec5ae5254'/&gt;
+
+I don't know if this covers anything other than &lt;session&gt;. We can argue that
+&lt;session&gt; is deprecated, and according to RFC 3921 it should be addressed to
+the server itself, not to the account. But I think it's important to keep the
+addressing rules of iqs used consistently and not make exceptions based on the
+payload of the iqs.
+
+
+But what baffles me even more is that it almost appears like nobody else ever
+ran into this problem. Is it really the case that every XMPP client out there
+does not check for the correct 'from' on result iqs either? Or have they all
+implemented workarounds to deal with the incorrect behavior of the servers
+listed above?
+
+For clients using long and randomly generated ids for every iq, I could accept
+not verifying the sender, though it is risky. But many use a simple
+incrementing counter. Other contacts can observe your current counter and spam
+you with other ids near it. Possible attacks include spoofing vcards, rosters,
+disco information, intercepting file transfers, etc.
+
+
+I regret that this issue is now already public, so please take some time to
+check your code whether your clients are vulnerable to this problem too.
+
+Regards,
+Thijs Alkemade
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 801 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20140130/d9f95ca8/attachment.pgp">https://www.jabber.org/jdev/attachments/20140130/d9f95ca8/attachment.pgp</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089821.html">[jdev] File transfer between online and offline user
+</A></li>
+	<LI>Next message: <A HREF="089825.html">[jdev] Spoofing of iq ids and misbehaving servers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89824">[ date ]</a>
+              <a href="thread.html#89824">[ thread ]</a>
+              <a href="subject.html#89824">[ subject ]</a>
+              <a href="author.html#89824">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

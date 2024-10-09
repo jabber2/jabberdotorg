@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] UDP vs TCP
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20UDP%20vs%20TCP&In-Reply-To=mS/13UfTY-000BT7S%40mail.airmail.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003833.html">
+   <LINK REL="Next"  HREF="003808.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] UDP vs TCP</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20UDP%20vs%20TCP&In-Reply-To=mS/13UfTY-000BT7S%40mail.airmail.net"
+       TITLE="[JDEV] UDP vs TCP">tcharron at ductape.net
+       </A><BR>
+    <I>Fri Sep  1 09:12:22 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003833.html">[JDEV] UDP vs TCP
+</A></li>
+        <LI>Next message: <A HREF="003808.html">[JDEV] Exchange Instant Messaging Protocol
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3807">[ date ]</a>
+              <a href="thread.html#3807">[ thread ]</a>
+              <a href="subject.html#3807">[ subject ]</a>
+              <a href="author.html#3807">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Quoting <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A>:
+&gt;<i> TCP can scale very well, thank you very much. In particular once 
+</I>&gt;<i> we start using select and asynch IO on the socket level (which I 
+</I>&gt;<i> think jabberd, the next version of Jabber does &amp; it's coming out 
+</I>&gt;<i> soon), this will enable a single server to handle an enormous 
+</I>&gt;<i> amount of connections.
+</I>
+  TCP can scale well, no arguments there.  Taking a devils advocate approach, 
+though, UDP can scale 'easier' then TCP.  No matter what you do, 32,000 and 
+change open TCP socket connections is all you're gonna be able to pump at a 
+machine.  UDP, on the other hand, is limited really only be processor time.  
+I've seen UDP based implementations that can handle up to 100,000 UDP 
+connections easily.  There is a downside of UDP, though.  UDP requires much 
+more processing time be spent recreating the packets, ensuring sequencial 
+delivery, etc.  All of the stuff that that TCP takes care of.  Now, the kernel 
+does a good deal of this processing with TCP, however, I've never seen an 
+example of a UDP app that can use *less* processor slice taking care of 
+sequencial delivery, etc then the kernel does..
+
+  There is also the downturn that even though you can make 32k connections, the 
+kernel allocates a hefty sum of memory for each of these connected sockets..
+
+&gt;<i> If that's not enough, jabberd will be able to be server farmed.
+</I>
+  A solution.  Possibly more expensive then UDP, but is a proven solution..
+
+&gt;<i> IM doesn't fall into either one of those categories. You do need to 
+</I>&gt;<i> make sure that all of the packets got there and in the proper order. 
+</I>&gt;<i> While you could indeed add this capability to your IM application, 
+</I>&gt;<i> in the end, you'll just end up re-implementing TCP and probably 
+</I>&gt;<i> poorly.
+</I>
+  Not exactly true.  You don't need a full implementation of TCP.  You need a 
+partial implementation that is customized specifically twards your protocol.  
+Implementing a statefull, logical 'connection' isn't as hard via UDP.  On the 
+other side, doing so requires more memory and processing time.  If this takes 
+more or less then the overhead of using TCP is an argument that we can persue 
+for days..  ;-P  Either way works..
+
+&gt;<i> Also there's no gurantee of the sequence of packets sent via UDP, 
+</I>&gt;<i> you have a very hard time implementing standard security 
+</I>&gt;<i> mechanisms such as SSL.
+</I>
+  You can hijack SSL by not actually using a socket for the incoming and 
+outgoing packets, but a buffer, which you then feed into your UDP layer.  Yes, 
+it's a hack, but a way, none-the-less.. ;-P
+
+&gt;<i> That's why most people stick to TCP instead of UDP. If UDP 
+</I>&gt;<i> provided more bang for the buck, it would be used. But it doesn't 
+</I>&gt;<i> so, we stick with TCP.
+</I>
+  I tend to believe that most people stick with TCP becouse it's simply EASIER 
+to implement then UDP.
+
+&gt;<i> I&quot;m not saying you shouldn't try your system. It might be useful for 
+</I>&gt;<i> local IM where the network is a lot more reliable than over the 
+</I>&gt;<i> general Internet.
+</I>
+  This actually hits the point I was going to say earlier.
+
+  IF someones interested in it, test an implementation!  This is an Open Source 
+project.  Submit patches, and try it out!  Heck, even if it's not 100% working, 
+it'd be a nice 'proof of concept', for others to go off of.  I believe that if 
+implemented, it could work as well as TCP based, but capable of scaling to a 
+larger machine (taking into consideration the eventual migration *away* from 
+libpth, which is a major limiting factor to running on larger scale machines).
+
+--- 
+Thomas Charron
+&lt;&lt; Wanted: One decent sig &gt;&gt;
+&lt;&lt; Preferably litle used  &gt;&gt;
+&lt;&lt; and stored in garage.  ?&gt;&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003833.html">[JDEV] UDP vs TCP
+</A></li>
+	<LI>Next message: <A HREF="003808.html">[JDEV] Exchange Instant Messaging Protocol
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3807">[ date ]</a>
+              <a href="thread.html#3807">[ thread ]</a>
+              <a href="subject.html#3807">[ subject ]</a>
+              <a href="author.html#3807">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

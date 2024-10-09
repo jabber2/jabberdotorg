@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] HTTP connection manager
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20HTTP%20connection%20manager&In-Reply-To=200610101053.20416.ajdev%40tigase.org">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="025376.html">
+   <LINK REL="Next"  HREF="025378.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] HTTP connection manager</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20HTTP%20connection%20manager&In-Reply-To=200610101053.20416.ajdev%40tigase.org"
+       TITLE="[jdev] HTTP connection manager">dave at cridland.net
+       </A><BR>
+    <I>Tue Oct 10 05:54:46 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="025376.html">[jdev] HTTP connection manager
+</A></li>
+        <LI>Next message: <A HREF="025378.html">[jdev] HTTP connection manager
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#25377">[ date ]</a>
+              <a href="thread.html#25377">[ thread ]</a>
+              <a href="subject.html#25377">[ subject ]</a>
+              <a href="author.html#25377">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tue Oct 10 10:53:20 2006, Artur Hefczyc wrote:
+&gt;<i> Maybe silly question but why do you need webserver in between?
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>Some of this might be applicable to Menno's circumstances, some might 
+not...
+
+In general, mobile devices are well capable of handling a direct 
+connection to XMPP. There are, however, gotchas.
+
+Mobile networks almost exclusively have NAT boxes which have short 
+timeouts on established, but inactive, connections. This is a pain, 
+because it's often on the order of 5 minutes or so, and not only 
+that, but it's worse for non-HTTP connections according to at least 
+one study. The latter I recall coming up at the Lemonade London 
+Interim about a year ago - one of the networks doubted the study, but 
+it turned out that his was actually one of the included examples of 
+this... So basically, even supposedly highly placed technical folk 
+within the networks actually don't know how bad it really is.
+
+This is a double-pain because in fact, TCP was designed to keep the 
+connection alive without any traffic, and even throughout a 
+lower-layer failure. Hence you get to unplug your ethernet cable and 
+shift your laptop, maintaining your connection all the while. Badly 
+designed NAT boxes break this feature, supposedly in the name of 
+scalability - actually a live TCP connection that's not sending 
+anything takes up very little resources on a NAT box. You can look at 
+the Linux implementation for details of roughly what demands NAT can 
+have.
+
+So basically, a mobile device has to generate some activity over the 
+connection for it to remain live. It doesn't have to be two-way, 
+however - sending a space character is fine for keeping alive the 
+NAT, it doesn't matter whether the server sends data or the client, 
+either, so you have to have some timer somewhere that says &quot;Hey, 
+nothing's happened for three minutes or so, I'd best send something&quot;. 
+Which the networks then charge you for. Yes, they're charging you for 
+their own flawed deployment. Nice, eh?
+
+However, given that you'll be wanting to probe for new messages more 
+often than every five minutes, and given that sending a small TCP 
+packet is a lot less expensive (in terms on monetary cost *and* 
+battery) than sending a full HTTP request, you still ought to be 
+using XMPP over TCP wherever possible.
+
+Circumstances where this might not be possible include some phone's 
+APIs, which don't include a full TCP/IP API, instead restricting you 
+to just HTTP, or if the device itself is restricted to WAP. (Also, if 
+you're writing for set-top boxes which tunnel HTTP over MPEG, as 
+bizarre as that sounds.)
+
+In general, though, if you can write a usable XMPP-IM client, you can 
+probably write it to use XMPP/TCP - the devices which are physically 
+capable of presenting a usable interface also tend to have good 
+enough APIs. 
+Hope this helps,
+
+Dave.
+-- 
+Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at jabber.org</A>
+  - <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+  - <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="025376.html">[jdev] HTTP connection manager
+</A></li>
+	<LI>Next message: <A HREF="025378.html">[jdev] HTTP connection manager
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#25377">[ date ]</a>
+              <a href="thread.html#25377">[ thread ]</a>
+              <a href="subject.html#25377">[ subject ]</a>
+              <a href="author.html#25377">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

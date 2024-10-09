@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Performance
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Performance&In-Reply-To=%3C002901bfaf23%24476b6540%2403c810ac%40jim.grarr.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="061597.html">
+   <LINK REL="Next"  HREF="061599.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Performance</H1>
+    <B>Jacob O'Reilly</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Performance&In-Reply-To=%3C002901bfaf23%24476b6540%2403c810ac%40jim.grarr.com%3E"
+       TITLE="[JDEV] Performance">jacob at clear.net.nz
+       </A><BR>
+    <I>Tue Apr 25 21:01:01 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="061597.html">[JDEV] jabber RPMs
+</A></li>
+        <LI>Next message: <A HREF="061599.html">[JDEV] Performance
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61598">[ date ]</a>
+              <a href="thread.html#61598">[ thread ]</a>
+              <a href="subject.html#61598">[ subject ]</a>
+              <a href="author.html#61598">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>David,
+
+When you refer to the stack and heap below, are you referring to the thread that services the connection?
+
+I believe the way to improve that situation would be to have a pool of threads servicing many connections.  Most software that uses threads to take advantage of parallelism does so wastefully.  The ideal situation is to have one or two processes working (runnable) per CPU.  This works find when other threads are blocked/sleeping, performance suffers when the number of runnable tasks is too high in relation to the number of CPUs able to service them.  Performance also suffers from the overhead of context switches -- and the memory needed to create all those threads.  One way to solve this is to have a pool of threads that are all able to service any of the available connections.  If utilization is light, then probably only one thread will ever be used, and it will save context switches, as well as memory.  When the load begins to increase, more threads are called into use.  The key is to not have too many worker threads unless what a worker thread does can block.  Too many threads causes degradation in overall performance due to context switching and synchronization.  Too few and you have network events that are not dealt with in a timely fashion.
+
+I hope this is useful (for any and all).
+
+-- Jacob.
+    -----Original Message-----
+    From: David Waite &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mass at ufl.edu</A>&gt;
+    To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+    Date: Wednesday, 26 April 2000 08:48
+    Subject: RE: [JDEV] Performance
+    
+    
+    The number of open sockets is indeed a big issue. The main memory 'eater' with multiple TCP/IP sockets is the kernel-level memory. At last I heard (which is another way of saying 'don't hold me to these numbers'), one active client connection took about 50k.
+     
+    With Linux, you have to do some kernel reconfiguration to get above 1024 file descriptors per process(temas today explained how to do it without recompiling the kernel, I need to explore this area of l-k more). a TCP connection is of course represented by a file descriptor.
+     
+    Note that much of the memory above is stack for each session. Even if you somehow eliminated the stack and the heap for each open connection, you'd find that the kernel memory for each client was about 16k (which is unswapable). You could possibly get this down to 8k (two 4k pages), but one 4k page does not have enough space to handle an active TCP connection.
+     
+    At least (from the numbers I've seen) the server is not CPU-limited.
+     
+    So unless you rewrote the Jabber server to not require separate stack spaces, and rewrote some operating system kernel to somehow 'share' a large datablock between many 'idle' TCP sockets, I don't know of any way you could acheive an extremely large number of users on one server. I do not know of any operating system that can handle an extremely large number of TCP connections- 10k is ususlly the first real limit a machine hits.
+     
+    It would seem the only other feasible you can manage this is to rewrite the Jabber server to allow clusters of machines. You could also attempt to modify the Jabber protocol to use UDP, but then you would have something new that wasn't Jabber anyways.
+     
+    -David Waite
+        -----Original Message-----
+        From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of Michael Petras
+        Sent: Tuesday, April 25, 2000 10:20 AM
+        To: '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'
+        Cc: Douglas Petty
+        Subject: RE: [JDEV] Performance
+        
+        
+        One aspect of performance I was wondering how Jabber addresses is the number of open sockets. Does the 
+        Jabber server keep a TCP socket open for each logged in client? What determines how many sockets can be open 
+        simulatenously using Linux? Does Jabber or Linux do any tricks to increase the number of open sockets (such as 
+        transforming open, but quiet sockets into some placeholder objects that use minimal memory until the next message)? 
+        Does anyone know of any implementations that do this? Does anyone know how big IM/presence servers like Yahoo, ICQ 
+        or AOL handles this? 
+
+        Our applications have to communicate with tens to hundreds of thousands of fairly low traffic clients. Our servers run on 
+
+        Windows NT where the limit on open sockets is a significant issue. Thanks in advance for any info. 
+
+                                                                                     Thnx, 
+                                                                                         Mike Petras 
+
+            -----Original Message----- 
+            From:   David Waite [SMTP:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mass at ufl.edu</A>] 
+            Sent:   Tuesday, April 25, 2000 8:26 AM 
+            To:     jdev 
+            Subject:        RE: [JDEV] Performance 
+
+            It sounds more like the test was throttled due to you sending too many 
+            messages at once, rather than any sort of scalability or other type of 
+            limitation in the Jabber server. 
+
+            -David Waite 
+
+            
+            
+            -----Original Message----- 
+            Hi , 
+                    The real issue which I want to highlight is not spammers but the 
+            Scalability of Jabber . The tests which I performed on Jabber clearly showed 
+            that it slows down which is definitely not acceptable in real-life 
+            situations . Jabber has to be more scalable than it is now . Any Thoughts 
+            and Ideas ? 
+            Regards , 
+            chetan s . ithal 
+
+            
+            
+            _______________________________________________ 
+            jdev mailing list 
+            <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> 
+            <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A> 
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20000426/f0ca00d8/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20000426/f0ca00d8/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="061597.html">[JDEV] jabber RPMs
+</A></li>
+	<LI>Next message: <A HREF="061599.html">[JDEV] Performance
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61598">[ date ]</a>
+              <a href="thread.html#61598">[ thread ]</a>
+              <a href="subject.html#61598">[ subject ]</a>
+              <a href="author.html#61598">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

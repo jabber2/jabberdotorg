@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Starting the Server Automatically In SUN Solaris.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Starting%20the%20Server%20Automatically%20In%20SUN%20Solaris.&In-Reply-To=%3C20010315164223.60622.qmail%40msg.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="065198.html">
+   <LINK REL="Next"  HREF="065212.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Starting the Server Automatically In SUN Solaris.</H1>
+    <B>kadokev at msg.net</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Starting%20the%20Server%20Automatically%20In%20SUN%20Solaris.&In-Reply-To=%3C20010315164223.60622.qmail%40msg.net%3E"
+       TITLE="[JDEV] Starting the Server Automatically In SUN Solaris.">kadokev at msg.net
+       </A><BR>
+    <I>Thu Mar 15 10:42:23 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="065198.html">[JDEV] Starting the Server Automatically In SUN Solaris.
+</A></li>
+        <LI>Next message: <A HREF="065212.html">[JDEV] Starting the Server Automatically In SUN Solaris.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65209">[ date ]</a>
+              <a href="thread.html#65209">[ thread ]</a>
+              <a href="subject.html#65209">[ subject ]</a>
+              <a href="author.html#65209">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Can this be added to the FAQ?
+
+&gt;<i> 	I  installed the JABBER Server in SUN Solaris system.
+</I>&gt;<i> 	I am using it regularly.
+</I>&gt;<i> 	But each day , i need to restart the server because I am starting it
+</I>&gt;<i> using telnet at the prompt and whenever I closes the telnet, the server is
+</I>&gt;<i> shutting down.
+</I>&gt;<i> 	Is There any way of restarting the server automatically and running
+</I>&gt;<i> it on and on and on continuously ................
+</I>&gt;<i> 
+</I>&gt;<i> 	I know there is way of starting these servers as a Demon Service .
+</I>&gt;<i> 	But I don't know more details about this thing.
+</I>&gt;<i> 
+</I>&gt;<i> 	Anyone can solve my problem???
+</I> 
+There are a number of different ways to run 'jabberd' as a daemon. I use
+Dan Bernstein's &quot;daemontools&quot; from  <A HREF="http://cr.yp.to/daemontools.html">http://cr.yp.to/daemontools.html</A>
+
+Daemontools is a collection of tools for managing UNIX services, it is the
+recommended method for running 'dnscache' and 'tinyDNS' (free BIND replacements)
+and works well for just about any process that needs to always be up. It uses
+a program called 'supervise' to automatically restart the process if it dies.
+
+
+After installing daemontools, I add a rc script to run 'svscan' at boot,
+and instruct svscan to supervise jabber with:
+
+	ln -s /usr/local/jabber-1.4 /service/jabber
+
+
+Finally, install the following script as /usr/local/jabber-1.4/run:
+
+#! /bin/sh
+#
+# March 7, 2001. Kevin Kadow. Free to redistribute and modify
+#
+# Start up the core jabberd process.
+# Requires 'daemontools' available at <A HREF="http://cr.yp.to/daemontools.html">http://cr.yp.to/daemontools.html</A>
+#
+PATH=$PATH:/usr/local/bin
+
+cd /usr/local/jabber-1.4
+
+su jabber -c &quot;kill `cat ./spool/jabber.pid`; rm ./spool/jabber.pid&quot;
+
+exec setuidgid jabber jabberd/jabberd
+
+###EOF###
+
+
+For security, /usr/local/jabber-1.4 and the 'run' file should be owned by root,
+with only /usr/loca/jabber-1.4/spool owned by the 'jabber' user:
+
+	chown root /usr/local/jabber-1.4 /usr/local/jabber-1.4/run
+	chown jabber /usr/local/jabber-1.4/spool
+
+
+That's it. It seems complex, but once you get used to Dan's style, the benefits
+of daemontools, dnscache, and qmail in security and speed are worth the effort.
+
+
+Kevin
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="065198.html">[JDEV] Starting the Server Automatically In SUN Solaris.
+</A></li>
+	<LI>Next message: <A HREF="065212.html">[JDEV] Starting the Server Automatically In SUN Solaris.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65209">[ date ]</a>
+              <a href="thread.html#65209">[ thread ]</a>
+              <a href="subject.html#65209">[ subject ]</a>
+              <a href="author.html#65209">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

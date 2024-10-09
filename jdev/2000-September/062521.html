@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] From one to many - or Real time data transport?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20From%20one%20to%20many%20-%20or%20Real%20time%20data%20transport%3F&In-Reply-To=%3C200009132046.PAA19130%40ductape.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="062520.html">
+   <LINK REL="Next"  HREF="062522.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] From one to many - or Real time data transport?</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20From%20one%20to%20many%20-%20or%20Real%20time%20data%20transport%3F&In-Reply-To=%3C200009132046.PAA19130%40ductape.net%3E"
+       TITLE="[JDEV] From one to many - or Real time data transport?">tcharron at ductape.net
+       </A><BR>
+    <I>Wed Sep 13 15:46:19 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="062520.html">[JDEV] From one to many - or Real time data transport?
+</A></li>
+        <LI>Next message: <A HREF="062522.html">[JDEV] Presence probes and AIM transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62521">[ date ]</a>
+              <a href="thread.html#62521">[ thread ]</a>
+              <a href="subject.html#62521">[ subject ]</a>
+              <a href="author.html#62521">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Quoting Peter Antman &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Peter.Antman at abc.se</A>&gt;:
+&gt;<i> I recently discovered Jabber (through Linux Journal) and finds it very
+</I>&gt;<i> interesting. I am currently trying to understand its architecture. My first
+</I>&gt;<i> reaction was, aha - an open source XML based Message-oriented middleware 
+</I>&gt;<i> (MOM) product. Then I started reading the documentation and realized it was
+</I>&gt;<i> Instant Messaging product with the ability to send messages from one node 
+</I>&gt;<i> (entity) to another - Point-to-Point in MOM lingo (PtP)-, and to subscribe 
+</I>&gt;<i> to another user/entity's presence - Publish/Subscribe (Pub/Sub) in MOM
+</I>&gt;<i> lingo.
+</I>&gt;<i> And this is fine, and Jabber is really making its way in this category of 
+</I>&gt;<i> software. 
+</I>
+  This is where things get interesting.  You see, at a point, the definition of 
+a 'endpoint' begins to blur.  If your producer is connected as a client, 
+sending to a client, you are point to point.  The primary issue here is, in all 
+reality, there is no primary 'server' here.  Sure, there's the jabber server, 
+but it's called a 'transport'.  If you where going to use jabber for 
+disemination of this type of data, you'r producer would most likely be, another 
+transport, which is part of the server side of things, not really a client.  
+But it is..  ;-P  Confused yet?
+
+&gt;<i> Then I started reading the Jabber Internet-Draft. And in the connectionmap
+</I>&gt;<i> in 
+</I>&gt;<i> section 2 one finds something different, namely a transport meant to
+</I>&gt;<i> provide
+</I>&gt;<i> &quot;real time data to Jabber, such as log notification&quot;. It's a part of 9.1
+</I>&gt;<i> too:
+</I>&gt;<i> &quot;Any server-side entity can easily participate in the real-time generation 
+</I>&gt;<i> and delivery of XML&quot;.
+</I>
+  Note the wording here.  'server-side entity'.  This probrably best describes 
+a transport.  They are all servers.  But they're clients to eachother.  They 
+may indeed have clients themselves, making them servers.  But they make use of 
+other resources, making them clients..  ;-P
+
+&gt;<i> This is interesting, and sort of makes Jabber look a little more like a MOM
+</I>&gt;<i> again.
+</I>
+  It is, but doesn't follow the traditional model that a message oriented 
+middleware would.  It builds much of the front *AND* back tier into the system 
+itself.
+
+
+&gt;<i> The problem is this: I can not find any documentation in the protocols for 
+</I>&gt;<i> such a feature, if you do not interpretate the quotes above in a naive way.
+</I>
+  Unfortionatly, code was being bashed out for a while here, and much of the 
+conceptual documentation has gone to the side.  This does need to be revamped.  
+Most of the documentation has been on the jabber client end, which talks to 
+the 'jabber transport'.  That's a narrow view of the jabber world..  That's 
+prob what you're missing.  What's going on on the server side of the fence..
+
+&gt;<i> My interpretation is this (it might be naive too ;-)): There is some though
+</I>&gt;<i> that it should be possible to have a real time feed of data of some sort and 
+</I>&gt;<i> that users/clients should be able to get this data send to them as
+</I>&gt;<i> messages.
+</I>&gt;<i> If this is true, it would mean that Jabber would have to have support for 
+</I>&gt;<i> Publish and Subscribe for a specific types of messages (topic in MOM
+</I>&gt;<i> lingo), and it would start to look like a MOM again.
+</I>
+  Exactly.  This would be done by subscription.  Subsription is used to tell 
+something/someone you want some data.  It's also used as a way to have the idea 
+that someone can 'subscribe' to your presence, which is, in a way, a way for a 
+server to be a client to you.  They work hand in hand.  You login, and send 
+presence to the server.  The server you are connected to looks at who you've 
+approved subscriptions to, and let's them all know you're online.  They, in 
+turn, do what they wish with this.  One of the many things would be, start 
+streaming data.  When you then log off, subscription is once again checked, and 
+authorized parties are informed you are no longer online.  In a way, both sides 
+of the coin are clients.  But they're both servers.  ;-P  Middleware, yes, but 
+here, everythings in the middle, except specifically for the jabber client.  
+It's definatly a client.  But then again, it can serve as a server by 
+specificaly informing a destination of presence, without telling the server at 
+all..  ;-P
+
+&gt;<i> Why do the quotes imply that? Because the only other way I can see it is that 
+</I>&gt;<i> the publishing source (the live data feed) would have to know the identity of 
+</I>&gt;<i> every one interested in getting the message - and if I understand the protocol
+</I>&gt;<i> correct, such a real time event notifier would have to send each individual a 
+</I>&gt;<i> separate message.
+</I>&gt;<i> Much like you do in a mailing program by defining a private 
+</I>&gt;<i> group to send to (which mean that if more than one publishing party should be 
+</I>&gt;<i> able to participate in the feed, rosters must be distributed between all 
+</I>&gt;<i> sending parties).
+</I>
+  Yes, but you subscribe to the 'service' provided by the service.  ;-P  Note, 
+you may also allow the service to subscribe to you, but not subscribe to it.  ;-
+P  There are really 4 levels of subscription.  To, From, Both, and None.
+
+
+&gt;<i> The logic of the presence mechanism - but applied to messages, would be a 
+</I>&gt;<i> more well designed solution to this feature; sort of like a mailing list 
+</I>&gt;<i> functionality in Jabber (with both half and full duplex). 
+</I>
+  Yes and no.  I've actually written a mailing list transport that does exactly 
+this.  It recieves a message destined for a list.  It looks at everyone who 
+is 'subscribed' to that list, and mirrors it out to all parties wishing this 
+data.  In this case, the data being transmitted was generated from internal to 
+the jabber system.  It could have just as easily been generated by the 
+transport form, oh, say a news or stock feed.
+
+&gt;<i> Is this being thought about, is there any plans to implement such 
+</I>&gt;<i> functionality, or is it there already, without me being able to find it? Is
+</I>&gt;<i> it possible to interpret and use the groupchat functionality for this?
+</I>
+  Can be, and is very easily done.  The possibilities for the system are 
+staggering, and the documentation as of recent, *BESIDES* the JPG (Jabber 
+Programmers Guide, has been lacking.  The JPG, <A HREF="http://docs.jabber.org/jpg/,">http://docs.jabber.org/jpg/,</A> is 
+a good overview from the world according to the client.  Check it out, it may 
+help a bit..
+
+  Sorry if this reply basically sucks.  Just been a busy day, and didn;t have 
+to time to reply correctly, but it needed to be replied to..
+
+--- 
+Thomas Charron
+&lt;&lt; Wanted: One decent sig &gt;&gt;
+&lt;&lt; Preferably litle used  &gt;&gt;
+&lt;&lt; and stored in garage.  ?&gt;&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="062520.html">[JDEV] From one to many - or Real time data transport?
+</A></li>
+	<LI>Next message: <A HREF="062522.html">[JDEV] Presence probes and AIM transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62521">[ date ]</a>
+              <a href="thread.html#62521">[ thread ]</a>
+              <a href="subject.html#62521">[ subject ]</a>
+              <a href="author.html#62521">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

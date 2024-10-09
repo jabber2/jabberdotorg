@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Flash 5's XMLSocket vs Jabber 1.2
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Flash%205%27s%20XMLSocket%20vs%20Jabber%201.2&In-Reply-To=%3C39EBDDD3.9040107%40expertq.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="033560.html">
+   <LINK REL="Next"  HREF="033551.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Flash 5's XMLSocket vs Jabber 1.2</H1>
+    <B>Bill Abbas</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Flash%205%27s%20XMLSocket%20vs%20Jabber%201.2&In-Reply-To=%3C39EBDDD3.9040107%40expertq.com%3E"
+       TITLE="[JDEV] Flash 5's XMLSocket vs Jabber 1.2">zsa at expertq.com
+       </A><BR>
+    <I>Tue Oct 17 00:04:19 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="033560.html">[JDEV] Flash 5's XMLSocket vs Jabber 1.2
+</A></li>
+        <LI>Next message: <A HREF="033551.html">[JDEV] Flash 5's XMLSocket vs Jabber 1.2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33550">[ date ]</a>
+              <a href="thread.html#33550">[ thread ]</a>
+              <a href="subject.html#33550">[ subject ]</a>
+              <a href="author.html#33550">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Sounds about right.
+
+You don't want the thing that pulls bytes off the socket to have to 
+parse thru
+a bunch of XML just to figure out when to pass a completed XML doc back 
+to the thing
+that parses the XML and then does something useful with it.   In other 
+words, the null
+is a little extra bit of network protocol, albeit somewhat, err, cheesy.
+
+Bill
+
+Orion (Steve Pirk) wrote:
+
+&gt;<i> A co-worker pointed out that there are two XML transfer 
+</I>&gt;<i> protocols: (I think that is the correct phrase :-)
+</I>&gt;<i> 
+</I>&gt;<i> Method one is DOM (Document Object Model) 
+</I>&gt;<i> 
+</I>&gt;<i> Method two is SAX (Simple API for XML)
+</I>&gt;<i> 
+</I>&gt;<i> I believe that Flash is using the SAX model. Most flash code
+</I>&gt;<i> &quot;streamed&quot;, meaning it is processed as it is received.
+</I>&gt;<i> 
+</I>&gt;<i> &gt;From a section of w3.org:
+</I>&gt;<i> <A HREF="http://www.w3.org/TR/2000/WD-xmldsig-core-20000601/#sec-DOM-SAX">http://www.w3.org/TR/2000/WD-xmldsig-core-20000601/#sec-DOM-SAX</A>
+</I>&gt;<i> [quote]
+</I>&gt;<i> DOM maps XML into a tree structure of nodes and typically
+</I>&gt;<i> assumes it will be used on an entire document with subsequent 
+</I>&gt;<i> processing being done on this tree. SAX converts XML into
+</I>&gt;<i> a series of events such as a start tag, content, etc.
+</I>&gt;<i> [endquote]
+</I>&gt;<i> 
+</I>&gt;<i> It is possible that the &quot;null terminator&quot; is a shortcut to
+</I>&gt;<i> determine end-of-tag (instead of actually searching for the
+</I>&gt;<i> end-of-tag).
+</I>&gt;<i> 
+</I>&gt;<i> Comments? Am I totally off base here? :-)
+</I>&gt;<i> 
+</I>&gt;<i> Steve
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">orion at deathcon.com</A> - owner/admin       |            Chaos reigns within.
+</I>&gt;<i> <A HREF="http://www.deathcon.com">http://www.deathcon.com</A>                |    Reflect, repent, and reboot.
+</I>&gt;<i> Think of it as evolution in action.    |             Order shall return.
+</I>&gt;<i> 
+</I>&gt;<i> On Mon, 16 Oct 2000, David Waite wrote:
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;&gt;<i> I think the person who wrote XMLSocket had very little clue how XML 
+</I>&gt;&gt;<i> workeed above the basic markup. It appears to be an incremental parser 
+</I>&gt;&gt;<i> that will *only* give events on document end, and generates XML 
+</I>&gt;&gt;<i> documents on the sending pipe deliminated by a null character.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Someone at macromedia deserves a flogging, anyone close to their 
+</I>&gt;&gt;<i> headquarters? ;-)
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> -David Waite
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Thomas Charron wrote:
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;&gt;<i> Quoting Oliver George &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">oliver at littledevil.com.au</A>&gt;:
+</I>&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;&gt;<i> Problem 1: Null characters...
+</I>&gt;&gt;&gt;&gt;<i> =================================
+</I>&gt;&gt;&gt;&gt;<i> null characters are sent between each transmission from the client.  This
+</I>&gt;&gt;&gt;&gt;<i> causes the server to crash.  My question is: should jabber client stream be
+</I>&gt;&gt;&gt;&gt;<i> tolerant to null characters (ie. 0x00).
+</I>&gt;&gt;&gt;&gt;<i> If the server can't be made to tolerate this then i would probably need an
+</I>&gt;&gt;&gt;&gt;<i> interface socket which reads from the flash client, translates (removes
+</I>&gt;&gt;&gt;&gt;<i> nulls) and sends to the server.  This is bad because i now have 3 sockets
+</I>&gt;&gt;&gt;&gt;<i> open for a single connection.
+</I>&gt;&gt;&gt;&gt;<i> Just to emphasise this problem here is a ngrep dump of my flash client
+</I>&gt;&gt;&gt;&gt;<i> sending a message to the server.  Notice the 00 which trails the
+</I>&gt;&gt;&gt;&gt;<i> &lt;stream...&gt;
+</I>&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;<i>   Are NULL chars even LEGAL in UTF-8?  Why are the null characters there?  Does 
+</I>&gt;&gt;&gt;<i> Flash add them in for some reason?
+</I>&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;<i> --- 
+</I>&gt;&gt;&gt;<i> Thomas Charron
+</I>&gt;&gt;&gt;<i> &lt;&lt; Wanted: One decent sig &gt;&gt;
+</I>&gt;&gt;&gt;<i> &lt;&lt; Preferably litle used  &gt;&gt;
+</I>&gt;&gt;&gt;<i> &lt;&lt; and stored in garage.  ?&gt;&gt;
+</I>&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;&gt;<i> jdev mailing list
+</I>&gt;&gt;&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i> jdev mailing list
+</I>&gt;&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="033560.html">[JDEV] Flash 5's XMLSocket vs Jabber 1.2
+</A></li>
+	<LI>Next message: <A HREF="033551.html">[JDEV] Flash 5's XMLSocket vs Jabber 1.2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33550">[ date ]</a>
+              <a href="thread.html#33550">[ thread ]</a>
+              <a href="subject.html#33550">[ subject ]</a>
+              <a href="author.html#33550">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

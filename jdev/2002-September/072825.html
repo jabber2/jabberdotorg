@@ -1,0 +1,567 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Problem with compiling xdb_sql (odbc, Cygwin)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Problem%20with%20compiling%20xdb_sql%20%28odbc%2C%20Cygwin%29&In-Reply-To=%3C3D907F66.7030808%40raditha.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="072819.html">
+   <LINK REL="Next"  HREF="072821.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Problem with compiling xdb_sql (odbc, Cygwin)</H1>
+    <B>raditha dissanayake</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Problem%20with%20compiling%20xdb_sql%20%28odbc%2C%20Cygwin%29&In-Reply-To=%3C3D907F66.7030808%40raditha.com%3E"
+       TITLE="[JDEV] Problem with compiling xdb_sql (odbc, Cygwin)">jabber at raditha.com
+       </A><BR>
+    <I>Tue Sep 24 10:06:14 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="072819.html">[JDEV] Problem with compiling xdb_sql (odbc, Cygwin)
+</A></li>
+        <LI>Next message: <A HREF="072821.html">[JDEV] AOL/TOC Limiting Users
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72825">[ date ]</a>
+              <a href="thread.html#72825">[ thread ]</a>
+              <a href="subject.html#72825">[ subject ]</a>
+              <a href="author.html#72825">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>i haven't tried xdb_sql under win32 but i think using unsigned long 
+instead ULONG might solve this particular problem.
+
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Wojciech.Dec at winuel.com.pl</A> wrote:
+
+&gt;<i>Hi,
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>I am trying to compile xdb_sql with ODBC and Cygwin.
+</I>&gt;<i>I have a lot of errors in win32api's files.  There are Makefile and
+</I>&gt;<i>compilation
+</I>&gt;<i>log below.
+</I>&gt;<i>
+</I>&gt;<i>For example:
+</I>&gt;<i>
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:17: parse error before `UDWORD'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:17: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>
+</I>&gt;<i>I tried the following code:
+</I>&gt;<i>
+</I>&gt;<i>#include &lt;stddef.h&gt;
+</I>&gt;<i>typedef ULONG UDWORD;   // as in w32api/sqltypes.h
+</I>&gt;<i>int main() { return 0; }
+</I>&gt;<i>
+</I>&gt;<i>I got the same errors.  It seems GCC (2.95.3-5) does not see ULONG
+</I>&gt;<i>definition.
+</I>&gt;<i>What is wrong?  Is it incorrect installation/configuration of my Cygwin
+</I>&gt;<i>or something else?
+</I>&gt;<i>
+</I>&gt;<i>Thanks in advance for any help.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>Regards,
+</I>&gt;<i>
+</I>&gt;<i>Wojciech Dec
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>==================== Makefile begin ====================
+</I>&gt;<i>
+</I>&gt;<i>include ../platform-settings
+</I>&gt;<i>
+</I>&gt;<i># Uncomment the flags that are needed for your DB
+</I>&gt;<i>CFLAGS:= -I. -I../jabberd $(CFLAGS) # -I/usr/local/pgsql/include/
+</I>&gt;<i>
+</I>&gt;<i># Uncomment the flags that are needed for your DB
+</I>&gt;<i>#CPPFLAGS= # -DPOSTGRESQL_BACKEND -DODBC_BACKEND -DMYSQL_BACKEND
+</I>&gt;<i>CPPFLAGS= -DODBC_BACKEND
+</I>&gt;<i>
+</I>&gt;<i># Uncomment the file that corresponds to your DB
+</I>&gt;<i>xdb_sql_OBJECTS= \
+</I>&gt;<i>      xdb_sql.o \
+</I>&gt;<i>      xdb_sql_auth0k.o \
+</I>&gt;<i>      xdb_sql_auth.o \
+</I>&gt;<i>      xdb_sql_offline.o \
+</I>&gt;<i>      xdb_sql_register.o \
+</I>&gt;<i>      xdb_sql_config.o \
+</I>&gt;<i>      xdb_sql_querydef.o \
+</I>&gt;<i>      xdb_sql_roster.o \
+</I>&gt;<i>      xdb_sql_last.o \
+</I>&gt;<i>      xdb_sql_backend.o \
+</I>&gt;<i>      xdb_sql_vcard.o \
+</I>&gt;<i>      xdb_sql_filter.o \
+</I>&gt;<i>      xdb_sql_generic.o \
+</I>&gt;<i>      xdb_sql_odbc.o
+</I>&gt;<i>#     xdb_sql_pgsql.o
+</I>&gt;<i>#     xdb_sql_mysql.o
+</I>&gt;<i>
+</I>&gt;<i>all: xdb_sql.so
+</I>&gt;<i>
+</I>&gt;<i># Uncomment the lib that is used by your DB
+</I>&gt;<i>xdb_sql.so: $(xdb_sql_OBJECTS)
+</I>&gt;<i>      $(CC) $(CFLAGS) $(MCFLAGS) -o xdb_sql.so $(xdb_sql_OBJECTS)
+</I>&gt;<i>$(LDFLAGS) $(LIBS) -static # -L/usr/local/pgsql/lib -lpq -lmysqlclient
+</I>&gt;<i>
+</I>&gt;<i>clean:
+</I>&gt;<i>      rm -f $(xdb_sql_OBJECTS) xdb_sql.so
+</I>&gt;<i>      rm -rf xdb_sql.1.0
+</I>&gt;<i>
+</I>&gt;<i>dist: all
+</I>&gt;<i>      mkdir xdb_sql.1.0
+</I>&gt;<i>      cat FILES | cut -d&quot;:&quot; -f 1 | xargs cp --target-directory=xdb_sql.1.0/
+</I>&gt;<i>      tar cvzf xdb_sql.1.0.tar.gz xdb_sql.1.0
+</I>&gt;<i>==================== Makefile end ====================
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>==================== compilation log begin ====================
+</I>&gt;<i>gcc -I. -I../jabberd -g -Wall -I. -I..
+</I>&gt;<i>-I/cygdrive/c/cygwin/usr/local/jabber/jabber-1.4.2/jabberd/pth-1.4.0
+</I>&gt;<i>-DODBC_BACKEND  -c -o xdb_sql_odbc.o xdb_sql_odbc.c
+</I>&gt;<i>In file included from ../jabberd/jabberd.h:42,
+</I>&gt;<i>                 from xdb_sql.h:20,
+</I>&gt;<i>                 from xdb_sql_backend.h:19,
+</I>&gt;<i>                 from xdb_sql_odbc.h:19,
+</I>&gt;<i>                 from xdb_sql_odbc.c:16:
+</I>&gt;<i>/cygdrive/c/cygwin/usr/local/jabber/jabber-1.4.2/jabberd/pth-1.4.0/pth.h:53:
+</I>&gt;<i>
+</I>&gt;<i>warning: useless keyword or type name in empty declaration
+</I>&gt;<i>/cygdrive/c/cygwin/usr/local/jabber/jabber-1.4.2/jabberd/pth-1.4.0/pth.h:53:
+</I>&gt;<i>
+</I>&gt;<i>warning: empty declaration
+</I>&gt;<i>In file included from /usr/include/w32api/sql.h:13,
+</I>&gt;<i>                 from xdb_sql_odbc.c:17:
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:17: parse error before `UDWORD'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:17: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:18: parse error before `UWORD'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:18: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:24: parse error before `PTR'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:24: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:25: parse error before `HENV'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:25: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:26: parse error before `HDBC'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:26: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:27: parse error before `HSTMT'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:27: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:29: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:29: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:34: parse error before `SQLUINTEGER'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:34: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:36: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:36: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:37: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:37: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:50: parse error before `SQLHWND'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:50: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:51: parse error before `BOOKMARK'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:51: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:71: parse error before `SQLTCHAR'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:71: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:84: parse error before `SQLBIGINT'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:84: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:85: parse error before `SQLUBIGINT'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:85: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:90: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:90: warning: no semicolon at end of struct
+</I>&gt;<i>or union
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:91: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:92: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:94: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:94: warning: no semicolon at end of struct
+</I>&gt;<i>or union
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:95: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:96: parse error before `second'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:96: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:97: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:100: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:100: warning: no semicolon at end of struct
+</I>&gt;<i>or union
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:101: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:102: parse error before `hour'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:102: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:103: parse error before `minute'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:103: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:104: parse error before `second'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:104: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:105: parse error before `fraction'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:105: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:106: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:108: parse error before `SQL_DATE_STRUCT'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:108: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:109: parse error before `SQL_TIME_STRUCT'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:109: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:110: parse error before
+</I>&gt;<i>`SQL_TIMESTAMP_STRUCT'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:110: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:118: parse error before `SQLUINTEGER'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:118: warning: no semicolon at end of struct
+</I>&gt;<i>or union
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:119: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:120: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:122: parse error before `SQLUINTEGER'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:122: warning: no semicolon at end of struct
+</I>&gt;<i>or union
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:123: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:124: parse error before `minute'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:124: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:125: parse error before `second'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:125: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:126: parse error before `fraction'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:126: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:127: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:132: parse error before
+</I>&gt;<i>`SQL_YEAR_MONTH_STRUCT'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:132: warning: no semicolon at end of struct
+</I>&gt;<i>or union
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:132: warning: no semicolon at end of struct
+</I>&gt;<i>or union
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:133: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:134: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:135: parse error before `}'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:135: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:138: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:138: warning: no semicolon at end of struct
+</I>&gt;<i>or union
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:140: parse error before `sign'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:140: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:141: parse error before `val'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:141: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:142: parse error before `}'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:142: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:149: parse error before `DWORD'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:149: warning: no semicolon at end of struct
+</I>&gt;<i>or union
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:150: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:151: parse error before `Data3'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:151: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:152: parse error before `Data4'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:152: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:153: parse error before `}'
+</I>&gt;<i>/usr/include/w32api/sqltypes.h:153: warning: data definition has no type or
+</I>&gt;<i>storage class
+</I>&gt;<i>In file included from xdb_sql_odbc.c:17:
+</I>&gt;<i>/usr/include/w32api/sql.h:346: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:348: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sql.h:349: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:351: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sql.h:352: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sql.h:357: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:358: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sql.h:360: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sql.h:362: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sql.h:363: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:364: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:365: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sql.h:366: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:367: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:368: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:369: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:370: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:372: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sql.h:373: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sql.h:374: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:375: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:376: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:377: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sql.h:378: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sql.h:379: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:382: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:384: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sql.h:389: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sql.h:390: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sql.h:391: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sql.h:393: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sql.h:394: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sql.h:395: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sql.h:396: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sql.h:397: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sql.h:398: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sql.h:400: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sql.h:401: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sql.h:402: parse error before `SQLPOINTER'
+</I>&gt;<i>In file included from xdb_sql_odbc.c:18:
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1184: parse error before `SQLHWND'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1185: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1186: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1187: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1188: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1189: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1190: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1192: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1194: parse error before `SQLUINTEGER'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1195: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1196: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1197: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1198: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1199: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1200: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1201: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1202: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1203: warning: `__stdcall__' attribute
+</I>&gt;<i>directive ignored
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1203: parse error before `ODBCGetTryWaitValue'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1204: warning: `__stdcall__' attribute
+</I>&gt;<i>directive ignored
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1204: parse error before `ODBCSetTryWaitValue'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1205: warning: parameter names (without types)
+</I>&gt;<i>in function declaration
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1207: warning: `__stdcall__' attribute
+</I>&gt;<i>directive ignored
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1207: parse error before `TraceReturn'
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1208: warning: `__stdcall__' attribute
+</I>&gt;<i>directive ignored
+</I>&gt;<i>/usr/include/w32api/sqlext.h:1208: parse error before `TraceVersion'
+</I>&gt;<i>In file included from /usr/include/w32api/sqlext.h:1214,
+</I>&gt;<i>                 from xdb_sql_odbc.c:18:
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:22: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:24: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:25: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:26: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:27: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:28: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:30: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:32: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:34: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:35: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:36: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:37: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:38: parse error before `SQLHWND'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:39: parse error before `SQLHWND'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:40: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:41: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:42: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:44: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:46: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:48: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:49: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:50: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:51: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:52: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:54: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:55: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:56: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:57: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:60: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:62: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:64: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:66: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:68: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:70: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:71: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:72: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:73: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:74: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:76: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:77: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:78: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:79: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:80: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:81: parse error before `SQLUSMALLINT'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:82: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:84: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:87: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:88: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:89: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:91: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:92: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:93: parse error before `SQLCHAR'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:95: parse error before `SQLPOINTER'
+</I>&gt;<i>/usr/include/w32api/sqlucode.h:96: parse error before `SQLPOINTER'
+</I>&gt;<i>xdb_sql_odbc.c:44: parse error before `SQLCHAR'
+</I>&gt;<i>xdb_sql_odbc.c:44: warning: no semicolon at end of struct or union
+</I>&gt;<i>xdb_sql_odbc.c:46: parse error before `}'
+</I>&gt;<i>xdb_sql_odbc.c:47: warning: type defaults to `int' in declaration of
+</I>&gt;<i>`Tuple'
+</I>&gt;<i>xdb_sql_odbc.c:47: warning: data definition has no type or storage class
+</I>&gt;<i>xdb_sql_odbc.c:49: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:50: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:51: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:66: parse error before `Tuple'
+</I>&gt;<i>xdb_sql_odbc.c:66: warning: no semicolon at end of struct or union
+</I>&gt;<i>xdb_sql_odbc.c:69: conflicting types for `field_count'
+</I>&gt;<i>xdb_sql_odbc.c:45: previous declaration of `field_count'
+</I>&gt;<i>xdb_sql_odbc.c:72: parse error before `}'
+</I>&gt;<i>xdb_sql_odbc.c:73: warning: type defaults to `int' in declaration of
+</I>&gt;<i>`XdbODBCResult'
+</I>&gt;<i>xdb_sql_odbc.c:73: warning: data definition has no type or storage class
+</I>&gt;<i>xdb_sql_odbc.c:75: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:89: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:89: warning: type defaults to `int' in declaration of
+</I>&gt;<i>`xdbodbc_query'
+</I>&gt;<i>xdb_sql_odbc.c:89: warning: data definition has no type or storage class
+</I>&gt;<i>xdb_sql_odbc.c:91: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:92: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:93: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:94: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:95: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:96: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:97: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:127: parse error before `s_odbc_message'
+</I>&gt;<i>xdb_sql_odbc.c:127: warning: type defaults to `int' in declaration of
+</I>&gt;<i>`s_odbc_message'
+</I>&gt;<i>xdb_sql_odbc.c:127: warning: data definition has no type or storage class
+</I>&gt;<i>xdb_sql_odbc.c: In function `xdbodbc_connect':
+</I>&gt;<i>xdb_sql_odbc.c:198: parse error before `)'
+</I>&gt;<i>xdb_sql_odbc.c: In function `xdbodbc_is_connected':
+</I>&gt;<i>xdb_sql_odbc.c:221: syntax error before `buffer'
+</I>&gt;<i>xdb_sql_odbc.c:229: `buffer' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c:229: (Each undeclared identifier is reported only once
+</I>&gt;<i>xdb_sql_odbc.c:229: for each function it appears in.)
+</I>&gt;<i>xdb_sql_odbc.c: At top level:
+</I>&gt;<i>xdb_sql_odbc.c:259: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:259: warning: return-type defaults to `int'
+</I>&gt;<i>xdb_sql_odbc.c: In function `xdbodbc_query':
+</I>&gt;<i>xdb_sql_odbc.c:261: `res' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c:261: warning: statement with no effect
+</I>&gt;<i>xdb_sql_odbc.c:264: parse error before `)'
+</I>&gt;<i>xdb_sql_odbc.c:285: parse error before `1'
+</I>&gt;<i>xdb_sql_odbc.c:292: parse error before `)'
+</I>&gt;<i>xdb_sql_odbc.c: In function `xdbodbc_error':
+</I>&gt;<i>xdb_sql_odbc.c:312: warning: return from incompatible pointer type
+</I>&gt;<i>xdb_sql_odbc.c: At top level:
+</I>&gt;<i>xdb_sql_odbc.c:318: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c:325: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c: In function `xdbodbc_store_result':
+</I>&gt;<i>xdb_sql_odbc.c:328: `res' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c:359: parse error before `)'
+</I>&gt;<i>xdb_sql_odbc.c: At top level:
+</I>&gt;<i>xdb_sql_odbc.c:391: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c: In function `xdbodbc_free_result':
+</I>&gt;<i>xdb_sql_odbc.c:392: `res' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c: At top level:
+</I>&gt;<i>xdb_sql_odbc.c:409: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c: In function `xdbodbc_num_tuples':
+</I>&gt;<i>xdb_sql_odbc.c:410: `res' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c:414: warning: control reaches end of non-void function
+</I>&gt;<i>xdb_sql_odbc.c: At top level:
+</I>&gt;<i>xdb_sql_odbc.c:422: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c: In function `xdbodbc_num_fields':
+</I>&gt;<i>xdb_sql_odbc.c:423: `res' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c:427: warning: control reaches end of non-void function
+</I>&gt;<i>xdb_sql_odbc.c: At top level:
+</I>&gt;<i>xdb_sql_odbc.c:434: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c: In function `xdbodbc_next_tuple':
+</I>&gt;<i>xdb_sql_odbc.c:436: `res' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c: At top level:
+</I>&gt;<i>xdb_sql_odbc.c:453: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c: In function `xdbodbc_get_value':
+</I>&gt;<i>xdb_sql_odbc.c:454: `res' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c: At top level:
+</I>&gt;<i>xdb_sql_odbc.c:500: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c: In function `result_free_data':
+</I>&gt;<i>xdb_sql_odbc.c:503: `res' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c: At top level:
+</I>&gt;<i>xdb_sql_odbc.c:519: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c: In function `tuple_alloc_fields':
+</I>&gt;<i>xdb_sql_odbc.c:522: `tuple' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c:523: parse error before `)'
+</I>&gt;<i>xdb_sql_odbc.c: At top level:
+</I>&gt;<i>xdb_sql_odbc.c:538: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c: In function `tuple_get_data':
+</I>&gt;<i>xdb_sql_odbc.c:543: `tuple' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c:547: parse error before `)'
+</I>&gt;<i>xdb_sql_odbc.c:550: `stmt' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c:573: parse error before `)'
+</I>&gt;<i>xdb_sql_odbc.c: At top level:
+</I>&gt;<i>xdb_sql_odbc.c:600: parse error before `*'
+</I>&gt;<i>xdb_sql_odbc.c: In function `tuple_free_fields':
+</I>&gt;<i>xdb_sql_odbc.c:602: `tuple' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c: In function `store_odbc_error':
+</I>&gt;<i>xdb_sql_odbc.c:619: `SQLCHAR' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c:619: parse error before `state'
+</I>&gt;<i>xdb_sql_odbc.c:626: `state' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c:627: `msg' undeclared (first use in this function)
+</I>&gt;<i>xdb_sql_odbc.c:634: warning: passing arg 1 of `sprintf' from incompatible
+</I>&gt;<i>pointer type
+</I>&gt;<i>xdb_sql_odbc.c:635: warning: passing arg 1 of `strlen' from incompatible
+</I>&gt;<i>pointer type
+</I>&gt;<i>xdb_sql_odbc.c:642: warning: passing arg 1 of `strncat' from incompatible
+</I>&gt;<i>pointer type
+</I>&gt;<i>xdb_sql_odbc.c:645: warning: passing arg 1 of `printf' from incompatible
+</I>&gt;<i>pointer type
+</I>&gt;<i>make: *** [xdb_sql_odbc.o] Error 1
+</I>&gt;<i>==================== compilation log end ====================
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="072819.html">[JDEV] Problem with compiling xdb_sql (odbc, Cygwin)
+</A></li>
+	<LI>Next message: <A HREF="072821.html">[JDEV] AOL/TOC Limiting Users
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72825">[ date ]</a>
+              <a href="thread.html#72825">[ thread ]</a>
+              <a href="subject.html#72825">[ subject ]</a>
+              <a href="author.html#72825">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

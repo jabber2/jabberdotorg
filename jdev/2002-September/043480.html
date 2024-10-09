@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Question about xdb_auth_cpile
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Question%20about%20xdb_auth_cpile&In-Reply-To=%3C5DB017510818EC468B05BD7BD9EACF83370B92%40mismail.ena.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="043481.html">
+   <LINK REL="Next"  HREF="043483.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Question about xdb_auth_cpile</H1>
+    <B>Joe Breeden</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Question%20about%20xdb_auth_cpile&In-Reply-To=%3C5DB017510818EC468B05BD7BD9EACF83370B92%40mismail.ena.com%3E"
+       TITLE="[JDEV] Question about xdb_auth_cpile">jbreeden at ena.com
+       </A><BR>
+    <I>Tue Sep 17 12:52:13 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="043481.html">[JDEV] Jabber IM in peer to peer mode
+</A></li>
+        <LI>Next message: <A HREF="043483.html">[JDEV] Notice regarding CVS
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43480">[ date ]</a>
+              <a href="thread.html#43480">[ thread ]</a>
+              <a href="subject.html#43480">[ subject ]</a>
+              <a href="author.html#43480">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Chris,
+
+I figured out the problem - which mean I may have a Perl based equal to xdb_sql in the next week or two, when I get it I'll set up a project on JabberStudio or wherever is appropriate. The story of the solution is a long story so hold with me. I was trying to come up with own version of xdb using perl so I could modify it to allow us to do some special stuff here and thought the best way would be to do an implementation that emulated xdb_sql then modify it to account for my special needs. Simple enough, I have xdb_auth_cpile to start with all I need to do is implement all the name spaces and what not. 2 days later and I'm stuck on jabber:iq:register requests. To debug I fired up ethereal and sure enough the stream looked as I would expect - one jabber:iq:auth get request to check to see if the JID in question is available followed by one jabber:iq:register set request to add the new user. Unfortunately, my xdb component was never seeing the jabber:iq:register request. 
+
+I started jabberd with the -D option for debug stuff and was overwhelmed with the output (it's very interesting sometime - I recommend everyone try it to see what really goes on). After looking at it for several hours I gave up and went home. On the 3rd day (today) I came back to it and noticed that jabberd was in reality sending the following requests to my xdb component:
+
+jabber:iq:auth - get -&gt; I assume used to check for the existence of the JID
+jabber:iq:auth - set -&gt; with no action - I don't know where this came from. It looks like the Session manager was generating it. I didn't see it in the ethereal trace so I'm sure my client was not generating it and sending it on
+jabber:iq:register - set -&gt;only happened if the previous jabber:iq:auth passed.
+
+My problem was that I wasn't trapping for a jabber:iq:auth - set just yet so I returned an IQ_ERROR result so the jabber:iq:request was not being sent to my xdb component. Once I saw this and modified my code, all seemed to work. I would like to know why this extra request was generated. It seems, to me at least, that this call is unnecessary and only adds to the load of the server. Of course, like many times in the past, I could be wrong.
+
+I am now off to implement the rest of the xdb name space (other than transports - which I do not need to support at this time). Once I get everything done I release it to the group or back to you so other can benefit.
+
+Thanks for the help,
+
+
+--Joe Breeden
+I remember, not too long ago, when a man could work hard clubbing baby seals all day long and then go home and have a tall, cold one with a clear conscience.
+
+
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Chris Pile [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cpile at snoogans.co.uk</A>]
+</I>&gt;<i> Sent: Tuesday, September 17, 2002 11:23 AM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] Question about xdb_auth_cpile
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Hi Joe,
+</I>&gt;<i> 
+</I>&gt;<i> I haven't had chance to check, but I'm not sure if you can use the
+</I>&gt;<i> xdb_auth check mechanism for register requests.  Most ppl have been
+</I>&gt;<i> using the mechanism for authenticating against pre-populated user
+</I>&gt;<i> databases.
+</I>&gt;<i> 
+</I>&gt;<i> If you look at the code for &quot;/jabber/jsm/modules/mod_auth_plain.c&quot; you
+</I>&gt;<i> can see the xdb &quot;check&quot; section.  This mechanism is built into
+</I>&gt;<i> jabber-1.4.2 mod_auth_plain and bypasses the usual authentication
+</I>&gt;<i> mechanism.  It uses &quot;xdb&quot; instead of the usual &quot;iq&quot;.
+</I>&gt;<i> 
+</I>&gt;<i> I will try and have a look tomorrow and follow up with more detail.
+</I>&gt;<i> 
+</I>&gt;<i>  <A HREF="http://jabberd.jabberstudio.org/1.4/142changelog.html">http://jabberd.jabberstudio.org/1.4/142changelog.html</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Thanks,
+</I>&gt;<i> Chris Pile
+</I>&gt;<i> 
+</I>&gt;<i> Joe Breeden wrote:
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I am testing by using GAIM to login to my server that has 
+</I>&gt;<i> the modification listed below. I have attached the debug 
+</I>&gt;<i> output from a session with jabberd started with the -D 
+</I>&gt;<i> option. I don't really understand all of the output, but from 
+</I>&gt;<i> what I can gather the jabber:iq:register messages are not 
+</I>&gt;<i> being routed to my routine.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; If anyone can help I would really appreciate it. Thanks in 
+</I>&gt;<i> advance for the help.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; --Joe Breeden
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; We don't do Extreme Programming here - we prefer Ludicrous 
+</I>&gt;<i> Programming
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &gt; -----Original Message-----
+</I>&gt;<i> &gt; &gt; From: Joe Breeden
+</I>&gt;<i> &gt; &gt; Sent: Monday, September 16, 2002 12:46 PM
+</I>&gt;<i> &gt; &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; Subject: [JDEV] Question about xdb_auth_cpile
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I am in the process of modifying xdb_auth_cpile.pl to work
+</I>&gt;<i> &gt; &gt; with some special in-house stuff we need and wanted to add
+</I>&gt;<i> &gt; &gt; support for jabber:iq:register name space to allow users to
+</I>&gt;<i> &gt; &gt; register with database. For some reason, my modified version
+</I>&gt;<i> &gt; &gt; of the code is not seeing the jabber:iq:register requests.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Here is the xdb tag from my jabber.xml:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;   &lt;xdb id=&quot;xdb_ena&quot;&gt;
+</I>&gt;<i> &gt; &gt;     &lt;host&gt;xdb_ena.shrieker.ena.com&lt;/host&gt;
+</I>&gt;<i> &gt; &gt;     &lt;ns&gt;jabber:iq:roster&lt;/ns&gt;
+</I>&gt;<i> &gt; &gt;     &lt;ns&gt;jabber:x:offline&lt;/ns&gt;
+</I>&gt;<i> &gt; &gt;     &lt;ns&gt;jabber:iq:filter&lt;/ns&gt;
+</I>&gt;<i> &gt; &gt;     &lt;ns&gt;jabber:iq:last&lt;/ns&gt;
+</I>&gt;<i> &gt; &gt;     &lt;ns&gt;jabber:iq:auth&lt;/ns&gt;
+</I>&gt;<i> &gt; &gt;     &lt;ns&gt;jabber:iq:auth:0k&lt;/ns&gt;
+</I>&gt;<i> &gt; &gt;     &lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+</I>&gt;<i> &gt; &gt;     &lt;accept&gt;
+</I>&gt;<i> &gt; &gt;       &lt;ip&gt;localhost&lt;/ip&gt;
+</I>&gt;<i> &gt; &gt;       &lt;port&gt;5999&lt;/port&gt;
+</I>&gt;<i> &gt; &gt;       &lt;secret&gt;g00g0ne&lt;/secret&gt;
+</I>&gt;<i> &gt; &gt;     &lt;/accept&gt;
+</I>&gt;<i> &gt; &gt;   &lt;/xdb&gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Here is a snippet of my perl code that creates a
+</I>&gt;<i> &gt; &gt; Jabber::Connection object and registers a handler sub routine:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; ###create jabber object
+</I>&gt;<i> &gt; &gt; my $j = new Jabber::Connection (
+</I>&gt;<i> &gt; &gt;       server =&gt; $jserver-&gt;{ip} . ':' . $jserver-&gt;{port},
+</I>&gt;<i> &gt; &gt;       localname =&gt; $jserver-&gt;{id},
+</I>&gt;<i> &gt; &gt;       ns =&gt; 'jabber:component:accept',
+</I>&gt;<i> &gt; &gt;       );
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; ###connect to the server
+</I>&gt;<i> &gt; &gt; log_msg ( MSG =&gt; 'Connecting to the server [' .
+</I>&gt;<i> &gt; &gt; $jserver-&gt;{ip} . ':' . $jserver-&gt;{port} . '] [' .
+</I>&gt;<i> &gt; &gt; $jserver-&gt;{id} . ']' ) if $debug;
+</I>&gt;<i> &gt; &gt; log_msg ( MSG =&gt; &quot;Failed to connect to the server - [&quot; .
+</I>&gt;<i> &gt; &gt; $j-&gt;lastError . &quot;]&quot;, DIE =&gt; 1) unless $j-&gt;connect();
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; ###register the handlers
+</I>&gt;<i> &gt; &gt; log_msg ( MSG =&gt; 'Registering handlers.') if $debug;
+</I>&gt;<i> &gt; &gt; $j-&gt;register_handler( 'xdb', \&amp;xdb_handler );
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Looking at the POD for Jabber::Connection and the example
+</I>&gt;<i> &gt; &gt; code in xdb_auth_cpile.pl is a little confusing. The POD for
+</I>&gt;<i> &gt; &gt; Jabber::Connection says that the first argument to
+</I>&gt;<i> &gt; &gt; register_handler should be a node type - 'message',
+</I>&gt;<i> &gt; &gt; 'presence', or 'iq' - but the example code has 'xdb'. Using
+</I>&gt;<i> &gt; &gt; 'xdb' as a node type seems to work for most of the namespaces
+</I>&gt;<i> &gt; &gt; in the &lt;xdb&gt; tag of my jabber.xml, for some reason or other I
+</I>&gt;<i> &gt; &gt; am not seeing jabber:iq:register requests.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Any help would be appreciated and if more information is
+</I>&gt;<i> &gt; &gt; needed, please let me know what and I'll pass it on.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Thanks in advance,
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; --Joe Breeden
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; From Murphy's Laws of Computing:
+</I>&gt;<i> &gt; &gt; 9. A complex system that does not work is invariably found to
+</I>&gt;<i> &gt; &gt; have evolved from a simpler system that worked just fine.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;   
+</I>&gt;<i> --------------------------------------------------------------
+</I>&gt;<i> ----------
+</I>&gt;<i> &gt;                            Name: jabberd-trace.txt
+</I>&gt;<i> &gt;    jabberd-trace.txt       Type: Plain Text (text/plain)
+</I>&gt;<i> &gt;                        Encoding: base64
+</I>&gt;<i> &gt;                     Description: jabberd-trace.txt
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="043481.html">[JDEV] Jabber IM in peer to peer mode
+</A></li>
+	<LI>Next message: <A HREF="043483.html">[JDEV] Notice regarding CVS
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43480">[ date ]</a>
+              <a href="thread.html#43480">[ thread ]</a>
+              <a href="subject.html#43480">[ subject ]</a>
+              <a href="author.html#43480">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

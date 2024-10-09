@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Server suddenly closing &lt;stream:stream&gt; on	&lt;presence&gt;&lt;status/&gt;&lt;/presence&gt;. Why?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Server%20suddenly%20closing%20%3Cstream%3Astream%3E%0A%20on%09%3Cpresence%3E%3Cstatus/%3E%3C/presence%3E.%20Why%3F&In-Reply-To=%3C47901728.8060505%40stpeter.im%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085494.html">
+   <LINK REL="Next"  HREF="085496.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Server suddenly closing &lt;stream:stream&gt; on	&lt;presence&gt;&lt;status/&gt;&lt;/presence&gt;. Why?</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Server%20suddenly%20closing%20%3Cstream%3Astream%3E%0A%20on%09%3Cpresence%3E%3Cstatus/%3E%3C/presence%3E.%20Why%3F&In-Reply-To=%3C47901728.8060505%40stpeter.im%3E"
+       TITLE="[jdev] Server suddenly closing &lt;stream:stream&gt; on	&lt;presence&gt;&lt;status/&gt;&lt;/presence&gt;. Why?">stpeter at stpeter.im
+       </A><BR>
+    <I>Thu Jan 17 21:04:08 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085494.html">[jdev] Server suddenly closing &lt;stream:stream&gt; on	&lt;presence&gt;&lt;status/&gt;&lt;/presence&gt;. Why?
+</A></li>
+        <LI>Next message: <A HREF="085496.html">[jdev] Announcement of ejabberd 2.0.0-rc1
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85495">[ date ]</a>
+              <a href="thread.html#85495">[ thread ]</a>
+              <a href="subject.html#85495">[ subject ]</a>
+              <a href="author.html#85495">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Sean Gilbertson wrote:
+&gt;<i> Hi all,
+</I>&gt;<i> 
+</I>&gt;<i> Thank you for your responses and suggestions.
+</I>&gt;<i> 
+</I>&gt;<i> I have some more information on this issue: I took out all the code
+</I>&gt;<i> that retrieves the contact list and sets the status (which would
+</I>&gt;<i> trigger availability information), and the server still closes the
+</I>&gt;<i> connection gracefully (i.e. by sending &lt;/stream:stream&gt;).  I even took
+</I>&gt;<i> out the library I was using to handle parsing the XML; I just read it
+</I>&gt;<i> in (in a buffered fashion), and spit it out.  So, it seems as though -
+</I>&gt;<i> on my phone at least (not in debug mode on my computer!) - as soon as
+</I>&gt;<i> I finish sending stanzas one after another, the server closes the
+</I>&gt;<i> connection.  What's up with that?
+</I>&gt;<i> 
+</I>&gt;<i> Oh, and the server is Google Talk.  I'm using SSL.
+</I>
+Maybe download one of the open-source servers and test things out 
+locally before you try to run your software against a live service such 
+as Google Talk? Also, Google Talk has some quirks. You might want to 
+test things with, say, the jabber.org service first.
+
+&gt;<i> Here's what the server sends to me:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;stream:stream from=&quot;gmail.com&quot; id=&quot;2823903EEAA22D0D&quot;
+</I>&gt;<i> xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> xmlns=&quot;jabber:client&quot;&gt;
+</I>&gt;<i>   &lt;iq type=&quot;result&quot;&gt;
+</I>&gt;<i>     &lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+</I>&gt;<i>       &lt;username/&gt;
+</I>&gt;<i>       &lt;resource/&gt;
+</I>&gt;<i>       &lt;password/&gt;
+</I>&gt;<i>     &lt;/query&gt;
+</I>&gt;<i>   &lt;/iq&gt;
+</I>&gt;<i>   &lt;iq type=&quot;result&quot;/&gt;
+</I>&gt;<i> &lt;/stream:stream&gt;
+</I>
+What did you send before you received that?
+
+It seems to me that perhaps you sent this:
+
+&lt;stream:stream
+     to=&quot;gmail.com&quot;
+     xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A>
+     xmlns=&quot;jabber:client&quot;&gt;
+   &lt;iq type=&quot;get&quot;&gt;
+     &lt;query xmlns=&quot;jabber:iq:auth&quot;/&gt;
+   &lt;/iq&gt;
+
+The server may not be happy that you tried to send the &lt;iq/&gt; before you 
+received the response stream header.
+
+Peter
+
+
+-- 
+Peter Saint-Andre
+<A HREF="https://stpeter.im/">https://stpeter.im/</A>
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 7338 bytes
+Desc: S/MIME Cryptographic Signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20080117/fbab9608/attachment-0002.bin">https://www.jabber.org/jdev/attachments/20080117/fbab9608/attachment-0002.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085494.html">[jdev] Server suddenly closing &lt;stream:stream&gt; on	&lt;presence&gt;&lt;status/&gt;&lt;/presence&gt;. Why?
+</A></li>
+	<LI>Next message: <A HREF="085496.html">[jdev] Announcement of ejabberd 2.0.0-rc1
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85495">[ date ]</a>
+              <a href="thread.html#85495">[ thread ]</a>
+              <a href="subject.html#85495">[ subject ]</a>
+              <a href="author.html#85495">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> No subject
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20No%20subject&In-Reply-To=%3CPine.OSF.4.02.9901110205250.6322-100000%40worf.netins.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="029382.html">
+   <LINK REL="Next"  HREF="029387.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>No subject</H1>
+    <B>Jeremie Miller</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20No%20subject&In-Reply-To=%3CPine.OSF.4.02.9901110205250.6322-100000%40worf.netins.net%3E"
+       TITLE="No subject">jeremie at netins.net
+       </A><BR>
+    <I>Mon Jan 11 02:47:17 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="029382.html">[JDEV] How to handle multiple clients
+</A></li>
+        <LI>Next message: <A HREF="029387.html">[JDEV] anonymous users
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29383">[ date ]</a>
+              <a href="thread.html#29383">[ thread ]</a>
+              <a href="subject.html#29383">[ subject ]</a>
+              <a href="author.html#29383">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I've been thinking about the way &quot;modules&quot; work on the server side, or,
+more correctly, within the Jabber transport.  For those that haven't
+looked at it yet, it currently works like this:
+
+ - Each module exposes a set of functions to be called by the server
+ - When a user connects each module is asked to authenticate it
+ - The module that authenticates that user then &quot;owns&quot; that user
+ - Most events that happen for that user(ex: adding user to roster) are
+   passed to that module's exposed function for it
+
+The problem with this setup is that each module cannot leverage
+functionality in another module.  Say you had an easy way to authenticate
+users via Radius and wanted to store their offline messages in a MySQL
+database, you'd have to write your own module from scratch when other
+modules might already contain all of the needed functionality.
+
+My proposal to correct this limitation would be to add a &quot;group&quot; idea to
+the server, so that each user belonged in a group.  Then each group could
+be configured to just use bits and pieces of certian modules, or all of
+one module like it currently is, much more configurable.  All of the auth
+handlers would return a group ID when they autorize a user.
+
+Example, start with the foloowing modules:
+mod_mysql: provides all handlers based on DB tables
+mod_unix: provides auth and info/search only via /etc/passwd
+mod_roster: file based fast hashed roster management
+mod_archive: stores all messages for web based searchable archive
+
+And have the main config file like:
+&lt;users&gt;
+	&lt;locals&gt; #mod_unix returns this group
+		&lt;offline&gt;archive&lt;/offline&gt;
+		&lt;roster&gt;roster&lt;/roster&gt;
+		&lt;message&gt;archive&lt;/message&gt;
+	&lt;/locals&gt;
+
+	#mod_mysql returns this group, default all of it's users to itself
+	&lt;general default='mysql'/&gt; 
+
+	&lt;special&gt;
+		&lt;offline&gt;mysql&lt;/offline&gt;
+		&lt;roster&gt;roster&lt;/roster&gt;
+		&lt;message&gt;archive&lt;/message&gt;
+		&lt;status&gt;mysql&lt;/status&gt;
+	&lt;/special&gt;
+&lt;/users&gt;
+
+Obviously, this is a really simplified example, but hopefully enough to
+convey the idea.  All the modules are asked to authenticate a user, and
+when they do they return one of the group names from above(locals,
+general, special) which the server uses to figure out what module's
+handlers to call for that user.
+
+If there's no problem with this I'm going to go ahead and try this out as
+soon as I get a chance... it's obviously an improvement from what's there
+already :)  Besides, there are lots of handy little modules I'd love to
+write.
+
+oAo,
+
+Jer
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="029382.html">[JDEV] How to handle multiple clients
+</A></li>
+	<LI>Next message: <A HREF="029387.html">[JDEV] anonymous users
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29383">[ date ]</a>
+              <a href="thread.html#29383">[ thread ]</a>
+              <a href="subject.html#29383">[ subject ]</a>
+              <a href="author.html#29383">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber and user database
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20and%20user%20database&In-Reply-To=3DCAD3FC.2090901%40vanbragt.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="014778.html">
+   <LINK REL="Next"  HREF="014781.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber and user database</H1>
+    <B>Steven Brown</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20and%20user%20database&In-Reply-To=3DCAD3FC.2090901%40vanbragt.com"
+       TITLE="[JDEV] Jabber and user database">swbrown at ucsd.edu
+       </A><BR>
+    <I>Thu Nov  7 16:21:34 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="014778.html">[JDEV] Jabber and user database
+</A></li>
+        <LI>Next message: <A HREF="014781.html">[JDEV] Jabber and user database
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14780">[ date ]</a>
+              <a href="thread.html#14780">[ thread ]</a>
+              <a href="subject.html#14780">[ subject ]</a>
+              <a href="author.html#14780">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+</I>&gt;<i> Bart van Bragt
+</I>&gt;<i> Sent: Thursday, November 07, 2002 12:59 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] Jabber and user database
+</I>
+&gt;<i> Curious if someone else can tell us how (non-)trivial it would be to
+</I>&gt;<i> link jabberd to another user database.
+</I>
+I recently did this for the UCSD ActiveCampus project (the students don't
+know yet though) - link our web-based system that had its own concept of
+buddies, IM, etc. to Jabber, so it could use Jabber like an IM appendage
+while our system remains the primary 'server'.  In our case it was a bit
+more complicated, as I needed to mirror and forward login/status/messages
+from users logged in to our web-based system, and users logged in via
+Jabber, and possibly both at the same time.  The 'use the accounts in our
+PHP goo' part was pretty easy though, especially if you're ok with Jabber
+having its own datastore for Jabbery stuff, as then you don't need to
+rewrite the xdb layer.  I wouldn't reccomend messing with xdb much if you
+don't have to; mods to xdb_sql and such are almost certainly overkill.
+
+I added a SOAP API to our PHP system using nusoap so I'd have a way to auth
+users, took a stripped-down mod_auth_plain.c and converted it to compile
+clean as C++, added a link to EasySoap (C++) to make SOAP calls to our PHP
+code, and modified the auth mapi function to check with our server via SOAP
+if an account was valid or not.  One gotcha is that Jabber seems to expect
+to know the plaintext password of the user, but many sites only store
+hashes.  I modified the xdb layer to always just return a junk string on
+auth get, since it's not really needed anyway with this hack due to the SOAP
+call in the auth module.  If you're in my situation and don't know their
+plaintext password, make sure to disable (comment out) all the other
+auth/registration modules.  The only client that seems to have a hard time
+with forced plaintext is PSI, where you need to specifically say to use
+plaintext (bug or security feature?).
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="014778.html">[JDEV] Jabber and user database
+</A></li>
+	<LI>Next message: <A HREF="014781.html">[JDEV] Jabber and user database
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14780">[ date ]</a>
+              <a href="thread.html#14780">[ thread ]</a>
+              <a href="subject.html#14780">[ subject ]</a>
+              <a href="author.html#14780">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

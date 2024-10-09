@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber Transports - New Architecture
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20Transports%20-%20New%20Architecture&In-Reply-To=1015590161.23374.0.camel%40oadev">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="011635.html">
+   <LINK REL="Next"  HREF="011621.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber Transports - New Architecture</H1>
+    <B>Chris Chen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20Transports%20-%20New%20Architecture&In-Reply-To=1015590161.23374.0.camel%40oadev"
+       TITLE="[JDEV] Jabber Transports - New Architecture">ckchris at idream.net
+       </A><BR>
+    <I>Fri Mar  8 11:27:04 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="011635.html">[JDEV] Jabber Transports - New Architecture
+</A></li>
+        <LI>Next message: <A HREF="011621.html">[JDEV] Jabber Transports - New Architecture
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11616">[ date ]</a>
+              <a href="thread.html#11616">[ thread ]</a>
+              <a href="subject.html#11616">[ subject ]</a>
+              <a href="author.html#11616">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>How about this?
+
+Consider the scenario where the Jabber Server still retains all its current 
+functionality without change.  What we have now is this (in a short form 
+relevant to my argument):
+
+1) Distributed &quot;email server like&quot; architecture.  Let's define it as being 
+able to query for a &quot;service&quot; (ie. for emails, through DNS's MX records) 
+through another &quot;service&quot; (ie. DNS server in this case), and then routing 
+messages through that server.
+
+2) Ability to talk to multiple protocols at the same time (ICQ, MSN, Yahoo, 
+etc).
+
+
+So our current problem domain -- To &quot;distribute&quot; the communication with 
+other protocols/services through Jabber.
+
+Proposals:
+
+1) Have clients implement the protocol -- not sound, goes against Jabber 
+philosophy, too tedious to implement a client, etc etc.
+
+2) Have server send plugin codes -- not sounds and difficult to send a 
+language/platform-free data unless you're willing to create a C# CLI/Java 
+CLASS -type file definitions and get every client to implement the compiler 
+for it.
+
+3) Have server send XML protocol definitions -- it's not very possible to 
+be defining the protocol definitions for everything out there and parsing 
+out the info to have working code with it.
+
+
+My proposal:
+
+Rather than try to have &quot;distribute&quot; the communication with other protocols 
+to the clients or have it reside on the server, let's take a more &quot;middle&quot; 
+approach.  Jabber already supports forwarding of messages based on the host 
+part of the JID.  Thus, it supports a string that may also look something 
+like &quot;blahblah%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hotmail.com at non.jabber.org</A>&quot; when I am connected to 
+jabber.org.  It should allow for forwarding of messages to MSN to be routed 
+to a server that supports such service (and if not, it should be fairly 
+easy to implement as it's just an extension of the current Jabber 
+implementation anyways).
+
+Now imagine a set of servers that support, for instance, working AIM 
+transports that is more than one Jabber server but fewer than the number of 
+total Jabber clients out there.  The non-AIM-working Jabber Servers (call 
+them &quot;AIM Ignorants&quot;) will know how to route the AIM messages to such a set 
+of servers (call them &quot;AIM Forwarders&quot; in this situation).
+
+So what we get is a solution for our problem domain:
+
+Let's reiterate -- Problem Domain -- To &quot;distribute&quot; the communication with 
+other protocols/services through Jabber.
+
+Solution Advantages:
+
+*) Effectively eliminating the clients to code for protocol 
+implementations, so clients stay the same as now.
+*) Jabber servers can forward service-related messages to those that can 
+handle them.  Those AIM Ignorant servers (be it disabled or blocked) will 
+route the messages to the AIM Forwarders (server that hasn't been blocked yet).
+*) Scalibility and Efficiency like the &quot;email-style&quot; routing.
+*) Uses the current Jabber server implementations without much change, so 
+less coding on the server as well.
+
+
+Of course, every solution comes with a few little &quot;perks&quot;.  Let me 
+demonstrate with a scenario that will explain it better:
+
+Imagine a world where the Jabber Server implements the solution.  The 
+workflow of the message that is being sent by a client is as follows 
+(including implementation suggestions and details):
+
+1) Client is connected to jabber.org that is AIM Ignorant (because it is 
+blocked).
+2) Client sends a message to an AIM user user%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aol.com at aim.jabber.org.</A>
+3*) jabber.org sends an UDDI query to the UDDI Registry, asking for AIM 
+Forwarders.
+4) A set of results come back from the registry.  Jabber.org picks out 
+aim.noonecanblockme.org, connects to it through s2s connection, and sends 
+the message through the AIM Forwarder.
+5) aim.noonecanblockme.org sends the message.
+
+In this scenario, I've marked the step that is additional to the current 
+Jabber implementation.  However, UDDI queries and registries should be very 
+easy to implement.  In fact, it doesn't even have to be UDDI.  It simply 
+needs to be a registry that contains the set of servers for it.
+
+Now the additional thing to change is also the working of service 
+registration for the user and other parts.
+
+I know there are more things to change than what I suggested.  However, the 
+gist of the solution is that there is a &quot;centralized&quot; (or decentralized 
+since the registry can work like the DNS servers) place to query for AIM 
+Forwarders (but in a broader sense).
+
+The biggest issues with this problem:
+
+AOL comes over and decides to be a cheater and signs on as a 
+user/server.  Then it queries the registry directly for the list of servers 
+and kaboom, all the Smart Forwarders just became Dumb Ignorant Idiots.. 
+:<i>)  Thus I think a certificate-based authorization is required to connect 
+</I>to the registry.  The certificates are only issued to those that are 
+approved.  Bigger overhead, but it will lead to better interoperability.
+
+What do you all think?
+
+Chris
+
+PGP at <A HREF="ldap://certserver.pgp.com/">ldap://certserver.pgp.com/</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="011635.html">[JDEV] Jabber Transports - New Architecture
+</A></li>
+	<LI>Next message: <A HREF="011621.html">[JDEV] Jabber Transports - New Architecture
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11616">[ date ]</a>
+              <a href="thread.html#11616">[ thread ]</a>
+              <a href="subject.html#11616">[ subject ]</a>
+              <a href="author.html#11616">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

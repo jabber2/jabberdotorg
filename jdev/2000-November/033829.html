@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabberd segfault under load
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%20segfault%20under%20load&In-Reply-To=%3C20001107045922.A448%40jabber.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="033814.html">
+   <LINK REL="Next"  HREF="033820.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabberd segfault under load</H1>
+    <B>Schuyler Heath</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%20segfault%20under%20load&In-Reply-To=%3C20001107045922.A448%40jabber.org%3E"
+       TITLE="[JDEV] jabberd segfault under load">sheath at jabber.org
+       </A><BR>
+    <I>Tue Nov  7 05:59:22 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="033814.html">[JDEV] jabberd segfault under load
+</A></li>
+        <LI>Next message: <A HREF="033820.html">[JDEV] jabberd segfault under load
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33829">[ date ]</a>
+              <a href="thread.html#33829">[ thread ]</a>
+              <a href="subject.html#33829">[ subject ]</a>
+              <a href="author.html#33829">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Have you been testing with pthsock?  If so, this is most likely your
+problem.  Checkout jpolld from CVS, it should work a lot better under
+load.
+
+Schuyler
+
+On Tue, Nov 07, 2000 at 02:13:30PM +0200, Dennis Noordsij wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> I have been doing some tests with jabber 1.2, using the binaries available 
+</I>&gt;<i> because the CVS doesn't compile for me (some error in jabberd.h).
+</I>&gt;<i> 
+</I>&gt;<i> I am running the simulator from the CVS to simulate a client load to a 
+</I>&gt;<i> seperate machine on the 100mbps network.
+</I>&gt;<i> 
+</I>&gt;<i> The simulator runs on my laptop (P3-700, 128MB ram), the jabberd server on a 
+</I>&gt;<i> dedicated machine (no X etc), a P3-500 with 64MB. 
+</I>&gt;<i> 
+</I>&gt;<i> I set up the simulator to send a message only once every 10 seconds, and 
+</I>&gt;<i> connect every second.
+</I>&gt;<i> 
+</I>&gt;<i> After about 100 users top claims that jabberd is taking up 90% of the CPU, 
+</I>&gt;<i> network load is quite low, maybe 10-20 k/sec. I have been able to connect 
+</I>&gt;<i> 1000 users to jabberd on my own machine (using localhost, bumped up the 
+</I>&gt;<i> ip_local_port_range and fs/inode-max and fs/file-max), this time I expected 
+</I>&gt;<i> more over the network. After 1700 users the jabberd server segfaulted, so I 
+</I>&gt;<i> tried again logging everything, this time it segfaulted after 1021 users.
+</I>&gt;<i> 
+</I>&gt;<i> I have attached the last 50 or so lines from the jabberd -D output, it is a 
+</I>&gt;<i> stock 1.2 jabber server, no agents, standard spooling, etc. 
+</I>&gt;<i> 
+</I>&gt;<i> Anyone who can help me out? :)
+</I>&gt;<i> 
+</I>&gt;<i> Regards
+</I>&gt;<i> Dennis
+</I>&gt;<i> 
+</I>&gt;<i> PS - I think the load is quite high for so little users. I imagine that an 
+</I>&gt;<i> IRC server would use more resources per client and still it handles much more 
+</I>&gt;<i> clients, although you have reported jabberd to handle 20,000-40,000 
+</I>&gt;<i> connections. What can I reasonable expect with a Linux system? It appears raw 
+</I>&gt;<i> CPU power is much more important than memory, still I expect 10,000 clients 
+</I>&gt;<i> on a P3 system :-)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> --------- START &quot;jabberd -D&quot; OUTPUT ---------------------
+</I>&gt;<i> 
+</I>&gt;<i> Tue Nov  7 13:49:36 2000  deliver.c:344 delivering to instance 'sessions'
+</I>&gt;<i> Tue Nov  7 13:49:36 2000  deliver.c:84 (80B6238)incoming packet &lt;route 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0360 at 194.100.32.65</A>/89DBD18' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">381 at c2s</A>/89A76A0'&gt;&lt;message id='360' 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0139 at 194.100.32.65</A>'&gt;&lt;thread&gt;asdf&lt;/thread&gt;&lt;subject/&gt;&lt;body&gt;This is a long, 
+</I>&gt;<i>         multiline message.&lt;/body&gt;&lt;/message&gt;&lt;/route&gt;
+</I>&gt;<i> Tue Nov  7 13:49:36 2000  users.c:147 
+</I>&gt;<i> js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0360 at 194.100.32.65</A>/89DBD18,8124428)
+</I>&gt;<i> Tue Nov  7 13:49:36 2000  mtqoverflow 8190 overflowing B7F7A80
+</I>&gt;<i> Tue Nov  7 13:49:36 2000  io_select.c:105 WRITE 381 len -1 of &lt;message 
+</I>&gt;<i> id='804' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0360 at 194.100.32.65</A>' 
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0804 at 194.100.32.65</A>/r973595128'&gt;&lt;thread&gt;asdf&lt;/thread&gt;&lt;subject/&gt;&lt;body&gt;This 
+</I>&gt;<i> is a long,         multiline message.&lt;/body&gt;&lt;/message&gt;
+</I>&gt;<i> 
+</I>&gt;<i> Tue Nov  7 13:49:36 2000  deliver.c:472 DELIVER 4:194.100.32.65 &lt;route 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0359 at 194.100.32.65</A>/8940F20' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">380 at c2s</A>/89BC768'&gt;&lt;message id='359' 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0534 at 194.100.32.65</A>'&gt;&lt;thread&gt;asdf&lt;/thread&gt;&lt;subject/&gt;&lt;body&gt;This is a long, 
+</I>&gt;<i>         multiline message.&lt;/body&gt;&lt;/message&gt;&lt;/route&gt;
+</I>&gt;<i> Tue Nov  7 13:49:36 2000  deliver.c:344 delivering to instance 'sessions'
+</I>&gt;<i> Tue Nov  7 13:49:36 2000  deliver.c:84 (80B6238)incoming packet &lt;route 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0359 at 194.100.32.65</A>/8940F20' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">380 at c2s</A>/89BC768'&gt;&lt;message id='359' 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0534 at 194.100.32.65</A>'&gt;&lt;thread&gt;asdf&lt;/thread&gt;&lt;subject/&gt;&lt;body&gt;This is a long, 
+</I>&gt;<i>         multiline message.&lt;/body&gt;&lt;/message&gt;&lt;/route&gt;
+</I>&gt;<i> Tue Nov  7 13:49:36 2000  users.c:147 
+</I>&gt;<i> js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0359 at 194.100.32.65</A>/8940F20,8124428)
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  mtqoverflow 8191 overflowing B7FA290
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  deliver.c:472 DELIVER 4:194.100.32.65 &lt;route 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0359 at 194.100.32.65</A>/8940F20' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">380 at c2s</A>/89BC768'&gt;&lt;message id='359' 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0397 at 194.100.32.65</A>'&gt;&lt;thread&gt;asdf&lt;/thread&gt;&lt;subject/&gt;&lt;body&gt;This is another 
+</I>&gt;<i> short message!&lt;/body&gt;&lt;/message&gt;&lt;/route&gt;
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  deliver.c:344 delivering to instance 'sessions'
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  deliver.c:84 (80B6238)incoming packet &lt;route 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0359 at 194.100.32.65</A>/8940F20' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">380 at c2s</A>/89BC768'&gt;&lt;message id='359' 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0397 at 194.100.32.65</A>'&gt;&lt;thread&gt;asdf&lt;/thread&gt;&lt;subject/&gt;&lt;body&gt;This is another 
+</I>&gt;<i> short message!&lt;/body&gt;&lt;/message&gt;&lt;/route&gt;
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  users.c:147 
+</I>&gt;<i> js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0359 at 194.100.32.65</A>/8940F20,8124428)
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  mtqoverflow 8192 overflowing B7FB648
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  deliver.c:472 DELIVER 4:194.100.32.65 &lt;route 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0359 at 194.100.32.65</A>/8940F20' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">380 at c2s</A>/89BC768'&gt;&lt;message id='359' 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0969 at 194.100.32.65</A>'&gt;&lt;thread&gt;asdf&lt;/thread&gt;&lt;subject/&gt;&lt;body&gt;How are 
+</I>&gt;<i> you?&lt;/body&gt;&lt;/message&gt;&lt;/route&gt;
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  deliver.c:344 delivering to instance 'sessions'
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  deliver.c:84 (80B6238)incoming packet &lt;route 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0359 at 194.100.32.65</A>/8940F20' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">380 at c2s</A>/89BC768'&gt;&lt;message id='359' 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0969 at 194.100.32.65</A>'&gt;&lt;thread&gt;asdf&lt;/thread&gt;&lt;subject/&gt;&lt;body&gt;How are 
+</I>&gt;<i> you?&lt;/body&gt;&lt;/message&gt;&lt;/route&gt;
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  users.c:147 
+</I>&gt;<i> js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0359 at 194.100.32.65</A>/8940F20,8124428)
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  mtqoverflow 8193 overflowing B7FCA00
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  deliver.c:472 DELIVER 4:194.100.32.65 &lt;route 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0359 at 194.100.32.65</A>/8940F20' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">380 at c2s</A>/89BC768'&gt;&lt;message id='359' 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0225 at 194.100.32.65</A>'&gt;&lt;thread&gt;asdf&lt;/thread&gt;&lt;subject/&gt;&lt;body&gt;This is a long, 
+</I>&gt;<i>         multiline message.&lt;/body&gt;&lt;/message&gt;&lt;/route&gt;
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  deliver.c:344 delivering to instance 'sessions'
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  deliver.c:84 (80B6238)incoming packet &lt;route 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0359 at 194.100.32.65</A>/8940F20' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">380 at c2s</A>/89BC768'&gt;&lt;message id='359' 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0225 at 194.100.32.65</A>'&gt;&lt;thread&gt;asdf&lt;/thread&gt;&lt;subject/&gt;&lt;body&gt;This is a long, 
+</I>&gt;<i>         multiline message.&lt;/body&gt;&lt;/message&gt;&lt;/route&gt;
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  users.c:147 
+</I>&gt;<i> js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0359 at 194.100.32.65</A>/8940F20,8124428)
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  mtqoverflow 8194 overflowing B7FDEA8
+</I>&gt;<i> Tue Nov  7 13:49:37 2000  io_select.c:105 WRITE 380 len 225 of &lt;message 
+</I>&gt;<i> id='359' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f0359 at 194.100.32.65</A>/r973595128' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">f2480 at 194.100.32.65</A>' 
+</I>&gt;<i> type='error'&gt;&lt;thread&gt;asdf&lt;/thread&gt;&lt;subject/&gt;&lt;body&gt;This is a long,         
+</I>&gt;<i> multiline message.&lt;/body&gt;&lt;error code='404'&gt;Not Fou
+</I>&gt;<i> 
+</I>&gt;<i> segfault
+</I>&gt;<i> 
+</I>&gt;<i> ----------------------------------------------------
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> What I noticed after this was that in /var/log/messages on the jabberd serer 
+</I>&gt;<i> it said &quot;eth0: can't fille rx buffer (force 1)!&quot; &quot;eth0:card reports no 
+</I>&gt;<i> resources&quot; etc. I am not sure what to think of this, the NIC is an Intel 
+</I>&gt;<i> EtherExpress. Is it simply hardware? Did I screw up some tuning parameters? 
+</I>&gt;<i> Still shouldn't jabberd spool messages if it can't send them? Anyone care to 
+</I>&gt;<i> share their tuning tips to enable me to get 10,000 clients connected? :-)
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="033814.html">[JDEV] jabberd segfault under load
+</A></li>
+	<LI>Next message: <A HREF="033820.html">[JDEV] jabberd segfault under load
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33829">[ date ]</a>
+              <a href="thread.html#33829">[ thread ]</a>
+              <a href="subject.html#33829">[ subject ]</a>
+              <a href="author.html#33829">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,55 @@
+--- mio_ssl.c.old	Tue May 22 11:47:33 2001
++++ mio_ssl.c	Tue May 22 11:47:43 2001
+@@ -1,5 +1,7 @@
+ #include "jabberd.h"
+ 
++#include "openssl/err.h"
++
+ #ifdef HAVE_SSL
+ HASHTABLE ssl__ctxs;
+ 
+@@ -145,7 +147,7 @@
+ {
+     SSL *ssl=NULL;
+     SSL_CTX *ctx = NULL;
+-    int fd;
++    int fd,ret;
+ 
+     if(m->ip == NULL)
+     {
+@@ -165,17 +167,27 @@
+     log_debug(ZONE, "SSL accepting socket with new session %x", ssl);
+     SSL_set_fd(ssl, fd);
+     SSL_set_accept_state(ssl);
+-    if(SSL_accept(ssl) <= 0){
++    if((ret = SSL_accept(ssl)) <= 0){
+         unsigned long e;
+         static char *buf;
+         
+-        e = ERR_get_error();
+-        buf = ERR_error_string(e, NULL);
+-        log_debug(ZONE, "Error from SSL: %s", buf);
+-        log_debug(ZONE, "SSL Error in SSL_accept call");
+-        SSL_free(ssl);
+-        close(fd);
+-        return -1;
++        e = SSL_get_error(ssl,ret);
++        while (e == SSL_ERROR_WANT_READ){
++            if ((ret = SSL_accept(ssl)) <= 0){
++              e = SSL_get_error(ssl,ret);
++            } else {
++              e = 1;
++            }
++        }
++
++        if (e <= 0){
++            buf = ERR_error_string(e, NULL);
++            log_debug(ZONE, "Error %d from SSL: %s", e, buf);
++            log_debug(ZONE, "SSL Error in SSL_accept call");
++            SSL_free(ssl);
++            close(fd);
++            return -1;
++        }
+     }
+ 
+     m->ssl = ssl;

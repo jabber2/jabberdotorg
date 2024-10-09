@@ -1,0 +1,237 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabber tests - jabber leaks....
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabber%20tests%20-%20jabber%20leaks....&In-Reply-To=%3C3C680A1A.4000104%40medialogic.it%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="040423.html">
+   <LINK REL="Next"  HREF="040582.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabber tests - jabber leaks....</H1>
+    <B>kuba troszok</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabber%20tests%20-%20jabber%20leaks....&In-Reply-To=%3C3C680A1A.4000104%40medialogic.it%3E"
+       TITLE="[JDEV] jabber tests - jabber leaks....">troszok at medialogic.it
+       </A><BR>
+    <I>Mon Feb 11 12:14:50 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="040423.html">[JDEV] Re: MSN transport
+</A></li>
+        <LI>Next message: <A HREF="040582.html">[JDEV] newbean handler
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40428">[ date ]</a>
+              <a href="thread.html#40428">[ thread ]</a>
+              <a href="subject.html#40428">[ subject ]</a>
+              <a href="author.html#40428">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+lately me and my coworker ( Dan Anghel )
+have done some tests of the jabber server + jpolld as this is
+the installation that is commonly used for
+bigger jabber installations and we found some
+memory leaks problems.
+We were using slightly modified version of
+the jabbertestsuite from sf.net.
+We modified this test suite because it doesn't
+represent exactly the real situation. In
+original version it was sending only messages
+while there are more possible types of xml tags passing
+trough jabber server.
+
+These are the tests:
+
+1. 100 users 2 messages/sec 100 seconds ; 50 users sending, 50 receiving;
+   without JPOLLD
+
+
+2. 100 users 2messages+2presences/sec 100 seconds; 50 users sending, 50
+   receiving; without JPOLLD
+
+
+3. 100 users 2 messages/sec 100 seconds; 50 users sending, 50 receiving; with JPOLLD
+
+
+4. 100 users 2 messages+2presence/sec 100 seconds; 50 users sending, 50
+   receiving; with JPOLLD
+
+
+Every person had 10 persons in roster so one presence sent
+implies 10 &lt;presence&gt; passed trough the server
+
+The problem is that jabberd after tests 1,2,3 is not growing very
+much while after test 4 is growing 20 times!!! From 1MB to 22MB!!!
+The other problem also is that we have 22% of loss in messages/presence!
+
+Ok the possible source of problem could be jpolld that is not
+working as it should work but it is not acceptable why jabberd is growing ?
+
+We found some time ago ( correct me if i'm wrong ) that some packets
+are discarded during routing inside jabberd after certain time.
+Is it possible that discraded doesn't mean deleted from memory ?
+Last week somebody on jdev sent an email explaining the
+problem with packet sent to update.jabber.org on every login.
+I looks like we have a much more problems like this.
+
+Anyway don't know what packets ( message/presence )
+are missing. I'm starting working  on this and i
+will try to inform you ASAP.
+
+For a proposition of a how to modify jpolld look at  
+next e-mail on <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at j.o</A>
+
+=====================================================
+And here are results:
+---------------------------------
+
+TEST 1
+MESSAGES STATISTICS
+UserPs Rate  Duration MinDelTime MaxDelTime AvgDelTime MsgCnt ExpMsg MsgLossRate
+50     2     100      0.00184    2.68925    0.03644    10000  10000  0.00000
+
+
+Jabberd Memory before:
+SIZE 
+RSS 
+SHARE
+1364 
+1364 
+1036
+
+Jabberd Memory After:
+
+SIZE	RSS	SHARE
+1520   1520	1040
+
+
+slight change
+
+----------------------------------
+Test 2:
+
+MESSAGES STATISTICS
+UserPs Rate  Duration MinDelTime MaxDelTime AvgDelTime MsgCnt ExpMsg MsgLossRate
+50     2     100      0.00375    8.94612    0.15460    10000  10000  0.00000
+
+
+still no lost messages, but the average delivery time 5 times bigger than
+without presence, the max delivery time 4 times bigger.
+
+
+MEMORY STATISTICS
+
+before:
+
+SIZE	RSS	SHARE
+1364	1364	1036
+
+after:
+
+SIZE	RSS	SHARE
+1532	1532	1040
+
+
+everything ok
+
+-----------------------------------------
+
+TEST 3
+MESSAGES STATISTICS
+UserPs Rate  Duration MinDelTime MaxDelTime AvgDelTime MsgCnt ExpMsg MsgLossRate
+50     2     100      0.00279    0.09399    0.01346    10000  10000  0.00000
+
+
+everything is okay, no messages lost, maybe the average delivery time increased
+comparing with jabber alone, without jpolld.
+
+
+MEMORY STATISTICS
+
+jabberd before:
+
+SIZE	RSS	SHARE 
+1340	1340	1012
+jabberd after:
+SIZE	RSS	SHARE
+1520	1520	1024
+
+
+jpolld before:
+
+RSS	SHARE	STAT
+624	624	524 
+
+
+jpolld after:
+
+SIZE  RSS SHARE 
+1352 1352   524       
+
+
+-----------------------------------------
+
+TEST 4
+
+
+UserPs Rate  Duration MinDelTime MaxDelTime AvgDelTime MsgCnt ExpMsg MsgLossRate
+50     2     100      0.00467    28.27364   8.58076    7741   10000  0.22590
+
+
+22,59% of messages lost
+
+
+&gt;<i> MEMORY STATISTICS
+</I>
+jabberd before test:
+
+SIZE	RSS	SHARE
+1332	1332	1012
+
+
+
+jabberd after test:
+
+SIZE	RSS	SHARE
+21340	20M	1024   !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Jpolld before the test
+SIZE	RSS	SHARE
+624    	624   	524
+jpolld after test:
+SIZE  	RSS	SHARE 
+1416  	1416	524
+
+
+-------------------------------------------
+---kuba troszok
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">troszok at medialogic.it</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="040423.html">[JDEV] Re: MSN transport
+</A></li>
+	<LI>Next message: <A HREF="040582.html">[JDEV] newbean handler
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40428">[ date ]</a>
+              <a href="thread.html#40428">[ thread ]</a>
+              <a href="subject.html#40428">[ subject ]</a>
+              <a href="author.html#40428">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

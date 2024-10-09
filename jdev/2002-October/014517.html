@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Segfault/Dynamic linking Issue with AIM Transport
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Segfault/Dynamic%20linking%20Issue%20with%20AIM%20Transport&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="014526.html">
+   <LINK REL="Next"  HREF="014529.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Segfault/Dynamic linking Issue with AIM Transport</H1>
+    <B>Matthew Stromberg</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Segfault/Dynamic%20linking%20Issue%20with%20AIM%20Transport&In-Reply-To="
+       TITLE="[JDEV] Segfault/Dynamic linking Issue with AIM Transport">mjstrom at hotmail.com
+       </A><BR>
+    <I>Tue Oct 15 15:28:43 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="014526.html">[JDEV] Jabber Presence response from buddies on other IMs
+</A></li>
+        <LI>Next message: <A HREF="014529.html">[JDEV] Segfault/Dynamic linking Issue with AIM Transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14517">[ date ]</a>
+              <a href="thread.html#14517">[ thread ]</a>
+              <a href="subject.html#14517">[ subject ]</a>
+              <a href="author.html#14517">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Greetings,
+
+I ran into a strange problem with the AOL transport version 
+aim-transport-stable-20020711.  I am running the transport out-of-process 
+and connecting it to jabber 1.4.2.  What happens is that when ever I attempt 
+to talk to the gateway (either registering the gateway or sending a message) 
+the AOL process either gives a seg fault or dies with an error about not 
+being able to resolve the htons function (a dynamic linking error).
+
+The system is running Red Hat 7.1 and I had just applied the glibc update 
+(2.2.4-30) for the resolver issue 
+(<A HREF="http://rhn.redhat.com/errata/RHSA-2002-197.html">http://rhn.redhat.com/errata/RHSA-2002-197.html</A>).  Prior to this, the 
+transport worked fine with no problem what so ever.  But since I applied the 
+update - no dice.
+
+I can't figure out why the problem is occuring.  The system has been 
+rebooted, the dynamic library cache has been updated.
+
+I am running the transport by : (while in the jabber directory) 
+./jabberd/jabberd -c jabber-aim.xml
+
+The stack back trace from gdb for the jabberd process  is :
+
+#0  0x4000d365 in fixup (l=0xfe1e0, reloc_offset=1074044772) at 
+../sysdeps/i386/dl-machine.h:292
+#1  0x4000d4e0 in _dl_runtime_resolve () from /lib/ld-linux.so.2
+#2  0x4018b7b5 in aim_newconn (sess=0x8177b90, type=7, dest=0x401a80b7 
+&quot;login.oscar.aol.com&quot;) at conn.c:646
+#3  0x4019ee51 in at_session_create (ti=0x8170d30, aim_data=0x8177770, 
+jp=0x8176680) at sessions.c:854
+#4  0x401992d8 in at_register (ti=0x8170d30, jp=0x8176680) at register.c:111
+#5  0x40197f02 in at_parse_packet (arg=0x8176670) at parser.c:37
+#6  0x08056ce7 in mtq_main (arg=0x80ce900) at mtq.c:151
+#7  0x08082e43 in pth_spawn_trampoline ()
+#8  0x400931b4 in __makecontext () at __makecontext:-1
+#9  0x0805a36e in _pool_free (p=0x80ce848, f=0x8171060, arg=0x18) at 
+pool.c:124
+#10 0x400c09de in chunk_alloc (ar_ptr=0x18, nb=135729248) at malloc.c:2843
+#11 0x40176e34 in __DTOR_END__ () from /lib/i686/libc.so.6
+
+&gt;<i>From what I have gathered, the aim_newconn is at the point where it calls 
+</I>the aim_proxyconnect function.  in that function the atons is called.  
+Looking at the symbol dump for the libc that the process is using the htons 
+function is located at : 000fe1e0 T htons which corresponds to the first 
+parameter to the fixup function.
+
+This is what the debug (jabberd -D) log gives :
+
+ue Oct 15 16:24:45 2002  init.c:24 [AT] we got a packet from jabberd: &lt;iq 
+type='set' id='jimAgentID928' to='aim.pgh-jab2.duquesne.net' 
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mjs at pgh-jab2.duquesne.net</A>/Work'&gt;&lt;query 
+xmlns='jabber:iq:register'&gt;&lt;username&gt;mjstrom3&lt;/username&gt;&lt;password&gt;PASSWORD&lt;/password&gt;&lt;key&gt;cd920711066050ba20ce16805254dfbc6e42b820&lt;/key&gt;&lt;/query&gt;&lt;/iq&gt;
+Tue Oct 15 16:24:45 2002  mio.c:607 mio while loop top
+Tue Oct 15 16:24:45 2002  mtq 80CF2F0 entering from pth
+Tue Oct 15 16:24:45 2002  mtq 80CF2F0 one call 8176E10
+Tue Oct 15 16:24:45 2002  parser.c:22 [AT] parsing packet for 
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mjs at pgh-jab2.duquesne.net</A>/Work
+Tue Oct 15 16:24:45 2002  sessions.c:1269 [AT] Finding session for 
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mjs at pgh-jab2.duquesne.net</A>
+Tue Oct 15 16:24:45 2002  register.c:49 [AIM] Handling register:set.
+
+Tue Oct 15 16:24:45 2002  register.c:109 [AT] Attempting to start a session 
+from register
+Tue Oct 15 16:24:45 2002  sessions.c:1269 [AT] Finding session for 
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mjs at pgh-jab2.duquesne.net</A>
+Tue Oct 15 16:24:45 2002  sessions.c:845 [AT] Going to start session for 
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mjs at pgh-jab2.duquesne.net</A>/Work
+New session for <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mjs at pgh-jab2.duquesne.net</A>/Work
+Segmentation fault (core dumped)
+
+
+This is an example of where it crashes when I attempt to register the 
+gateway.
+
+Any suggestions?
+Matthew Stromberg
+
+
+_________________________________________________________________
+Surf the Web without missing calls!&#160;Get MSN Broadband.  
+<A HREF="http://resourcecenter.msn.com/access/plans/freeactivation.asp">http://resourcecenter.msn.com/access/plans/freeactivation.asp</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="014526.html">[JDEV] Jabber Presence response from buddies on other IMs
+</A></li>
+	<LI>Next message: <A HREF="014529.html">[JDEV] Segfault/Dynamic linking Issue with AIM Transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14517">[ date ]</a>
+              <a href="thread.html#14517">[ thread ]</a>
+              <a href="subject.html#14517">[ subject ]</a>
+              <a href="author.html#14517">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

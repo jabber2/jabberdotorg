@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber in the real world.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20in%20the%20real%20world.&In-Reply-To=%3C20010124131409.H930%40box5.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="035085.html">
+   <LINK REL="Next"  HREF="034982.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber in the real world.</H1>
+    <B>Thomas Muldowney</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20in%20the%20real%20world.&In-Reply-To=%3C20010124131409.H930%40box5.net%3E"
+       TITLE="[JDEV] Jabber in the real world.">temas at box5.net
+       </A><BR>
+    <I>Wed Jan 24 13:14:09 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="035085.html">[JDEV] Re: Jabber wish-list
+</A></li>
+        <LI>Next message: <A HREF="034982.html">[JDEV] jabber = a free integrated messaging service ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35027">[ date ]</a>
+              <a href="thread.html#35027">[ thread ]</a>
+              <a href="subject.html#35027">[ subject ]</a>
+              <a href="author.html#35027">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>More replies down there...
+
+On Wed, Jan 24, 2001 at 01:43:53PM +0000, Michael Wilson wrote:
+&gt;<i> &gt; What is the XML you are sending it?
+</I>&gt;<i> 
+</I>&gt;<i> The main problem with valid XML is the initial identification; if
+</I>&gt;<i> you send a registration or logon request that fails followed by a
+</I>&gt;<i> successful one, the socket hangs and the server stops accepting
+</I>&gt;<i> new connections. We also tried throwing random characters and XML
+</I>&gt;<i> fragments at the server which sometimes caused the same failure.
+</I>
+We actually found some good bugs for 1.4, most of these issues should be
+solved.
+
+&gt;<i> &gt;  Have you tried CVS which will be 1.4 soon?
+</I>&gt;<i> 
+</I>&gt;<i> We usually only work with stable releases, but I do keep meaning
+</I>&gt;<i> to set up and have a play with 1.4 when I get the time.
+</I>
+I totally understand, it just might be good to keep your eye on CVS every once
+in a while, it's usually fairly rapid development in CVS, and a lot of new
+features get put on.  It's probably good to know where you can slim down your 
+proxy code when possible =)
+
+
+&gt;<i> &gt; Could you be more specific?  I believe all our handling is per XML
+</I>&gt;<i> &gt; standards regarding CDATA and PCDATA sections.
+</I>&gt;<i> 
+</I>&gt;<i> What I suspect is happening is that Jabber is treating everything
+</I>&gt;<i> as UTF-8. Jabber 1.2 won't accept non-ascii characters at all; it
+</I>&gt;<i> drops the stream. This would be fine if it wasn't for the fact that it
+</I>&gt;<i> unescapes most (but not all) escaped characters even if they're not
+</I>&gt;<i> ascii. It also inserts a 196 character before the special character
+</I>&gt;<i> (which I have to strip out since the client is expecting just
+</I>&gt;<i> ISO-Latin 8 bit encoding). It would be far preferable if Jabber just
+</I>&gt;<i> passed through escape and special characters without modification.
+</I>&gt;<i> 
+</I>&gt;<i> I logged these issues in Jaber's Bugzilla a couple of months ago, but
+</I>&gt;<i> the
+</I>&gt;<i> page seems to have dissappeared; I presume this has been discontinued?
+</I>
+I'm a little confused by what your trying to do versus the functionality of the
+server at this point.  As far as my tests have shown, the jabber server follows
+the XML standards:
+
+<A HREF="http://www.w3.org/TR/2000/REC-xml-20001006#charsets">http://www.w3.org/TR/2000/REC-xml-20001006#charsets</A>
+
+As described all encodings should be in UTF-8 or UTF-16.  If you could give me
+more info on what your sending, I could explore it as a bug.  I'm sorry about 
+the bugtraq, but it somehow didn't get moved to the new site.  A new bug system
+is on the way with major site upgrades the primary webmaster and I are working
+on.
+
+
+&gt;<i> &gt; ACL is scheduled to be in 1.4, I'm not sure how far along it is.
+</I>&gt;<i> 
+</I>&gt;<i> Is this per user, per group or per server? Does groupchat have
+</I>&gt;<i> IRC-style channel access control too? Certainly would be nice...
+</I>
+ACL is server based for the 1.4 release.  Groupchat will gain better
+functionality now that jabber:iq:browse is becoming an accepted standard.  Docs
+should be published shortly.
+
+&gt;<i> &gt; Virtual Servers are already in and work fine.
+</I>&gt;<i> 
+</I>&gt;<i> Do they need to run on seperate port/IP combinations or will they
+</I>&gt;<i> multiplex onto a single listening socket?
+</I>
+multiple host definitions for a service works great.  I use it for testing on 
+my box all the time.  I run a &quot;localhost&quot; for local testing and a 
+&quot;192.168.1.100&quot; host for my external testing, and then a &quot;temas.xxxxxx.net&quot; for
+my s2s testing.  All of those are from within the same basic config.
+
+
+&gt;<i> &gt; Could you be more specific for what you are looking for?
+</I>&gt;<i> 
+</I>&gt;<i> Well, an example would be someone in the 'support' domain
+</I>&gt;<i> sending a broadcast message of 'Anyone over there know anything
+</I>&gt;<i> about the ADSL NAT setup?' to the 'networks' domain. Everyone
+</I>&gt;<i> in the 'networks' domain would get this (in our client it pops
+</I>&gt;<i> up in a seperate window). Our system also supports sending
+</I>&gt;<i> broadcast messages to all logged in users in all domains for
+</I>&gt;<i> things like 'Restarting all servers, please re-login in 5 mins.'
+</I>&gt;<i> If this maps onto virtual servers in Jabber 1.4 this would mean
+</I>&gt;<i> the ability to message all users on a particular virtual server
+</I>&gt;<i> or the entire cluster.
+</I>
+The broadcasting to a group I'm not so sure about, sounds like something that
+mod_groups would have (which I'm not sure about status on).  The admin level
+messaging is (and has been) there.  If the user has admin level rights they can
+send a message to servername.com/announce/online and it will be broadcasted to 
+all of the online users.  You can also send it /all and have it sent to everyone
+regardless of their current login state (This was put in for 1.4).
+
+&gt;<i> &gt; There are some better statistics given by the 1.4 server, but more
+</I>&gt;<i> &gt; is always better in some environments =)
+</I>&gt;<i> 
+</I>&gt;<i> HR tend to say that they can never have too many metrics ;&gt;
+</I>
+What is it... 80% of all statistics are wrong?  ;-)  Gotta have something to 
+back up crazy funding and ideas ;-)
+
+&gt;<i> &gt; Have you played with jpolld at all?  This is a front end that handles TCP/IP
+</I>&gt;<i> &gt; multiplexing into jabber.
+</I>&gt;<i> 
+</I>&gt;<i> Nope; sounds good though. Does it hide the fact that there are actually
+</I>&gt;<i> several back end servers from the users? Where would you run it in this
+</I>&gt;<i> configuration (presumably on multiple machines)?
+</I>
+Yes, it is designed with that whole idea in mind.  Check it out from cvs, along
+with the scale directory.  It's fun =)
+
+Feel free to jabber me any questions you have.
+
+JID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">temas at jabber.org</A>
+
+--temas
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010124/e27af7e1/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20010124/e27af7e1/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="035085.html">[JDEV] Re: Jabber wish-list
+</A></li>
+	<LI>Next message: <A HREF="034982.html">[JDEV] jabber = a free integrated messaging service ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35027">[ date ]</a>
+              <a href="thread.html#35027">[ thread ]</a>
+              <a href="subject.html#35027">[ subject ]</a>
+              <a href="author.html#35027">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

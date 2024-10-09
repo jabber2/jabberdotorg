@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] [Fwd: [Interop] XSF Server Test Suite]
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%5BFwd%3A%20%5BInterop%5D%20XSF%20Server%20Test%20Suite%5D&In-Reply-To=%3C4AC23FFA.90406%40stpeter.im%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058508.html">
+   <LINK REL="Next"  HREF="058510.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] [Fwd: [Interop] XSF Server Test Suite]</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%5BFwd%3A%20%5BInterop%5D%20XSF%20Server%20Test%20Suite%5D&In-Reply-To=%3C4AC23FFA.90406%40stpeter.im%3E"
+       TITLE="[jdev] [Fwd: [Interop] XSF Server Test Suite]">stpeter at stpeter.im
+       </A><BR>
+    <I>Tue Sep 29 12:12:26 CDT 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058508.html">[jdev] [ANN] Prosody 0.5.2 Released
+</A></li>
+        <LI>Next message: <A HREF="058510.html">[jdev] mod_purple.erl
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58509">[ date ]</a>
+              <a href="thread.html#58509">[ thread ]</a>
+              <a href="subject.html#58509">[ subject ]</a>
+              <a href="author.html#58509">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+FYI. Subscribe to the <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">interop at xmpp.org</A> list if you're interested in
+helping with this effort.
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/interop">http://mail.jabber.org/mailman/listinfo/interop</A>
+
+/psa
+
+- -------- Original Message --------
+Subject: 	[Interop] XSF Server Test Suite
+Date: 	Tue, 29 Sep 2009 09:20:34 -0700
+From: 	Nathan Fritz &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nathanfritz at gmail.com</A>&gt;
+Reply-To: 	<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nathanfritz at gmail.com</A>, XMPP Interop &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">interop at xmpp.org</A>&gt;
+To: 	<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">interop at xmpp.org</A>, XMPP Extension Discussion List &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">standards at xmpp.org</A>&gt;
+
+
+
+I'm double posting this to standards and interop, but generally this is
+a conversation for interop that I thought you should all be aware of.
+Peter, I notice the interop group is not on the discussions page.
+
+For the past 6 months, we've been discussing on creating a standardized
+test suite as a tool for XMPP Server developers, and perhaps in the
+future for further purposes.  There was discussion of having a hosted
+solution that can execute scripts from a list of supported language, but
+this plan was scrapped at the last summit.  What we came up with instead
+is a simple XPath-Expect script of our own design that we can easily
+build an interpreter for.
+
+There will be some basic commands: expect, get, send, assert,
+foreach_sub, if_xpath, include, etc as well as built-in helper functions
+to jump the script to the right state in the connection without having
+to be explicit.  There also needs to be some functions for building out
+stanzas and payload element trees.  Any xml argument could be a stanza
+object or string.
+
+stream = connect('<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at xmpp.org</A>/resource
+&lt;<A HREF="http://user@xmpp.org/resource">http://user@xmpp.org/resource</A>&gt;', 'password');
+start_session(stream); # this command gets us through all of the stream
+features, authenticated, and bound. This of course, could be done with
+the send/expect commands as well. There may be other such commands that
+get us to the state we need.
+
+id = unique_id();
+result = send(stream, (&quot;&lt;iq type='get' to='xmpp.org &lt;<A HREF="http://xmpp.org">http://xmpp.org</A>&gt;'
+id='%s'&gt;&lt;query xmlns='jabber:iq:roster' /&gt;&lt;/iq&gt;&quot;, id), (&quot;[xpath
+statement with %s for id]&quot;, id));
+#OR
+iq_roster = makeIq('get', 'xmpp.org &lt;<A HREF="http://xmpp.org">http://xmpp.org</A>&gt;');
+query = makeElement('{jabber:iq:roster}query');
+append_xml(iq_roster, query);
+id = get(iq_roster, '@id');
+assert(result, ([xpath], [replacement values],));
+
+foreach_sub(result, sub, ([xpath],)) {
+    assert(&quot;Testing item structure&quot;, sub, ([xpath]));
+    group = get(sub, ([xpath],));
+    # do something with groups here
+}
+
+This is the direction things are heading.  The syntax is just something
+that we came up with at the last summit but I've exptended it. Perhaps
+is over complicated for the task.  Perhaps these test scripts should be
+written in XML in order to avoid specialized parsers.  Are there any
+decent C-syntax-style parsers out there already?  In any case, I'd like
+to hear how people think this should be done.
+
+Thanks,
+Nathan Fritz
+
+- --
+Peter Saint-Andre
+<A HREF="https://stpeter.im/">https://stpeter.im/</A>
+
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (Darwin)
+Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org/">http://enigmail.mozdev.org/</A>
+
+iEYEARECAAYFAkrCP/oACgkQNL8k5A2w/vzwQgCbBEID1jchrOjMHN5n/RYCdLzj
+Gr4AoO11uqJvXOWcBYL5l1kfJ7GF/RJ7
+=GDMQ
+-----END PGP SIGNATURE-----
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058508.html">[jdev] [ANN] Prosody 0.5.2 Released
+</A></li>
+	<LI>Next message: <A HREF="058510.html">[jdev] mod_purple.erl
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58509">[ date ]</a>
+              <a href="thread.html#58509">[ thread ]</a>
+              <a href="subject.html#58509">[ subject ]</a>
+              <a href="author.html#58509">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

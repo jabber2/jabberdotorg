@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [INFO] i18n? (fwd)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5BINFO%5D%20i18n%3F%20%28fwd%29&In-Reply-To=%3C386FFB99.13B78AC3%40geocities.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="061022.html">
+   <LINK REL="Next"  HREF="061026.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [INFO] i18n? (fwd)</H1>
+    <B>Jon A. Cruz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5BINFO%5D%20i18n%3F%20%28fwd%29&In-Reply-To=%3C386FFB99.13B78AC3%40geocities.com%3E"
+       TITLE="[JDEV] [INFO] i18n? (fwd)">joncruz at geocities.com
+       </A><BR>
+    <I>Sun Jan  2 19:30:01 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="061022.html">[JDEV] [INFO] i18n? (fwd)
+</A></li>
+        <LI>Next message: <A HREF="061026.html">[JDEV] [INFO] i18n? (fwd)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61023">[ date ]</a>
+              <a href="thread.html#61023">[ thread ]</a>
+              <a href="subject.html#61023">[ subject ]</a>
+              <a href="author.html#61023">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Eliot Landrum wrote:
+
+&gt;<i> Might someone have a more technical / authoritative answer than what I can
+</I>&gt;<i> give?
+</I>&gt;<i>
+</I>&gt;<i> ---------- Forwarded message ----------
+</I>&gt;<i> Date: Thu, 30 Dec 1999 15:32:54 -0500
+</I>&gt;<i> From: Constantin Riabitsev &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tech at nicodemusproject.com</A>&gt;
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">info at jabber.org</A>
+</I>&gt;<i> Subject: [INFO] i18n?
+</I>&gt;<i>
+</I>&gt;<i> Hi guys!
+</I>&gt;<i>
+</I>&gt;<i> Just found out about Jabber, spent all evening looking through the
+</I>&gt;<i> docs and DTD's and realized that there's no trace of any
+</I>&gt;<i> internationalization stuff. People communicate in more than one
+</I>&gt;<i> encoding, and I think it would be wise to incorporate the standard
+</I>&gt;<i> i18n features into the DTD's. You know, attributes like
+</I>&gt;<i> charset=&quot;koi8-r&quot; or dir=&quot;ltr&quot;...
+</I>
+[SNIP]
+
+&gt;<i> charset         #IMPLIED        &quot;us-ascii&quot;
+</I>&gt;<i> dir             #IMPLIED        &quot;ltr&quot;
+</I>&gt;<i>
+</I>&gt;<i> ).
+</I>&gt;<i>
+</I>&gt;<i> The reason why this is important is because there are sometimes
+</I>&gt;<i> several typeset standards for some language. E.g. Russian Cyrillic
+</I>&gt;<i> has two widespread standards -- win1251 (windows platforms) and
+</I>&gt;<i> koi8-r (*nix platforms) and it is sometimes impossible to use IM
+</I>&gt;<i> clients between these two unless the client can re-code from one
+</I>&gt;<i> into another.
+</I>&gt;<i>
+</I>&gt;<i> Using the i18n parameters, the client will know which encoding the
+</I>&gt;<i> messages come in and it will be able to recode them (if this
+</I>&gt;<i> capability is built into it).
+</I>&gt;<i>
+</I>&gt;<i> Example of an &lt;iq&gt; query reply:
+</I>&gt;<i>
+</I>&gt;<i> &lt;iq from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server.ru</A>&quot; type=&quot;result&quot;&gt;
+</I>&gt;<i>   &lt;query xmlns=&quot;jabber:iq:info&quot;&gt;
+</I>&gt;<i>         &lt;name&gt;Ivan Petrov&lt;/name&gt;
+</I>&gt;<i>         &lt;email&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">petrov at server.ru</A>&lt;/email&gt;
+</I>&gt;<i>         &lt;i18n charset=&quot;win-1251&quot; dir=&quot;ltr&quot;/&gt;
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i> This will tell my Linux client that before I can understand what
+</I>&gt;<i> Ivan Petrov writes me, it will need to apply the win1251-&gt;koi8-r
+</I>&gt;<i> recoding routines.
+</I>&gt;<i>
+</I>&gt;<i> Hope this is useful.. :)
+</I>&gt;<i> Let me know what you think about this idea.
+</I>
+I personally think this is a really poor way to go. I think this had come up
+some before, but I'll do a quick mention of a few things.
+
+First of all, I really don't think sending in an arbitrary charset is good
+for a robust system. The data should be all converted to Unicode (UTF-8 or
+UTF-16) by the client when data is sent, then decoded by the recieving
+client. The main concern about this is speed, but the even the standard
+Windows system calls to convert to Unicode are so fast that for a
+communications protocol the difference will not matter. Making programs &amp;
+communications protocols more complex pretty much increases the likelyhood of
+bugs and more problems.
+
+Also, this turns it from a one-to-one problem to a many-to-many. If all data
+is sent in Unicode, then any given client only needs to understand Unicode
+plus it's own encoding. With your proposal, all clients potentially need to
+understand all encodings for all languages. Ouch!
+
+Imaging I'm chatting with someone in Japan, and you are chatting with the
+same person. I speak English and you speak Russian. With your proposal you
+and I might need to decode Shift-JIS, or he might need to convert from
+CP-1252, ISO-8859-1, KOI8-R, CP-1251, ShiftJIS, JIS... What about when some
+people start communicating in Klingon; do we need to get all clients patched
+and re-released?
+
+However, if all communication is in Unicode, my client just needs to do
+Unicode&lt;--&gt;ISO-8859-1, you just need to do Unicode&lt;--&gt;KOI8-R, and he just
+needs to do Unicode&lt;--&gt;Shift-JIS. Or even better yet, I might just process
+everything in Unicode and thus be able to see your Russian and his Japanese
+with minor problems. MS Office does this, so does any Java application.
+
+
+Now, what probably is needed is Language. For example, you can be sending
+Russian encoded in Unicode, and I might have a font with Cyrilic characters
+set to display for Russian language data.
+
+
+
+A few points to remember:
+
+Using XML specifies i18n to some degree. Anything claiming to do XML needs to
+at the very least handle Unicode (UTF-8 or UTF-16). So by specifying XML,
+Jabber has already addressed i18n somewhat.
+
+Microsoft switched to Unicode internally for all processing for their entire
+Office suite some time ago. It was just better and cheaper to do so.
+
+Microsoft even switch to Unicode for COM, even way back. They realized the
+problems of trying to do it any other way. All COM BSTRS are Unicode strings.
+
+Java is all Unicode-based for it's strings. XML and Java go hand-in-hand all
+over the place.
+
+The majority of all currently active languages in the world are already in
+Unicode. Thus you have a single encoding that most people can use (Klingon is
+not officially in yet, but has been submitted to the process).
+
+XML also has i18n in it. Look through the spec for things like Unicode, the
+'lang' attribute, etc.
+
+By using Unicode, one does not have to change the client software every time
+an encoding anywhere in the entire world changes (e.g. adding the Euro
+character). It only needs to be updated when it's own local encoding changes,
+and then only if it is doing the conversion to Unicode itself and not
+counting on the local OS to do that.
+
+
+
+I'm sure this will spark a flurry of different opinions, but it can be a
+simple thing.
+
+--
+&quot;My new computer's got the clocks, it rocks
+But it was obsolete before I opened the box&quot; - W.A.Y.
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="061022.html">[JDEV] [INFO] i18n? (fwd)
+</A></li>
+	<LI>Next message: <A HREF="061026.html">[JDEV] [INFO] i18n? (fwd)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61023">[ date ]</a>
+              <a href="thread.html#61023">[ thread ]</a>
+              <a href="subject.html#61023">[ subject ]</a>
+              <a href="author.html#61023">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] ICQ Transport with Jabber 1.2 - still getting remote s	erver error
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20ICQ%20Transport%20with%20Jabber%201.2%20-%20still%20getting%20remote%20s%0A%09erver%20error&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C148001AA30AC%40OSSEX1.webb.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="063228.html">
+   <LINK REL="Next"  HREF="063232.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] ICQ Transport with Jabber 1.2 - still getting remote s	erver error</H1>
+    <B>Eric Bowersox</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20ICQ%20Transport%20with%20Jabber%201.2%20-%20still%20getting%20remote%20s%0A%09erver%20error&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C148001AA30AC%40OSSEX1.webb.net%3E"
+       TITLE="[JDEV] ICQ Transport with Jabber 1.2 - still getting remote s	erver error">ebowersox at jabber.com
+       </A><BR>
+    <I>Tue Nov 14 10:33:03 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="063228.html">[JDEV] irc-transport registering agent
+</A></li>
+        <LI>Next message: <A HREF="063232.html">[JDEV] Question to ICQ people
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63231">[ date ]</a>
+              <a href="thread.html#63231">[ thread ]</a>
+              <a href="subject.html#63231">[ subject ]</a>
+              <a href="author.html#63231">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Just a note - the new version of the ICQ transport *will* support the
+configuration file mechanism, and we have gotten it to connect to a 1.2
+(jabberd) server.  It's not ready for release quite yet though, as there are
+some important questions that need to be resolved first.
+
+					Eric
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Dennis Noordsij [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis.noordsij at wiral.com</A>]
+</I>&gt;<i> Sent: Tuesday, November 14, 2000 3:17 AM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] ICQ Transport with Jabber 1.2 - still 
+</I>&gt;<i> getting remote
+</I>&gt;<i> server error
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> On Tuesday 14 November 2000 09:35, you wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; &gt; huh, where to configure icq to use port 9000? I don't see 
+</I>&gt;<i> where in the
+</I>&gt;<i> &gt; icq_trans.xml where I can configure this port 9000.
+</I>&gt;<i> 
+</I>&gt;<i> Quick patch for the icqtransport to connect to port 9000
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Somewhere at the bottom of from_etherx.c you will see the 
+</I>&gt;<i> following bit, 
+</I>&gt;<i> except the &quot;jabber:component:accept&quot; is called &quot;jabber:server&quot; and 
+</I>&gt;<i> &quot;ehandler_new_ex&quot; is simply called &quot;ehandler_new&quot;. Also, the 
+</I>&gt;<i> &quot;2222&quot; argument 
+</I>&gt;<i> to the ehandler_new function is not there.
+</I>&gt;<i> 
+</I>&gt;<i> {
+</I>&gt;<i>   static const char server_namespace[] = &quot;jabber:component:accept&quot;;
+</I>&gt;<i>   log_debug(ZONE,&quot;[from_etherx_start] kickoff here (host %s, 
+</I>&gt;<i> namespace %s)&quot;,
+</I>&gt;<i> 	    g_config.hostname,server_namespace);
+</I>&gt;<i>   g_etherx = ehandler_new_ex(etherx_packet_handler,(char 
+</I>&gt;<i> *)(g_config.hostname),
+</I>&gt;<i> 			  (char *)server_namespace, 2222);
+</I>&gt;<i> 
+</I>&gt;<i> } /* end from_etherx_start */
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Then, you change the code to match the above, use 
+</I>&gt;<i> jabber:component:accept, 
+</I>&gt;<i> use ehandler_new_ex, and add the port you want icqtrans to 
+</I>&gt;<i> connect to to the 
+</I>&gt;<i> ehandler_new_ex paramaters. In the above example, I am using 
+</I>&gt;<i> port 2222, you 
+</I>&gt;<i> would use 9000 there.
+</I>&gt;<i> 
+</I>&gt;<i> When jabberd is running, run icqtrans -D and it should tell you it's 
+</I>&gt;<i> connecting to jabberd, if all goes well the last thing it 
+</I>&gt;<i> will say (before it 
+</I>&gt;<i> waits for activity) is &quot;xmlnode received!&quot;
+</I>&gt;<i> 
+</I>&gt;<i> MAKE SURE that in icq_trans.xml you connect to the SERVICE 
+</I>&gt;<i> JID for the icq 
+</I>&gt;<i> transport, not simply localhost or something. Read one of 
+</I>&gt;<i> Keith's mails about 
+</I>&gt;<i> that.
+</I>&gt;<i> 
+</I>&gt;<i> The OFFICIAL way to tell the transport which port to connect 
+</I>&gt;<i> to is to add a 
+</I>&gt;<i> &lt;port&gt;9000&lt;/port&gt; section in the icq_trans.xml file, but then 
+</I>&gt;<i> you also have 
+</I>&gt;<i> to patch the config.c file to understand this and pass it on to 
+</I>&gt;<i> ehandler_new_ex. I just hardcoded it because I am lazy :-)
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="063228.html">[JDEV] irc-transport registering agent
+</A></li>
+	<LI>Next message: <A HREF="063232.html">[JDEV] Question to ICQ people
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63231">[ date ]</a>
+              <a href="thread.html#63231">[ thread ]</a>
+              <a href="subject.html#63231">[ subject ]</a>
+              <a href="author.html#63231">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

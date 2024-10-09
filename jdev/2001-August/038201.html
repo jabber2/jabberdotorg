@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Add-on support from Jabber protocol
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Add-on%20support%20from%20Jabber%20protocol&In-Reply-To=%3C996680584.3b68238901a13%40www.ductape.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="038200.html">
+   <LINK REL="Next"  HREF="038215.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Add-on support from Jabber protocol</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Add-on%20support%20from%20Jabber%20protocol&In-Reply-To=%3C996680584.3b68238901a13%40www.ductape.net%3E"
+       TITLE="[JDEV] Add-on support from Jabber protocol">tcharron at ductape.net
+       </A><BR>
+    <I>Wed Aug  1 10:43:05 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="038200.html">[JDEV] Add-on support from Jabber protocol
+</A></li>
+        <LI>Next message: <A HREF="038215.html">[JDEV] Add-on support from Jabber protocol
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38201">[ date ]</a>
+              <a href="thread.html#38201">[ thread ]</a>
+              <a href="subject.html#38201">[ subject ]</a>
+              <a href="author.html#38201">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>  Doc looks good.  Only a coupla syntax issues I can see here.  First, 
+Browsing.  You guys are definatly 'getting it' as far as this is concerned.  
+Theres only a small isse with the response.  The 'get' is correct, but I think 
+I'd do this a little differently then you did.  The 'conversation' would look 
+more like this:
+
+&lt;iq type='get' to='jid2'&gt;
+  &lt;user xmlns='jabber:iq:browse'/&gt;
+&lt;/iq&gt;
+
+&lt;iq type='result' to='jid1' from='jid2'&gt;
+  &lt;user xmlns='jabber:iq:browse' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at jid2</A>'&gt;
+    &lt;user jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/home&quot; type=&quot;client&quot; name=&quot;Home Desktop&quot;/&gt;
+    &lt;application jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/chess&quot; type=&quot;i3connectchess&quot; name=&quot;Chess&quot;/&gt;
+  &lt;/user&gt;
+&lt;/iq&gt;
+
+  There are actually several ways to do this, but this would be easiest.  If 
+you implemented a generic gaming protocol, for use by multiple games, it could 
+look like this:
+
+&lt;iq type='get' to='jid2'&gt;
+  &lt;user xmlns='jabber:iq:browse'/&gt;
+&lt;/iq&gt;
+
+&lt;iq type='result' to='jid1' from='jid2'&gt;
+  &lt;user xmlns='jabber:iq:browse' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at jid2</A>'&gt;
+    &lt;user jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/home&quot; type=&quot;client&quot; name=&quot;Home Desktop&quot;/&gt;
+    &lt;application jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/chess&quot; type=&quot;i3connectgame&quot; 
+name=&quot;ChessMasta&quot;/&gt;
+  &lt;/user&gt;
+&lt;/iq&gt;
+
+&lt;iq type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/chess'&gt;
+  &lt;user xmlns='jabber:iq:browse'/&gt;
+&lt;/iq&gt;
+
+&lt;iq type='result' to='jid1' from='jid2'&gt;
+  &lt;application xmlns='jabber:iq:browse' jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/chess&quot; 
+type=&quot;i3connectgame&quot; name=&quot;ChessMasta&quot;&gt;
+    &lt;ns&gt;i3connect:games:chess&lt;/ns&gt;
+    &lt;ns&gt;i3connect:games:checkers&lt;/ns&gt;
+  &lt;/application&gt;
+&lt;/iq&gt;
+
+  Make sense?  The important thing is to remember to use xmlns to designate 
+tags outside of the scope of jabber:iq:browse.  While we're loose as far as 
+validation is concerned, it'd be nice to at least TRY to stay within the 
+rules..  8-P
+
+  Now, as far as data is concerned, IQ isn't *really* the mechanism to do this 
+with.  The &lt;message&gt; tag is.  Perhaps use IQ to 'negotiate' a session, but then 
+use the &lt;thread&gt; tag within a message to handle a logical stream:
+
+&lt;message id='i3Con_1' to='jid1' from='jid2'&gt;
+&lt;thread&gt;Game19274&lt;/thread&gt;
+&lt;x xmlns='i3connect:games:chess&gt;
+  &lt;move From='D7' To='D5'&gt;
+&lt;/x&gt;
+&lt;/message&gt;
+
+  Think of Info/Query as an RPC mechanism.  You make a call, and get a 
+response.  There is no logical 'stream' beyond the response to a get/set.  
+Messages, on the other hand, have threads, which logically group messages 
+together.
+
+  You also may want to take into consideration message confirmation.  Using the 
+message and thread tags, you can:
+
+A) Numerically keep track of messages associated with a game, ensuring you 
+didn't miss anything
+B) Provide recipt messages, so ya don't have any 'moves' get lost.
+C) Log the logical progression of the game.
+
+  By providing valid recipt, you also gain the ability to play with games being 
+interupted, and provide for a game transport that keeps track of games FOR you, 
+allowing for non-interactive play, aka, users wouldn't have to BOTH be online..
+
+  Anyway, overall, it looks really good, and is a good start to a decent use of 
+the protocol system.  Others onlist may disagree, if so, speak up, I'm not 
+afraid to be called an idiot..  8-P
+
+--- 
+Thomas Charron
+&lt;&lt; Wanted: One decent sig &gt;&gt;
+&lt;&lt; Preferably litle used  &gt;&gt;
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="038200.html">[JDEV] Add-on support from Jabber protocol
+</A></li>
+	<LI>Next message: <A HREF="038215.html">[JDEV] Add-on support from Jabber protocol
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38201">[ date ]</a>
+              <a href="thread.html#38201">[ thread ]</a>
+              <a href="subject.html#38201">[ subject ]</a>
+              <a href="author.html#38201">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] request for ideas: RFC822 to JID mapping
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20request%20for%20ideas%3A%20RFC822%20to%20JID%20mapping&In-Reply-To=%3C3D4410F2.2040501%40akuma.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="072208.html">
+   <LINK REL="Next"  HREF="072213.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] request for ideas: RFC822 to JID mapping</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20request%20for%20ideas%3A%20RFC822%20to%20JID%20mapping&In-Reply-To=%3C3D4410F2.2040501%40akuma.org%3E"
+       TITLE="[JDEV] request for ideas: RFC822 to JID mapping">mass at akuma.org
+       </A><BR>
+    <I>Sun Jul 28 10:42:42 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="072208.html">[JDEV] request for ideas: RFC822 to JID mapping
+</A></li>
+        <LI>Next message: <A HREF="072213.html">[JDEV] request for ideas: RFC822 to JID mapping
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72211">[ date ]</a>
+              <a href="thread.html#72211">[ thread ]</a>
+              <a href="subject.html#72211">[ subject ]</a>
+              <a href="author.html#72211">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Matthias Wimmer wrote:
+
+&gt;<i> Hi David!
+</I>&gt;<i>
+</I>&gt;<i> David Waite wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> Not just that - JIDs can have longer nodes than email addresses (255 
+</I>&gt;&gt;<i> bytes vs 64 bytes), and can have resources, a concept which doesn't 
+</I>&gt;&gt;<i> map to 822/2822 addresses. 
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Yeah, but I think this is a minor problem as most people won't use 
+</I>&gt;<i> node with more then 64 bytes. BTW: I think nodes can have up to 256 
+</I>&gt;<i> bytes and I think it's strange to limit it based on bytes instead of 
+</I>&gt;<i> characters ... *g*)
+</I>
+Oh, it's more complicated than that. One character can be composed of 
+multiple codepoints, which (in UTF-8 encoding) can be composed of 
+multiple bytes. What you probably meant was codepoints, which is even a 
+weirder place to stand than bytes - the computer has difficulty using 
+fixed-length fields for the username, and clients still have to figure 
+out how many characters can be represented based on the # of codepoints.
+
+With the limit set for full characters, you have to understand and 
+combine the bytes into unicode codepoints and then into full characters. 
+This is a lot of work to be done on the server, since the server does 
+not actually operate on the string lexically - it just wants to know if 
+it is a valid address before routing against it. Also, this does 
+penalize speakers in latin languages. e.g.
+
+(A hopefully correct example)
+1 word in US7ASCII could be 8 bytes , 8 codepoints and would be 8 
+characters.
+1 word in some asian languages could be 1 character, 3 codepoints and 12 
+bytes.
+
+The Chinese speaker has used 1/8th the # of characters as the English 
+speaker, but has conveyed the same amount of information.
+
+At least with bytes, its (computationally) easy for everyone to figure 
+out what the limit is.
+
+Finally - I think it would be interesting to be able to 'limit' a server 
+to a subset of the full JID scheme with a server setting; perhaps a 
+subset which corresponds with a subset of RFC 2822. I know I would 
+probably turn this on just to guarantee that I can migrate the user 
+information storage and authentication mechanisms around to systems 
+which do not support unicode.
+
+Finally RFC 2822 allows for quoted literals, and quotes are not legal in 
+JIDs - so even declaring a subset you still would still not be able to 
+get a 1:1 mapping without ammending  the JEP for JIDs. Since this is for 
+allowing email to users on the jabber server, having the local JIDs as a 
+subset of RFC2822 is fine.
+
+-David Waite
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="072208.html">[JDEV] request for ideas: RFC822 to JID mapping
+</A></li>
+	<LI>Next message: <A HREF="072213.html">[JDEV] request for ideas: RFC822 to JID mapping
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72211">[ date ]</a>
+              <a href="thread.html#72211">[ thread ]</a>
+              <a href="subject.html#72211">[ subject ]</a>
+              <a href="author.html#72211">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

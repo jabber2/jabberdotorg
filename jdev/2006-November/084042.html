@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: XMPP Ping method?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20XMPP%20Ping%20method%3F&In-Reply-To=%3C200611021135.41694.ajdev%40tigase.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="084028.html">
+   <LINK REL="Next"  HREF="084045.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: XMPP Ping method?</H1>
+    <B>Artur Hefczyc</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20XMPP%20Ping%20method%3F&In-Reply-To=%3C200611021135.41694.ajdev%40tigase.org%3E"
+       TITLE="[jdev] Re: XMPP Ping method?">ajdev at tigase.org
+       </A><BR>
+    <I>Thu Nov  2 05:35:41 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="084028.html">[jdev] Re: XMPP Ping method?
+</A></li>
+        <LI>Next message: <A HREF="084045.html">[jdev] Re: XMPP Ping method?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#84042">[ date ]</a>
+              <a href="thread.html#84042">[ thread ]</a>
+              <a href="subject.html#84042">[ subject ]</a>
+              <a href="author.html#84042">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Here is a discussion whether to use kind of Ping or Ack method
+to make communication more reliable.
+
+Let's define 2 terms:
+Ping is a way to check whether other side is reachable where Ack
+is a confirmation that some data has been successfully received.
+
+Please note however that TCP is designed and implemented to
+offer reliable and consistent communication between 2 end points.
+So if you don't want to rely on TCP you have to basically reimplement
+TCP mechanisms on application level protocol which makes application
+level implementation very complex.
+TCP was going to move that complexity away from application to make
+possible implement &quot;simple&quot; protocols. So now we have FTP, HTTP, IMAP, 
+XMPP and many others.
+
+Unfortunately, for many reasons TCP is not as reliable as we would expect.
+But in most cases it is reliable enough.
+
+To decide whether we need additional level of protection depends on 
+particular case and it is hard to set general requirements.
+Let me explain it on 2 extreme examples:
+
+1. Let's assume you want to have confirmation via XMPP of each
+transaction made on your bank account. Usually in such case
+you really mean to receive notification for each transaction even
+though it is a few hours (or maybe even days) late. It is still useful.
+And you even don't mind to receive some notifications twice.
+You just need to receive all of them &quot;at all costs&quot;. So implementing
+kind of ACK confirmation with timeout does make sense and actually 
+it might be enough protection.
+
+2. Another sample case is, let's assume you read some sensors every
+10 seconds (like CPU temperature) and send these data over internet
+to XMPP client which checks the data and if values reach some level
+generates alarm message. (like CPU overheating)
+In such case you don't need any ACK, because sending side knows
+it has to send data every 10sec and receiving side know it should receive
+data every 10sec. So detecting communication error is very easy without
+any additional mechanism. Furthermore you are not even interested in
+resending data in case of communication error because in 10secods
+data becomes outdated.
+
+The point is that it is impossible to design/recommend a perfect
+solution for all cases as many non-standard cases might have
+different requirements. And for most standard cases we can
+just rely on TCP layer.
+
+Artur
+
+On Wednesday 01 November 2006 19:45, Magnus Henoch wrote:
+&gt;<i> &quot;Michal 'vorner' Vaner&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">michal.vaner at kdemail.net</A>&gt; writes:
+</I>&gt;<i> &gt; Well, it is partly implementation problem, many OSes (as I heard) are
+</I>&gt;<i> &gt; able to tell you how much was already delivered and if you remember what
+</I>&gt;<i> &gt; part of data was what stanza, you can resend it after reconnection.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; But that is bit more work, of course, and alot more data.
+</I>&gt;<i>
+</I>&gt;<i> I'm in no way an expert in network programming, so what I'm about to
+</I>&gt;<i> write might qualify as disinformation; please write corrections or
+</I>&gt;<i> completions.
+</I>&gt;<i>
+</I>&gt;<i> We want to know if the remote side has ACKed receipt of all the bytes
+</I>&gt;<i> in a stanza.  In Linux, there is a way to get the size of the TCP send
+</I>&gt;<i> queue:
+</I>&gt;<i> <A HREF="https://www.jabber.org/standards-jig/2003-December/004570.html">https://www.jabber.org/standards-jig/2003-December/004570.html</A>
+</I>&gt;<i> But it seems to me that using that method would be cumbersome:
+</I>&gt;<i>
+</I>&gt;<i> 1. Send stanza A to connection.  Save copy of A and size(A).
+</I>&gt;<i> 2. Prepare to send stanza B.  If send queue is 0, forget A and goto 1.
+</I>&gt;<i>    Else save B and size(B), and increase size(A) with size(B).
+</I>&gt;<i> 3. If send queue size is less than (the modified) size(A), consider A
+</I>&gt;<i>    to be acked.  Likewise for B.
+</I>&gt;<i> 4. If connection fails, queue or bounce all stanzas sent but not
+</I>&gt;<i>    acked.
+</I>&gt;<i>
+</I>&gt;<i> Or something like that.  I probably got it wrong somewhere, and I
+</I>&gt;<i> would probably make more errors if I tried to convert that into code.
+</I>&gt;<i>
+</I>&gt;<i> So it would be nice if sending a piece of data returned the sequence
+</I>&gt;<i> number of the last byte sent.  Then you could just compare it to the
+</I>&gt;<i> sequence number of the last byte ACKed, and then you immediately know
+</I>&gt;<i> if the stanza was received.
+</I>&gt;<i>
+</I>&gt;<i> Thus, we should try to convince makers of socket APIs to include
+</I>&gt;<i> functions to do just that.  Or did I miss anything?
+</I>
+-- 
+Artur Hefczyc
+<A HREF="http://www.tigase.org/">http://www.tigase.org/</A>
+<A HREF="http://wttools.sf.net/">http://wttools.sf.net/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="084028.html">[jdev] Re: XMPP Ping method?
+</A></li>
+	<LI>Next message: <A HREF="084045.html">[jdev] Re: XMPP Ping method?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#84042">[ date ]</a>
+              <a href="thread.html#84042">[ thread ]</a>
+              <a href="subject.html#84042">[ subject ]</a>
+              <a href="author.html#84042">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

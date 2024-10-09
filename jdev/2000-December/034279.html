@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] message format to create a chatgroup
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20message%20format%20to%20create%20a%20chatgroup&In-Reply-To=%3C005a01c05e91%246027e4f0%24630f5a0a%40stt.st.com.sg%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034272.html">
+   <LINK REL="Next"  HREF="034281.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] message format to create a chatgroup</H1>
+    <B>rdeng</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20message%20format%20to%20create%20a%20chatgroup&In-Reply-To=%3C005a01c05e91%246027e4f0%24630f5a0a%40stt.st.com.sg%3E"
+       TITLE="[JDEV] message format to create a chatgroup">rdeng at sttarfire.com
+       </A><BR>
+    <I>Tue Dec  5 01:59:08 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034272.html">[JDEV] Re: [JDEV] Informaci&#243;n
+</A></li>
+        <LI>Next message: <A HREF="034281.html">[JDEV] Pls show some light on LDAP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34279">[ date ]</a>
+              <a href="thread.html#34279">[ thread ]</a>
+              <a href="subject.html#34279">[ subject ]</a>
+              <a href="author.html#34279">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi, Everybody:
+
+I am using jabberbeans to implement a jabber chat client..
+Now I finished the private chat and online/offline tracking thanks to jabberbeans classes.
+
+But when I try to implement group chat, I got some problem.
+I have attached my function implementation below.
+
+when I start two clients to join the same group and each send a message to
+the group, what happen is the group chat message is forwarded only to the
+message creator himself ! (it seems the server does not broadcast the group
+chat message).
+
+Below is my code snippet:
+(1) client dennis:
+
+jb4im.joinGroupChat(&quot;sttarfire&quot;, &quot;10.90.15.76&quot;, &quot;dennis&quot;);
+jb4im.sendGroupChatMsg(&quot;sttarfire&quot;, &quot;10.90.15.76&quot;,
+          &quot;group-subject&quot;, &quot;group message from &quot; + &quot;dennis&quot;);
+
+(2)client smith:
+
+jb4im.joinGroupChat(&quot;sttarfire&quot;, &quot;10.90.15.76&quot;, &quot;smith&quot;);
+jb4im.sendGroupChatMsg(&quot;sttarfire&quot;, &quot;10.90.15.76&quot;,
+          &quot;group-subject&quot;, &quot;group message from &quot; + &quot;smith&quot;);
+
+It turns out message &quot;group message from smith&quot; is only routed to smith
+and message &quot;group message from dennis&quot; is routed only to dennis !
+
+Would you please kindly help me: what is wrong with my implementation ?
+Do I need to create the chat group before I join ? HOW ?
+
+thanks
+
+---Roger
+
+below are the implementation of two functions:
+
+(m_pb and m_cb are presence builder and connection builder respectively,
+they are class private members and is initialized properly).
+
+public boolean joinGroupChat(String groupName, String groupServer,
+                                                String nickName)
+{
+    JID  to = null;
+    to = new JID(groupName, groupServer, nickName);
+    m_pb.reset();
+    m_pb.setToAddress(to);
+    m_pb.setType(&quot;available&quot;);
+
+    m_cb.send(m_pb.build());
+}
+
+public boolean sendGroupChatMsg(String groupName, String groupServer,
+         String subject, String body)
+{
+    m_mb.reset();
+    m_mb.setToAddress(new JID(groupName, groupServer, null));
+    m_mb.setType(&quot;groupchat&quot;);
+    m_mb.setSubject(subject);
+    m_mb.setBody(body);
+
+    Message  msg=(Message)m_mb.build();
+    m_cb.send(msg);
+}
+
+
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="http://mail.jabber.org/pipermail/jdev/attachments/20001205/0da07987/attachment-0001.htm">http://mail.jabber.org/pipermail/jdev/attachments/20001205/0da07987/attachment-0001.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034272.html">[JDEV] Re: [JDEV] Informaci&#243;n
+</A></li>
+	<LI>Next message: <A HREF="034281.html">[JDEV] Pls show some light on LDAP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34279">[ date ]</a>
+              <a href="thread.html#34279">[ thread ]</a>
+              <a href="subject.html#34279">[ subject ]</a>
+              <a href="author.html#34279">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

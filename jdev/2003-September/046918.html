@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: Account information storage, plaintext? ...AND JabberD password storage
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Account%20information%20storage%2C%0A%20plaintext%3F%20...AND%20JabberD%20password%20storage&In-Reply-To=%3C20030916215436.GB471%40gideon.its.monash.edu.au%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="046913.html">
+   <LINK REL="Next"  HREF="046928.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: Account information storage, plaintext? ...AND JabberD password storage</H1>
+    <B>Robert Norris</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Account%20information%20storage%2C%0A%20plaintext%3F%20...AND%20JabberD%20password%20storage&In-Reply-To=%3C20030916215436.GB471%40gideon.its.monash.edu.au%3E"
+       TITLE="[JDEV] Re: Account information storage, plaintext? ...AND JabberD password storage">rob at cataclysm.cx
+       </A><BR>
+    <I>Tue Sep 16 16:54:36 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="046913.html">[JDEV] Re: Account information storage, plaintext? ...AND JabberD password storage
+</A></li>
+        <LI>Next message: <A HREF="046928.html">[JDEV] Re: Account information storage, plaintext? ...AND JabberD password storage
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46918">[ date ]</a>
+              <a href="thread.html#46918">[ thread ]</a>
+              <a href="subject.html#46918">[ subject ]</a>
+              <a href="author.html#46918">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> As suggested, possibilities exist for doing reversible
+</I>&gt;<i> encryption/hashing so that said transports can, in fact, have access
+</I>&gt;<i> to actual usernames/passwords while at the same time protecting such
+</I>&gt;<i> information through basic obfuscation. (ooooh, BIG word)
+</I>
+Obfuscation adds nothing, IMO.
+
+&gt;<i> The next question along this line might be:  where does the
+</I>&gt;<i> implementation of such a feature, should it be desired, lie?  Does it
+</I>&gt;<i> require a change in any way to Jabber/XMPP that requires the
+</I>&gt;<i> 'designers' of the protocol?  If not, does it lie with the JabberD
+</I>&gt;<i> team?  (Remember, Rob Norris is the guy writing JabberD2, so BE NICE!
+</I>&gt;<i> :-) )  Or does it lie with the transport writers?  When you know the
+</I>&gt;<i> answer to this question, politely ask those responsible if there might
+</I>&gt;<i> be a way to have such a feature.  Or, as always with open source, grab
+</I>&gt;<i> some code and go crazy. :-)
+</I>
+The only thing transport authors can really do is not store passwords,
+which means getting a registration from the client for each time that
+they want to use the transport.
+
+We could possibly develop protocol to allow the client to pass auth
+information when it sends presence to the transport, though that kinda
+sucks, because it requires the client to know something about the
+transport (including the fact that it is a transport).
+
+Alternatively, we could have the transport ask the client for auth
+information when it needs it. Again, more protocol required.
+
+And although this has nothing to do with jabberd2, you all still have to
+be nice to me ;)
+
+[snip]
+
+&gt;<i> Regarding Jabber/XMPP, the same holds true.  Rob, you mentioned in one
+</I>&gt;<i> post &quot;Well, I think that plaintext passwords on the wire are more of
+</I>&gt;<i> an issue than plaintext passwords in the data store.&quot;  I'm afraid I
+</I>&gt;<i> have to side with Michael Brown's response.  Plaintext passwords on
+</I>&gt;<i> the wire are not as much of an issue as stored passwords on a system.
+</I>&gt;<i> Michael Brown covers the points well.
+</I>
+Each to his own on this. I agree to disagree.
+
+&gt;<i> And in the case of JabberD, it too has clients sending passwords in
+</I>&gt;<i> plaintext, but that's ok, if only because you can subvert that by
+</I>&gt;<i> using SSL-only connections to the Jabber server.  And SSL is built
+</I>&gt;<i> into JabberD, so it's not like it's an add-on or something only a few
+</I>&gt;<i> people have.  However, the storage of passwords ON the Jabber server
+</I>&gt;<i> is still a concern.
+</I>&gt;<i> 
+</I>&gt;<i> Might I suggest one possibility?  Again, for those reading this,
+</I>&gt;<i> please note Rob Norris is &quot;the man&quot; with regards to JabberD2
+</I>&gt;<i> development, so be nice.  Would it be possible, Rob, to offer the
+</I>&gt;<i> option to the JabberD admin to store passwords using, say, MD5 hashes?
+</I>&gt;<i> Passwords would still come from clients as they do now.  The only
+</I>&gt;<i> change required is how JabberD stores them and, if it's configured to
+</I>&gt;<i> use MD5, how it does the comparison; i.e.,
+</I>
+OK, I've looked into, and it seems fairly straightforward to add a
+config option to j2 to tell it to store SHA1-hashed passwords, with the
+caveat that the &quot;digest&quot; method will no longer be offered.
+
+On its own, this scares me, so we'd also need an option to require
+SSL/TLS before auth can happen. This is slightly more difficult (due to
+limitations in the current codebase), but really necessary for this.
+
+Also, it appears I may have been mistaken with regard to DIGEST-MD5.
+I've just reviewed the spec (RFC2831), and it has this as part of its
+calculations.
+
+  A1 = { H( { username-value, &quot;:&quot;, realm-value, &quot;:&quot;, passwd } ),
+       &quot;:&quot;, nonce-value, &quot;:&quot;, cnonce-value, &quot;:&quot;, authzid-value }
+
+The username, realm and password values will be static, in most cases,
+which means that it should be possible to store this hash rather than
+the password, and then used this value rather than recomputing it from
+the passowrd each time. I think this will place a restriction (a single
+user cannot appear in multiple realms), but that doesn't seem to be too
+much of a problem.
+
+So, sure, this stuff can be implemented, and I'm actually starting to
+thing it might be a good idea (if only to shut you lot up ;).
+Unfortunately, j2 is currently in feature freeze, and I have very little
+time to work on it at the moment. But we'll see.
+
+&gt;<i> P.S.	Whatever the case, I thank all those involved for all the
+</I>&gt;<i> time/energy/effort they have put into Jabber, be it the original
+</I>&gt;<i> coders, the transport writers, Rob Norris for his rewrite of Jabberd2,
+</I>&gt;<i> and those writing here who help to flesh out a pretty wicked product,
+</I>&gt;<i> etc.  People who don't code do not realize just much how effort goes
+</I>&gt;<i> into these projects.  All I did was figure out how to build JabberD
+</I>&gt;<i> from source, complete with MU-Conference, JUD, XDB_SQL, etc., on
+</I>&gt;<i> Windows, and MAN talk about time flying.  Only because my wife was
+</I>&gt;<i> visiting her folks in Brazil for 6 weeks--and I don't have a life
+</I>&gt;<i> :-)--was I able to get just that minor task done.  (I'm sure part of
+</I>&gt;<i> it is because I suck as a programmer compared to those who do it all
+</I>&gt;<i> the time :-)).
+</I>
+You're welcome. At least for me, good feedback and warm fuzzies work a
+treat :)
+
+Rob.
+
+-- 
+Robert Norris                                       GPG: 1024D/FC18E6C2
+Email+Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rob at cataclysm.cx</A>                Web: <A HREF="http://cataclysm.cx/">http://cataclysm.cx/</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20030917/2037afa2/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20030917/2037afa2/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="046913.html">[JDEV] Re: Account information storage, plaintext? ...AND JabberD password storage
+</A></li>
+	<LI>Next message: <A HREF="046928.html">[JDEV] Re: Account information storage, plaintext? ...AND JabberD password storage
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46918">[ date ]</a>
+              <a href="thread.html#46918">[ thread ]</a>
+              <a href="subject.html#46918">[ subject ]</a>
+              <a href="author.html#46918">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

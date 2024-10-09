@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Release announcement: jabberd14 1.6.0 (&quot;Sunday&quot;) is available
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Release%20announcement%3A%20jabberd14%201.6.0%20%28%22Sunday%22%29%20is%20available&In-Reply-To=%3C458EE139.3050102%40tthias.eu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="055025.html">
+   <LINK REL="Next"  HREF="055028.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Release announcement: jabberd14 1.6.0 (&quot;Sunday&quot;) is available</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Release%20announcement%3A%20jabberd14%201.6.0%20%28%22Sunday%22%29%20is%20available&In-Reply-To=%3C458EE139.3050102%40tthias.eu%3E"
+       TITLE="[jdev] Release announcement: jabberd14 1.6.0 (&quot;Sunday&quot;) is available">m at tthias.eu
+       </A><BR>
+    <I>Sun Dec 24 14:21:13 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="055025.html">[jdev] Announce: XMPP-Binder
+</A></li>
+        <LI>Next message: <A HREF="055028.html">[jdev] Jabber newbie developing client - need advice
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55026">[ date ]</a>
+              <a href="thread.html#55026">[ thread ]</a>
+              <a href="subject.html#55026">[ subject ]</a>
+              <a href="author.html#55026">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi!
+
+I am very happy to be finally able to announce the availability of 
+version 1.6.0 of jabberd14.
+
+<A HREF="http://download.jabberd.org/jabberd14/">http://download.jabberd.org/jabberd14/</A>
+
+
+New features of version 1.6.0 include:
+
+- jabberd14 used with the jadc2s client connection
+   manager now fully supports the XMPP RFCs 3920 and 3921.
+
+- Support for Privacy Lists
+
+- jabberd14 can send its messages to users in
+   different languages. Already supported are Dutch,
+   English, French, German, Hungarian and Italian.
+   Other languages can be added by installing additional
+   language files.
+
+- SASL authentication is possible on client links as well as
+   on inter-server links. (For client links you have
+   to use the jadc2s connection manager to use SASL.)
+   (At least the following mechanisms should be supported for
+   client authentication: CRAM-MD5, PLAIN, GSSAPI, DIGEST-MD5,
+   NTLM, SRP, OTP, KERBEROS_V4 - on inter-server links EXTERNAL
+   using certificate based authentication is supported.)
+
+- Support for Flexible Offline Message Retrieval (XEP-0013).
+
+- Support for XMPP Ping (XEP-0199)
+
+- Full namespace support.
+
+- Support for xml:lang.
+
+- Passing full subscription request stanza to a user, even when
+   the subscription request has to be stored offline. Allowing
+   the requestor to pass additional data together with the
+   request.
+
+- Fix in handling presences with negative priority. Messages
+   that are stored offline, are now delivered if a session
+   changes from negative to non-negative priority.
+
+- Easy integration of jabberd14 into web projects by having
+   additional data available in the database (e.g. presence
+   information can now be read by a web page with a single
+   SQL SELECT statement.)
+
+- New base habdler base_dir, that can periodically check a
+   directory for *.stanza files. These files are read, parsed,
+   the content is processed as a stanza, and the file is deleted
+   afterwards. This can be useful to inject messages (or other
+   stanzas) to the server, e.g. to send Jabber messages using
+   scripts on a web page. The server can also deliver messages
+   (or other stanzas) back to this directory.
+
+- Passwords are no longer cached in memroy by the server. They
+   can just be changed in the SQL database and get active
+   instantly. New users can also be created, by just adding
+   a new password to the database.
+
+- It is now possible to block account names from being registered
+   and to enforce minimum and maximum lengths of the username
+   on registration of new accounts.
+
+- After an account has been deleted by the user, the JabberID is
+   blocked against reregistration for a configurable amount
+   of time (defaults to half a year).
+
+- It is easily possible to migrate from old filespools (xdb_file,
+   i.e. one XML file per user to store settings) to newer storage
+   handlers by reconfiguring the server and then importing
+   the old data (using the -I command line option).
+
+- All components of the server including the session manager, but
+   the client connection manager, can now be restarted without
+   user's sessions being dropped. This allows reconfiguration
+   and software upgrades while the server has online users.
+
+- The session manager now understands the internal session
+   protocol of jabberd2 as well. This allows development and usage
+   of components acting as client manager, for both server
+   implementations at the same time.
+
+- Inter-server communication can now be authenticated using
+   SASL EXTERNAL and X.509 certificates (SSL certificates).
+       	
+- The inter-server communications can now be configured to require
+   encryption or strong authentication using X.509 certificates.
+       	
+- xdb_sql can be configured to execute an SQL query just after
+   a connection to the database server has been established or
+   reestablished. This is usefule for example if you are using
+   MySQL 4.1+ and want to set your used charset (SET NAMES UTF8).
+
+- jabberd14 now uses libpopt for command line parsing.
+       	
+- Stale pidfiles are now detected and ignored.
+
+- The list of online users has to be fetched using service
+   discovery now (instead of the older browsing protocol).
+
+- Removed support for the jabber:iq:admin namespace, which
+   probably has not been used anymore at all.
+
+- Disabled support for the jabber:iq:agent and jabber:iq:agents
+   protocols in the default configuration file. (Can be
+   re-enabled if needed.)
+
+- Removed support for the jabber:iq:filter namespace (which
+   had already been disabled in the default configuration file
+   of version 1.4.4.
+
+- Removed the mod_groups module.
+
+- The list of supported features returned on a service discovery
+   request need not be configured anymore, as it is now generated
+   automatically.
+
+The new version of jabberd14 is at least already in use on the following 
+servers: amessage.*, jabber.ccc.de, swissjabber.*, syndicon.de.
+
+Because I have been asked several times: jabberd14 1.6.0 is still 
+dual-licenced JOSL and GPL - which the GPL licence having the problem, 
+that it does not contain an OpenSSL exception. I am working on this 
+problem. As I did not manage to get permission from all copyright owners 
+to add the OpenSSL exception, I am working on a version of jabberd14, 
+that will use GnuTLS instead of OpenSSL. I expect to be able to release 
+a GnuTLS version of jabberd14 soon as well.
+
+I want to thank all people that supported me in creating this new 
+release by providing feedback, bug reports, translations and sugestions. 
+People that have been very active are: Florian Holzhauer, Istv&#225;n Bubreg, 
+Jean de Largentaye, Marco Balmer, Philipp Hancke, Peter Schwindt, Sander 
+Devrieze, and Stefano Sabatini. (I hope I did not forget anybody.)
+
+
+
+And to all users, administrators and developpers of Jabber I wish a 
+merry christmas.
+
+
+Matthias
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="055025.html">[jdev] Announce: XMPP-Binder
+</A></li>
+	<LI>Next message: <A HREF="055028.html">[jdev] Jabber newbie developing client - need advice
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55026">[ date ]</a>
+              <a href="thread.html#55026">[ thread ]</a>
+              <a href="subject.html#55026">[ subject ]</a>
+              <a href="author.html#55026">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Bug in jabberd2 (2.1.13) on win32
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Bug%20in%20jabberd2%20%282.1.13%29%20on%20win32&In-Reply-To=5b698f5a0801240051n306ce285g53e66eedef6265dd%40mail.gmail.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="026967.html">
+   <LINK REL="Next"  HREF="026969.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Bug in jabberd2 (2.1.13) on win32</H1>
+    <B>Dan Hulme</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Bug%20in%20jabberd2%20%282.1.13%29%20on%20win32&In-Reply-To=5b698f5a0801240051n306ce285g53e66eedef6265dd%40mail.gmail.com"
+       TITLE="[jdev] Bug in jabberd2 (2.1.13) on win32">dhulme at gmail.com
+       </A><BR>
+    <I>Thu Jan 24 13:25:03 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="026967.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+        <LI>Next message: <A HREF="026969.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26968">[ date ]</a>
+              <a href="thread.html#26968">[ thread ]</a>
+              <a href="subject.html#26968">[ subject ]</a>
+              <a href="author.html#26968">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I had forgotten, but this is the case.  Here is confirmation:
+
+<A HREF="http://msdn2.microsoft.com/en-us/library/ms740481(VS.85">http://msdn2.microsoft.com/en-us/library/ms740481(VS.85</A>).aspx
+&gt;<i> An application should not rely on being able to reuse a socket after it has been shut down.
+</I>&gt;<i> In particular, a Windows Sockets provider is not required to support the use of
+</I>&gt;<i> 'connect' on a socket that has been shut down.
+</I>
+So the win32 implementation should not be pooling sockets, I guess.
+
+-Dan
+
+On Jan 24, 2008 12:51 AM, Norman Rasmussen &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>&gt; wrote:
+&gt;<i> On Jan 24, 2008 2:14 AM, Dan Hulme &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dhulme at gmail.com</A>&gt; wrote:
+</I>&gt;<i>
+</I>&gt;<i> &gt; This function appears to try to append the old closed socket to a
+</I>&gt;<i> &gt; linked list of free sockets.  When the new connection tries to use
+</I>&gt;<i> &gt; this socket, it has trouble.  Once the next connection connects,
+</I>&gt;<i> &gt; however, it will not use that socket as it is still in use, so it will
+</I>&gt;<i> &gt; work.  Not sure why the socket that is being appended is broken, but
+</I>&gt;<i> &gt; if this function is not called (at mio_impl.h: 267), the program works
+</I>&gt;<i> &gt; &quot;fine.&quot;  It may not be reusing sockets, but everything else works.
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i> In my experience win32 does weird things with closed sockets: if you close a
+</I>&gt;<i> listening socket, it doesn't actually go away until all connected clients do
+</I>&gt;<i> too.  It sounds like this is similar, and that perhaps for win32 you
+</I>&gt;<i> shouldn't be trying to pool sockets.
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> - Norman Rasmussen
+</I>&gt;<i>  - Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>
+</I>&gt;<i>  - Home page: <A HREF="http://norman.rasmussen.co.za/">http://norman.rasmussen.co.za/</A>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="026967.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+	<LI>Next message: <A HREF="026969.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26968">[ date ]</a>
+              <a href="thread.html#26968">[ thread ]</a>
+              <a href="subject.html#26968">[ subject ]</a>
+              <a href="author.html#26968">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

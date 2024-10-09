@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Bytestreams fallback mechanism
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Bytestreams%20fallback%20mechanism&In-Reply-To=%3C1199272564.6272.26.camel%40cass-wks%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="085474.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Bytestreams fallback mechanism</H1>
+    <B>Guillaume Desmottes</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Bytestreams%20fallback%20mechanism&In-Reply-To=%3C1199272564.6272.26.camel%40cass-wks%3E"
+       TITLE="[jdev] Bytestreams fallback mechanism">cass at skynet.be
+       </A><BR>
+    <I>Wed Jan  2 05:16:03 CST 2008</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="085474.html">[jdev] Bytestreams fallback mechanism
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85473">[ date ]</a>
+              <a href="thread.html#85473">[ thread ]</a>
+              <a href="subject.html#85473">[ subject ]</a>
+              <a href="author.html#85473">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Le vendredi 28 d&#233;cembre 2007 &#224; 09:39 -0700, Peter Saint-Andre a &#233;crit :
+&gt;<i> &gt; Tubes are currently implemented in Gabble (XMPP) and Salut (XMPP link
+</I>&gt;<i> &gt; local). See [2] if you are interested about the XMPP protocol.
+</I>&gt;<i> &gt; Stream tubes use stream initiation 
+</I>&gt;<i> 
+</I>&gt;<i> By which I assume you mean XEP-0095.
+</I>&gt;<i> 
+</I>
+Exactly.
+
+&gt;<i> &gt; to establish their connections. For
+</I>&gt;<i> &gt; now, only IBB is implemented in Gabble which is not very efficient. So
+</I>&gt;<i> &gt; we'd like to add real p2p connections as OOB 
+</I>&gt;<i> 
+</I>&gt;<i> By OOB we usually mean XEP-0066. I don't think that gives you a real p2p 
+</I>&gt;<i> connection, though -- it's just a way to share a URI.
+</I>
+By OOB I usually mean &quot;a direct p2p connection&quot;.
+I started an implementation of this using XEP-0066 and URI of this form:
+&quot;x-<A HREF="tcp://&lt;my-ip">tcp://&lt;my-ip</A>&gt;:&lt;port&gt;&quot;
+That's probably a kind of abuse of XEP-0066 but that can easily do the
+job.
+
+Of course, that will only work if the joiner can reach initiator's IP
+(and so are probably on the same network) but that's not a too bad
+assumption for most of the OLPC use cases.
+
+&gt;<i> It seems to me that you really want XEP-0065, where the initiator acts 
+</I>&gt;<i> as a streamhost.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; and, later, use Jingle
+</I>&gt;<i> &gt; magic to perform NAT penetration.
+</I>&gt;<i> 
+</I>&gt;<i> I'm working on the Jingle ICE-UDP spec at the moment, and I think that 
+</I>&gt;<i> would give you what you need (at least I think it would -- your 
+</I>&gt;<i> requirements are not fully clear to me).
+</I>&gt;<i> 
+</I>
+Great.
+Requirements are basically &quot;establish a p2p TCP connections using NAT
+penetration if needed and IBB as fallback&quot;.
+
+&gt;<i> &gt; In order to always use the &quot;better&quot; bytestream, we'd like to do
+</I>&gt;<i> &gt; something like that:
+</I>&gt;<i> &gt; a) Try normal OOB using a direct TCP connection
+</I>&gt;<i> 
+</I>&gt;<i> What do you mean by &quot;normal OOB&quot;? I don't think that XEP-0066 will solve 
+</I>&gt;<i> very many problems for you.
+</I>
+I mean XEP-0066 using x-tcp:// as URI.
+
+&gt;<i> &gt; b) Try OOB with NAT penetration
+</I>&gt;<i> 
+</I>&gt;<i> What do you mean by &quot;OOB with NAT penetration&quot;? As far as I know, there 
+</I>&gt;<i> is no such thing (XEP-0066 doesn't give you any NAT traversal).
+</I>&gt;<i> 
+</I>
+Right. I mean &quot;establish a p2p connection using Jingle for NAT
+traversal&quot;.
+Sorry for the confusion.
+
+&gt;<i> &gt; c) Give up and use IBB
+</I>&gt;<i> 
+</I>&gt;<i> IBB does seem like a good fallback in many cases (at least we concluded 
+</I>&gt;<i> so for file transfer).
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Does XMPP have a standardised way to do that?
+</I>&gt;<i> 
+</I>&gt;<i> Stream initiation (XEP-0095) does not support fallbacks, renegotiation, 
+</I>&gt;<i> etc. That's one of the reasons we worked on Jingle.
+</I>
+So Jingle should be the new way to go when trying to establish
+bytestreams?
+I don't know a lot about Jingle. Is it design to become a replacement of
+SI (XEP-009)?
+
+&gt;<i> &gt; Any other solution 
+</I>&gt;<i> 
+</I>&gt;<i> Jingle?
+</I>&gt;<i> 
+</I>&gt;<i> &gt; or should we define our own protocol to do that?
+</I>&gt;<i> 
+</I>&gt;<i> Well of course you can define your own protocol, but I would bet that 
+</I>&gt;<i> other people are interested in similar functionality, so it might be 
+</I>&gt;<i> more productive to see if you can use Jingle and if not what gaps we 
+</I>&gt;<i> need to fill in Jingle so that it would work for you.
+</I>
+We definitely want to use standardised protocols as much as possible and
+will be happy to contribute to them if needed.
+
+&gt;<i> For example, perhaps we need a way to more seamlessly include things 
+</I>&gt;<i> like SOCKS5 Bytestreams and IBB as options in a Jingle negotiation (or 
+</I>&gt;<i> include Jingle as an option in a stream initiation negotiation, e.g. for 
+</I>&gt;<i> file transfer). We talked about that back in August or September, but I 
+</I>&gt;<i> have not yet documented how that might work.
+</I>
+This sounds very interesting and would probably solve some of our
+problems. Any XEP draft referring about this?
+
+
+Thanks a lot for your help
+
+
+	G.
+
+-- 
+Guillaume Desmottes &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cass at skynet.be</A>&gt;
+Jabber &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cassidy at jabber.belnet.be</A>&gt;
+GPG 1024D/711E31B1 | 1B5A 1BA8 11AA F0F1 2169  E28A AC55 8671 711E 31B1
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="085474.html">[jdev] Bytestreams fallback mechanism
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85473">[ date ]</a>
+              <a href="thread.html#85473">[ thread ]</a>
+              <a href="subject.html#85473">[ subject ]</a>
+              <a href="author.html#85473">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

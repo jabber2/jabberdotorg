@@ -1,0 +1,216 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] PHP jabber class
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20PHP%20jabber%20class&In-Reply-To=%3C42AB3E65.9050408%40gmi-mr.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="051347.html">
+   <LINK REL="Next"  HREF="051349.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] PHP jabber class</H1>
+    <B>Nayana Hettiarachchi - GMI</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20PHP%20jabber%20class&In-Reply-To=%3C42AB3E65.9050408%40gmi-mr.com%3E"
+       TITLE="[jdev] PHP jabber class">nayana at gmi-mr.com
+       </A><BR>
+    <I>Sat Jun 11 14:41:25 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="051347.html">[jdev] PHP jabber class
+</A></li>
+        <LI>Next message: <A HREF="051349.html">[jdev] PHP jabber class
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51348">[ date ]</a>
+              <a href="thread.html#51348">[ thread ]</a>
+              <a href="subject.html#51348">[ subject ]</a>
+              <a href="author.html#51348">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Mathew,
+
+Yes i am running my php script on command line with a while loop, and i 
+even add some debug on the CJP_Connect to check all the incomming 
+messages from the server, so far with no luck i dont see it sending the 
+&quot;presence&quot; request from other users who try to add the client to their list.
+
+I also tried doing a simple telnet to the jabber server and pass the xml 
+stuff directly as follows ( this is exactly same as what the PHP class 
+generates, i dont see any message comming from the server regarding 
+waiting authentication stuff, so what am i missing here ?
+
+I ran another script written in perl which uses Net::Jabber and i can 
+see the authentication requets are comming in, i am going to try to 
+check the outbound messgaes goes out from the Perl Modules to see if i 
+am missing something some where, but if anyone can spot something let me 
+know.. thanks
+
+Nayana
+
+
+(1)
+&lt;?xml version='1.0' encoding='UTF-8' ?&gt;
+&lt;stream:stream to='xxx.xxx.com' xmlns='jabber:client' 
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;
+
+(2)
+&lt;iq type='get' id='auth_edb914d6aca55beb13cfa790d652bf35'&gt;
+	&lt;query xmlns='jabber:iq:auth'&gt;
+  		&lt;username&gt;hb&lt;/username&gt;
+         &lt;/query&gt;
+&lt;/iq&gt;
+
+(response)
+&lt;iq type='result' id='auth_edb914d6aca55beb13cfa790d652bf35'&gt;
+	&lt;query xmlns='jabber:iq:auth'&gt;
+  		&lt;username&gt;hb&lt;/username&gt;                                	 
+&lt;password/&gt;&lt;digest/&gt;&lt;sequence&gt;486&lt;/sequence&gt;&lt;token&gt;42A5D2DF&lt;/token&gt;&lt;resource/&gt;&lt;/query&gt;
+&lt;/iq&gt;
+
+(3)
+&lt;iq type='set' id='auth_edb914d6aca55beb13cfa790d652bf35'&gt;
+&lt;query xmlns='jabber:iq:auth'&gt;
+	&lt;username&gt;hb&lt;/username&gt;
+	&lt;password&gt;hhhhhh&lt;/password&gt;
+         &lt;resource&gt;TipicIM&lt;/resource&gt;
+&lt;/query&gt;
+&lt;/iq&gt;
+
+(response)
+&lt;iq type='result' id='auth_edb914d6aca55beb13cfa790d652bf35'/&gt;
+
+(4)
+&lt;presence&gt;
+         &lt;status&gt;online&lt;/status&gt;
+&lt;/presence&gt;
+
+(5)
+&lt;iq type='get' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hb at xxx.xxx.com</A>/TipicIM' to='xxx.xxx.com' 
+id='keep_alive_1118517698'&gt;
+	&lt;query xmlns='jabber:iq:time' /&gt;
+&lt;/iq&gt;
+
+(response)
+&lt;iq type='result' from='xxx.xxx.com to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hb at xxx.xxx.comTipicIM</A>' 
+id='keep_alive_1118517698'&gt;
+	&lt;query xmlns='jabber:iq:time'&gt;&lt;utc&gt;20050611T19:24:48&lt;/utc&gt;&lt;display&gt;Sat 
+Jun 11 19:24:48 2005&lt;/display&gt;&lt;tz&gt;GMT&lt;/tz&gt;
+	&lt;/query&gt;
+&lt;/iq&gt;
+
+
+Matthew Terenzio wrote:
+&gt;<i> Not sure I understand the problem, but just want to make clear that you 
+</I>&gt;<i> understand that once an HTTP page connection is closed after the the PHP 
+</I>&gt;<i> script runs, that your connection with the server will be closed.
+</I>&gt;<i> 
+</I>&gt;<i> I use the class with a command line PHP script that acts as the client 
+</I>&gt;<i> and loops, waiting for any new incoming messages.
+</I>&gt;<i> 
+</I>&gt;<i> Something like this:
+</I>&gt;<i> 
+</I>&gt;<i> require(&quot;class.jabber.php&quot;);
+</I>&gt;<i> $JABBER = new Jabber;
+</I>&gt;<i> $JABBER-&gt;server         = &quot;Your Server&quot;;
+</I>&gt;<i> $JABBER-&gt;port           = &quot;5222&quot;;
+</I>&gt;<i> $JABBER-&gt;username       = &quot;jabberuser&quot;;
+</I>&gt;<i> $JABBER-&gt;password       = &quot;secret&quot;;
+</I>&gt;<i> $JABBER-&gt;resource       = &quot;&quot;;
+</I>&gt;<i> $JABBER-&gt;enable_logging = FALSE;
+</I>&gt;<i> $JABBER-&gt;Connect()      or die(&quot;Couldn't connect!&quot;);
+</I>&gt;<i> $JABBER-&gt;SendAuth()     or die(&quot;Couldn't authenticate!&quot;);
+</I>&gt;<i> 
+</I>&gt;<i> while(true) {
+</I>&gt;<i>   $JABBER-&gt;CruiseControl();
+</I>&gt;<i>  }
+</I>&gt;<i> 
+</I>&gt;<i> This may not help very much. It's not exactly what I use, but mine is so 
+</I>&gt;<i> customized for a certain purpose that it wouldn't be useful to include 
+</I>&gt;<i> the exact code.
+</I>&gt;<i> There used to be a command line PHP client called jclient, but I can't 
+</I>&gt;<i> seem to find it anymore. Does anyone have a copy of it?
+</I>&gt;<i> On Jun 11, 2005, at 1:46 PM, Nayana Hettiarachchi - GMI wrote:
+</I>&gt;<i> 
+</I>&gt;&gt;<i> Hi,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Has anyone used the PHP jabber class, everything works great in it 
+</I>&gt;&gt;<i> except that i am not seeing the server sending the request for 
+</I>&gt;&gt;<i> authentication to the client, i tried to debug this by checking all 
+</I>&gt;&gt;<i> the messages that comes from the server but i am not seeing any 
+</I>&gt;&gt;<i> message comes through when u try to add the php client to another 
+</I>&gt;&gt;<i> client`s user list,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> anyone had a similar issue ? any work arounds ? can the authentication 
+</I>&gt;&gt;<i> requirment be turned off on a user basis ?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Nayana
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> -- 
+</I>&gt;&gt;<i> Nayana Hettiarachchi &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nayana at gmi-mr.com</A>&gt;
+</I>&gt;&gt;<i> Associate Director - IT Development
+</I>&gt;&gt;<i> GMI (Global Market Insite, Inc.)
+</I>&gt;&gt;<i> Direct: +1-206-315-9319
+</I>&gt;&gt;<i> Cell: +1-206-713-5759
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Integrated Solutions for Market Research
+</I>&gt;&gt;<i> www.gmi-mr.com
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i> jdev mailing list
+</I>&gt;&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> !DSPAM:42ab322787068421847483!
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+
+-- 
+Nayana Hettiarachchi &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nayana at gmi-mr.com</A>&gt;
+Associate Director - IT Development
+GMI (Global Market Insite, Inc.)
+Direct: +1-206-315-9319
+Cell: +1-206-713-5759
+
+Integrated Solutions for Market Research
+www.gmi-mr.com
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="051347.html">[jdev] PHP jabber class
+</A></li>
+	<LI>Next message: <A HREF="051349.html">[jdev] PHP jabber class
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51348">[ date ]</a>
+              <a href="thread.html#51348">[ thread ]</a>
+              <a href="subject.html#51348">[ subject ]</a>
+              <a href="author.html#51348">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

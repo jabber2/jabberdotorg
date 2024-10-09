@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Question about resource binding to server implementors
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Question%20about%20resource%20binding%20to%20server%20implementors&In-Reply-To=200603281308.11318.snake%40penza-gsm.ru">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="024355.html">
+   <LINK REL="Next"  HREF="024346.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Question about resource binding to server implementors</H1>
+    <B>Michal Vaner (Vorner)</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Question%20about%20resource%20binding%20to%20server%20implementors&In-Reply-To=200603281308.11318.snake%40penza-gsm.ru"
+       TITLE="[jdev] Question about resource binding to server implementors">michal.vaner at kdemail.net
+       </A><BR>
+    <I>Tue Mar 28 06:45:19 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="024355.html">[jdev] Question about resource binding to server implementors
+</A></li>
+        <LI>Next message: <A HREF="024346.html">[jdev] Question about resource binding to server implementors
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24362">[ date ]</a>
+              <a href="thread.html#24362">[ thread ]</a>
+              <a href="subject.html#24362">[ subject ]</a>
+              <a href="author.html#24362">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dne &#250;ter&#253; 28 b&#345;ezen 2006 11:08 Alexey Nezhdanov napsal(a):
+&gt;<i> &#1042; &#1089;&#1086;&#1086;&#1073;&#1097;&#1077;&#1085;&#1080;&#1080; &#1086;&#1090; &#1042;&#1090;&#1086;&#1088;&#1085;&#1080;&#1082; 28 &#1052;&#1072;&#1088;&#1090; 2006 10:45 Vinod Panicker &#1085;&#1072;&#1087;&#1080;&#1089;&#1072;&#1083;(a):
+</I>&gt;<i> &gt; On 3/28/06, Alexey Nezhdanov &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">snake at penza-gsm.ru</A>&gt; wrote:
+</I>&gt;<i> &gt; &gt; &#1042; &#1089;&#1086;&#1086;&#1073;&#1097;&#1077;&#1085;&#1080;&#1080; &#1086;&#1090; &#1042;&#1090;&#1086;&#1088;&#1085;&#1080;&#1082; 28 &#1052;&#1072;&#1088;&#1090; 2006 09:06 Vinod Panicker &#1085;&#1072;&#1087;&#1080;&#1089;&#1072;&#1083;(a):
+</I>&gt;<i> &gt; &gt; &gt; Hi,
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Just wanted to check with the server implementors - Do you allow
+</I>&gt;<i> &gt; &gt; &gt; multiple &quot;connected&quot; resources with the same resource identifier?
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; If yes, how do you handle delivery of &lt;iq/&gt; stanzas addressed to the
+</I>&gt;<i> &gt; &gt; &gt; full jid of the user.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; If no, how do you handle it when a client connects with a resource
+</I>&gt;<i> &gt; &gt; &gt; identifier that is already in use?
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; xmppd.py not allows that and drops previous connection with &lt;conflict/&gt;
+</I>&gt;<i> &gt; &gt; stream error.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; According to RFC 3920, in this case, the server should return a
+</I>&gt;<i> &gt; &lt;conflict/&gt; to the new connection.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; From section 7 :
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;    Client binds a resource:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;    &lt;iq type='set' id='bind_2'&gt;
+</I>&gt;<i> &gt;      &lt;bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'&gt;
+</I>&gt;<i> &gt;        &lt;resource&gt;someresource&lt;/resource&gt;
+</I>&gt;<i> &gt;      &lt;/bind&gt;
+</I>&gt;<i> &gt;    &lt;/iq&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;    Resource identifier is in use:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;    &lt;iq type='error' id='bind_2'&gt;
+</I>&gt;<i> &gt;      &lt;bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'&gt;
+</I>&gt;<i> &gt;        &lt;resource&gt;someresource&lt;/resource&gt;
+</I>&gt;<i> &gt;      &lt;/bind&gt;
+</I>&gt;<i> &gt;      &lt;error type='cancel'&gt;
+</I>&gt;<i> &gt;        &lt;conflict xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/&gt;
+</I>&gt;<i> &gt;      &lt;/error&gt;
+</I>&gt;<i> &gt;    &lt;/iq&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Note that the &lt;conflict/&gt; error is sent to the new resource and not
+</I>&gt;<i> &gt; the currently connected one.
+</I>&gt;<i>
+</I>&gt;<i> Well, I just do not remember. Probably it behaves exactly then. I have
+</I>&gt;<i> leaved xmppd.py long ago, but at that time I was consulting with RFC for
+</I>&gt;<i> every case.
+</I>&gt;<i>
+</I>
+Hm, I found this: 
+Client asks server to bind a resource: 
+&lt;iq type='set' id='bind_1'&gt;
+  &lt;bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/&gt;
+&lt;/iq&gt;
+
+A server that supports resource binding MUST be able to generate a resource 
+identifier on behalf of a client. A resource identifier generated by the 
+server MUST be unique for that &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">node at domain</A>&gt;. 
+If the client wishes to specify the resource identifier, it sends an IQ stanza 
+of type &quot;set&quot; that contains the desired resource identifier as the XML 
+character data of a &lt;resource/&gt; element that is a child of the &lt;bind/&gt; 
+element: 
+Client binds a resource: 
+&lt;iq type='set' id='bind_2'&gt;
+  &lt;bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'&gt;
+    &lt;resource&gt;someresource&lt;/resource&gt;
+  &lt;/bind&gt;
+&lt;/iq&gt;
+
+Once the server has generated a resource identifier for the client or accepted 
+the resource identifier provided by the client, it MUST return an IQ stanza 
+of type &quot;result&quot; to the client, which MUST include a &lt;jid/&gt; child element 
+that specifies the full JID for the connected resource as determined by the 
+server: 
+Server informs client of successful resource binding: 
+&lt;iq type='result' id='bind_2'&gt;
+  &lt;bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'&gt;
+    &lt;jid&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">somenode at example.com</A>/someresource&lt;/jid&gt;
+  &lt;/bind&gt;
+&lt;/iq&gt;
+
+A server SHOULD accept the resource identifier provided by the client, but MAY 
+override it with a resource identifier that the server generates; in this 
+case, the server SHOULD NOT return a stanza error (e.g., &lt;forbidden/&gt;) to the 
+client but instead SHOULD communicate the generated resource identifier to 
+the client in the IQ result as shown above.
+
+Tha most iportant thing seems to be at the end - the best way to handle it is, 
+in my opinion, to accept the resource if it is not used, or return something 
+differet, like the resource itself appended by some random string, is it is 
+already used. It would still behave OK for the users that care about the 
+resource, it would not close the connection for users who do not care about 
+them.
+
+-- 
+
+Ostatn&#283; soud&#237;m, &#382;e uzav&#345;en&#233; protokoly a form&#225;ty by m&#283;ly b&#253;t zni&#269;eny, stejn&#283; 
+jako Kart&#225;go.
+
+Michal Vaner (Vorner)
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 191 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20060328/3c63bcb9/attachment.pgp">https://www.jabber.org/jdev/attachments/20060328/3c63bcb9/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="024355.html">[jdev] Question about resource binding to server implementors
+</A></li>
+	<LI>Next message: <A HREF="024346.html">[jdev] Question about resource binding to server implementors
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24362">[ date ]</a>
+              <a href="thread.html#24362">[ thread ]</a>
+              <a href="subject.html#24362">[ subject ]</a>
+              <a href="author.html#24362">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,62 @@
+<project name="e4Terrapin" default="dist" basedir=".">
+    <description>
+        e4Terrapin build file by Jack Tanner <ihok@hotmail.com>	, 2003-06-11. 
+    </description>
+  <!-- set global properties for this build -->
+  <property name="build.compiler" value="modern"/>
+  <property name="src" location="src"/>
+  <property name="build" location="bin"/>
+  <property name="dist" location="dist"/>
+  
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="compile" depends="init"
+        description="compile the source -- debug">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}" deprecation="on" debug="true"/>
+  </target>
+
+  <target name="dist" depends="compile"
+        description="generate the distribution" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/lib"/>
+    <!-- Put everything in ${build} into the e4Terrapin-${DSTAMP}.jar file -->
+    <jar jarfile="${dist}/lib/e4Terrapin-${DSTAMP}.jar" basedir="${build}" includes="*.class *.properties"/>
+    <copy todir="${dist}/lib">
+		<fileset dir="${src}">
+			<include name="*.html"/>
+		</fileset>
+	</copy>	    
+  </target>
+
+  <target name="compile-release" depends="init"
+        description="compile the source -- release">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}" optimize="on"/>
+  </target>
+
+  <target name="dist-release" depends="compile-release"
+        description="generate the distribution" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/lib"/>
+    <!-- Put everything in ${build} into the e4Terrapin-${DSTAMP}.jar file -->
+    <jar jarfile="${dist}/lib/e4Terrapin-${DSTAMP}.jar" basedir="${build}" includes="*.class *.properties"/>
+    <copy todir="${dist}/lib">
+		<fileset dir="${src}">
+			<include name="*.html"/>
+		</fileset>
+	</copy>	    
+  </target>
+
+  <target name="clean"
+        description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+</project>

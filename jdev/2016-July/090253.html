@@ -1,0 +1,238 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Message sending performance XEP-0124
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Message%20sending%20performance%20XEP-0124&In-Reply-To=%3CCAOS1fz2hJ8Sb-BEzA9Zn7fTnL7AKhzTrcz%2BEppYoZ7TOh%3Dwd1g%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="090252.html">
+   <LINK REL="Next"  HREF="090254.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Message sending performance XEP-0124</H1>
+    <B>Vaibhav Ranglani</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Message%20sending%20performance%20XEP-0124&In-Reply-To=%3CCAOS1fz2hJ8Sb-BEzA9Zn7fTnL7AKhzTrcz%2BEppYoZ7TOh%3Dwd1g%40mail.gmail.com%3E"
+       TITLE="[jdev] Message sending performance XEP-0124">ranglani.vaibhav at gmail.com
+       </A><BR>
+    <I>Tue Jul  5 11:06:12 UTC 2016</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="090252.html">[jdev] Message sending performance XEP-0124
+</A></li>
+        <LI>Next message: <A HREF="090254.html">[jdev] [ANN] Salut &#224; Toi 0.6.1
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90253">[ date ]</a>
+              <a href="thread.html#90253">[ thread ]</a>
+              <a href="subject.html#90253">[ subject ]</a>
+              <a href="author.html#90253">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I tried the example with directly connection to 5222 and the performance
+improved vastly.
+
+I am running into another issue now.
+
+I have setup ejabberd and opened port 5222.
+
+I have setup nginx as a reverse proxy for ejabberd server. The nginx
+configuration is as follows.
+
+
+
+
+
+
+
+
+
+*stream{    upstream ejabberd-servers{        server ejabberd:5222;    }
+server{        listen 5222;        proxy_pass ejabberd-servers;    }}*
+
+*ejabberd* point to the ejabberd server and I am using a docker container
+to reverse proxy.
+
+The smack code I am using to connect is as shown below.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*public void createConnectionObject(){    AbstractXMPPConnection conn
+= null;    try {        XMPPTCPConnectionConfiguration.Builder
+builderConfig = XMPPTCPConnectionConfiguration.builder();
+SmackConfiguration.DEBUG = true;
+builderConfig.setConnectTimeout(60000);
+builderConfig.setHost(xmppHost);
+builderConfig.setPort(xmppPort);
+builderConfig.setServiceName(xmppDomain);
+builderConfig.setDebuggerEnabled(true);
+builderConfig.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
+       /*System.setProperty(&quot;javax.net.ssl.trustStore&quot;,
+&quot;classpath:hereimkeystore.jks&quot;);*/
+builderConfig.setKeystoreType(&quot;jks&quot;);
+builderConfig.setKeystorePath(&quot;classpath:mykeystore.jks&quot;);
+ProxyInfo proxyInfo = getProxyInfo();
+builderConfig.setProxyInfo(proxyInfo);        conn = new
+XMPPTCPConnection(builderConfig.build());
+conn.setPacketReplyTimeout(100000);        conn.connect();
+}catch(SmackException se){        System.out.println(&quot;Smack Exception
+thrown&quot;);    }catch(IOException io){        System.out.println(&quot;IO
+Exception thrown&quot;);    }catch(XMPPException xmppEx){
+System.out.println(&quot;XMPP Exception thrown&quot;);    }    this.connection =
+conn;}private ProxyInfo getProxyInfo(){    ProxyInfo proxyInfo =
+ProxyInfo.forHttpProxy(xmppHost, 443, null, null);    return
+proxyInfo;}*
+
+But when I try to make the connection, I get the error
+&quot;java.net.SocketException: Unconnected sockets not implemented&quot;
+
+I understand nginx will only serve as a tcp proxy, so any pointers on
+how to get this work?
+
+Regards
+
+Vaibhav
+
+
+
+On Sat, Jul 2, 2016 at 3:35 PM, Marcel Waldvogel &lt;
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">marcel.waldvogel at uni-konstanz.de</A>&gt; wrote:
+
+&gt;<i> With BOSH you can do the same things as with direct c2s XMPP (and even
+</I>&gt;<i> more, because guessing an RID is enough). So what should be the security
+</I>&gt;<i> concerns of using 5222 directly instead of 5280?
+</I>&gt;<i>
+</I>&gt;<i> &lt;<A HREF="https://me.uni.kn/marcel.waldvogel">https://me.uni.kn/marcel.waldvogel</A>&gt;-Marcel Waldvogel
+</I>&gt;<i> &lt;<A HREF="https://me.uni.kn/marcel.waldvogel">https://me.uni.kn/marcel.waldvogel</A>&gt;
+</I>&gt;<i>
+</I>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Vaibhav Ranglani &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ranglani.vaibhav at gmail.com</A>&gt;
+</I>&gt;<i> To: Jabber/XMPP software development list &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> Sent: Sa., 02 Juli 2016 11:57
+</I>&gt;<i> Subject: Re: [jdev] Message sending performance XEP-0124
+</I>&gt;<i>
+</I>&gt;<i> Thanks for the inputs Florian.
+</I>&gt;<i>
+</I>&gt;<i> This question is then related to the deployment side. Should I proxy the
+</I>&gt;<i> nginx server to ejabberd port 5222? If yes, then can somebody point to a
+</I>&gt;<i> post where this has been explained?
+</I>&gt;<i>
+</I>&gt;<i> Also wouldn't directly exposing port 5222 to the internet cause security
+</I>&gt;<i> concerns?
+</I>&gt;<i>
+</I>&gt;<i> Thanks
+</I>&gt;<i> Vaibhav
+</I>&gt;<i>
+</I>&gt;<i> On Sat, Jul 2, 2016 at 3:18 PM, Florian Schmaus &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">flo at geekplace.eu</A>&gt; wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> On 01.07.2016 16:22, Marcel Waldvogel wrote:
+</I>&gt;&gt;<i> &gt; For reliability requirements over wireless connections: don't use BOSH;
+</I>&gt;&gt;<i> &gt; do use Stream Management (XEP-0198)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Exactly. And if you want the BOSH advantage over XMPP's TCP binding,
+</I>&gt;&gt;<i> i.e., using standard HTTP(S) ports, then use XMPP's WebSocket binding
+</I>&gt;&gt;<i> (RFC 7395) + Stream Management.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Some background to this thread:
+</I>&gt;&gt;<i> <A HREF="https://community.igniterealtime.org/message/258562#comment-258562">https://community.igniterealtime.org/message/258562#comment-258562</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I have not much experience with BOSH as I don't/seldom use it. I've
+</I>&gt;&gt;<i> merged Smack's BOSH branch when I took over Smack and fixed a few
+</I>&gt;&gt;<i> things, but the code should be considered unmaintained.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I wonder if BOSH is suitable for mobile environments. In my experience
+</I>&gt;&gt;<i> those environments require being able to check the underlying TCP
+</I>&gt;&gt;<i> connection for liveness, which is not trivial when using BOSH I imagine.
+</I>&gt;&gt;<i> Using the BOSH Technique in mobile environments could cause serious UX
+</I>&gt;&gt;<i> issues if the first connection hangs in the long-polling state because
+</I>&gt;&gt;<i> the TCP connection broke down silently.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> WebSocket doesn't have this issues, and provides the same feature set as
+</I>&gt;&gt;<i> BOSH when used with Stream Management. I think it is the future and that
+</I>&gt;&gt;<i> there is no real reason, besides implementation availability, to use
+</I>&gt;&gt;<i> BOSH any more. Sadly there is no support for XMPP over WebSocket in
+</I>&gt;&gt;<i> Smack (yet).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> - Florian
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i> JDev mailing list
+</I>&gt;&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20160705/d6373d4b/attachment.html">https://www.jabber.org/jdev/attachments/20160705/d6373d4b/attachment.html</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="090252.html">[jdev] Message sending performance XEP-0124
+</A></li>
+	<LI>Next message: <A HREF="090254.html">[jdev] [ANN] Salut &#224; Toi 0.6.1
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90253">[ date ]</a>
+              <a href="thread.html#90253">[ thread ]</a>
+              <a href="subject.html#90253">[ subject ]</a>
+              <a href="author.html#90253">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] How to Delete a user from Jabber Server, other people's  rosters and the JUD?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20How%20to%20Delete%20a%20user%20from%20Jabber%20Server%2C%20other%20people%27s%0A%20%20rosters%20and%20the%20JUD%3F&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="012904.html">
+   <LINK REL="Next"  HREF="012884.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] How to Delete a user from Jabber Server, other people's  rosters and the JUD?</H1>
+    <B>Nicholas Perez</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20How%20to%20Delete%20a%20user%20from%20Jabber%20Server%2C%20other%20people%27s%0A%20%20rosters%20and%20the%20JUD%3F&In-Reply-To="
+       TITLE="[JDEV] How to Delete a user from Jabber Server, other people's  rosters and the JUD?">nick at jabberstudio.org
+       </A><BR>
+    <I>Thu May 30 16:29:42 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="012904.html">[JDEV] How to Delete a user from Jabber Server, other people's  rosters and the JUD?
+</A></li>
+        <LI>Next message: <A HREF="012884.html">[JDEV] How to Delete a user from Jabber Server ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12907">[ date ]</a>
+              <a href="thread.html#12907">[ thread ]</a>
+              <a href="subject.html#12907">[ subject ]</a>
+              <a href="author.html#12907">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Unfortunately, removing users from a jabber server is harder than it 
+looks. You have to take into account the xdb cache and in memory caching 
+in jsm.
+
+Currently there is no real good way to remove a user. Removing the 
+user.xml doesn't guarantee it will inaccessable largely because it is 
+cached in so many places. To remove a user it requires a kill -15 to the 
+main jabberd (shutdown the server) not a nice option.
+
+Technically accoring to protocol sending an iq:register with a &lt;remove&gt; 
+tag should remove you (works for transports but not jsm, go figure) but 
+it doesn't. So the next best thing is to just change their password to 
+god awful long MD5 hex string so they cannot access it. But this is 
+still bad because that username is still cached in jsm therefore it will 
+still get offline messages indefinitely (if there is mod_offline).
+
+No real clean way to remove users at this point...we are going to need 
+to wait for 1.5 where the server can take a SIGHUP to flush dead users.
+
+(if you can't tell I have studied this abit :)
+
+As for modifying rosters left and right, thats going to be a little more 
+difficult. After gathering the dead user's roster, it should be 
+acceptable to send:
+
+	&lt;presence type='unsubscribe' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">deaduser at server.com</A>' 			 
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">roster_item at otherserver.com</A>'&gt;
+
+for each roster item as a component or something on the jabberd backbone 
+where you dont have the restrictions of jsm, and clean up that way.
+
+The bad part about that is the amount of packets to do this, where as if 
+the Header JEP (does it do other packet types or just messages? it 
+should do presence too...) did presence packets you could send one large 
+packet with an unsub to all the roster items at once.
+
+&lt;plug&gt;
+But if anyone is really interested in helping me with JabminRPC stuff
+perl or C++ then by all means send me an email off list or jabber me. 
+There is a bunch of code just sitting there not doing anything except 
+getting bitrot, and i could use some motiviation/fresh faces :)
+&lt;/plug&gt;
+
+Anyhow, this email is over.
+
+Nick
+
+Peter Saint-Andre wrote:
+&gt;&gt;<i>1) they are unsubscribed from everyone's rosters
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> This is the hard part. AFAIK that functionality is not on the roadmap.
+</I>&gt;<i> 
+</I>&gt;<i> Good admin tools would be nice, eh? Not sure if this stuff would/will be
+</I>&gt;<i> covered by Nick's JabminRPC code....
+</I>&gt;<i> 
+</I>&gt;<i> /stpeter
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="012904.html">[JDEV] How to Delete a user from Jabber Server, other people's  rosters and the JUD?
+</A></li>
+	<LI>Next message: <A HREF="012884.html">[JDEV] How to Delete a user from Jabber Server ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12907">[ date ]</a>
+              <a href="thread.html#12907">[ thread ]</a>
+              <a href="subject.html#12907">[ subject ]</a>
+              <a href="author.html#12907">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

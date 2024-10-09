@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Extended error handling
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Extended%20error%20handling&In-Reply-To=AFAFD7CD011BD41196F400B0D020D6A01212FD%40exchgbtr">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005031.html">
+   <LINK REL="Next"  HREF="005026.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Extended error handling</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Extended%20error%20handling&In-Reply-To=AFAFD7CD011BD41196F400B0D020D6A01212FD%40exchgbtr"
+       TITLE="[JDEV] Extended error handling">keith at digix.dyndns.org
+       </A><BR>
+    <I>Wed Dec  6 21:33:43 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005031.html">[JDEV] Jabber on HPUX
+</A></li>
+        <LI>Next message: <A HREF="005026.html">[JDEV] Ports for AIM and ICQ transports
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5022">[ date ]</a>
+              <a href="thread.html#5022">[ thread ]</a>
+              <a href="subject.html#5022">[ subject ]</a>
+              <a href="author.html#5022">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hrmm..
+
+That isn't following the DTD for the error tag, which (though i cannot find it right now) states that the contents of the &lt;error/&gt; tag may only be CDATA..  (also error codes may be found at <A HREF="http://docs.jabber.org/jpg/referror.html">http://docs.jabber.org/jpg/referror.html</A>).  Instead, as long as you are writing both a custom server and client, it would probably be most protocol friendly for you to use &lt;x/&gt; tags to extend the error... such as:
+
+&lt;iq type='error' id='1002'&gt;
+  &lt;query xmlns='jabber:iq:register'&gt;
+    &lt;username&gt;newuser&lt;/username&gt;
+    &lt;email&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">spoon at fed.com</A>&lt;/email&gt;
+    &lt;password&gt;babyfood&lt;/password&gt;
+  &lt;/query&gt;
+  &lt;error code='406'&gt;Not Acceptable&lt;/error&gt;
+  &lt;x xmlns='custom:ns:error'&gt;
+    &lt;field_error&gt;
+      &lt;name&gt;firstname&lt;/name&gt;
+      &lt;errortype&gt;nodata&lt;/errortype&gt;
+      &lt;description&gt;First name may not be left blank&lt;/description&gt;
+    &lt;/field_error&gt;
+    &lt;field_error&gt;
+      &lt;name&gt;lastname&lt;/name&gt;
+      &lt;errortype&gt;nodata&lt;/errortype&gt;
+      &lt;description&gt;Last name may not be left blank&lt;/description&gt;
+    &lt;/field_error&gt;
+  &lt;/x&gt;
+&lt;/iq&gt;
+
+this way, you are not violating the &lt;error/&gt; tag's DTD, and your custom client may look for the &lt;x/&gt; tag with your given xmlns attribute.
+
+this way you can extend the jabber protocol, without breaking clients that do not support your features, by simply defining your own namespace and DTD
+
+Keith Minkler
+
+On Wed, Dec 06, 2000 at 07:16:08PM -0600, Colin Madere wrote:
+&gt;<i> 
+</I>&gt;<i> Hello JDEV,
+</I>&gt;<i> 
+</I>&gt;<i> My group is currently extending the error reporting (and field requirements)
+</I>&gt;<i> of the registration process in the Jabberd code.  We're implementing a
+</I>&gt;<i> server and client that requires more fields than the default
+</I>&gt;<i> (username/password) and we need to report more detailed errors for these
+</I>&gt;<i> added fields.
+</I>&gt;<i> 
+</I>&gt;<i> Basically, we have something working but I don't think it's clean enough.
+</I>&gt;<i> If there's suggestions, I'd like to hear them (on tag naming and hierarchy,
+</I>&gt;<i> mainly).
+</I>&gt;<i> 
+</I>&gt;<i> Here's an example of a registration request error returned to the client
+</I>&gt;<i> containing extended error codes for multiple fields:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;iq type='error' id='1002'&gt;
+</I>&gt;<i>    &lt;query xmlns='jabber:iq:register'&gt;
+</I>&gt;<i>       &lt;username&gt;newuser&lt;/username&gt;
+</I>&gt;<i>       &lt;email&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">spoon at fed.com</A>&lt;/email&gt;
+</I>&gt;<i>       &lt;password&gt;babyfood&lt;/password&gt;
+</I>&gt;<i> 	....possibly more fields here....
+</I>&gt;<i>       &lt;key&gt;3be0ed5fa106e18761cb22baec2715baa60b217c&lt;/key&gt;
+</I>&gt;<i>    &lt;/query&gt;
+</I>&gt;<i>    &lt;error code='xxx'&gt;
+</I>&gt;<i>       &lt;field_error&gt;
+</I>&gt;<i>          &lt;name&gt;firstname&lt;/name&gt;
+</I>&gt;<i>          &lt;errortype&gt;nodata&lt;/errortype&gt;
+</I>&gt;<i>          &lt;description&gt;First name may not be left blank&lt;/description&gt;
+</I>&gt;<i>       &lt;/field_error&gt;
+</I>&gt;<i>       &lt;field_error&gt;
+</I>&gt;<i>          &lt;name&gt;lastname&lt;/name&gt;
+</I>&gt;<i>          &lt;errortype&gt;nodata&lt;/errortype&gt;
+</I>&gt;<i>          &lt;description&gt;Last name may not be left blank&lt;/description&gt;
+</I>&gt;<i>       &lt;/field_error&gt;
+</I>&gt;<i>    &lt;/error&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> A standard error code looks like:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;error code='xxx'&gt;Username not available&lt;/error&gt;
+</I>&gt;<i> 
+</I>&gt;<i> What mainly bugs me is the &lt;field_error/&gt; section... 
+</I>&gt;<i> 
+</I>&gt;<i> ** Also, any suggestions or resources for error codes?  Currently we're just
+</I>&gt;<i> using arbitrarily chosen unused codes.
+</I>&gt;<i> 
+</I>&gt;<i> Colin Madere
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005031.html">[JDEV] Jabber on HPUX
+</A></li>
+	<LI>Next message: <A HREF="005026.html">[JDEV] Ports for AIM and ICQ transports
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5022">[ date ]</a>
+              <a href="thread.html#5022">[ thread ]</a>
+              <a href="subject.html#5022">[ subject ]</a>
+              <a href="author.html#5022">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

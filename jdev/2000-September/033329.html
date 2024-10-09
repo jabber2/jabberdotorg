@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: Re: missing &lt;/stream:stream&gt;
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Re%3A%20missing%20%3C/stream%3Astream%3E&In-Reply-To=%3CFF2AF4D762A0D3119E86009027C39A0605362FC7%40sea-ex0.starwave.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="033335.html">
+   <LINK REL="Next"  HREF="033333.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: Re: missing &lt;/stream:stream&gt;</H1>
+    <B>Robert Temple</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Re%3A%20missing%20%3C/stream%3Astream%3E&In-Reply-To=%3CFF2AF4D762A0D3119E86009027C39A0605362FC7%40sea-ex0.starwave.com%3E"
+       TITLE="[JDEV] Re: Re: missing &lt;/stream:stream&gt;">robert.temple at dig.com
+       </A><BR>
+    <I>Thu Sep 21 13:19:56 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="033335.html">[JDEV] Re: Re: missing &lt;/stream:stream&gt;
+</A></li>
+        <LI>Next message: <A HREF="033333.html">[JDEV] Re: Re: missing &lt;/stream:stream&gt;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33329">[ date ]</a>
+              <a href="thread.html#33329">[ thread ]</a>
+              <a href="subject.html#33329">[ subject ]</a>
+              <a href="author.html#33329">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>You have to attach an input source to a SAX parser.  And in this case, that
+input source is a socket using calls to recv.   And when the SAX parser trys
+to get more data but more data isn't there yet, it blocks on recv.
+Therefore SAX parsing has to be in a separate thread.  I could have it try
+to insert arbitrary data into the stream before it blocks with a select
+statement, but then I wouldn't be sure if the parser was in the middle of
+some tag, potentially messing up the parser even more.
+
+The _right_ thing to do would just be to have the server flush its output
+before it shutdown socket.  Server team: do you agree or disagree?
+
+-Robert
+
+-----Original Message-----
+From: Chris [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cjbehm at mail.com</A>]
+Sent: Thursday, September 21, 2000 5:16 AM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] Re: Re: missing &lt;/stream:stream&gt;
+
+
+on 09/20/2000 04:24 PM, Robert Temple at <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">RWTEMPLE at go.com</A> wrote:
+
+&gt;<i> SAX parsers don't allow you to interrupt the parsing to
+</I>&gt;<i> insert some new text.
+</I>
+I'm not familiar with the SAX parsers. Well you're feeding it data from
+somewhere right? Can't you just insert your data into the feed? Or does the
+parser hook directly to the incoming socket?
+
+Chris
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="033335.html">[JDEV] Re: Re: missing &lt;/stream:stream&gt;
+</A></li>
+	<LI>Next message: <A HREF="033333.html">[JDEV] Re: Re: missing &lt;/stream:stream&gt;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33329">[ date ]</a>
+              <a href="thread.html#33329">[ thread ]</a>
+              <a href="subject.html#33329">[ subject ]</a>
+              <a href="author.html#33329">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

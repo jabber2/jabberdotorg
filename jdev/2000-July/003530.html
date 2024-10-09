@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] digest and ldap and authentication
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20digest%20and%20ldap%20and%20authentication&In-Reply-To=p04320402b5a9d1024fdc%40%5B62.158.7.210%5D">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003528.html">
+   <LINK REL="Next"  HREF="003531.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] digest and ldap and authentication</H1>
+    <B>mark at mjwilcox.com</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20digest%20and%20ldap%20and%20authentication&In-Reply-To=p04320402b5a9d1024fdc%40%5B62.158.7.210%5D"
+       TITLE="[JDEV] digest and ldap and authentication">mark at mjwilcox.com
+       </A><BR>
+    <I>Sun Jul 30 09:42:55 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003528.html">[JDEV] digest and ldap and authentication
+</A></li>
+        <LI>Next message: <A HREF="003531.html">[JDEV] digest and ldap and authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3530">[ date ]</a>
+              <a href="thread.html#3530">[ thread ]</a>
+              <a href="subject.html#3530">[ subject ]</a>
+              <a href="author.html#3530">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+On 30 Jul 00, at 14:44, Max Horn wrote:
+
+&gt;<i> I have to admit that I have little to no knowledge about LDAP, so 
+</I>&gt;<i> please forgive my ignorance.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> As I understand it, you have to authenticate with LDAP. To do so, you 
+</I>&gt;<i> need a plaintext password in any case.
+</I>
+&gt;<i> 
+</I>&gt;<i> So there are exactly two options if one wants to achieve this:
+</I>&gt;<i> 
+</I>&gt;<i> 1) Force the user to send his LDAP password *in plaintext* to the 
+</I>&gt;<i> server. Whether it is equal to the jabber password or not doesn't 
+</I>&gt;<i> matter at this point.
+</I>If you mean on registration, yes. Otherwise Jabber only does this if 
+you don't want to use digest authentication.
+
+For the record, LDAP could support any number of different 
+authentication schemes, such as SSL client certificates, CRAM-
+MD5 &amp; Kerberos. 
+
+&gt;<i> 
+</I>&gt;<i> 2) The LDAP db has to store the LDAP password for an entry *in* that 
+</I>&gt;<i> entry in *plaintext*, too
+</I>It would if you want to do Jabber digest authentication. However, I'd 
+never allow this in my LDAP server. And while LDAP can store 
+multiple passwords in an entry (in a number of different formats if 
+you want :), this problem is going to be there when you try to 
+integrate jabber with any other authentication system. Outside of 
+homegrown authentication systems (such as what Jabber uses by 
+default), nobody stores their passwords in plaintext in the 
+password database.
+
+&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> to 1) of course one could say that for a secure connection the user 
+</I>&gt;<i> just has to establish a SSL connection. Doing this is only possible 
+</I>&gt;<i> when a) servers support SSL (a vast majority doesn't; it's not that 
+</I>&gt;<i> easy anyway, the admins have to find out the steps anyway, due to the 
+</I>&gt;<i> lack of documentation). And b), it'll require a certification system, 
+</I>&gt;<i> otherwise it's prone to fall to DNS spoof attacks.
+</I>&gt;<i> So, we need certs. The server gotta have a cert, and the clients need 
+</I>&gt;<i> to ask the user for trust into that cert, then they have to store the 
+</I>&gt;<i> cert locally to use it for future server verification.
+</I>&gt;<i> On unix it might be possible to achieve this via stunnel, but I can't 
+</I>&gt;<i> they as I'm not a unix man... Anyone can clarify this?
+</I>
+You have this procedure right (and at least the hooks for eventually 
+adding SSL are already there in Jabber, just nobody has 
+implemented it yet) :).
+
+However, Stunnel works on UNIX and Windows ;). 
+
+SSL is a much better solution because it's a known standard &amp; 
+would encrypt the entire session, not just the password. If you're 
+using Jabber to do company meetings, you should want the entire 
+conversation encrypted, not just the password (then again people 
+make business decisions via email all of the time &amp; that's not 
+usually encrypted ;). It also would protect the password during user 
+registration, which digest authentication does not do (thus IMHO, 
+it's not really any more secure than traditional authentication 
+because it can be sniffed during registration)
+
+Eventually if SSL support was built in (e.g. not just stunnel)  to the 
+client, then you could add in SSL client certificates which would 
+allow for a much more secure form of authentication.
+
+Mark
+
+&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> to 2): I agree to mark, this is not a realistic approach. Forget it I'd say.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> &gt;sheath and I are going to concentrate on getting the plaintext
+</I>&gt;<i> &gt;authentication to work first and worry about the digest password
+</I>&gt;<i> &gt;later.
+</I>&gt;<i> 
+</I>&gt;<i> Wise decision :)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Bye,
+</I>&gt;<i> 
+</I>&gt;<i> Max
+</I>&gt;<i> -- 
+</I>&gt;<i> -----------------------------------------------------------
+</I>&gt;<i> Max &quot;The Black Fingolfin&quot; Horn
+</I>&gt;<i> &lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">max at quendi.de</A>&gt;
+</I>&gt;<i> &lt;<A HREF="http://www.quendi.de">http://www.quendi.de</A>&gt; - please use my guestbook!
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+
+Mark Wilcox
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A>
+Got LDAP?
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003528.html">[JDEV] digest and ldap and authentication
+</A></li>
+	<LI>Next message: <A HREF="003531.html">[JDEV] digest and ldap and authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3530">[ date ]</a>
+              <a href="thread.html#3530">[ thread ]</a>
+              <a href="subject.html#3530">[ subject ]</a>
+              <a href="author.html#3530">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] 0.7 Proposed Protocol Changes
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%200.7%20Proposed%20Protocol%20Changes&In-Reply-To=%3CPine.LNX.4.10.9909270105470.12443-100000%40lor.jeremie.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="060189.html">
+   <LINK REL="Next"  HREF="060192.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] 0.7 Proposed Protocol Changes</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%200.7%20Proposed%20Protocol%20Changes&In-Reply-To=%3CPine.LNX.4.10.9909270105470.12443-100000%40lor.jeremie.com%3E"
+       TITLE="[JDEV] 0.7 Proposed Protocol Changes">jeremie at jabber.org
+       </A><BR>
+    <I>Mon Sep 27 01:46:24 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="060189.html">[JDEV] Windows clients... MFC or GTK?
+</A></li>
+        <LI>Next message: <A HREF="060192.html">[JDEV] 0.7 Proposed Protocol Changes
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#60191">[ date ]</a>
+              <a href="thread.html#60191">[ thread ]</a>
+              <a href="subject.html#60191">[ subject ]</a>
+              <a href="author.html#60191">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Here are some changes I'd like to propose or bring up for discussion for
+0.7.  Some are minor, and some major, but the essence of the changes are
+to &quot;tidy&quot; up a bit and streamline things for understanding and
+implementation of 0.7.
+
+
+Minor:
+
+=&gt; (already discussed) Additional message &quot;types&quot; where type is mostly for
+display: error, chat, groupchat.
+=&gt; Connections (client to server and server to server) are XML Streams
+(see protocol section at <A HREF="http://docs.jabber.org/">http://docs.jabber.org/</A>).
+
+
+Major:
+
+Rework &quot;presence&quot; model (renaming &quot;status&quot; to &quot;presence&quot;).  See the
+updated presence doc at <A HREF="http://docs.jabber.org/">http://docs.jabber.org/</A> in the protocol section.  
+It doesn't break the old model, just builds on it in a slightly more
+generic way.
+
+Rename &quot;nick&quot; to &quot;resource&quot; and generalizing the use of resources.  Each
+user can have multiple generic &quot;resources&quot; underneath them, a 3-tuple
+system: server&gt;user&gt;resource.
+
+--&gt; Session resources: Each connection from a client becomes a session
+resource, identical to the nickname setup in 0.6.
+
+--&gt; Remote resources: A user can tell a server to create a &quot;remote&quot;
+resource.  The server would map/proxy this new resource to a remote
+address and handle forwarding traffic to/from it.  For instance, there is
+a pager transport and any user can create a &quot;my pager&quot; resource that maps
+to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">uin1234 at pager.jabber.org.</A>
+
+Start utilizing Info/Query(IQ) as a fundamental part of the system. These
+would replace the existing &lt;login&gt; and &lt;roster&gt; packets.
+
+--&gt; Query the server to authenticate: extensible for future uses, returns
+receipt of success or failure. Example use of IQ to authenticate with the
+server and create a session resource:
+  &lt;iq&gt;
+    &lt;target&gt;server&lt;/target&gt;
+    &lt;type&gt;auth&lt;/type&gt;
+    &lt;set&gt;&lt;user&gt;jeremie&lt;/user&gt;&lt;pass&gt;foobar&lt;/pass&gt;&lt;res&gt;Jer&lt;/res&gt;&lt;/set&gt;
+  &lt;/iq&gt;
+
+--&gt; Roster queries: Use IQ to fetch and manage the roster stored on the
+server.  Example, client asking server for a group:
+  &lt;iq&gt;
+    &lt;target&gt;user&lt;/target&gt;
+    &lt;type&gt;roster&lt;/type&gt;
+    &lt;query&gt;&lt;group name=&quot;Work Buddies&quot;/&gt;&lt;/query&gt;
+  &lt;/iq&gt;
+Response:
+  &lt;iq&gt;
+    &lt;type&gt;roster&lt;/type&gt;
+    &lt;result&gt;
+      &lt;group name=&quot;Work Buddies&quot;&gt;&lt;user name=&quot;Jon&quot;&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jjames at isp.net</A>&lt;/user&gt;&lt;/group&gt;
+    &lt;/result&gt;
+  &lt;/iq&gt;
+
+
+In the end, we have 3 consistent types of data everywhere in Jabber:
+Messages, Presence, and Info/Query, all fundamentally extensible and have
+clearly different purposes and modes of operation.
+
+Much of this has been making it's way into the draft documentation at
+docs.jabber.org.  Most of the docs are incomplete yet, but please take a
+look at what's there and feed comments/suggestions back to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">docs at jabber.org.</A>
+
+Jer
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="060189.html">[JDEV] Windows clients... MFC or GTK?
+</A></li>
+	<LI>Next message: <A HREF="060192.html">[JDEV] 0.7 Proposed Protocol Changes
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#60191">[ date ]</a>
+              <a href="thread.html#60191">[ thread ]</a>
+              <a href="subject.html#60191">[ subject ]</a>
+              <a href="author.html#60191">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] XDB / ODBC
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20XDB%20/%20ODBC&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="011374.html">
+   <LINK REL="Next"  HREF="011405.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] XDB / ODBC</H1>
+    <B>Michel Oosterbeek</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20XDB%20/%20ODBC&In-Reply-To="
+       TITLE="[JDEV] XDB / ODBC">oosterbeek.mah at stu.hsbrabant.nl
+       </A><BR>
+    <I>Fri Feb 22 05:23:50 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="011374.html">[JDEV] XDB / ODBC
+</A></li>
+        <LI>Next message: <A HREF="011405.html">[JDEV] XDB / ODBC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11404">[ date ]</a>
+              <a href="thread.html#11404">[ thread ]</a>
+              <a href="subject.html#11404">[ subject ]</a>
+              <a href="author.html#11404">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+&gt;<i> there is a function called xdbodbc_query in xdb_sql_odbc.c
+</I>&gt;<i> If you add a debug messeage to echo out the query that is be query that
+</I>&gt;<i> is being executed you will be able to pin point the error.
+</I>
+It never gets there. But I did take up the advice mentioned above in the
+part where the crash occurs: the file &quot;xdb_sql_odbc.c&quot;.
+I've added some debug messages to the function &quot;xdbodbc_is_connected&quot;
+(because it seems to go wrong there - for code, se below). And the result I
+got was SQL_INVALID_HANDLE. Correct me if I'm mistaking, but the handle is
+created in &quot;xdbodbc_connect&quot;, right? Still there's no sign of anything going
+wrong there. But later, when at the end of that function it calls
+&quot;xdbodbc_is_connected&quot;, then it seems to go wrong anyway. How could those
+earlier checks have been passed OK then?
+The ODBC-environment is working OK, already several other programs are using
+it. Also the username, password, etc. have been checked and are filled in
+OK. I've also kept watch to the content of self-&gt;dbc throughout the process,
+that also seems OK.
+
+I still think it's something simple that I am overlooking somehow....
+
+Thanks,
+
+Michel
+
+------------------------------
+
+short xdbodbc_is_connected (XdbODBCBackend *self) {
+ static SQLCHAR buffer[255];
+ SQLSMALLINT outlen ;
+ SQLRETURN ret;
+ if (!(self-&gt;dbc))
+  return 0;
+
+ ret = SQLGetInfo(self-&gt;dbc,SQL_DATA_SOURCE_NAME,
+buffer,sizeof(buffer),&amp;outlen);
+
+ /* -= Start of the piece I included =- */
+
+ if (SQL_ERROR == ret){
+  log_debug(ZONE, &quot;ret contains SQL ERROR! &quot;);
+   } /* end if */
+ if (SQL_SUCCESS_WITH_INFO == ret){
+  log_debug(ZONE, &quot;ret contains SQL SUCCESS WITH INFO! &quot;);
+   } /* end if */
+ if (SQL_INVALID_HANDLE == ret){
+  log_debug(ZONE, &quot;ret contains SQL INVALID HANDLE! &quot;);
+   } /* end if */
+   if (SQL_SUCCESS == ret){
+  log_debug(ZONE, &quot;ret contains SQL SUCCESS! &quot;);
+   } /* end if */
+
+ /* -= End of the piece I included =- */
+
+ if (!SQL_SUCCEEDED(ret))
+  return 0;
+
+/* Also added this, but we never get here */
+ log_debug(ZONE, &quot;is_connected will return 1 :o)&quot;);
+
+ return 1;
+}
+
+
+
+-= Original Message =-
+
+&gt;<i> &gt; Michel Oosterbeek wrote:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Hi,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Still having problems here. Right now I'm using:
+</I>&gt;<i> &gt; - Red Hat 7.2
+</I>&gt;<i> &gt; - Jabber 1.4.1
+</I>&gt;<i> &gt; - xdb_sql
+</I>&gt;<i> &gt; - db2 (I connect through ODBC)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; All settings seem to be correct (jabber.xml and xdb_sql.xml), all info
+</I>is
+&gt;<i> &gt; inserted correctly (hostname, user, pw - checked and double checked),
+</I>but
+&gt;<i> &gt; the connection seems to fail somehow. I have included some debug-info
+</I>below.
+&gt;<i> &gt; I've kept everything 'basic' (no changes), and the odbc-connection has
+</I>also
+&gt;<i> &gt; been tested and proved working with other c-programs, so that can't be
+</I>it.
+&gt;<i> &gt;
+</I>&gt;<i> &gt; Any idea what this could be?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Michel.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; -= Debug Output =-
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thu Feb 21 13:07:25 2002  xdb.c:41 xdb_results checking xdb packet &lt;xdb
+</I>&gt;<i> &gt; type='result' to='xdb' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>'
+</I>ns='jabberd:xdb_sql:config'
+&gt;<i> &gt; id='0'&gt;&lt;xdb_sql xmlns='jabberd:xdb_sql:config'&gt;
+</I>&gt;<i> &gt;     &lt;backend&gt;odbc&lt;/backend&gt;
+</I>&gt;<i> &gt;     &lt;connection&gt;
+</I>&gt;<i> &gt;       &lt;host&gt;dbpc&lt;/host&gt;
+</I>&gt;<i> &gt;       &lt;db&gt;testdb&lt;/db&gt;
+</I>&gt;<i> &gt;       &lt;user&gt;testuser&lt;/user&gt;
+</I>&gt;<i> &gt;       &lt;pass&gt;testpw&lt;/pass&gt;
+</I>&gt;<i> &gt;     &lt;/connection&gt;
+</I>&gt;<i> &gt;     &lt;queries&gt;
+</I>&gt;<i> &gt;       &lt;querydef name='auth-get'&gt;
+</I>&gt;<i> &gt;         &lt;text&gt;
+</I>&gt;<i> &gt;           SELECT password FROM users WHERE username =
+</I>&gt;<i> &gt; &amp;apos;$$username$$&amp;apos;
+</I>&gt;<i> &gt;         &lt;/text&gt;
+</I>&gt;<i> &gt;         &lt;bindvar name='user'&gt;$$username$$&lt;/bindvar&gt;
+</I>&gt;<i> &gt;         &lt;bindcol name='password' offset='0'/&gt;
+</I>&gt;<i> &gt;       &lt;/querydef&gt;
+</I>&gt;<i> &gt;       &lt;querydef name='auth-set'&gt;
+</I>&gt;<i> &gt;         &lt;text&gt;
+</I>&gt;<i> &gt;           UPDATE users SET password = &amp;apos;$$p$$&amp;apos; WHERE username =
+</I>&gt;<i> &gt; &amp;apos;$$username$$&amp;apos;
+</I>&gt;<i> &gt;         &lt;/text&gt;
+</I>&gt;<i> &gt;         &lt;bindvar name='user'&gt;$$username$$&lt;/bindvar&gt;
+</I>&gt;<i> &gt;         &lt;bindvar name='password'&gt;$$p$$&lt;/bindvar&gt;
+</I>&gt;<i> &gt;       &lt;/querydef&gt;
+</I>&gt;<i> &gt;     &lt;querydef name
+</I>&gt;<i> &gt; Thu Feb 21 13:07:25 2002  log.c:105 &lt;log type='alert'
+</I>&gt;<i> &gt; from='-internal'&gt;[xdbsql_config_init] cannot connect database :
+</I>&gt;<i> &gt; &lt;/log&gt;
+</I>&gt;<i> &gt; Thu Feb 21 13:07:25 2002  log.c:105 &lt;log type='alert'
+</I>&gt;<i> &gt; from='-internal'&gt;[xdb_sql] configuration failed&lt;/log&gt;
+</I>&gt;<i> &gt; Thu Feb 21 13:07:25 2002  deliver.c:277 Registering c2s with instance
+</I>c2s
+&gt;<i> &gt; Thu Feb 21 13:07:25 2002  client.c:440 pthsock_client loading
+</I>&gt;<i> &gt; Thu Feb 21 13:07:25 2002  deliver.c:235 @-internal processing &lt;xdb
+</I>&gt;<i> &gt; type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' from='c2s' ns='jabber:config:pth-csock'
+</I>&gt;<i> &gt; id='0'/&gt;
+</I>&gt;<i> &gt; Thu Feb 21 13:07:25 2002  deliver.c:649 delivering to instance 'c2s'
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ................
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thu Feb 21 13:07:25 2002  mio.c:1115 io_select to listen on 5269
+</I>[(null)]
+&gt;<i> &gt; Thu Feb 21 13:07:25 2002  dnsrv.c:132 DNSRV CHILD: starting
+</I>&gt;<i> &gt; Thu Feb 21 13:07:25 2002  mio.c:1139 io_select starting to listen on
+</I>5269
+&gt;<i> &gt; [(null)]Thu Feb 21 13:07:25 2002  dnsrv.c:147 DNSRV CHILD: Read from
+</I>buffer:
+&gt;<i> &gt; &lt;stream&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thu Feb 21 13:07:25 2002  deliver.c:460 DELIVER 3:-internal &lt;log
+</I>&gt;<i> &gt; type='alert' from='-internal'&gt;[xdbsql_config_init] cannot connect
+</I>database :
+&gt;<i> &gt; &lt;/log&gt;
+</I>&gt;<i> &gt; Thu Feb 21 13:07:25 2002  deliver.c:649 delivering to instance 'elogger'
+</I>&gt;<i> &gt; 20020221T12:07:25: [alert] (-internal): [xdbsql_config_init] cannot
+</I>connect
+&gt;<i> &gt; database :
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thu Feb 21 13:07:25 2002  deliver.c:460 DELIVER 3:-internal &lt;log
+</I>&gt;<i> &gt; type='alert' from='-internal'&gt;[xdb_sql] configuration failed&lt;/log&gt;
+</I>&gt;<i> &gt; Thu Feb 21 13:07:25 2002  deliver.c:649 delivering to instance 'elogger'
+</I>&gt;<i> &gt; 20020221T12:07:25: [alert] (-internal): [xdb_sql] configuration failed
+</I>&gt;<i> &gt; Thu Feb 21 13:07:25 2002  mio.c:624 socket 9 has restore karma -100 -=&gt;
+</I>50
+&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="011374.html">[JDEV] XDB / ODBC
+</A></li>
+	<LI>Next message: <A HREF="011405.html">[JDEV] XDB / ODBC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11404">[ date ]</a>
+              <a href="thread.html#11404">[ thread ]</a>
+              <a href="subject.html#11404">[ subject ]</a>
+              <a href="author.html#11404">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

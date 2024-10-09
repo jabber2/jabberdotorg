@@ -1,0 +1,268 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Memory stomp on my server
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Memory%20stomp%20on%20my%20server&In-Reply-To=%3C005001c1f17e%24f3a6c210%246501a8c0%40tferguson%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="041926.html">
+   <LINK REL="Next"  HREF="041928.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Memory stomp on my server</H1>
+    <B>Tim Ferguson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Memory%20stomp%20on%20my%20server&In-Reply-To=%3C005001c1f17e%24f3a6c210%246501a8c0%40tferguson%3E"
+       TITLE="[JDEV] Memory stomp on my server">tim.ferguson at cw.com
+       </A><BR>
+    <I>Wed May  1 21:13:27 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="041926.html">[JDEV] .NET Remoting + Jabber
+</A></li>
+        <LI>Next message: <A HREF="041928.html">[JDEV] Win32 JabberD Installer
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#41933">[ date ]</a>
+              <a href="thread.html#41933">[ thread ]</a>
+              <a href="subject.html#41933">[ subject ]</a>
+              <a href="author.html#41933">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi All,
+ 
+I am running 1.4.2 on Tru64 and I have a problem that indicates a memory
+stomp because the CPU usage for the jabber process goes to 99%, which I
+have only seen in processes when it is a memory stomp, ok, anyway I have
+added extra logging to mio.c and mio_ssl.c and mio_raw.c to try to
+isolate the problem.  It appears that when calling a write it then dies
+when it either calls SSL_write or MIO_WRITE_FUNC, depending on whether
+it is an ssl connection or not.  I have included the last 100 lines of
+the debug output below when it hung in this case on an ssl connection.
+I have tried checking every parameter but it has not helped yet.
+Please, please, if anyone has any ideas let me know.
+ 
+Thu May  2 00:33:19 2002  mio.c:295 completed the write
+Thu May  2 00:33:19 2002  mio.c:311 going to check the value of len now:
+227
+Thu May  2 00:33:19 2002  mio.c:345 all done writing
+Thu May  2 00:33:19 2002  mio.c:350 going to free the pool
+Thu May  2 00:33:19 2002  mio.c:355 cur was equal to null
+Thu May  2 00:33:19 2002  mio.c:279 write_dump writing data: &lt;presence
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/JabberIM'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">christi.keiser at cwiccm.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/pr
+iority&gt;&lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/JabberIM'
+stamp='20020502T00:33:18'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:282 cur is not null
+Thu May  2 00:33:19 2002  mio.c:284 the write pointer is not null
+Thu May  2 00:33:19 2002  mio.c:287 all is ok for another write:
+&lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/JabberIM'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">christi.keiser at cwiccm.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/pr
+iority&gt;&lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/JabberIM'
+stamp='20020502T00:33:18'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:288 state is 0
+Thu May  2 00:33:19 2002  mio_raw.c:58 Now going to call MIO_WRITE_FUNC
+Thu May  2 00:33:19 2002  mio.c:295 completed the write
+Thu May  2 00:33:19 2002  mio.c:311 going to check the value of len now:
+229
+Thu May  2 00:33:19 2002  mio.c:345 all done writing
+Thu May  2 00:33:19 2002  mio.c:350 going to free the pool
+Thu May  2 00:33:19 2002  mio.c:355 cur was equal to null
+Thu May  2 00:33:19 2002  mio.c:279 write_dump writing data: &lt;presence
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ted.ryder at cwiccm.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/priorit
+y&gt;&lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+stamp='20020502T00:27:37'/&gt;&lt;x xmlns='jabber:x:delay'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK' stamp='20020502T00:27:38'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:282 cur is not null
+Thu May  2 00:33:19 2002  mio.c:284 the write pointer is not null
+Thu May  2 00:33:19 2002  mio.c:287 all is ok for another write:
+&lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ted.ryder at cwiccm.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/priorit
+y&gt;&lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+stamp='20020502T00:27:37'/&gt;&lt;x xmlns='jabber:x:delay'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK' stamp='20020502T00:27:38'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:288 state is 0
+Thu May  2 00:33:19 2002  mio_raw.c:58 Now going to call MIO_WRITE_FUNC
+Thu May  2 00:33:19 2002  mio.c:295 completed the write
+Thu May  2 00:33:19 2002  mio.c:311 going to check the value of len now:
+303
+Thu May  2 00:33:19 2002  mio.c:345 all done writing
+Thu May  2 00:33:19 2002  mio.c:350 going to free the pool
+Thu May  2 00:33:19 2002  mio.c:355 cur was equal to null
+Thu May  2 00:33:19 2002  mio.c:279 write_dump writing data: &lt;presence
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark.santarelli at cwiccm.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/p
+riority&gt;&lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+stamp='20020502T00:27:37'/&gt;&lt;x xmlns='jabber:x:delay'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK' stamp='20020502T00:27:38'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:282 cur is not null
+Thu May  2 00:33:19 2002  mio.c:284 the write pointer is not null
+Thu May  2 00:33:19 2002  mio.c:287 all is ok for another write:
+&lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark.santarelli at cwiccm.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/p
+riority&gt;&lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+stamp='20020502T00:27:37'/&gt;&lt;x xmlns='jabber:x:delay'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK' stamp='20020502T00:27:38'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:288 state is 0
+Thu May  2 00:33:19 2002  mio_raw.c:58 Now going to call MIO_WRITE_FUNC
+Thu May  2 00:33:19 2002  mio.c:295 completed the write
+Thu May  2 00:33:19 2002  mio.c:311 going to check the value of len now:
+309
+Thu May  2 00:33:19 2002  mio.c:345 all done writing
+Thu May  2 00:33:19 2002  mio.c:350 going to free the pool
+Thu May  2 00:33:19 2002  mio.c:355 cur was equal to null
+Thu May  2 00:33:19 2002  mio.c:279 write_dump writing data: &lt;presence
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tim.ferguson at cwiccm.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/prio
+rity&gt;&lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+stamp='20020502T00:27:37'/&gt;&lt;x xmlns='jabber:x:delay'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK' stamp='20020502T00:27:38'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:282 cur is not null
+Thu May  2 00:33:19 2002  mio.c:284 the write pointer is not null
+Thu May  2 00:33:19 2002  mio.c:287 all is ok for another write:
+&lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tim.ferguson at cwiccm.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/prio
+rity&gt;&lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+stamp='20020502T00:27:37'/&gt;&lt;x xmlns='jabber:x:delay'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK' stamp='20020502T00:27:38'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:288 state is 0
+Thu May  2 00:33:19 2002  mio_raw.c:58 Now going to call MIO_WRITE_FUNC
+Thu May  2 00:33:19 2002  mio.c:295 completed the write
+Thu May  2 00:33:19 2002  mio.c:311 going to check the value of len now:
+306
+Thu May  2 00:33:19 2002  mio.c:345 all done writing
+Thu May  2 00:33:19 2002  mio.c:350 going to free the pool
+Thu May  2 00:33:19 2002  mio.c:355 cur was equal to null
+Thu May  2 00:33:19 2002  mio.c:279 write_dump writing data: &lt;presence
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">christi.keiser at cwiccm.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/pr
+iority&gt;&lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+stamp='20020502T00:27:37'/&gt;&lt;x xmlns='jabber:x:delay'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK' stamp='20020502T00:27:38'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:282 cur is not null
+Thu May  2 00:33:19 2002  mio.c:284 the write pointer is not null
+Thu May  2 00:33:19 2002  mio.c:287 all is ok for another write:
+&lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">christi.keiser at cwiccm.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/pr
+iority&gt;&lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK'
+stamp='20020502T00:27:37'/&gt;&lt;x xmlns='jabber:x:delay'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/WORK' stamp='20020502T00:27:38'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:288 state is 0
+Thu May  2 00:33:19 2002  mio_raw.c:58 Now going to call MIO_WRITE_FUNC
+Thu May  2 00:33:19 2002  mio.c:295 completed the write
+Thu May  2 00:33:19 2002  mio.c:311 going to check the value of len now:
+308
+Thu May  2 00:33:19 2002  mio.c:345 all done writing
+Thu May  2 00:33:19 2002  mio.c:350 going to free the pool
+Thu May  2 00:33:19 2002  mio.c:355 cur was equal to null
+Thu May  2 00:33:19 2002  mio.c:357 the queue was null
+Thu May  2 00:33:19 2002  mio.c:279 write_dump writing data: &lt;presence
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/JabberIM'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/priority&gt;
+&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:282 cur is not null
+Thu May  2 00:33:19 2002  mio.c:284 the write pointer is not null
+Thu May  2 00:33:19 2002  mio.c:287 all is ok for another write:
+&lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/JabberIM'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/priority&gt;
+&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:288 state is 0
+Thu May  2 00:33:19 2002  mio_ssl.c:187 Entering into _mio_ssl_write
+Thu May  2 00:33:19 2002  mio_ssl.c:188 buf: &lt;presence
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/JabberIM'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/priority&gt;
+&lt;/presence&gt;; count: 131
+Thu May  2 00:33:19 2002  mio_ssl.c:215 The ssl state is OK
+Thu May  2 00:33:19 2002  mio_ssl.c:217 ssl is not null
+Thu May  2 00:33:19 2002  mio.c:295 completed the write
+Thu May  2 00:33:19 2002  mio.c:311 going to check the value of len now:
+131
+Thu May  2 00:33:19 2002  mio.c:345 all done writing
+Thu May  2 00:33:19 2002  mio.c:350 going to free the pool
+Thu May  2 00:33:19 2002  mio.c:355 cur was equal to null
+Thu May  2 00:33:19 2002  mio.c:279 write_dump writing data: &lt;presence
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/JabberIM'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/priority&gt;
+&lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/JabberIM'
+stamp='20020502T00:33:18'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:282 cur is not null
+Thu May  2 00:33:19 2002  mio.c:284 the write pointer is not null
+Thu May  2 00:33:19 2002  mio.c:287 all is ok for another write:
+&lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/JabberIM'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/priority&gt;
+&lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/JabberIM'
+stamp='20020502T00:33:18'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:288 state is 0
+Thu May  2 00:33:19 2002  mio_ssl.c:187 Entering into _mio_ssl_write
+Thu May  2 00:33:19 2002  mio_ssl.c:188 buf: &lt;presence
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/JabberIM'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>'&gt;&lt;status&gt;Online&lt;/status&gt;&lt;priority&gt;1&lt;/priority&gt;
+&lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>/JabberIM'
+stamp='20020502T00:33:18'/&gt;&lt;/presence&gt;; count: 222
+Thu May  2 00:33:19 2002  mio_ssl.c:215 The ssl state is OK
+Thu May  2 00:33:19 2002  mio_ssl.c:217 ssl is not null
+Thu May  2 00:33:19 2002  mio.c:295 completed the write
+Thu May  2 00:33:19 2002  mio.c:311 going to check the value of len now:
+222
+Thu May  2 00:33:19 2002  mio.c:345 all done writing
+Thu May  2 00:33:19 2002  mio.c:350 going to free the pool
+Thu May  2 00:33:19 2002  mio.c:355 cur was equal to null
+Thu May  2 00:33:19 2002  mio.c:279 write_dump writing data: &lt;presence
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">longleyp at jabber.cw.com</A>/Jabber Instant Messenger'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>'&gt;&lt;status&gt;Gardening
+&lt;/status&gt;&lt;priority&gt;1&lt;/priority&gt;&lt;show&gt;dnd&lt;/show&gt;&lt;x xmlns='jabber:x:delay'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">longleyp at jabber.cw.com</A>/Jabber Instant Messenger'
+stamp='20020501T08:29:08'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:282 cur is not null
+Thu May  2 00:33:19 2002  mio.c:284 the write pointer is not null
+Thu May  2 00:33:19 2002  mio.c:287 all is ok for another write:
+&lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">longleyp at jabber.cw.com</A>/Jabber Instant Messenger'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>'&gt;&lt;status&gt;Gardening
+&lt;/status&gt;&lt;priority&gt;1&lt;/priority&gt;&lt;show&gt;dnd&lt;/show&gt;&lt;x xmlns='jabber:x:delay'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">longleyp at jabber.cw.com</A>/Jabber Instant Messenger'
+stamp='20020501T08:29:08'/&gt;&lt;/presence&gt;
+Thu May  2 00:33:19 2002  mio.c:288 state is 0
+Thu May  2 00:33:19 2002  mio_ssl.c:187 Entering into _mio_ssl_write
+Thu May  2 00:33:19 2002  mio_ssl.c:188 buf: &lt;presence
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">longleyp at jabber.cw.com</A>/Jabber Instant Messenger'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">escobal at jabber.cw.com</A>'&gt;&lt;status&gt;Gardening
+&lt;/status&gt;&lt;priority&gt;1&lt;/priority&gt;&lt;show&gt;dnd&lt;/show&gt;&lt;x xmlns='jabber:x:delay'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">longleyp at jabber.cw.com</A>/Jabber Instant Messenger'
+stamp='20020501T08:29:08'/&gt;&lt;/presence&gt;; count: 276
+Thu May  2 00:33:19 2002  mio_ssl.c:215 The ssl state is OK
+Thu May  2 00:33:19 2002  mio_ssl.c:217 ssl is not null
+ 
+Then I do a kill -9 on the process and the following is printed.
+ 
+Thu May  2 00:53:20 2002  dnsrv.c:155 dnsrv: Read error on
+coprocess(198434): 0 Successful
+Thu May  2 00:53:20 2002  dnsrv.c:169 DNSRV CHILD: out of loop.. exiting
+normal
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20020501/9bc58a7c/attachment-0001.htm">https://www.jabber.org/jdev/attachments/20020501/9bc58a7c/attachment-0001.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="041926.html">[JDEV] .NET Remoting + Jabber
+</A></li>
+	<LI>Next message: <A HREF="041928.html">[JDEV] Win32 JabberD Installer
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#41933">[ date ]</a>
+              <a href="thread.html#41933">[ thread ]</a>
+              <a href="subject.html#41933">[ subject ]</a>
+              <a href="author.html#41933">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: [Mac-dev] Server crashing in pth_sched.c (on Mac OS X) : help needed
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20%5BMac-dev%5D%20Server%20crashing%20in%20pth_sched.c%20%28on%20Mac%20OS%20X%29%20%3A%20help%0A%20needed&In-Reply-To=%3Cp05100c02b72af2de4ca5%40%5B217.80.79.133%5D%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="066441.html">
+   <LINK REL="Next"  HREF="066516.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: [Mac-dev] Server crashing in pth_sched.c (on Mac OS X) : help needed</H1>
+    <B>Max Horn</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20%5BMac-dev%5D%20Server%20crashing%20in%20pth_sched.c%20%28on%20Mac%20OS%20X%29%20%3A%20help%0A%20needed&In-Reply-To=%3Cp05100c02b72af2de4ca5%40%5B217.80.79.133%5D%3E"
+       TITLE="[JDEV] Re: [Mac-dev] Server crashing in pth_sched.c (on Mac OS X) : help needed">max at quendi.de
+       </A><BR>
+    <I>Fri May 18 10:43:31 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="066441.html">[JDEV] Server crashing in pth_sched.c (on Mac OS X) : help needed
+</A></li>
+        <LI>Next message: <A HREF="066516.html">[JDEV] Jabberd and RH 7.1
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66442">[ date ]</a>
+              <a href="thread.html#66442">[ thread ]</a>
+              <a href="subject.html#66442">[ subject ]</a>
+              <a href="author.html#66442">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>At 8:22 Uhr -0700 18.05.2001, Jabber Developer wrote:
+&gt;<i>Hi
+</I>&gt;<i>
+</I>&gt;<i>I am still trying to have jabber running correctly on Apple Mac OS X.
+</I>&gt;<i>I turned on the debug mode in the pth_library and added some extra 
+</I>&gt;<i>log in pth_sched.c
+</I>&gt;<i>I can reproduce server crashes really often and it's always crashing 
+</I>&gt;<i>while executing :
+</I>&gt;<i>
+</I>&gt;<i>     pth_sc(sigprocmask)(SIG_SETMASK, &amp;pth_sigblock, &amp;oss);
+</I>&gt;<i>
+</I>&gt;<i>in the function : intern void pth_sched_eventmanager(pth_time_t 
+</I>&gt;<i>*now, int dopoll)
+</I>&gt;<i>
+</I>&gt;<i>I know it's crashing there because my code now looks like :
+</I>&gt;<i>         pth_debug1(&quot;******** allow delivery (sigprocmask)&quot;); // funcall
+</I>&gt;<i>     pth_sc(sigprocmask)(SIG_SETMASK, &amp;pth_sigblock, &amp;oss);
+</I>&gt;<i>         pth_debug1(&quot;******** end allow delivery&quot;); // funcall
+</I>&gt;<i>
+</I>&gt;<i>I can see in my log the first log, but the second message never appear!
+</I>&gt;<i>Is it nornal that the variable oss is never initialized in this 
+</I>&gt;<i>function ? It looks weird to use a non initialized variable. My 
+</I>&gt;<i>system is not using syscall() but instead directly sigprocmask, can 
+</I>&gt;<i>someone on a linux/solaris system check how this pth_sc(sigprocmask) 
+</I>&gt;<i>is defined?
+</I>
+Well, scannign throught the pth source revealed that pth_sc(xyz) 
+simply gets replaced with xyz in our case (on other systems, it will 
+be changed to a call to &quot;syscall&quot; or something similar)
+
+This means that the above call is identical to
+   sigprocmask(SIG_SETMASK, &amp;pth_sigblock, &amp;oss);
+
+
+oss is a pure output value, it is fine that it doesn't get 
+initialised before; it is there to store the old sigmask
+
+
+HTH a bit in understanding what is going on here. I will try to take 
+a look at the code in pth and see if I can understand it ;).
+
+
+Max
+-- 
+-----------------------------------------------
+Max Horn
+C++/ObjC/Java Developer
+
+email: &lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">max at quendi.de</A>&gt;
+phone: (+49) 6151-494890
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="066441.html">[JDEV] Server crashing in pth_sched.c (on Mac OS X) : help needed
+</A></li>
+	<LI>Next message: <A HREF="066516.html">[JDEV] Jabberd and RH 7.1
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66442">[ date ]</a>
+              <a href="thread.html#66442">[ thread ]</a>
+              <a href="subject.html#66442">[ subject ]</a>
+              <a href="author.html#66442">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

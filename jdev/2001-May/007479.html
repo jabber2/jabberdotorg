@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Distributed design of jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Distributed%20design%20of%20jabber&In-Reply-To=AFAFD7CD011BD41196F400B0D020D6A02A97E5%40exchgbtr.veda">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007472.html">
+   <LINK REL="Next"  HREF="007474.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Distributed design of jabber</H1>
+    <B>temas</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Distributed%20design%20of%20jabber&In-Reply-To=AFAFD7CD011BD41196F400B0D020D6A02A97E5%40exchgbtr.veda"
+       TITLE="[JDEV] Distributed design of jabber">temas at box5.net
+       </A><BR>
+    <I>Wed May  2 19:35:38 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007472.html">[JDEV] Distributed design of jabber
+</A></li>
+        <LI>Next message: <A HREF="007474.html">[JDEV] Unreliable?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7479">[ date ]</a>
+              <a href="thread.html#7479">[ thread ]</a>
+              <a href="subject.html#7479">[ subject ]</a>
+              <a href="author.html#7479">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Ok, well...
+In short:  dpsm is the devpoll socket manager.  It handles sockets in
+the same manner as c2s currently, but does it in a higher scaling
+fashion.
+
+In long, normal c2s only handles 1024 sockets, that sucks.  So I looked
+at the latest and greatest socket technology and saw devpoll to probably
+be the best option.  I then designed dpsm around devpoll and around the
+idea of running it in front of the main jabberd to handle a lot of
+sockets. 
+
+Example:  two mid size boxes in front of a larger backend box, the
+smaller running the jpollds, and the larger only jabbed.
+
+So there is a lame summary of it and an example setup.  It's still
+growing, but should be functional.
+
+--temas
+
+On 02 May 2001 15:06:46 -0500, Colin Madere wrote:
+&gt;<i> temas,
+</I>&gt;<i> 
+</I>&gt;<i> Any chance you could give us a quick run-down of what dpsm does and how it
+</I>&gt;<i> should be used?  I scanned the source and such, but it would be nice to get
+</I>&gt;<i> a clear picture from the author about it :)
+</I>&gt;<i> 
+</I>&gt;<i> colin
+</I>&gt;<i> 
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; From: temas [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">temas at box5.net</A>]
+</I>&gt;<i> &gt; Sent: Wednesday, May 02, 2001 1:22 PM
+</I>&gt;<i> &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; Subject: RE: [JDEV] Distributed design of jabber
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; dpsm is me.  It works right now (requires kernel module for devpoll
+</I>&gt;<i> &gt; support).  It's not fully tested, but that should be 
+</I>&gt;<i> &gt; happening more this
+</I>&gt;<i> &gt; week.  Give it a go and help develop it and I'll love you =)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Not sure on mod_farm right now, haven't looked in a while.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; --temas
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; On 02 May 2001 09:56:50 -0500, Colin Madere wrote:
+</I>&gt;<i> &gt; &gt; Another note:
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; According to jabber.com, they charge based on concurrent 
+</I>&gt;<i> &gt; users on the
+</I>&gt;<i> &gt; &gt; server.  Currently they are in a state which it is not 
+</I>&gt;<i> &gt; profitable for them
+</I>&gt;<i> &gt; &gt; to deal with small companies(they didn't really give me a number) or
+</I>&gt;<i> &gt; &gt; companies that did not have a _gaurenteed_ high number of 
+</I>&gt;<i> &gt; concurrent users.
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; Going on three weeks now that I'm waiting for answers to 
+</I>&gt;<i> &gt; technical questions
+</I>&gt;<i> &gt; &gt; to see if the jabber.com server is a viable solution for my company.
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; IOW, until they get some big sales and can beef up on 
+</I>&gt;<i> &gt; resources (read: more
+</I>&gt;<i> &gt; &gt; employees), I wouldn't waste your time or theirs unless you 
+</I>&gt;<i> &gt; have a need for
+</I>&gt;<i> &gt; &gt; a server (and can afford it - once again, I didn't get any 
+</I>&gt;<i> &gt; prices) that will
+</I>&gt;<i> &gt; &gt; have a constant concurrent user count above 10K (that's my 
+</I>&gt;<i> &gt; guess, since they
+</I>&gt;<i> &gt; &gt; didn't give me any solid numbers).
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; (Don't get me wrong, I understand their need to focus on 
+</I>&gt;<i> &gt; customers that can
+</I>&gt;<i> &gt; &gt; bring in the big cash until they have good income and are 
+</I>&gt;<i> &gt; stabilized)
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; WHILE I'm on the subject, hey JER and whoever else has 
+</I>&gt;<i> &gt; worked on it, what's
+</I>&gt;<i> &gt; &gt; the status of dpsm and.... 'mod_farm' is it?
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; -----Original Message-----
+</I>&gt;<i> &gt; &gt; &gt; From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dizzyd at dizzyd.com</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dizzyd at dizzyd.com</A>]
+</I>&gt;<i> &gt; &gt; &gt; Sent: Wednesday, April 25, 2001 8:24 PM
+</I>&gt;<i> &gt; &gt; &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt; Subject: Re: [JDEV] Distributed design of jabber
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; Lemme just translate this marketing stuff to engineering speak:
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt;&quot;Enables Distributed Processing across multiple server 
+</I>&gt;<i> &gt; &gt; &gt; &quot;farms&quot; which in
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt;  turn may support multiple CPUs.&quot;
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; Jabber.com reworked the server to be pre-emptively multi-threaded
+</I>&gt;<i> &gt; &gt; &gt; (pthreads). Additionally, some work on JSM was done to 
+</I>&gt;<i> &gt; permit multiple
+</I>&gt;<i> &gt; &gt; &gt; JSMs to be fully meshed across a network. 
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt;&quot;Allows components of a Jabber server to be distributed 
+</I>&gt;<i> &gt; &gt; &gt; across multiple
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt;  machines, enabling a greater degree of inherent redundancy.&quot;
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; Not sure what this means. :) 
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt;&quot;Enables groups of &quot;socket&quot; connections to be 
+</I>&gt;<i> &gt; distributed across
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt;mini-servers
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; The component formerly known as jpoll. Open source now has an
+</I>&gt;<i> &gt; &gt; &gt; equivalent called dspm (or dpsm, never can get it straight).
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; As it stands, j.com has pretty much rewritten most of jabberd 
+</I>&gt;<i> &gt; &gt; &gt; to be super
+</I>&gt;<i> &gt; &gt; &gt; efficient and thread-safe. This was _not_ a minor 
+</I>&gt;<i> &gt; undertaking, but was
+</I>&gt;<i> &gt; &gt; &gt; well worth the effort. Jabber.com provides a super-fast, 
+</I>&gt;<i> &gt; fully QA'd
+</I>&gt;<i> &gt; &gt; &gt; and peer-reviewed implementation of jabberd/jsm/etc. They've 
+</I>&gt;<i> &gt; &gt; &gt; worked very
+</I>&gt;<i> &gt; &gt; &gt; hard to make it scalable and robust. :) Doing these sorts 
+</I>&gt;<i> &gt; of things
+</I>&gt;<i> &gt; &gt; &gt; (scalability and robustness) have not been things that 
+</I>&gt;<i> &gt; the Open Source
+</I>&gt;<i> &gt; &gt; &gt; movement has shown much interest in this far (with good 
+</I>&gt;<i> &gt; reason). Very
+</I>&gt;<i> &gt; &gt; &gt; few people need to run a Jabber server for 200k+ concurrent users;
+</I>&gt;<i> &gt; &gt; &gt; these are (some of) the people that Jabber.com caters to.
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; Hope that helps. :)
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; Diz
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007472.html">[JDEV] Distributed design of jabber
+</A></li>
+	<LI>Next message: <A HREF="007474.html">[JDEV] Unreliable?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7479">[ date ]</a>
+              <a href="thread.html#7479">[ thread ]</a>
+              <a href="subject.html#7479">[ subject ]</a>
+              <a href="author.html#7479">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

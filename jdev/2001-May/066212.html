@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Cleanup Of Karma Code Completed
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Cleanup%20Of%20Karma%20Code%20Completed&In-Reply-To=%3CNCBBLEGIGJPCAMGPPCIMMEDAJBAA.heg%40sirlabs.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="066221.html">
+   <LINK REL="Next"  HREF="066220.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Cleanup Of Karma Code Completed</H1>
+    <B>Harold E. Gottschalk Jr.</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Cleanup%20Of%20Karma%20Code%20Completed&In-Reply-To=%3CNCBBLEGIGJPCAMGPPCIMMEDAJBAA.heg%40sirlabs.com%3E"
+       TITLE="[JDEV] Cleanup Of Karma Code Completed">heg at sirlabs.com
+       </A><BR>
+    <I>Thu May 10 18:38:15 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="066221.html">[JDEV] Server feature request
+</A></li>
+        <LI>Next message: <A HREF="066220.html">[JDEV] password encription
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66212">[ date ]</a>
+              <a href="thread.html#66212">[ thread ]</a>
+              <a href="subject.html#66212">[ subject ]</a>
+              <a href="author.html#66212">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>All,
+
+I have spent the last week working on cleaning up the karma implementation
+in the source release for 1.4.1.  I was unable to find some of the CVS
+sources therefore I made my changes based on 1.4.1 and not the latest dev
+source, so whoever does the merge please forgive me.
+
+I believe it can now work as intended.  It also allows for the inheritance
+of the default values set in &lt;io&gt; for karma in other services that would
+like to set their own karma values for their connections.
+
+I made a few changes to the karma struct so if you have your own service
+that wants to set karma please review the changes I have made in client.c or
+dialback.c.  Please review your code for compatibility with the new struct
+and methods.  karma_check is deprecated now.
+
+As I went through the code I found several problems associated with karma
+and have corrected them.
+
+I have added a new karma tag &lt;resetmeter&gt;, the default value is false for
+now.  What it does is, when your karma is restored your byte count is reset
+to zero.  I prefer total absolution, but you must turn this on otherwise it
+works as before forcing your karma down faster once you have transgressed.
+&lt;resetmeter&gt;1&lt;/resetmeter&gt;  # makes it true
+
+The &lt;init&gt; tag now does what it was meant to do initialize a new connection
+with a certain karma value at the start.  This never worked because it was
+ignored.
+
+Setting the &lt;dec&gt; tag value to 0 disables karma processing for that
+connection.  Karma and rating are not the same and I have note investigated
+rating to explain the difference.
+
+I have made a good attempt of cleaning up karma and I think I have made the
+processing at the core server loop more efficient.
+
+I have a tar posted with the changed files and diffs at
+<A HREF="http://sirlabs.com/karma1.4.1patches.tgz">http://sirlabs.com/karma1.4.1patches.tgz</A> .
+Files changed:
+client.c
+dialback.c
+jabberd.h
+karma.c
+lib.h
+mio.c
+
+
+Please try my changes and provide any feedback and let me know if I broke
+anything I was unaware of.  I did test the changes and believe it to be with
+out any obvious issues.
+
+
+Do you think that karma should be applied to writing sockets?
+
+
+heg
+
+&quot;If at first the idea is not absurd, then there is no hope for it.&quot; - Albert
+Einstein
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="066221.html">[JDEV] Server feature request
+</A></li>
+	<LI>Next message: <A HREF="066220.html">[JDEV] password encription
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66212">[ date ]</a>
+              <a href="thread.html#66212">[ thread ]</a>
+              <a href="subject.html#66212">[ subject ]</a>
+              <a href="author.html#66212">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

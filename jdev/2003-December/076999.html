@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Problems with SASL DIGEST-MD5 mechanism.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Problems%20with%20SASL%20DIGEST-MD5%20mechanism.&In-Reply-To=%3C200312151738.35907.snake%40penza-gsm.ru%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="076988.html">
+   <LINK REL="Next"  HREF="077000.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Problems with SASL DIGEST-MD5 mechanism.</H1>
+    <B>Alexey Nezhdanov</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Problems%20with%20SASL%20DIGEST-MD5%20mechanism.&In-Reply-To=%3C200312151738.35907.snake%40penza-gsm.ru%3E"
+       TITLE="[JDEV] Problems with SASL DIGEST-MD5 mechanism.">snake at penza-gsm.ru
+       </A><BR>
+    <I>Mon Dec 15 08:38:35 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="076988.html">[JDEV] Problems with SASL DIGEST-MD5 mechanism.
+</A></li>
+        <LI>Next message: <A HREF="077000.html">[JDEV] Problems with SASL DIGEST-MD5 mechanism.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76999">[ date ]</a>
+              <a href="thread.html#76999">[ thread ]</a>
+              <a href="subject.html#76999">[ subject ]</a>
+              <a href="author.html#76999">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> Hello. Implemented and tested SASL authentification against jabberd2rc2.
+</I>&gt;<i> Though PLAIN mechanism worked out of the box but DIGEST-MD5 failing to
+</I>&gt;<i> authentificate with server while perfectly works on examples that
+</I>&gt;<i> supplied in RFC2831. I also can't reproduce example that supplied in
+</I>&gt;<i> draft-ietf-xmpp-core-20 since there are not password and &quot;secret&quot; value
+</I>&gt;<i> doesn't produces a match.
+</I>I found the bug. I can not say for sure if client or server is buggy but this 
+is the cause:
+python method base64.encodestring(smth) produces base64 code that 
+*separated*by*newlines*. It is seen on my debug output:
+DEBUG: socket       sent  &lt;response 
+xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;Y2hhcnNldD11dGYtOCx1c2VybmFtZT0idGVzdCIscmVhbG09Indvb2R5OC5wZW56YS1nc20ucnUi
+\nLG5vbmNlPSJjYTIxZTFkNzkxYTQzOGQ1N2VhYzc0MDNhMGFlOGEyMzBkODFkNDUzIixuYz0wMDAw
+\nMDAwMSxjbm9uY2U9Ik9BNk1IWGg2VnFUclJrIixkaWdlc3QtdXJpPSJ4bXBwLyIscmVzcG9uc2U9
+\nMmNjOTc1ZTc4OGExNTAwZjQwODVlNTY5NjYxYjY1MGEscW9wPWF1dGg=\n&lt;/response&gt;
+^^
+And the C implementation of base64 that jabberd2 uses sees this as incorrect 
+padding and cutting my response, so the c2s returns &quot;error 34: malformed 
+data&quot;.
+
+&gt;<i>....
+</I>&gt;<i> Since I do not sure if that problem is in my code or in my jabberd
+</I>&gt;<i> configuration please help with it:
+</I>&gt;<i> if you have jabberd2 that proven working DIGEST-MD5 mechanism, please
+</I>&gt;<i> test my code against it.
+</I>No more help needed on this topic.
+
+-- 
+Respectively
+Alexey &quot;Snake&quot; Nezhdanov
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="076988.html">[JDEV] Problems with SASL DIGEST-MD5 mechanism.
+</A></li>
+	<LI>Next message: <A HREF="077000.html">[JDEV] Problems with SASL DIGEST-MD5 mechanism.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76999">[ date ]</a>
+              <a href="thread.html#76999">[ thread ]</a>
+              <a href="subject.html#76999">[ subject ]</a>
+              <a href="author.html#76999">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

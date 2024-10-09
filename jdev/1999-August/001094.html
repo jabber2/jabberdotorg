@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] MIME, was My evil plans for a client.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20MIME%2C%20was%20My%20evil%20plans%20for%20a%20client.&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001091.html">
+   <LINK REL="Next"  HREF="001097.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] MIME, was My evil plans for a client.</H1>
+    <B>Thomas D. Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20MIME%2C%20was%20My%20evil%20plans%20for%20a%20client.&In-Reply-To="
+       TITLE="[JDEV] MIME, was My evil plans for a client.">tcharron at my-deja.com
+       </A><BR>
+    <I>Mon Aug  9 13:10:54 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001091.html">[JDEV] Web Team
+</A></li>
+        <LI>Next message: <A HREF="001097.html">[JDEV] MIME, was My evil plans for a client.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1094">[ date ]</a>
+              <a href="thread.html#1094">[ thread ]</a>
+              <a href="subject.html#1094">[ subject ]</a>
+              <a href="author.html#1094">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Mon, 9 Aug 1999 13:30:53    arh14 wrote:
+&gt;<i>Ok. I didn't know that Jabber's scope was that large.  Then it is 
+</I>&gt;<i>entirely desirable to route all messages through the server which can 
+</I>&gt;<i>then decide where they should actually end up.  In this scheme are the 
+</I>&gt;<i>&quot;transport&quot;s tied to their endpoint protocol?  And if so, is there a 
+</I>&gt;<i>reason they need to be?
+</I>
+  They talk to the etherx router via the protocol.  What they do with the data afterwards is their own buisness..  When they send data out to jabber users, they need to conform to jabber protocol, but on other ends, they can do whatever they want.  That is why a Jabber&lt;=&gt;SMTP transport could be done..  The transport is what carries the data from one thing into and out of the jabber 'network'.  Etherx is then in charge of routing the packets where they need to go, either to another etherx, or a local transport.
+
+For instance, if the server recieves a message, 
+&gt;<i>that message should be formatted independant of its destination.  If so, 
+</I>&gt;<i>this message can be transmitted to an arbitrary type of endpoints 
+</I>&gt;<i>(SMTP, IM, pager, whatever).  Is there a distinction between the Jabber 
+</I>&gt;<i>protocol and these &quot;transport&quot; protocols, and if so, why?
+</I>
+  I'm not quite sure I understand what your asking, but I'll stab at it..  All data is transported via jabber's protocols.  Extra data CAN be appended inside of CDATA segments in the &lt;ext&gt; tags if needed, but I can truely not think of a reason beyond binary data.  All transports need to know how to talk with this protocol to jabber users.  Anything else they want to do is their own buisness..
+
+  Perfect example would be the really basic Jabber&lt;=&gt;IRC transport.  It talks to IRC as IRC, and any data coming in to IRC is then transfered into jabber.  It can then route the IRC data to ANYTHING that speaks jabber, hence, I COULD have a transport that monitors an IRC channel for nasty words, and send me a jabber message when it detects it..  Then, you see the fun..  Well, wait, I'm offline, Ok, so it looks at an alternate address in my profile..  Could be a alpha numeric cell phone/pager transport..  Sends it there..  COuld have been an Email, sends it there..  Heck, could be the AOL IM interface to send it to my AOL ID..
+
+  See how it all shapes up, and the entire reason for having transports?
+
+&gt;<i>?? Would that mean every Jabber client would have to be an HTTP server?  
+</I>&gt;<i>Or that the Jabber server would have to be an HTTP server?  Is there a 
+</I>&gt;<i>reason the Jabber protocol itself cannot handle messages that contain 
+</I>&gt;<i>files, and must rely on a separate protocol?
+</I>
+  Both ways work, merely an idea that was put forth.  Wouldn;t be a full fledged HTTP server, merely something that would say 'Ok, I'm listening for connection here, go ahead and do an HTTP get there, and I'll send it' in laymens terms..  I personally like the idea of embeding the data into message packets, but it DEFINATLY has it's cons..
+
+&gt;<i>This was my view also.  Client to client would be no different from 
+</I>&gt;<i>client to server.  No need to use application(client)-specific protocols.
+</I>
+  Darned good idea of how to do it..  As long as it conformed, the only thing you would have to do it come up of a way to securely start the connection..  Once (if) moddigisign ever get's finished, it'd be a way to do it..
+
+&gt;<i>So then the Jabber protocol should support the transport of heterogenous 
+</I>&gt;<i>data in some generic way.  I was seeing embedded MIME as the way to do 
+</I>&gt;<i>this.  That would obviate the need for any other protocols (HTTP, FTP, 
+</I>&gt;<i>client-specific, whatever).  If the client could parse MIME it could 
+</I>&gt;<i>automatically recieve data of any type...no need to even open separate 
+</I>&gt;<i>ports talking different protocols.
+</I>
+  I would as well..  This is what the &lt;ext&gt; flags are for...  I think we should support SEVERAL ways to transfer files, IMHO, and let the user choose, with the most proven method being the default..  Then of course, do you split up the messages, or send as one HUGE mime message?
+
+
+&gt;<i>Yes, I hadn't realized the scope of Jabber extended to non-IM clients.  
+</I>&gt;<i>For non-IM messages, one would have to go through the server.
+</I>
+  That's the wonders..  I actually have my console messages on my Linux box forward to my jabber ID on my local machine..  This is what JNX is looking at..  Using Jabber for more then IM..  Check out <A HREF="http://download.jabber.org/archive/9904/msg00080.html">http://download.jabber.org/archive/9904/msg00080.html</A>
+
+  The nice thing is, while it's scope CAN be grand, it's still simple on a low level..
+
+---
+Thomas Charron
+
+
+
+
+--== Sent via Deja.com <A HREF="http://www.deja.com/">http://www.deja.com/</A> ==--
+Share what you know. Learn what you don't.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001091.html">[JDEV] Web Team
+</A></li>
+	<LI>Next message: <A HREF="001097.html">[JDEV] MIME, was My evil plans for a client.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1094">[ date ]</a>
+              <a href="thread.html#1094">[ thread ]</a>
+              <a href="subject.html#1094">[ subject ]</a>
+              <a href="author.html#1094">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,255 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] (HELP!) How to get a JabberSession pointer from JabberCOM
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20%28HELP%21%29%20How%20to%20get%20a%20JabberSession%20pointer%20from%0A%20JabberCOM&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006382.html">
+   <LINK REL="Next"  HREF="006355.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] (HELP!) How to get a JabberSession pointer from JabberCOM</H1>
+    <B>Michael F Lin</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20%28HELP%21%29%20How%20to%20get%20a%20JabberSession%20pointer%20from%0A%20JabberCOM&In-Reply-To="
+       TITLE="[JDEV] (HELP!) How to get a JabberSession pointer from JabberCOM">Michael_F_Lin at us.ibm.com
+       </A><BR>
+    <I>Fri Feb 23 06:32:43 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006382.html">[JDEV] Jabber SMS transport
+</A></li>
+        <LI>Next message: <A HREF="006355.html">[JDEV] s2s configuratoin
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6354">[ date ]</a>
+              <a href="thread.html#6354">[ thread ]</a>
+              <a href="subject.html#6354">[ subject ]</a>
+              <a href="author.html#6354">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Jim,
+
+The crash is most likely because of an unhandled exception. The
+#import-generated COM wrappers you are using throw a _com_error exception
+whenever a COM method fails (i.e. FAILED(hr)). Therefore it is advisable to
+wrap any calls like so,
+
+try
+{
+// your code here...
+}
+catch( _com_error&amp; e )
+{
+// do something with e
+}
+
+This might help solve your problem. Also, I am not sure that you are
+passing the strings correctly. Try doing (for example):
+
+pSession-&gt;PutServer( _bstr_t( &quot;vista.internal&quot; ) );
+
+The _bstr_t compiler support class will handle conversions to UNICODE and
+the system BSTR strings. Note that _bstr_t will also throw _com_error
+exceptions on failures, but in practice this never really happens.
+
+Another possibility is that you should not call PutStatus until after you
+are connected. It is only used for setting your availability once you are
+connected to the server. Although I am looking at the JabberCOM source and
+it should not cause the exception even if you call PutStatus before you are
+connected.
+
+-Mike
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dai_jin at 21cn.com</A>@jabber.org on 02/23/2001 02:46:12 AM
+
+Please respond to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+
+Sent by:  <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>
+
+
+To:   <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+cc:
+Subject:  Re: Re: Re: [JDEV] (HELP!) How to get a JabberSession pointer
+      from JabberCOM
+
+
+
+Hi Mike,
+
+    I have solved the problem on your help. Thank you very much. But
+another problem appeared. I use these
+code to connect the server:
+
+pSession-&gt;PutServer(L&quot;vista.internal&quot;);
+pSession-&gt;PutUsername(L&quot;dddd&quot;);
+pSession-&gt;PutPassword(L&quot;dddd&quot;);
+pSession-&gt;PutResource(L&quot;dddd&quot;);
+pSession-&gt;PutPort(5222);
+pSession-&gt;PutStatus(L&quot;Working&quot;);
+pSession-&gt;DoConnect(false, JabberAuthType(5));
+
+But it return a Runtime error: abnormal program termination
+
+I think i should missed something, right?
+
+Any help would be greatly appreciated. Thanks!
+Jim
+
+
+&gt;<i>
+</I>&gt;<i> Jim,
+</I>&gt;<i>
+</I>&gt;<i> Make sure you are calling CoInitialize( NULL ) in the thread. If this
+</I>does
+&gt;<i> not help you must examine the HRESULT returned to determine what the
+</I>&gt;<i> problem is. You can use the compiler support class _com_error to extract
+</I>an
+&gt;<i> error description as a string. Read more about this in the MSDN
+</I>&gt;<i> documentation.
+</I>&gt;<i>
+</I>&gt;<i> -Mike
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dai_jin at 21cn.com</A>@jabber.org on 02/22/2001 04:46:00 AM
+</I>&gt;<i>
+</I>&gt;<i> Please respond to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i> Sent by:  <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> To:   <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> cc:
+</I>&gt;<i> Subject:  Re: Re: [JDEV] (HELP!) How to get a JabberSession pointer from
+</I>&gt;<i>       JabberCOM
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Hi Mike,
+</I>&gt;<i>
+</I>&gt;<i>     Thanks for your help.
+</I>&gt;<i>     I tried to change the __uuidof(IJabberSession) to
+</I>&gt;<i> __uuidof(JabberSession), but i still got error. Indeed, i tried using
+</I>&gt;<i> CLSID(f6c7a239-b7b1-11d3-aecb-00a076a018e8). I still can't get the
+</I>pointer.
+&gt;<i> Can anyone help me?
+</I>&gt;<i>
+</I>&gt;<i> Thanks very much.
+</I>&gt;<i> Jim
+</I>&gt;<i>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Hi Jim,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The problem here is in __uuidof(IJabberSession). This gives you the
+</I>GUID
+&gt;<i> of
+</I>&gt;<i> &gt; the IJabberSession interface. However, what you want to pass to
+</I>&gt;<i> &gt; CreateInstance is the GUID of a class, not of an interface. I'm not
+</I>&gt;<i> exactly
+</I>&gt;<i> &gt; sure how #import would have decided to declare the JabberSession class,
+</I>&gt;<i> but
+</I>&gt;<i> &gt; you might try __uuidof(JabberSession) or CLSID_JabberSession.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Hope this helps,
+</I>&gt;<i> &gt; Mike Lin
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mflin at us.ibm.com</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dai_jin at 21cn.com</A>@jabber.org on 02/21/2001 08:35:38 AM
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Please respond to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Sent by:  <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; To:   <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; cc:
+</I>&gt;<i> &gt; Subject:  [JDEV] (HELP!) How to get a JabberSession pointer from
+</I>&gt;<i> JabberCOM
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I imported JabberCOM and used following code:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; IJabberSessionPtr pSession;
+</I>&gt;<i> &gt; HRESULT hr;
+</I>&gt;<i> &gt; hr = pMsg.CreateInstance(__uuidof(IJabberSession));
+</I>&gt;<i> &gt; if (SUCCEEDED(hr))
+</I>&gt;<i> &gt; {...}
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; but i always get an error(SUCCEEDED(hr) is FALSE).
+</I>&gt;<i> &gt; What i missed?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; thanks.
+</I>&gt;<i> &gt; Jim
+</I>&gt;<i> &gt; ----------------------------------------------
+</I>&gt;<i> &gt; &#187;&#182;&#211;&#173;&#202;&#185;&#211;&#195; 21CN &#181;&#231;&#215;&#211;&#211;&#202;&#188;&#254;&#207;&#181;&#205;&#179; <A HREF="http://www.21cn.com">http://www.21cn.com</A>
+</I>&gt;<i> &gt; Thank you for using 21cn.com Email system
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> ----------------------------------------------
+</I>&gt;<i> &#187;&#182;&#211;&#173;&#202;&#185;&#211;&#195; 21CN &#181;&#231;&#215;&#211;&#211;&#202;&#188;&#254;&#207;&#181;&#205;&#179; <A HREF="http://www.21cn.com">http://www.21cn.com</A>
+</I>&gt;<i> Thank you for using 21cn.com Email system
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>----------------------------------------------
+&#187;&#182;&#211;&#173;&#202;&#185;&#211;&#195; 21CN &#181;&#231;&#215;&#211;&#211;&#202;&#188;&#254;&#207;&#181;&#205;&#179; <A HREF="http://www.21cn.com">http://www.21cn.com</A>
+Thank you for using 21cn.com Email system
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006382.html">[JDEV] Jabber SMS transport
+</A></li>
+	<LI>Next message: <A HREF="006355.html">[JDEV] s2s configuratoin
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6354">[ date ]</a>
+              <a href="thread.html#6354">[ thread ]</a>
+              <a href="subject.html#6354">[ subject ]</a>
+              <a href="author.html#6354">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] XMPP-PubSub vs. remoteStorag
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP-PubSub%20vs.%20remoteStorag&In-Reply-To=%3CBF801A7F-59A7-4F13-AABA-87E3350DB20F%40tobias-kraentzer.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="090010.html">
+   <LINK REL="Next"  HREF="090023.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] XMPP-PubSub vs. remoteStorag</H1>
+    <B>Tobias Kr&#228;ntzer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP-PubSub%20vs.%20remoteStorag&In-Reply-To=%3CBF801A7F-59A7-4F13-AABA-87E3350DB20F%40tobias-kraentzer.de%3E"
+       TITLE="[jdev] XMPP-PubSub vs. remoteStorag">info at tobias-kraentzer.de
+       </A><BR>
+    <I>Fri Sep  5 19:40:49 UTC 2014</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="090010.html">[jdev] XMPP-PubSub vs. remoteStorag
+</A></li>
+        <LI>Next message: <A HREF="090023.html">[jdev] Anyone any recommendations for a production server? E.g. ejabberd, openfire., etc?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90016">[ date ]</a>
+              <a href="thread.html#90016">[ thread ]</a>
+              <a href="subject.html#90016">[ subject ]</a>
+              <a href="author.html#90016">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Florian,
+
+thanks for your input.
+
+Am 03.09.2014 um 16:30 schrieb Florian Schmaus &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">flo at geekplace.eu</A>&gt;:
+
+&gt;<i> &gt; The question is, how should the items in the collections be mapped
+</I>&gt;<i> &gt; between the two APIs. remoteStorage is tree based and PubSub is
+</I>&gt;<i> &gt; somehow &#8222;list-based&#8220;.
+</I>&gt;<i> 
+</I>&gt;<i> Isn't PubSub with XEP-248 (PubSub Collection Nodes) also tree based?
+</I>
+XEP-248 looks quite complicated. Also the proposal is deferred.
+
+&gt;<i> How about:
+</I>&gt;<i> 
+</I>&gt;<i> - Use collection nodes for folders, and non-collection nodes for files
+</I>&gt;<i> - Folder collection nodes do not need to have any items
+</I>&gt;<i> - You can easily determine which node represents a folder and which is
+</I>&gt;<i> a file by doing a disco#info on it and determine it's type, which is
+</I>&gt;<i> either collection or leaf.
+</I>&gt;<i> - Every node has set pubsub#max_items to '1'
+</I>&gt;<i> - The item of a file node contains the data of the file (and maybe
+</I>&gt;<i> some metadata)
+</I>
+I also thought about this setup. This approach could also give access to older versions of an file, if the item id is some kind of hash of the file (or item). With this, the last item is always the newest. If the other items would then be older revision of the item.
+
+I would be possible to reflect the folder structure with this approach, but there would still be a problem with the naming of the collections. Beside of this, subscribing or retrieving items would be very complicated. I would require multiple requests to get a simple folder listing.
+
+--
+
+After thinking more about this, I guess that the best solution would be to move the representation of the folder hierarchy to the payload.
+
+A remoteStorage end point would be represented as a collection. This collection contains several leaf nodes representing folders. One of this nodes is somehow marked as root. The node ids have no specific meaning.
+
+service.example.com
+&#9492;&#9472;&#9472; my-collection
+    &#9500;&#9472;&#9472; 86A3A971 (root)
+    &#9500;&#9472;&#9472; F641CEA5
+    &#9500;&#9472;&#9472; 8122BD53
+    &#9500;&#9472;&#9472; 3AC0E98B
+    &#9492;&#9472;&#9472; 264B4792
+
+The items are representing the content of the folder with the item id as a file or folder name.
+
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;iq type=&quot;result&quot; from=&quot;service.example.com&quot; id=&quot;items1&quot;&gt;
+    &lt;pubsub xmlns=&quot;<A HREF="http://jabber.org/protocol/pubsub">http://jabber.org/protocol/pubsub</A>&quot;&gt;
+        &lt;items node=&quot;86A3A971&quot; x:xmlns=&quot;<A HREF="http://example.com/some/namespace">http://example.com/some/namespace</A>&quot;&gt;
+            
+            &lt;item id=&quot;index.html&quot;&gt; &lt;!-- content --&gt; &lt;/item&gt;
+            &lt;item id=&quot;main.css&quot;&gt; &lt;!-- content --&gt; &lt;/item&gt;
+            
+            &lt;item id=&quot;folder-a&quot;&gt;
+                &lt;x:link href='service.example.com?;node=8122BD53' /&gt;
+            &lt;/item&gt;
+            
+            &lt;item id=&quot;folder-b&quot;&gt;
+                &lt;x:link href='service.example.com?;node=3AC0E98B' /&gt;
+            &lt;/item&gt;
+        &lt;/items&gt;
+    &lt;/pubsub&gt;
+&lt;/iq&gt;
+
+This mapping would allow an easy subscription of the content of a folder. Also the subscriber would be notified, if a new subfolder has been created. The service itself could use some special options to specifies the parent folder (or node), while it is created and could automatically set an item in the other node to link to the new folder.
+
+--
+
+Create a new folder with the node &#8222;8122BD53&#8220; as the parent node:
+
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;iq type=&quot;set&quot; to=&quot;service.example.com&quot; id=&quot;create&quot;&gt;
+    &lt;pubsub xmlns=&quot;<A HREF="http://jabber.org/protocol/pubsub">http://jabber.org/protocol/pubsub</A>&quot;&gt;
+        &lt;create/&gt;
+        &lt;configure x:xmlns=&quot;<A HREF="http://example.com/some/namespace">http://example.com/some/namespace</A>&quot;&gt;
+            &lt;x:parent node=&quot;8122BD53&quot; id=&quot;folder-c&quot; /&gt;
+        &lt;/configure&gt;
+    &lt;/pubsub&gt;
+&lt;/iq&gt;
+
+The service responses with the node id of the created node:
+
+&lt;iq type='result'
+    from='service.example.com'
+    id='create'&gt;
+    &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub">http://jabber.org/protocol/pubsub</A>'&gt;
+      &lt;create node='A011C46D'/&gt;
+    &lt;/pubsub&gt;
+&lt;/iq&gt;
+
+
+Subscribers would then receive a notification that a new folder has been created:
+
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;message from=&quot;service.example.com&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.lit</A>&quot; id=&quot;foo&quot;&gt;
+    &lt;event xmlns=&quot;<A HREF="http://jabber.org/protocol/pubsub#event">http://jabber.org/protocol/pubsub#event</A>&quot;&gt;
+        &lt;items node=&quot;8122BD53&quot; x:xmlns=&quot;<A HREF="http://example.com/some/namespace">http://example.com/some/namespace</A>&quot;&gt;
+            &lt;item id=&quot;folder-c&quot;&gt;
+                &lt;x:link href=&quot;service.example.com?;node=A011C46D&quot;/&gt;
+            &lt;/item&gt;
+        &lt;/items&gt;
+    &lt;/event&gt;
+&lt;/message&gt;
+
+
+--
+Tobias Kr&#228;ntzer
+Gr&#252;nberger Stra&#223;e 40 | 10245 Berlin
+
++49-178-1353136
+xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">info at tobias-kraentzer.de</A>
+<A HREF="https://tobias-kraentzer.de">https://tobias-kraentzer.de</A>
+Twitter: @anagrom_ataf
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 496 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20140905/db2b6880/attachment.sig">https://www.jabber.org/jdev/attachments/20140905/db2b6880/attachment.sig</A>&gt;
+</PRE>
+
+
+
+
+
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="090010.html">[jdev] XMPP-PubSub vs. remoteStorag
+</A></li>
+	<LI>Next message: <A HREF="090023.html">[jdev] Anyone any recommendations for a production server? E.g. ejabberd, openfire., etc?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90016">[ date ]</a>
+              <a href="thread.html#90016">[ thread ]</a>
+              <a href="subject.html#90016">[ subject ]</a>
+              <a href="author.html#90016">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

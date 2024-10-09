@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] problems with SSL support
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20problems%20with%20SSL%20support&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006639.html">
+   <LINK REL="Next"  HREF="006618.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] problems with SSL support</H1>
+    <B>Chris Pile</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20problems%20with%20SSL%20support&In-Reply-To="
+       TITLE="[JDEV] problems with SSL support">cpile at snoogans.co.uk
+       </A><BR>
+    <I>Fri Mar 16 02:53:22 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006639.html">[JDEV] problems with SSL support
+</A></li>
+        <LI>Next message: <A HREF="006618.html">[JDEV] Announcing New Windows Jabber Client from IBM
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6651">[ date ]</a>
+              <a href="thread.html#6651">[ thread ]</a>
+              <a href="subject.html#6651">[ subject ]</a>
+              <a href="author.html#6651">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>It's worth double checking your config since there is a small typo
+IIRC.  It should look like this:
+
+      &lt;ip port=&quot;5222&quot;/&gt;
+      &lt;ssl port=&quot;5223&quot;&gt;my ip&lt;/ssl&gt;
+
+    &lt;ssl&gt;
+      &lt;key ip=&quot;my ip&quot;&gt;./certs/ssl-keypair.pem&lt;/key&gt;
+    &lt;/ssl&gt;
+
+Have a read of:
+<A HREF="http://mailman.jabber.org/pipermail/jadmin/2001-February/000165.html">http://mailman.jabber.org/pipermail/jadmin/2001-February/000165.html</A>
+(I still get the error mentioned in this post when running on FreeBSD)
+
+
+Chris.
+
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kadokev at msg.net</A> wrote:
+&gt;<i> 
+</I>&gt;<i> [ Charset ISO-8859-1 unsupported, converting... ]
+</I>&gt;<i> &gt; An easy way to test if your server is listening and more importantly
+</I>&gt;<i> &gt; handling ssl correctly, you can use one of the tools that comes with openssl
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; if you try
+</I>&gt;<i> &gt; openssl s_client -connect your.ip.goes.here:5223
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; This tool just tries to establish the SSL connection by doing the SSL
+</I>&gt;<i> &gt; handshaking.
+</I>&gt;<i> 
+</I>&gt;<i> In my case, my jabberd is not opening up that port at all- no listening socket,
+</I>&gt;<i> thus no SSL connections. netstat proves this, as does this:
+</I>&gt;<i> 
+</I>&gt;<i> $ openssl s_client -connect 192.168.1.12:5223
+</I>&gt;<i> connect: Connection refused
+</I>&gt;<i> connect:errno=61
+</I>&gt;<i> 
+</I>&gt;<i> I'm not sure if there's some finicky part of the configuration that I am
+</I>&gt;<i> missing, or if this is a bug with the openSSL libraries and jabber on FreeBSD.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; I'm having some problems trying to get SSL (on port 5223) working, using
+</I>&gt;<i> &gt; jabber-1.4 on FreeBSD 4.2. I've tried the latest CVS with identical results.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt;From my understanding of the documentation and discussion of SSL support,
+</I>&gt;<i> &gt; I have configured everything correctly, however the jabberd never actually
+</I>&gt;<i> &gt; opens a listening port for 5223?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Here's the relevant snippets of my jabber.xml:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ...
+</I>&gt;<i> &gt;       &lt;/karma&gt;
+</I>&gt;<i> &gt;       &lt;ip port=&quot;5222&quot;/&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;       &lt;ssl port=&quot;5223&quot;&gt;192.168.1.12&lt;/ssl&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;     &lt;/pthcsock&gt;
+</I>&gt;<i> &gt;   &lt;/service&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ...
+</I>&gt;<i> &gt;     &lt;/karma&gt;
+</I>&gt;<i> &gt;     &lt;rate points=&quot;5&quot; time=&quot;25&quot;/&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;     &lt;ssl&gt;
+</I>&gt;<i> &gt;       &lt;key ip='192.168.1.12'&gt;./ssl/key.pem&lt;/key&gt;
+</I>&gt;<i> &gt;     &lt;/ssl&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;   &lt;/io&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I'd appreciate hearing from anybody who has gotten the SSL support working
+</I>&gt;<i> &gt; under FreeBSD, or pointers to updated documentation on this feature.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Kevin Kadow
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006639.html">[JDEV] problems with SSL support
+</A></li>
+	<LI>Next message: <A HREF="006618.html">[JDEV] Announcing New Windows Jabber Client from IBM
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6651">[ date ]</a>
+              <a href="thread.html#6651">[ thread ]</a>
+              <a href="subject.html#6651">[ subject ]</a>
+              <a href="author.html#6651">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

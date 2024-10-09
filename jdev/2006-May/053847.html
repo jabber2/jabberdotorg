@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Roster caching
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Roster%20caching&In-Reply-To=%3C445A730F.7030204%40jabber.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="053843.html">
+   <LINK REL="Next"  HREF="053848.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Roster caching</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Roster%20caching&In-Reply-To=%3C445A730F.7030204%40jabber.org%3E"
+       TITLE="[jdev] Roster caching">stpeter at jabber.org
+       </A><BR>
+    <I>Thu May  4 16:33:03 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="053843.html">[jdev] Roster caching
+</A></li>
+        <LI>Next message: <A HREF="053848.html">[jdev] Roster caching
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53847">[ date ]</a>
+              <a href="thread.html#53847">[ thread ]</a>
+              <a href="subject.html#53847">[ subject ]</a>
+              <a href="author.html#53847">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Dave Cridland wrote:
+&gt;<i> On Thu May 04 10:40:17 2006, Vinod Panicker wrote:
+</I>&gt;&gt;<i> On 5/4/06, Tijl Houtbeckers &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">thoutbeckers at splendo.com</A>&gt; wrote:
+</I>&gt;&gt;&gt;<i> <A HREF="http://www.jabber.org/jeps/jep-0150.html">http://www.jabber.org/jeps/jep-0150.html</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Thanks!  Seems like a perfect match.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i> Hmmm... Well...
+</I>&gt;<i> 
+</I>&gt;<i> The trouble is, you're getting all or nothing - if you add a group to a
+</I>&gt;<i> single contact out of 150, then you're still getting everything. Added a
+</I>&gt;<i> single new contact? Get everything. Deleted one? Get everything.
+</I>&gt;<i> 
+</I>&gt;<i> Remember, the typical case is going to be that nothing has changed.
+</I>&gt;<i> JEP-150 handles this case reasonably well. The next most common
+</I>&gt;<i> occurance will be a single change or addition, but JEP-150 doesn't
+</I>&gt;<i> handle this at all.
+</I>&gt;<i> 
+</I>&gt;<i> FWIW, ACAP and IMAP+CONDSTORE both have models we can copy here:
+</I>&gt;<i> 
+</I>&gt;<i> 1) The roster has a magical strictly increasing number. I'll call this
+</I>&gt;<i> the roster modseq. Conceptually it's like a timestamp, except it's like
+</I>&gt;<i> a timestamp would be if timestamps worked. (ACAP uses timestamps
+</I>&gt;<i> adjusted to work, IMAP uses magic opaque 64-bit numbers. Same thing,
+</I>&gt;<i> really.)
+</I>&gt;<i> 
+</I>&gt;<i> 2) With any change, deletion, or addition, this value is increased, and
+</I>&gt;<i> the roster entries added or changed get assigned the new value. These
+</I>&gt;<i> values need to be transmitted to the client as part of the roster entry.
+</I>&gt;<i> 
+</I>&gt;<i> 3) Operations need to be provided for:
+</I>&gt;<i> a) obtaining changes since a modseq
+</I>&gt;<i> b) obtaining a list of deletions (Deletion tracking can be hard, and
+</I>&gt;<i> tends toward infinite data retention, so this may error)
+</I>&gt;<i> c) obtaining a list of entries without any detail. (This would  be used
+</I>&gt;<i> for client-side deletion detection. We'd be sending just the &lt;item
+</I>&gt;<i> jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at example.com</A>&quot;/&gt; and no groups, names, etc.)
+</I>&gt;<i> 
+</I>&gt;<i> Note that the server doesn't have to store the state of all clients, or
+</I>&gt;<i> anything drastic, it's just one extra integer per roster entry, plus
+</I>&gt;<i> whatever deleted roster entries it wants to keep.
+</I>&gt;<i> 
+</I>&gt;<i> Clients get to sync cheaply as a result. (Really clever handling can
+</I>&gt;<i> even reduce the resynch round-trips to zero, as IMAP CONDSTORE can.)
+</I>
+We've never messed with rosters at all. Plenty of people would like to
+do fun, even magical things with rosters (annotations and all the rest)
+but the necessary changes have never been rolled into the core roster
+functionality. The beautiful optimization you suggest here could be
+offered by servers in a separate namespace so I don't have any strong
+objections to it. I'm not sure how much demand there really is for this
+feature, but server and client developers could experiment and see if it
+makes life much better for all concerned. :-)
+
+Peter
+
+- --
+Peter Saint-Andre
+Jabber Software Foundation
+<A HREF="http://www.jabber.org/people/stpeter.shtml">http://www.jabber.org/people/stpeter.shtml</A>
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (Darwin)
+Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org">http://enigmail.mozdev.org</A>
+
+iD8DBQFEWnMPNF1RSzyt3NURAm9iAKCubFvEz90r2BP8bPUCWKv+BWOTRQCeI8+Y
+OPGviQMZx55bdNhaTtw3V0E=
+=q8/g
+-----END PGP SIGNATURE-----
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 3641 bytes
+Desc: S/MIME Cryptographic Signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20060504/44e29ed7/attachment-0001.bin">https://www.jabber.org/jdev/attachments/20060504/44e29ed7/attachment-0001.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="053843.html">[jdev] Roster caching
+</A></li>
+	<LI>Next message: <A HREF="053848.html">[jdev] Roster caching
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53847">[ date ]</a>
+              <a href="thread.html#53847">[ thread ]</a>
+              <a href="subject.html#53847">[ subject ]</a>
+              <a href="author.html#53847">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] conferencing with all services
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20conferencing%20with%20all%20services&In-Reply-To=%3C20010814213134.E396%40Nightbird.TZoNE.ORG%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="038326.html">
+   <LINK REL="Next"  HREF="038329.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] conferencing with all services</H1>
+    <B>Fabien Ninoles</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20conferencing%20with%20all%20services&In-Reply-To=%3C20010814213134.E396%40Nightbird.TZoNE.ORG%3E"
+       TITLE="[JDEV] conferencing with all services">fabien at Nightbird.Dynamic.TZoNE.ORG
+       </A><BR>
+    <I>Tue Aug 14 20:31:35 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="038326.html">[JDEV] conferencing with all services
+</A></li>
+        <LI>Next message: <A HREF="038329.html">[JDEV] client authorization
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38327">[ date ]</a>
+              <a href="thread.html#38327">[ thread ]</a>
+              <a href="subject.html#38327">[ subject ]</a>
+              <a href="author.html#38327">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tue, Aug 14, 2001 at 04:53:17PM -0700, Max Metral wrote:
+&gt;<i> Does (1) really capture all scenarios?  It would seem like the protocol
+</I>&gt;<i> needs some cooperation from the jabber server...  It seemed like you were
+</I>&gt;<i> also saying that the conferencing group is already addressing this issue?
+</I>
+No, that really depend on the transport conferencing protocol.  May be
+the transport need to registered the room as a special users and make
+some sort of registration process.  The only scenarios that 1 capture is
+to permit a registered Jabber User to enter a room served by a foreign
+IM services through his transport account.  All the details is let to
+the transport and may be for some, it will be impossible.
+
+The goal is to make the transport translate the conferencing protocol of
+the service into a jabber conferencing protocol, which can means, for
+example, creating a special service like <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">room at conf.yahoo.jabber.org</A>,
+which will serve as proxy to the real yahoo conferencing service.  If it
+what's you mean about the &quot;cooperation from the jabber server&quot;, I think
+is more an agent issue than the server issue.  That's lead to more
+encapsulation.  Since my English is quite not good, here is an
+illustration:
+
+            (a)                 (b)              (c)
++--------+       +-----------+       +---------+      +---------+
+|<i> Jabber |&lt;------| Transport |------&gt;| foreign |-----&gt;| foreign +
+</I>|<i> Client |------&gt;|   Agent   |&lt;------|  server |&lt;-----| clients +
+</I>+--------+       +-----------+       +---------+      +---------+
+
+The protocol talk in (b) and (c) are the foreign service conference
+protocol, and the protocol talk in (a) is the jabber conference
+protocol.  It's mostly the same as a normal transport normally do,
+except that instead of the session looks like a normal chat session,
+it's really a group session.   Note that already two transports
+implement this:  the MSN private conferencing room agent, and the IRC
+group chat agent.  So, no secret here.
+
+Where cooperation is more need from the server, is on the issue of
+letting a foreign guest send messages to a jabber conference room.  The
+problem is that most foreign client can only send or receive messages
+going to or coming from their own services (eg. Yahoo client to Yahoo
+server).  So the only way for the Jabber room to send a message to the
+foreign guest, is by make it believe that it came from the host user.
+Same thing for receiving the message:  the foreign guest have to send it
+to a known ID which can only be host user.  The message however needs to
+be intercept so that it goes to the room sessions instead.  Take note
+that the foreign client doesn't know that this is a conference message
+since for him, it only sends it to a single user.  Here a more concrete
+example.
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">host at jabber.exp</A> , which is also registered as <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">host at yahoo.jabber.exp</A>,
+create a conference room <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">room at conf.jabber.exp.</A>  He want to invite is
+friend <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">guest at yahoo.jabber.org</A> to the room.  The room sent the invite
+to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">guest at yahoo.jabber.exp</A>, with the <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">host at jabber.exp</A> as a guest_by
+attribute.  The yahoo transport intercept the conferencing message and
+transform it in a regular message with <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">host at yahoo.jabber.exp</A> as owner
+(note the translation from the original user adress: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">host at jabber.exp</A> to
+the transport registered adress <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">host at yahoo.jabber.exp...</A> in fact, it's
+the yahoo account ID which is used but I prefer to used the Jabber ID to
+be more explicite) and immediately ask for a presence information from
+the yahoo client.  From now, every message coming from
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">guest at yahoo.jabber.exp</A> to host@[yahoo.]jabber.exp must go instead at
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">room at conf.jabber.exp</A> until a presence unavailable is send from foreign.
+In other words, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">host at yahoo.jabber.exp</A> is used as the alias for the
+jabber conference room jid when used by <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foreign at yahoo.jabber.exp.</A>
+
+The 3rd solutions address the issue of joining a jabber conference room
+to an existing foreign conference room.  I see it like the second
+solutions except that the invitation is made to an entire foreign
+conference room (like <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">room at conf.yahoo.jabber.exp</A>) instead to an
+individual guest.
+
+Sorry, I know my English is pretty bad but I hope this help (gasp!  not
+even sure! :/ ) a little more.  Don't be afraid to ask question.
+Fabien
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">fabien at Nightbird.Dynamic.TZoNE.ORG</A>
+</I>&gt;<i> I can see three different kinds of &quot;room proxy&quot;.
+</I>&gt;<i> 
+</I>&gt;<i> 1- Each transport translate their room protocol to the jabber
+</I>&gt;<i> conferencing protocol.  This enable jabber user to join other transports
+</I>&gt;<i> conferencing service.  It's the more easy one to implement IMHO, but the
+</I>&gt;<i> difficulties are really proper to each protocol.
+</I>&gt;<i> 
+</I>&gt;<i> 2- The jabber server handle the connection.  Since it's a jabber
+</I>&gt;<i> service, only jabber clients can create the room and invite people from
+</I>&gt;<i> there.  Guest coming from normal jabber user used the normal
+</I>&gt;<i> conferencing protocol.  But guest coming from a transport agent (called
+</I>&gt;<i> &quot;foreign guest&quot;) are bind to the &quot;host user&quot;.  Every
+</I>&gt;<i> message then send by the foreign guest to the user (remember, the
+</I>&gt;<i> destination of a message coming from a yahoo client must be another
+</I>&gt;<i> yahoo account) are send to the conferencing room and no more private
+</I>&gt;<i> talk is possible.  Also, the conference room send their message as
+</I>&gt;<i> coming from the &quot;host user&quot; who invite him since the message most came
+</I>&gt;<i> from a yahoo account to the yahoo client.  I think this can be implement
+</I>&gt;<i> with very small change over the conferencing module, simply by adding
+</I>&gt;<i> the special &quot;foreign guest&quot; user type.  The only thing I'm not sure is where
+</I>&gt;<i> the messages coming from the foreign guest should be handled... in the
+</I>&gt;<i> transport or in the conferencing module?  The former is not very clean
+</I>&gt;<i> and ask for modifications on all transport agent.  The later is more
+</I>&gt;<i> clean but I'm not sure if it's possible at all.  Remember that all
+</I>&gt;<i> messages are directed to the &quot;host user&quot;.
+</I>&gt;<i> 
+</I>&gt;<i> 3- Finally, the third method is as you describe and can be implement
+</I>&gt;<i> like a mix of the two first methods, the special jabber conferencing
+</I>&gt;<i> room acting like an anteroom to the transport conferencing room, the
+</I>&gt;<i> later being see as a foreign guest of the former.
+</I>&gt;<i> 
+</I>&gt;<i> Of all those solutions, the first is the one that need more work.
+</I>&gt;<i> Also, a critical part came from the jabber conferencing where we must
+</I>&gt;<i> forward foreign guest message correctly to the room instead of to the
+</I>&gt;<i> host user.  Since both issues seems to involve modifying the transport
+</I>&gt;<i> agent, I suggest to came with a clear protocol on how to do so before
+</I>&gt;<i> beginning the work on the agents.
+</I>&gt;<i> 
+</I>--
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">fabien at tzone.org</A>                 <A HREF="http://www.tzone.org/~fabien">http://www.tzone.org/~fabien</A>
+GPG KeyID: C15D FE9E BB35 F596 127F  BF7D 8F1F DFC9 BCE0 9436
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="038326.html">[JDEV] conferencing with all services
+</A></li>
+	<LI>Next message: <A HREF="038329.html">[JDEV] client authorization
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38327">[ date ]</a>
+              <a href="thread.html#38327">[ thread ]</a>
+              <a href="subject.html#38327">[ subject ]</a>
+              <a href="author.html#38327">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

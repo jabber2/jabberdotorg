@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Alternate MUC Authentication Mechanisms
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3C23849.1287562305.343847%40puncture%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088466.html">
+   <LINK REL="Next"  HREF="088468.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Alternate MUC Authentication Mechanisms</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3C23849.1287562305.343847%40puncture%3E"
+       TITLE="[jdev] Alternate MUC Authentication Mechanisms">dave at cridland.net
+       </A><BR>
+    <I>Wed Oct 20 02:11:45 CST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088466.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+        <LI>Next message: <A HREF="088468.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88467">[ date ]</a>
+              <a href="thread.html#88467">[ thread ]</a>
+              <a href="subject.html#88467">[ subject ]</a>
+              <a href="author.html#88467">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed Oct 20 01:47:58 2010, Alex Milowski wrote:
+&gt;<i> On Sun, Oct 17, 2010 at 5:32 AM, Kurt Zeilenga  
+</I>&gt;<i> &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Kurt.Zeilenga at isode.com</A>&gt; wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; User provides hash:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &lt;presence
+</I>&gt;<i> &gt; &#160; &#160;from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+</I>&gt;<i> &gt; &#160; &#160;to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>/thirdwitch'&gt;
+</I>&gt;<i> &gt; &#160;&lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'">http://jabber.org/protocol/muc'</A>&gt;
+</I>&gt;<i> &gt; &#160; &#160;&lt;hash algorithm=&quot;sha2&quot;&gt;hash&lt;/hash&gt;
+</I>&gt;<i> &gt; &#160;&lt;/x&gt;
+</I>&gt;<i> &gt; &lt;/presence&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; where hash was the base64 encoded sha2 hash over the concat of  
+</I>&gt;<i> subscribers' normalized bare jid, &quot; &quot;, the room's normalized bare  
+</I>&gt;<i> jid, &quot; &quot;, and the shared password.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Yes, this is something like what I'm after.  I'm not really looking  
+</I>&gt;<i> to
+</I>&gt;<i> have individual identities authenticate.  Instead, I'm looking for a
+</I>&gt;<i> more secure way to send the shared credentials for the room.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>At the risk of somewhat contradicting my colleague...
+
+That's equally (in)secure, since the hash is a plaintext equivalent.  
+That's protecting you from a different user joining, but someone able  
+to spoof the user can just blindly resend the hash. If you sign  
+stanzas, on the other hand, the hash is pointless.
+
+I suppose there's three cases:
+
+a) You trust the servers/administrators, and trust them to be doing  
+TLS (to at least prevent eavesdropping, which requires endpoint  
+authentication), such that MITMs are not practical. In this case, the  
+current plaintext password seems OK.
+
+b) You trust the servers/administrators, but you consider an MITM on  
+S2S (or C2S, I suppose) to be a threat. In this case, a simple hash  
+allows a replay, and offers little beyond the password, and signed  
+stanzas are required. As noted above, if you already sign the  
+stanzas, then any &quot;password&quot; is pointless.
+
+c) You don't trust the servers/administrators. In principle, such a  
+situation might well lead to the wrong certificate being provisioned,  
+but either way, signing/encrypting stanzas is effectively your only  
+way out now.
+
+In order to provision a certificate, you could consider one of:
+
+1) The MUC runs (or has access to ) a CA, and you sign a CSR provided  
+during registration.
+
+2) The MUC has shared Trust Anchors with the users.
+
+3) The MUC is supplied with a certificate (possibly self-signed)  
+during registration.
+
+In either 1/3, then one assumes that you would need some other  
+credential during registration - this is where I'd envision using  
+SASL, to buy you reasonable password (or shared-secret) based  
+protection without trying to hack it into the MUC join presence.
+
+&gt;<i> I suppose this should be shared on the muc list (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">muc at xmpp.org</A>) but I
+</I>&gt;<i> haven't heard much come across that yet.
+</I>
+There's also a security list, which might be more useful for this.
+
+Dave.
+-- 
+Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at dave.cridland.net</A>
+  - <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+  - <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088466.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+	<LI>Next message: <A HREF="088468.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88467">[ date ]</a>
+              <a href="thread.html#88467">[ thread ]</a>
+              <a href="subject.html#88467">[ subject ]</a>
+              <a href="author.html#88467">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

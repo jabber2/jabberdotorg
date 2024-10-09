@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Proper use of Perl Net::Jabber calls
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Proper%20use%20of%20Perl%20Net%3A%3AJabber%20calls&In-Reply-To=%3C20030107145543.90186.qmail%40web21503.mail.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="074026.html">
+   <LINK REL="Next"  HREF="074016.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Proper use of Perl Net::Jabber calls</H1>
+    <B>rebbaj rebbaj</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Proper%20use%20of%20Perl%20Net%3A%3AJabber%20calls&In-Reply-To=%3C20030107145543.90186.qmail%40web21503.mail.yahoo.com%3E"
+       TITLE="[JDEV] Proper use of Perl Net::Jabber calls">rebbaj2000 at yahoo.co.uk
+       </A><BR>
+    <I>Tue Jan  7 08:55:42 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="074026.html">[JDEV] Proper use of Perl Net::Jabber calls
+</A></li>
+        <LI>Next message: <A HREF="074016.html">[JDEV] File format for JIM log files
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74014">[ date ]</a>
+              <a href="thread.html#74014">[ thread ]</a>
+              <a href="subject.html#74014">[ subject ]</a>
+              <a href="author.html#74014">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Hello jabber people.
+
+I am hoping that someone can help me out with how the Perl Net::Jabber library should be used.  Note that I am also somewhat new to perl so if I get confused by some of the syntax, you will have to excuse me.  The examples in the Oreily book were rather helpful but I seem to be having problems in calling and receiving IQ information.
+
+Here is what I am trying to send and receive in XML:
+
+SENT:
+&lt;iq id=&quot;jcl_9&quot; type=&quot;get&quot;&gt;
+    &lt;query xmlns=&quot;jabber:iq:roster&quot;/&gt;
+&lt;/iq&gt;
+
+RECV:
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rebbaj at jabber.org</A>/Perl' id='jcl_9' type='result'&gt;
+  &lt;query xmlns='jabber:iq:roster'&gt;
+    &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rebbaj at jabber.com</A>' name='rebbaj' subscription='both'/&gt;
+    &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rebbaj2 at jabber.com</A>' name='rebbaj2' subscription='both'/&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+The code stub that I have written to do this is as follows.  I suspect that I have the flow a bit wrong and I am not using the optimal calls to parse the resulting returned roster data...  Any help would be appreciated....
+
+rebbaj
+
+------------------------------------------------
+#!/usr/bin/perl
+use Net::Jabber qw(Client);
+use strict;
+my $c=Net::Jabber::Client-&gt;new();
+$c-&gt;Connect('hostname'=&gt; 'jabber.org', 'port'=&gt;5222);
+
+$c-&gt;AuthSend('username'=&gt; 'rebbaj',
+      'password'=&gt; 'secret',
+      'resource'=&gt; 'Perl');
+
+$c-&gt;SetCallBacks('presence'=&gt; \&amp;handle_presence);
+$c-&gt;SetCallBacks('iq'=&gt; \&amp;handle_iq);
+$c-&gt;PresenceSend();
+
+My $IQ = new Net::Jabber::IQ();
+$IQ-&gt;NewQuery(&quot;jabber:iq:roster&quot;);  # Does this actually make the IQ get request?$c-&gt;Send($IQ); # is this call necessary?
+
+print &quot;involking process\n&quot;;
+$c-&gt;Process();
+
+ 
+
+ 
+
+
+$c-&gt;Disconnect;
+exit(0);
+
+sub handle_presence {
+ my ($sid, $presence) = @_;
+
+ my $show = $presence-&gt;GetShow() || 'online';
+ 
+ print &quot;presence packet received $show\n&quot;;
+}
+
+sub handle_iq {
+ my ($sid, $iq) = @_;
+
+ my $querytag = $iq-&gt;GetQuery();
+
+ 
+ print &quot;iq packet received $querytag\n&quot;;
+}
+
+ 
+
+
+
+
+---------------------------------
+With Yahoo! Mail you can get a bigger mailbox -- choose a size that fits your needs
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20030107/95e67efe/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20030107/95e67efe/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="074026.html">[JDEV] Proper use of Perl Net::Jabber calls
+</A></li>
+	<LI>Next message: <A HREF="074016.html">[JDEV] File format for JIM log files
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74014">[ date ]</a>
+              <a href="thread.html#74014">[ thread ]</a>
+              <a href="subject.html#74014">[ subject ]</a>
+              <a href="author.html#74014">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

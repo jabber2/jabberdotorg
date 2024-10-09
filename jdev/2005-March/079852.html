@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] My outgoing jabber packet
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20My%20outgoing%20jabber%20packet&In-Reply-To=%3Cd55e29bf0503071419196bca09%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="079848.html">
+   <LINK REL="Next"  HREF="079889.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] My outgoing jabber packet</H1>
+    <B>Anthony Ortiz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20My%20outgoing%20jabber%20packet&In-Reply-To=%3Cd55e29bf0503071419196bca09%40mail.gmail.com%3E"
+       TITLE="[jdev] My outgoing jabber packet">anthonypaulo at gmail.com
+       </A><BR>
+    <I>Mon Mar  7 16:19:43 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="079848.html">[jdev] My outgoing jabber packet
+</A></li>
+        <LI>Next message: <A HREF="079889.html">[jdev] My outgoing jabber packet
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79852">[ date ]</a>
+              <a href="thread.html#79852">[ thread ]</a>
+              <a href="subject.html#79852">[ subject ]</a>
+              <a href="author.html#79852">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Dan!
+
+I'm pretty new on the Jabber scene, but I've been through this so I think I 
+can give my 2cents worth... First, what language are you working with? If 
+java, you can either plug your jabber input stream into the built-in crimson 
+parser (in the core since 1.4 I believe) like so :
+
+// create sax parser (always practice safe sax! :P)
+ xr = new org.apache.crimson.parser.XMLReaderImpl();
+
+// implement the necessary interfaces
+ xr.setContentHandler(this);
+ xr.setErrorHandler(this);
+
+// parse the jabber input stream
+ xr.parse(new InputSource(JabberInputStream));
+
+The above method will trigger your callbacks whenever it parses an element; 
+works great. Or you can always parse it through the DOM, but that's old hat, 
+don't need to regurgitate it here.
+
+NET?? I'm in the middle of porting my jabber applet to C# so I can offer 
+some advice here as well. .NET currently has a bug when it comes to using 
+the xml reader to parse an input stream, it raised hell in the jabber 
+community and was quite the fuss for a while until they disovered a work 
+around which I presonally would not implement given that I am starting from 
+scratch. Instead of reading the xml straight from the jabber stream, I use 
+the stream BeginRead and EndRead asynchronous calls. When data arrives, I 
+grab the first xml fragment (by fragment I mean &lt;tag&gt;&lt;subtags/&gt;&lt;/tag&gt;) via a 
+regex expression. I then create an XMLDocument and call the LoadXML method 
+to load the xml fragment in. Then I build my own custom elements array by 
+parsing the xml document via a recursive function. Now that all the all the 
+elements are in my array, I can search through them as I please.
+
+One thing I thought up in order to save time is to set each of my custom 
+element objects in the resulting array to have a field called &quot;FlatTag&quot;. The 
+flat tag is simply a flattened out path of the tag. For example :
+
+Given the following XML :
+
+&lt;tag1&gt;
+   &lt;tag2&gt;
+      &lt;tag3&gt;Hello&lt;.tag3&gt;
+   &lt;/tag2&gt;
+&lt;/tag1&gt;
+
+My resulting array would look like this :
+
+array[0] = tag1 element, flattag = &quot;tag1&quot;
+array[1] = tag2 element, flattag = &quot;tag1|tag2&quot;
+array[2] = tag3 element, flattag = &quot;tag1|tag2|tag3&quot;
+
+(notice I discard the end tags, no need for them)
+
+Now all you need to do is create a function that returns your custom element 
+based on the flattag, like :
+
+MyElement = GetElementByFlatTag(&quot;tag1|tag2|tag3&quot;)
+
+This approach made my life soooooo much easier. It's so much better to call 
+GetElementByFlatTag(&quot;iq|si|file|range&quot;) then to have to go through nodes and 
+such.
+
+Hope this helped.
+
+cheers!
+
+Anthony
+
+
+
+On Mon, 07 Mar 2005 15:23:59 -0500, Dan Plesse &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dplesse at optonline.net</A>&gt; wrote:
+&gt;<i> While examining my outgoing data packet I see a copy of the message inside a
+</I>&gt;<i> 
+</I>&gt;<i> &lt;html xmlns=&quot;<A HREF="http://www.w3.org/1999/xhtml&quot;">http://www.w3.org/1999/xhtml&quot;</A>&gt;&lt;/html&gt; tag
+</I>&gt;<i> 
+</I>&gt;<i> Example:
+</I>&gt;<i> &lt;message id=&quot;m_8&quot; type=&quot;chat&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">danp5648 at jabber.org</A>/Exodus&quot;&gt;&lt;body&gt;hello
+</I>&gt;<i> back&lt;/body&gt;&lt;html xmlns=&quot;<A HREF="http://www.w3.org/1999/xhtml&quot;">http://www.w3.org/1999/xhtml&quot;</A>&gt;hello
+</I>&gt;<i> back&lt;/html&gt;&lt;/message&gt;
+</I>&gt;<i> 
+</I>&gt;<i> I was wondering how I can use this to advance my skills beyond just text
+</I>&gt;<i> messages.
+</I>&gt;<i> 
+</I>&gt;<i> Right now I am just peeling the text out with XML
+</I>&gt;<i> 
+</I>&gt;<i> Like so:
+</I>&gt;<i> thisXML.firstChild.childNodes[1].childNodes[0].nodeValue
+</I>&gt;<i> 
+</I>&gt;<i> Q #2 Is their an easier way parse this packet? Like using the attribute
+</I>&gt;<i> names and not arrays?  Thanks
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="079848.html">[jdev] My outgoing jabber packet
+</A></li>
+	<LI>Next message: <A HREF="079889.html">[jdev] My outgoing jabber packet
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79852">[ date ]</a>
+              <a href="thread.html#79852">[ thread ]</a>
+              <a href="subject.html#79852">[ subject ]</a>
+              <a href="author.html#79852">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

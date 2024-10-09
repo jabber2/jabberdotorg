@@ -1,0 +1,217 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] RE: Client load and stress test simulator? (Roberto Della	Pasqua)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20RE%3A%20Client%20load%20and%20stress%20test%20simulator%3F%20%28Roberto%20Della%0A%09Pasqua%29&In-Reply-To=%3C200504061420.TAA28900%40iconsrv4.india.hp.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="080155.html">
+   <LINK REL="Next"  HREF="080156.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] RE: Client load and stress test simulator? (Roberto Della	Pasqua)</H1>
+    <B>Brijesh</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20RE%3A%20Client%20load%20and%20stress%20test%20simulator%3F%20%28Roberto%20Della%0A%09Pasqua%29&In-Reply-To=%3C200504061420.TAA28900%40iconsrv4.india.hp.com%3E"
+       TITLE="[jdev] RE: Client load and stress test simulator? (Roberto Della	Pasqua)">brijesh at india.hp.com
+       </A><BR>
+    <I>Wed Apr  6 09:20:35 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="080155.html">R: [jdev] Client load and stress test simulator?
+</A></li>
+        <LI>Next message: <A HREF="080156.html">[jdev] Follow-up: chat with Pandion developers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80154">[ date ]</a>
+              <a href="thread.html#80154">[ thread ]</a>
+              <a href="subject.html#80154">[ subject ]</a>
+              <a href="author.html#80154">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;&gt;&gt;&gt;&gt;<i>
+</I>Hello kind list,
+
+I like proceed with massive loadstress simulator for XMPP server, does exist
+already built tools for simulate massive load stress test in a LAN? So to
+obtain number of I/O bytes, latency, number of concurrent users...
+
+Thank you very much for any help and best regards.
+&gt;&gt;&gt;&gt;&gt;<i>
+</I>
+
+Hi Roberto,
+
+Performance test can be done using JabSimul open source tool. JabSimul
+generates N number of connections, simulates common user actions (connection
+status, messages, roster management). Currently JabSimul doesn&#146;t support
+TC/JUD/Client-Server locking/SSL encryption. This tool can be downloaded
+from <A HREF="http://www.jabberstudio.org/cgi-bin/viewcvs.cgi/jabsimul/jab_simul/.">http://www.jabberstudio.org/cgi-bin/viewcvs.cgi/jabsimul/jab_simul/.</A>
+
+!!!!Note : Use Jabber Test Suite to create users in your database/flat file
+etc....
+
+Here is the steps:
+-Building JabSimul
+
+1.      Download the code from sourceforge.net.
+cvs -z3 -d:pserver:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">anonymous at jabberstudio.org</A>:/home/cvs co jabsimul
+
+2.      Go to jabsimul directory
+cd jabsimul/jab_simul/
+
+3.      copy example makefile
+cp jab_simul.xml.example jab_simul.xml
+
+4.      copy example makefile &amp; make.
+cp jab_simul.xml.example jab_simul.xmlmake
+
+5.      Edit namespace_pars.y and add a new line after line 27:
+%token VARIABLE
+
+6.      Edit Makefile and replace 'byacc' with 'yacc'. Compile it. It will
+create a jabsimul binary.
+./configure
+make
+7.      Edit jab_simul.xml according to requirement.
+&lt;dpsm&gt;
+   &lt;user_properities&gt;
+   &lt;filter&gt;&lt;name&gt;test_.*&lt;/name&gt;&lt;/filter&gt;
+   &lt;properities&gt;
+        &lt;fullname&gt;test_%(num*2:u)-%(3+num%12000/(1+3)+7:u)&lt;/fullname&gt;
+        &lt;password&gt;passwd%(num:u)&lt;/password&gt;
+        &lt;resource&gt;Tester&lt;/resource&gt;
+        &lt;Xhost&gt;yourjabberhostname.xxx&lt;/Xhost&gt;
+        &lt;sniff&gt;/tmp&lt;/sniff&gt;
+&lt;!--how often a login is done &#224;
+        &lt;event&gt;
+        &lt;name&gt;connect&lt;/name&gt;                  
+        &lt;frequency&gt;3000&lt;/frequency&gt;&lt;counter&gt;6000&lt;/counter&gt;
+        &lt;/event&gt;
+&lt;!-- add_roster: add a contact to the user roster every 'frequency' until
+'max_roster_count' is reached --&gt;
+        &lt;event&gt;
+        &lt;name&gt;add_roster&lt;/name&gt;&lt;frequency&gt;6000&lt;/frequency&gt;
+        &lt;user&gt;&lt;range&gt;&lt;from&gt;1&lt;/from&gt;&lt;to&gt;5&lt;/to&gt;&lt;/range&gt;&lt;/user&gt;
+        &lt;max_roster_count&gt;5&lt;/max_roster_count&gt;
+        &lt;/event&gt;
+&lt;!-- del_roster: removes a contact from the roster after given frequency --&gt;
+        &lt;event&gt;
+        &lt;name&gt;del_roster&lt;/name&gt;&lt;frequency&gt;3000&lt;/frequency&gt;
+        &lt;/event&gt;
+&lt;!--send a message &#224;
+        &lt;event&gt;
+        &lt;name&gt;send_message&lt;/name&gt;&lt;frequency&gt;3000&lt;/frequency&gt;
+&lt;!-- users that will receive messages&#224;
+        &lt;user&gt;&lt;range&gt;&lt;from&gt;1&lt;/from&gt;&lt;to&gt;5&lt;/to&gt;&lt;/range&gt;&lt;/user&gt;
+        &lt;prepend_with_debug_info/&gt;
+&lt;!-- Xfile: file with the content of the message &#224;
+        &lt;Xfile&gt;wiadomosc.txt&lt;/Xfile&gt;
+        &lt;text&gt;Welcome&lt;/text&gt;
+        &lt;/event&gt;
+        &lt;event&gt;
+        &lt;name&gt;change_status&lt;/name&gt;&lt;frequency&gt;6000&lt;/frequency&gt;
+        &lt;/event&gt;
+        &lt;Xevent&gt;
+        &lt;name&gt;logout&lt;/name&gt;&lt;frequency&gt;3000&lt;/frequency&gt;
+        &lt;/Xevent&gt;
+        &lt;Xevent&gt;
+        &lt;name&gt;kill_connection&lt;/name&gt;&lt;frequency&gt;1500&lt;/frequency&gt;
+           &lt;/Xevent&gt;
+        &lt;Xevent&gt;
+        &lt;name&gt;send_raw_bytes&lt;/name&gt;&lt;frequency&gt;3000&lt;/frequency&gt;
+        &lt;random_stream len=&quot;1000&quot;/&gt;
+        &lt;/Xevent&gt;
+   &lt;/properities&gt;
+&lt;/user_properities&gt;
+&lt;/dpsm&gt;
+                                       
+                                        
+
+
+-How to use JabSimul
+-------------------
+1.      Create 10k users in oracle database using Jabber test Suite
+&#147;userreg&#148; command.
+./userreg -h jabber.org -u 10000
+
+2.      Execute the Jabsimul binary from different boxes (depends on m/c
+limitations)
+./jab_simul
+
+Result:
+----------
+The results will come in the following format(can be stored in file):
+
+00:00.12
+Conn stat:  conns:  total: 7     estabilished: 7
+            kills:  total: 0     unexpected:   0
+Messages:   tot.sent:     39     tot.rcvd:   35
+            rcvd.offline: 1      rcvd.admin: 0
+            rcvd.normal:  34     fwd: 17         avg.time:   44 [ms]
+            diff check:   4      stability:  3
+Roster:     tot.adds:     8      avg.time:   50 [ms]
+            tot.dels:     15     avg.time:   63 [ms]     glob_rost: 4
+Presences:  tot.sent:     18     tot.rcvd:   29
+Packets:    created:      127        sent:   127
+           canceled:     0      in queues:   0
+   --------------
+
+&gt;<i>From the above results few parameters are important to note down:
+</I>
+Connection Status
+------------------
+-       cons: Number of users connected
+-       established: Total number of concurrent users
+-       kills: Dropped connections
+-       unexpected: abnormal termination
+
+Message Status
+--------------
+-       tot.sent: Total number of message sent
+-       tot.rcvd: Total number of message received
+-       rcvd.offline: Total number of offline message received
+-       rcvd.admin: Total number of message received by admin
+
+Roster Status
+--------------
+-       tot.adds: Total roster added to various accounts
+-       tot.dels: Total roster deleted from various accounts
+
+
+
+
+
+
+  _____  
+
+&lt;&lt; ella for Spam Control &gt;&gt; has removed 10974 Spam messages and set aside
+2923 Newsletters for me
+You can use it too - and it's FREE!  www.ellaforspam.com	
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="080155.html">R: [jdev] Client load and stress test simulator?
+</A></li>
+	<LI>Next message: <A HREF="080156.html">[jdev] Follow-up: chat with Pandion developers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80154">[ date ]</a>
+              <a href="thread.html#80154">[ thread ]</a>
+              <a href="subject.html#80154">[ subject ]</a>
+              <a href="author.html#80154">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

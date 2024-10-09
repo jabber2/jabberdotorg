@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Karma and transferring large XML message packets...
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Karma%20and%20transferring%20large%20XML%20message%20packets...&In-Reply-To=%3C3AE75B4D.BD0188CD%40jabber.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="065938.html">
+   <LINK REL="Next"  HREF="065943.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Karma and transferring large XML message packets...</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Karma%20and%20transferring%20large%20XML%20message%20packets...&In-Reply-To=%3C3AE75B4D.BD0188CD%40jabber.com%3E"
+       TITLE="[JDEV] Karma and transferring large XML message packets...">dwaite at jabber.com
+       </A><BR>
+    <I>Wed Apr 25 18:18:37 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="065938.html">[JDEV] Karma and transferring large XML message packets...
+</A></li>
+        <LI>Next message: <A HREF="065943.html">[JDEV] Karma and transferring large XML message packets...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65940">[ date ]</a>
+              <a href="thread.html#65940">[ thread ]</a>
+              <a href="subject.html#65940">[ subject ]</a>
+              <a href="author.html#65940">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I would actually recommend you use base64 encoding for the characters if you want to make something which will be usable by others; UTF8 and XML together have lots of reserved characters, and bytes &gt;127 are actually supposed to be UTF8-encoded.  You can get more than 6 bits of data out of the 8-bit character if you design a multi-byte encoding around UTF8 and XML, but it probably won't be worth it. base64 works as-is.
+
+-David Waite
+
+Keith Minkler wrote:
+
+&gt;<i> That is not a karma problem..
+</I>&gt;<i>
+</I>&gt;<i> your karma settings are rather high, and would not interfere with a data chunk that size..
+</I>&gt;<i> (incidentally, you can &quot;turn off&quot; karma all together by just setting &lt;dec&gt;0&lt;/dec&gt;)
+</I>&gt;<i>
+</I>&gt;<i> most likely, if you are SURE that you do not have bad XML, and all of your tags are UTF-8
+</I>&gt;<i> encoded.. you are hitting an internal node size limit.. which I thought was somewhere around
+</I>&gt;<i> 500K bytes, but that might have been changed somewhere along the line... I can't look into
+</I>&gt;<i> it right now, but I'll take a look, and see if I can find out what the max node size is
+</I>&gt;<i> now adays.. =]
+</I>&gt;<i>
+</I>&gt;<i> Happy Hunting!
+</I>&gt;<i> Keith
+</I>&gt;<i>
+</I>&gt;<i> On Sun, Apr 22, 2001 at 09:46:42AM -0400, Peter Sparago wrote:
+</I>&gt;<i> &gt; Hi All,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I am fairly new to Jabber (since about Feb 1) but I must say, It ROCKS! I am designing a P2P system that uses Jabber as one of the information transports. In addition to normal chat messaging, we are using Jabber messaging to transfer large amounts of XML data (using an 'x' namespace) between Jabber users. The 'x' XML data will probably be in the 30K - 300K range. I am able to send a 6K packet without any trouble, the packet I am having trouble with is 60K.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; We are using Jabber 1.4.1. I've adjusted the Karma settings as follows:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;       &lt;karma&gt;
+</I>&gt;<i> &gt;         &lt;heartbeat&gt;2&lt;/heartbeat&gt;
+</I>&gt;<i> &gt;         &lt;init&gt;64&lt;/init&gt;
+</I>&gt;<i> &gt;         &lt;max&gt;64&lt;/max&gt;
+</I>&gt;<i> &gt;         &lt;inc&gt;6&lt;/inc&gt;
+</I>&gt;<i> &gt;         &lt;dec&gt;1&lt;/dec&gt;
+</I>&gt;<i> &gt;         &lt;penalty&gt;-3&lt;/penalty&gt;
+</I>&gt;<i> &gt;         &lt;restore&gt;64&lt;/restore&gt;
+</I>&gt;<i> &gt;       &lt;/karma&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; When I send the problem packet I get the following from Jabber:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;     &lt;stream:error xmlns=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A>&gt;Invalid XML&lt;/stream:error&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; And then I get the following Java program exception:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;     Exception processing results: java.net.SocketException: Connection aborted by peer: socket write error
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I have checked the message packet that Jabber is complaining about by running the XML through a couple of different XML checkers. The XML (as far as I can tell) is valid. I'm assuming that this is may be some kind of burst or buffering error.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I realize that I can transmit the XML out of band, but most of our users will be behind firewalls and therefore the OOB approach is not going to work for us.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Any help would be greatly appreciated.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; peter
+</I>&gt;<i> Keith Minkler
+</I>&gt;<i>
+</I>&gt;<i> -------
+</I>&gt;<i> Software Developer
+</I>&gt;<i> Jabber.COM, Inc.
+</I>&gt;<i> -------
+</I>&gt;<i>
+</I>&gt;<i>   ------------------------------------------------------------------------
+</I>&gt;<i>    Part 1.2Type: application/pgp-signature
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="065938.html">[JDEV] Karma and transferring large XML message packets...
+</A></li>
+	<LI>Next message: <A HREF="065943.html">[JDEV] Karma and transferring large XML message packets...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65940">[ date ]</a>
+              <a href="thread.html#65940">[ thread ]</a>
+              <a href="subject.html#65940">[ subject ]</a>
+              <a href="author.html#65940">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

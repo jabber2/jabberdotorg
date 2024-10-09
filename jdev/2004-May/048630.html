@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] sending custom messages from one client to another
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sending%20custom%20messages%20from%20one%20client%20to%20another&In-Reply-To=%3C200405021524.04516.justin-keyword-jabber.093179%40affinix.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] sending custom messages from one client to another</H1>
+    <B>Justin Karneges</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sending%20custom%20messages%20from%20one%20client%20to%20another&In-Reply-To=%3C200405021524.04516.justin-keyword-jabber.093179%40affinix.com%3E"
+       TITLE="[jdev] sending custom messages from one client to another">justin-keyword-jabber.093179 at affinix.com
+       </A><BR>
+    <I>Sun May  2 17:24:04 CDT 2004</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48630">[ date ]</a>
+              <a href="thread.html#48630">[ thread ]</a>
+              <a href="subject.html#48630">[ subject ]</a>
+              <a href="author.html#48630">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sunday 02 May 2004 7:13 am, Trejkaz Xaoza wrote:
+&gt;<i> &gt; 2) If there are elements recognized by the client as non-IM (such as IBB
+</I>&gt;<i> &gt; data or a chat state change), then the client should process the stanza
+</I>&gt;<i> &gt; in this way.  If there are multiple such elements, then only one kind of
+</I>&gt;<i> &gt; processing should be performed.  Which one to choose would be
+</I>&gt;<i> &gt; implementation specific, but probably picking the first one recognized
+</I>&gt;<i> &gt; would be fine.  End.
+</I>&gt;<i>
+</I>&gt;<i> I would say that multiple need to be accounted for in this case, actually,
+</I>&gt;<i> rather than ignoring further ones.
+</I>
+But this could get tricky then.  What happens if a message contains an x:data 
+form and an IBB packet?  The client would then have to &quot;fork&quot; the processing 
+of this packet, in a sense, as part of it will involve displaying a form to 
+the user and keeping track of a thread for the return reply, and the other 
+part would be to collect IBB data into whatever sid is specified.  It would 
+be simpler to assume this is illegal, though possibly hard to define.
+
+&gt;<i> &gt; 3) If there are elements recognized by the client as text, such as &lt;body&gt;
+</I>&gt;<i> &gt; or &lt;html&gt;, then the message should be considered an IM.
+</I>&gt;<i>
+</I>&gt;<i> Other than needing to move this step to last place, this is spot on.
+</I>
+The reason for putting this at step 3 is that it forces consideration of the 
+packet as an IM, even if there are further elements (&quot;attachments&quot;).  This 
+way you avoid losing the body text if you represent the attachment in some 
+non-IM way (unless you're going to go putting a body text field on all of 
+your non-IM dialogs!).  Step 4 would only get to choose between being 
+represented as an IM or not is if there is no IM element (ie, &lt;body&gt;).  The 
+only reason I present this as an option is that I think developers would want 
+to treat them as an IM, so that there is a single way to handle them.  
+Basically an IM with no body text, but with attachments.
+
+Now, if you don't want to always handle these elements in an &quot;attachment&quot; 
+fashion, then what you could do is &quot;fork&quot; the processing (as mentioned 
+previously), to the point where you end up with two internal client events, 
+one as an IM, and the other as a URL, but then you risk losing the 
+relationship between the two.
+
+Lastly, there is the issue of ignorable body text.  In many of the 
+&quot;functional&quot; message stanza cases, body text is present only for the sake of 
+incapable clients.  Should capable clients be displaying this body text also?  
+For elements not treated as IM, having a separate chat window collecting the 
+body text could be quite annoying.
+
+&gt;<i> I think what we really need is a defined chain of processing by the client
+</I>&gt;<i> for message stanzas, so that all clients can follow a single guideline, and
+</I>&gt;<i> so that maybe even the JEPs could specify which point in the pipeline each
+</I>&gt;<i> different JEP applies to, if the processing is relevant to the particular
+</I>&gt;<i> JEP.
+</I>
+Yes.
+
+-Justin
+
+</PRE>
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48630">[ date ]</a>
+              <a href="thread.html#48630">[ thread ]</a>
+              <a href="subject.html#48630">[ subject ]</a>
+              <a href="author.html#48630">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

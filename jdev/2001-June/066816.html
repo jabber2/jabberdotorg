@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Server-side Message History
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Server-side%20Message%20History&In-Reply-To=%3C005a01c0eb4b%24956d3290%240100a8c0%40dready.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="066815.html">
+   <LINK REL="Next"  HREF="066848.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Server-side Message History</H1>
+    <B>wil at home</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Server-side%20Message%20History&In-Reply-To=%3C005a01c0eb4b%24956d3290%240100a8c0%40dready.org%3E"
+       TITLE="[JDEV] Server-side Message History">wil at dready.org
+       </A><BR>
+    <I>Sat Jun  2 05:05:29 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="066815.html">[JDEV] Server-side Message History
+</A></li>
+        <LI>Next message: <A HREF="066848.html">[JDEV] Quotes in XML
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66816">[ date ]</a>
+              <a href="thread.html#66816">[ thread ]</a>
+              <a href="subject.html#66816">[ subject ]</a>
+              <a href="author.html#66816">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>1. You would need the usual message management commands like search, list,
+delete.  This will complicate the protocol considerably.  I'm not sure if
+it's worth the effort.
+2. What you are suggesting sounds very much like IMAP to me, why not try to
+take advantage of an existing well-established protocol for that?
+3. Is there a way that this could be implemented as a transport?
+
+wil
+----- Original Message -----
+From: Michael Brown
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Sent: Saturday, June 02, 2001 4:10 PM
+Subject: [JDEV] Server-side Message History
+
+
+I am strongly in favour of moving the message history from the local hard
+drive to the server.  Only being able to access message history from my home
+PC but not from my work one seems to go against the overall design of
+Jabber.  It should be stored on the server in the same way as my contact
+list is.  I realise that this would take up more space on the server, but it
+could be a good chance for ISP's to add value.
+
+Comments/suggestions welcome.  My apologies to anyone who has seen all this
+before.
+
+Is anyone willing to help me with coming up with a specification for this?
+
+
+Do we need message history at all?
+==========================
+
+I think so.  Personally I find it very useful.  Also, since most of the
+Jabber clients support message history in some form, I think that is a good
+indication that there is some demand for it.  Do you ever keep copies of
+your email?  I am quite happy for it to be optional, but I think it should
+be in the Jabber design.
+
+
+How would it be better on the server?
+===========================
+
+For a start, from the design of Jabber there is only one machine on the
+Internet that is guaranteed to see every message that is sent to or from my
+account, and that is the server.  This means that if the messages were to be
+archived somewhere, the server (or a machine locally attached to it) is the
+ideal place to store them from a bandwidth point of view.  Also from a
+availability point of view the server again wins hands down.
+
+There are also great advantages to the user.  No matter what client you have
+logged in from, you would have access to all your message history.  At work,
+at home, from your WAP phone, from a friends computer, from an internet
+cafe - it makes no difference.  In the same way, you would be free to start
+using a different client without having to worry if the new client will be
+able to read the message history files written by your old client.  This
+fits in nicely with Jabbers design philosophy I think.
+
+Also, if you are using someone else's PC, you don't leave a message log on
+their hard drive for anyone to look through later, however when you get home
+you can still check your message history for anything you said while you
+were using it!
+
+Servers are generally backed up too, so this solves the problem of loosing
+your entire message history if your local hard drive dies.
+
+There are other benefits as well.  It will become much easier to support
+message history in a client if the client doesn't have to contain any
+database code to store and retrieve messages.  Code to request this
+information from the server can be added to JabberCOM or some other library
+and will be available to all clients to use.  The hard design and coding
+work is done once on the server, and not one each client.  So, clients
+become lighter (use less RAM), and easier to develop.
+
+
+Won't it take too much disk space on the server?
+====================================
+
+Maybe.  Lets look at it:
+
+I am what I would consider a very heavy of ICQ (I have about 100 people on
+my list) and I use ICQ every day and have done since 1998.  I have never
+cleared my history. My .dat file that stores my message history is currently
+16MB.  Being text it is very compressible - zipping it brings it down to
+under 4MB
+
+So best case for a moderate/heavy user is, say 6MB uncompressed - or 1.5MB
+of real space if it is stored on a compressed volume - per year.  Of course
+add some space for indexing (lets double it at least).  Say 5MB compressed
+per active user, per year.
+
+Also have to factor:
+- a large percentage of IM accounts are not active, so space usage will not
+be increasing
+- many people may not opt for message archiving or some or all contacts
+- most people won't want to keep more than a years worth of history
+
+I can't really see disk space being a big issue, especially with disk space
+becoming cheaper each year.  Can anyone come up with any better estimates
+than this?
+
+
+What about security?
+================
+
+Security is always tricky.  Some people aren't going to be happy with all
+their private messages stored on someone else's server.  But think about it
+this way - you already have to trust your Jabber admin to not be reading or
+logging your conversations.  Assuming you trust your admin, the additional
+risk comes in if security on the server is compromised by a third party.
+Rather than just being able to read what you are writing in real time, the
+hacker may be able to grab your history file and read everything you have
+ever said from that account.
+
+Really it comes down to how much you trust your Jabber admin.  People trust
+their money to banks, they upload their data to xdrive.com and they trust
+their ISP's or Hotmail to store their private emails.  This is really no
+different.  Obviously, you should be able to turn off logging for any or all
+accounts if you do not want to take the risk.
+
+Personally I won't be happy from a security perspective until each message
+sent though Jabber is encrypted.  The messages can then be stored on the
+logs in encrypted form.
+
+
+As a Jabber admin I can't afford to supply extra disk space for message
+history.
+==========================================================
+
+That's fine.  It should be an optional feature that can be enabled or
+disabled at the server.  Also the amount of disk space per user should be
+configurable.  You could switch it off entirely. or you could (for example)
+limit a free account to 5MB, but give all the paying users a 50MB limit.  As
+users reach their limit, the older messages will drop off and be replaced by
+new messages.  This could be used as a value added service to encourage free
+account users to become subscribers.
+
+
+What are the other disadvantages?
+=========================
+
+Obviously there are a few on top of disk usage and security.  The speed of
+reading to the message log is going to be slower as each message has to be
+retrieved from the server.  The server will be under a bit more load both
+with disk access and bandwidth as it retrieves archived messages and sends
+them to the client.  These problems will become less noticeable each year
+however as bandwidth and server performance increases.  A poor design will
+not fix itself in a similar way.
+
+Michael.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="066815.html">[JDEV] Server-side Message History
+</A></li>
+	<LI>Next message: <A HREF="066848.html">[JDEV] Quotes in XML
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66816">[ date ]</a>
+              <a href="thread.html#66816">[ thread ]</a>
+              <a href="subject.html#66816">[ subject ]</a>
+              <a href="author.html#66816">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

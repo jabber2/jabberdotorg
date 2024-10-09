@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] The Important Things
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20The%20Important%20Things&In-Reply-To=%3CB861E3E4.7BE%25iainshigeoka%40yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039962.html">
+   <LINK REL="Next"  HREF="039964.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] The Important Things</H1>
+    <B>Iain Shigeoka</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20The%20Important%20Things&In-Reply-To=%3CB861E3E4.7BE%25iainshigeoka%40yahoo.com%3E"
+       TITLE="[JDEV] The Important Things">iainshigeoka at yahoo.com
+       </A><BR>
+    <I>Wed Jan  9 14:11:16 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039962.html">[JDEV] The Important Things
+</A></li>
+        <LI>Next message: <A HREF="039964.html">[JDEV] making jabberd not gnu dependent
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39993">[ date ]</a>
+              <a href="thread.html#39993">[ thread ]</a>
+              <a href="subject.html#39993">[ subject ]</a>
+              <a href="author.html#39993">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 1/8/02 7:31 PM, &quot;Michael F Lin&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">MFLIN at us.ibm.com</A>&gt; wrote:
+
+&gt;<i> 
+</I>&gt;<i> Here is Mike Lin's list of Things The Jabber Open Source Community Needs To
+</I>&gt;<i> Do, In No Particular Order. Most of these are Really Hard Problems, and
+</I>&gt;<i> most of them are problems I don't have a solution to. Not everyone will
+</I>&gt;<i> agree with everything on this list. That is OK; we are a heterogeneous
+</I>&gt;<i> community.
+</I>
+:<i>)  I like!  Many of these issues seem to require a pretty major update to
+</I>the standards... Perhaps a 2.0 version that is completely overhauled?  I'm
+just not sure how the standards can be updated and if we should be worrying
+about thing like backward compatibility...
+
+&gt;<i> 1. Our transport layer needs a better framing scheme (length prefixing or
+</I>&gt;<i> byte sentinel). Requiring the Jabber router (half of the server) to parse
+</I>&gt;<i> all payload content is an easily avoidable performance and scalability
+</I>&gt;<i> hindrance. Look into BEEP.
+</I>
+I strongly agree. I've been playing around with schemes for separating
+delivery (transport) from content.  There are many possibilities but none
+seem to mesh well with the existing Jabber setup.  XML is very flexible but
+it doesn't help the server at all in being efficient about what it is doing.
+
+Even if we just had a packet byte count for each packet so that the server
+could start parsing a packet, see its a &lt;message&gt;, find its delivery point,
+then be able to do a simple blind copy of x bytes to the outgoing connection
+would save enormous amounts of time...
+
+Right now the transport and content can be mixed freely and in many flexible
+ways making efficient handling of packets difficult (x packets being a great
+example of &quot;surprises&quot; in the transport layer).  Your only sure bet is to
+completely parse everything then analyze what you've got.
+
+&gt;<i> 2. We need to fill in the rest of the sendmail-like infrastructure that
+</I>&gt;<i> will allow Jabber to scale across the Internet and into Intranets as one
+</I>&gt;<i> interoperating network. This means we need well-defined support for
+</I>&gt;<i> multi-hop routing, and we need well-defined, end-to-end store and forward.
+</I>&gt;<i> Especially, we need to figure out how presence should behave in a
+</I>&gt;<i> failure-prone environment, which is the only new problem we are solving
+</I>&gt;<i> here.
+</I>
+Agreed.  The direct routing of messages domain to domain is simple but will
+probably cause major scaling problems when Jabber grows.  Major domains like
+say a &quot;yahoo.com&quot; jabber server would essentially have to handle the entire
+internet...
+
+&gt;<i> 3. We need to figure out how to scalably transport large payloads in-band
+</I>&gt;<i> (or at least in a band that adopts JID routing).
+</I>
+I cringe at the thought but agree that it's going to be needed.
+
+&gt;<i> 4. We need to figure out how to have Jabber endpoints that deal with a
+</I>&gt;<i> large amount of realtime (&quot;instant&quot;) traffic from all over the cloud under
+</I>&gt;<i> one JID. Serializing everything across one TCP connection probably will not
+</I>&gt;<i> do.
+</I>
+Once again, I agree.  I've often thought that perhaps we should have an
+FTP-like break in duties... Perhaps a &quot;presence connection&quot; that persists
+and only concerns itself with presence and control (IQ).  Then zero or more
+connections to handle messages.  The beauty being that the server can divert
+the message connection to other machines...
+
+For example you may connect to central file servers, to p2p routers, to
+other clients, etc etc.  In addition you may build up connections to
+groupchat servers then drop them as you leave groupchat.  In addition, you
+can also then consider &quot;riding&quot; other protocols for the message connection
+as needed (i.e. Hit a regular ftp server for some file transfers with all
+the benefits of restartable FTP, parallel downloads, etc).
+
+&gt;<i> 5. Everyone thinks that web services (SOAP, UDDI) combined with presence
+</I>&gt;<i> (Jabber) is a big and important thing. We have to figure out exactly why,
+</I>&gt;<i> and how to build them on top of Jabber. Especially, we need to integrate
+</I>&gt;<i> Jabber with existing and upcoming web service tooling (Tomcat, .NET,
+</I>&gt;<i> DotGNU).
+</I>
+With all the extra infrastructure this implies.  For starters security and
+transactions/quality of service.
+
+&gt;<i> 6. We need to figure out security and authentication. SSL is okay, but
+</I>&gt;<i> transport-level encryption is less important than network-wide
+</I>&gt;<i> authentication and trust based on interoperable PKI, whether we adopt a CA
+</I>&gt;<i> model (like X.509) or a web of trust model (like PGP), or some combination
+</I>&gt;<i> of the two (which I consder most likely). We are looking for much more than
+</I>&gt;<i> shelling to GPG here. Look into the W3C XML Signature and XKMS work.
+</I>
+Yes.  Security.  :)
+
+-iain
+
+
+_________________________________________________________
+Do You Yahoo!?
+Get your free @yahoo.com address at <A HREF="http://mail.yahoo.com">http://mail.yahoo.com</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039962.html">[JDEV] The Important Things
+</A></li>
+	<LI>Next message: <A HREF="039964.html">[JDEV] making jabberd not gnu dependent
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39993">[ date ]</a>
+              <a href="thread.html#39993">[ thread ]</a>
+              <a href="subject.html#39993">[ subject ]</a>
+              <a href="author.html#39993">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

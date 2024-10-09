@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Alternate MUC Authentication Mechanisms
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3CAANLkTin50Aifsk1utGq%3D4Ngchb5bBbsEwzFxTBJpyyEU%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088469.html">
+   <LINK REL="Next"  HREF="088471.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Alternate MUC Authentication Mechanisms</H1>
+    <B>Alex Milowski</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3CAANLkTin50Aifsk1utGq%3D4Ngchb5bBbsEwzFxTBJpyyEU%40mail.gmail.com%3E"
+       TITLE="[jdev] Alternate MUC Authentication Mechanisms">alex at milowski.org
+       </A><BR>
+    <I>Wed Oct 20 15:13:37 CST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088469.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+        <LI>Next message: <A HREF="088471.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88470">[ date ]</a>
+              <a href="thread.html#88470">[ thread ]</a>
+              <a href="subject.html#88470">[ subject ]</a>
+              <a href="author.html#88470">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, Oct 20, 2010 at 1:11 AM, Dave Cridland &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A>&gt; wrote:
+&gt;<i> On Wed Oct 20 01:47:58 2010, Alex Milowski wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> On Sun, Oct 17, 2010 at 5:32 AM, Kurt Zeilenga &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Kurt.Zeilenga at isode.com</A>&gt;
+</I>&gt;&gt;<i> wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> &gt; User provides hash:
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; &lt;presence
+</I>&gt;&gt;<i> &gt; &#160; &#160;from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+</I>&gt;&gt;<i> &gt; &#160; &#160;to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>/thirdwitch'&gt;
+</I>&gt;&gt;<i> &gt; &#160;&lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'">http://jabber.org/protocol/muc'</A>&gt;
+</I>&gt;&gt;<i> &gt; &#160; &#160;&lt;hash algorithm=&quot;sha2&quot;&gt;hash&lt;/hash&gt;
+</I>&gt;&gt;<i> &gt; &#160;&lt;/x&gt;
+</I>&gt;&gt;<i> &gt; &lt;/presence&gt;
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; where hash was the base64 encoded sha2 hash over the concat of
+</I>&gt;&gt;<i> &gt; subscribers' normalized bare jid, &quot; &quot;, the room's normalized bare jid, &quot; &quot;,
+</I>&gt;&gt;<i> &gt; and the shared password.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Yes, this is something like what I'm after. &#160;I'm not really looking to
+</I>&gt;&gt;<i> have individual identities authenticate. &#160;Instead, I'm looking for a
+</I>&gt;&gt;<i> more secure way to send the shared credentials for the room.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i> At the risk of somewhat contradicting my colleague...
+</I>&gt;<i>
+</I>&gt;<i> That's equally (in)secure, since the hash is a plaintext equivalent. That's
+</I>&gt;<i> protecting you from a different user joining, but someone able to spoof the
+</I>&gt;<i> user can just blindly resend the hash. If you sign stanzas, on the other
+</I>&gt;<i> hand, the hash is pointless.
+</I>
+I think I'm not being clear in what I'm after.  I just want a MUC room
+authentication mechanism that uses challenges.
+
+If I were to modify the original suggestion:
+
+1. Client joins room
+
+&lt;presence
+   from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+   to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>/thirdwitch'&gt;
+ &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'/">http://jabber.org/protocol/muc'/</A>&gt;
+&lt;/presence&gt;
+
+2. Room returns &lt;not-authorized/&gt; error with supported SASL mechanisms
+
+&lt;presence
+   from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>'
+   to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+   type='error'&gt;
+ &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'/">http://jabber.org/protocol/muc'/</A>&gt;
+ &lt;error type='auth'&gt;
+   &lt;not-authorized xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/&gt;
+   &lt;mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;
+     &lt;mechanism&gt;SCRAM-SHA-1-PLUS&lt;/mechanism&gt;
+     &lt;mechanism&gt;SCRAM-SHA-1&lt;/mechanism&gt;
+     &lt;mechanism&gt;PLAIN&lt;/mechanism&gt;
+   &lt;/mechanisms&gt;
+ &lt;/error&gt;
+&lt;/presence&gt;
+
+3. Client selects an authentication mechanism:
+
+&lt;presence
+   from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+   to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>/thirdwitch'&gt;
+ &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'">http://jabber.org/protocol/muc'</A>&gt;
+ &lt;auth xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;
+             mechanism=&quot;SCRAM-SHA-1&quot;&gt;
+       biwsbj1qdWxpZXQscj1vTXNUQUF3QUFBQU1BQUFBTlAwVEFBQUFBQUJQVTBBQQ==
+ &lt;/auth&gt;
+&lt;/presence&gt;
+
+4. Room returns &lt;not-authorized/&gt; error with challenge:
+
+&lt;presence
+   from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>'
+   to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+   type='error'&gt;
+ &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'/">http://jabber.org/protocol/muc'/</A>&gt;
+ &lt;error type='auth'&gt;
+   &lt;not-authorized xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/&gt;
+   &lt;challenge xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;...&lt;/challenge&gt;
+ &lt;/error&gt;
+&lt;/presence&gt;
+
+5. The user joins with an appropriate response:
+
+&lt;presence
+   from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+   to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>/thirdwitch'&gt;
+ &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'">http://jabber.org/protocol/muc'</A>&gt;
+ &lt;response xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;...&lt;/response&gt;
+ &lt;/x&gt;
+&lt;/presence&gt;
+
+
+-- 
+--Alex Milowski
+&quot;The excellence of grammar as a guide is proportional to the paucity of the
+inflexions, i.e. to the degree of analysis effected by the language
+considered.&quot;
+
+Bertrand Russell in a footnote of Principles of Mathematics
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088469.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+	<LI>Next message: <A HREF="088471.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88470">[ date ]</a>
+              <a href="thread.html#88470">[ thread ]</a>
+              <a href="subject.html#88470">[ subject ]</a>
+              <a href="author.html#88470">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

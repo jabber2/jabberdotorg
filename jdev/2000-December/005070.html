@@ -1,0 +1,284 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Rich Text in Messages
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Rich%20Text%20in%20Messages&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005067.html">
+   <LINK REL="Next"  HREF="005078.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Rich Text in Messages</H1>
+    <B>Michael F Lin</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Rich%20Text%20in%20Messages&In-Reply-To="
+       TITLE="[JDEV] Rich Text in Messages">mflin at us.ibm.com
+       </A><BR>
+    <I>Mon Dec 11 05:37:25 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005067.html">[JDEV] Re: online docs(re-post)
+</A></li>
+        <LI>Next message: <A HREF="005078.html">[JDEV] Rich Text in Messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5070">[ date ]</a>
+              <a href="thread.html#5070">[ thread ]</a>
+              <a href="subject.html#5070">[ subject ]</a>
+              <a href="author.html#5070">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Ryszard (any everyone),
+
+For your day-to-day Jabber chats I don't think sending two versions of the
+message is a huge problem, even on 19.2kbps wireless connections. I do
+accept that it is not the most efficient way to go about this, however, and
+so I propose that we extend jabber:iq:version to support something along
+these lines:
+                                                                            
+ &lt;iq                                                                        
+   type=&quot;result&quot;                                                            
+   from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hamlet at denmark</A>/castle&quot;                                             
+   to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">horatio at denmark</A>&quot;                                                     
+   id=&quot;1001&quot;&gt;                                                               
+   &lt;query xmlns=&quot;jabber:iq:version&quot;&gt;                                        
+     &lt;name&gt;WinJab&lt;/name&gt;                                                    
+     &lt;version&gt;0.9.1.1&lt;/version&gt;                                             
+     &lt;os&gt;NT 4.0&lt;/os&gt;                                                        
+     &lt;capabilities&gt;                                                         
+       &lt;xhtml/&gt;                                                             
+       &lt;revenge/&gt;                                                           
+       ...                                                                  
+     &lt;/capabilities&gt;                                                        
+   &lt;/query&gt;                                                                 
+ &lt;/iq&gt;                                                                      
+                                                                            
+                                                                            
+                                                                            
+
+
+
+I think support for something like this will be increasingly important as
+client software matures and begins to support more features that must have
+support on both ends of a chat. The client software I am readying currently
+uses a scheme similar to yours to determine if it should use XHTML
+formatting, image embedding, hyperlinks, etc. But, being restricted to my
+software alone obviously has serious problems. For one, the AIM client can
+understand a good subset of HTML, so there is no reason not to send it most
+types of markup, even if it is not totally XHTML-friendly (this could be
+solved with a quick XSLT).
+
+There will need to be some sort of definitive list of valid capabilities
+which can be easily added to as client software matures.
+
+As for groupchat, this is indeed a difficult problem. In my opinion, the
+best way is to send both formats as is currently shown in the JPG. This
+will increase bandwidth usage, but I think for most purposes it will be
+acceptable, and it will eliminate the need for complex polling to see if
+there are any XHTML-unaware clients. If we extend jabber:iq:version as
+above, perhaps the groupchat transport can keep track of what each client
+supports, and then strip out the XHTML if it is unecessary?
+
+Regards,
+Mike Lin
+IBM Extreme Blue Software Intern
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mflin at us.ibm.com</A>
+
+-
+
+&quot;Ryszard Sommefeldt&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ryszards at xnl-interactive.com</A>&gt;@jabber.org on
+12/10/2000 07:43:34 PM
+
+Please respond to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+
+Sent by:  <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>
+
+
+To:   &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+cc:
+Subject:  Re: [JDEV] Rich Text in Messages
+
+
+
+Hi,
+
+Good question!  There is no way for a non HTML/XHTML
+aware application to just display the raw text.  This problem
+exists for all 'aware' clients (are there any others?).
+
+Currently, when my client communicates with another client,
+it does a jabber:iq:version 'get' and if my client is found to be
+at the other end, it safely sends a formatted message, otherwise
+it sends plain text for compatibility.
+
+With groupchat, I envisage it requiring a change to the
+transport to fix the problem.
+
+When joining or starting a groupchat, the client
+should notify groupchat that it is aware of message formatting.
+
+Current non-aware clients would not know to send this extra
+info, so groupchat should assume they are unaware clients.
+
+Then when an aware client sends a formatted message, it should
+piggy back the plain text of the message onto the formatted
+message (an extra field?).
+
+Then groupchat decides what to send other clients participating
+in the groupchat.  If the client has registered itself as being aware,
+send it the formatted message, otherwise send the plain text.
+
+Hopefully these changes to groupchat wouldn't break any
+existing client.
+
+Using extended namespaces and always sending a formatted
+message no matter what, has problems.  Firstly, an excess of
+data is sent to clients that are not aware.  There is no need
+to send a formatted message, even 'hidden' in an 'x' tag, to
+a client that is unaware.
+
+With light clients, such as those running on pocket PC's or
+any machine with limited bandwidth, you need to optimise
+the data you send over the wire.
+
+My current implementation doesn't send a formatted message
+if it isn't necessary, at least in the normal message case. With
+the modified groupchat case, there is only an excess of data
+sent by aware clients.  A modified groupchat would minimise
+the data sent to clients, depending on reported capabilities.
+
+Just my ideas....
+
+Ryszard
+
+----- Original Message -----
+From: &quot;Justin Van Patten&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kvanpat790 at yahoo.com</A>&gt;
+To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Sent: Saturday, December 09, 2000 10:14 AM
+Subject: Re: [JDEV] Rich Text in Messages
+
+
+&gt;<i> Ryszard,
+</I>&gt;<i>
+</I>&gt;<i> How are you doing this?  How will the clients that
+</I>&gt;<i> aren't able to &quot;format&quot; text be able to get to the
+</I>&gt;<i> plain text?
+</I>&gt;<i>
+</I>&gt;<i> Thanks,
+</I>&gt;<i> Justin Van Patten
+</I>&gt;<i> JID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">justinvp at hotjabber.com</A>
+</I>&gt;<i> IRC: JustinVP
+</I>&gt;<i>
+</I>&gt;<i> --- Ryszard Sommefeldt &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ryszards at xnl-interactive.com</A>&gt;
+</I>&gt;<i> wrote:
+</I>&gt;<i> &gt; I have a Win32 client in development (unreleased)
+</I>&gt;<i> &gt; that
+</I>&gt;<i> &gt; does message formatting using HTML and XHTML
+</I>&gt;<i> &gt; Basic.  It does so with Groupchat and normal Jabber
+</I>&gt;<i> &gt; messages.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Ryszard
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ----- Original Message -----
+</I>&gt;<i> &gt; From: &quot;Justin Van Patten&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kvanpat790 at yahoo.com</A>&gt;
+</I>&gt;<i> &gt; To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> &gt; Sent: Wednesday, December 06, 2000 2:39 AM
+</I>&gt;<i> &gt; Subject: [JDEV] Rich Text in Messages
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; The JPG states that:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; &quot;To extend messages for more 'rich' text, the
+</I>&gt;<i> &gt; Jabber
+</I>&gt;<i> &gt; &gt; protocol encourages use of XHTML Basic. A plain
+</I>&gt;<i> &gt; text
+</I>&gt;<i> &gt; &gt; copy of the message should be included in the
+</I>&gt;<i> &gt; standard
+</I>&gt;<i> &gt; &gt; body so that clients that do not support XHTML
+</I>&gt;<i> &gt; Basic
+</I>&gt;<i> &gt; &gt; can still view the message.&quot;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; The above citation can be found here:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; <A HREF="http://docs.jabber.org/jpg/refmessage.html">http://docs.jabber.org/jpg/refmessage.html</A>
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I am curious if any client applications support
+</I>&gt;<i> &gt; 'rich'
+</I>&gt;<i> &gt; &gt; text.  When I say 'rich' text, I'm referring to
+</I>&gt;<i> &gt; &gt; messages that are formatted, to be a particular
+</I>&gt;<i> &gt; color,
+</I>&gt;<i> &gt; &gt; font face, bold/italic/underlined, etc.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Any information on this would be appreciated.
+</I>&gt;<i> &gt; Thanks!
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Regards,
+</I>&gt;<i> &gt; &gt; Justin Van Patten
+</I>&gt;<i> &gt; &gt; JID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">justinvp at hotjabber.com</A>
+</I>&gt;<i> &gt; &gt; IRC: JustinVP
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; __________________________________________________
+</I>&gt;<i> &gt; &gt; Do You Yahoo!?
+</I>&gt;<i> &gt; &gt; Yahoo! Shopping - Thousands of Stores. Millions of
+</I>&gt;<i> &gt; Products.
+</I>&gt;<i> &gt; &gt; <A HREF="http://shopping.yahoo.com/">http://shopping.yahoo.com/</A>
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> __________________________________________________
+</I>&gt;<i> Do You Yahoo!?
+</I>&gt;<i> Yahoo! Shopping - Thousands of Stores. Millions of Products.
+</I>&gt;<i> <A HREF="http://shopping.yahoo.com/">http://shopping.yahoo.com/</A>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005067.html">[JDEV] Re: online docs(re-post)
+</A></li>
+	<LI>Next message: <A HREF="005078.html">[JDEV] Rich Text in Messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5070">[ date ]</a>
+              <a href="thread.html#5070">[ thread ]</a>
+              <a href="subject.html#5070">[ subject ]</a>
+              <a href="author.html#5070">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

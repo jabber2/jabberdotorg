@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Formal Component Protocol
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Formal%20Component%20Protocol&In-Reply-To=%3C49ADFEF3.1070202%40stpeter.im%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="087428.html">
+   <LINK REL="Next"  HREF="087429.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Formal Component Protocol</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Formal%20Component%20Protocol&In-Reply-To=%3C49ADFEF3.1070202%40stpeter.im%3E"
+       TITLE="[jdev] Formal Component Protocol">stpeter at stpeter.im
+       </A><BR>
+    <I>Tue Mar  3 22:09:23 CST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="087428.html">[jdev] Mixing Attribute Namespaces
+</A></li>
+        <LI>Next message: <A HREF="087429.html">[jdev] WSDL with HTTP binding/REST interface/WSDL with XMPP	bindings for XMPP server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87421">[ date ]</a>
+              <a href="thread.html#87421">[ thread ]</a>
+              <a href="subject.html#87421">[ subject ]</a>
+              <a href="author.html#87421">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 11/12/08 4:14 AM, Jonathan Dickinson wrote:
+&gt;<i> Hi All (esp. PSA J),
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> One thing that I have seen with my experiences so far is that there is
+</I>&gt;<i> practically /no/ formal component protocol.
+</I>&gt;<i> &lt;<A HREF="http://xmpp.org/extensions/xep-0114.html">http://xmpp.org/extensions/xep-0114.html</A>&gt; only shows us how to
+</I>&gt;<i> establish a stream. 
+</I>
+Right. We intended to work on this with XEP-0225 and then add more
+layers on top of that if needed. Step 1 would be to finish 225. If folks
+are interested in that, let's work on it. :)
+
+&gt;<i> Things that nag me (which I still have to figure
+</I>&gt;<i> out, so if you have answers...):
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> &#183;         No indication on newer authentication protocols, just
+</I>&gt;<i> handshakes (don&#8217;t need answers here, I can take example from other
+</I>&gt;<i> server docs, FYI Tigase has really good docs in regard to this)...
+</I>&gt;<i> 
+</I>&gt;<i> &#183;         Binding which is mainstream in, from what I can tell, all
+</I>&gt;<i> current XMPP servers. This is not in the XEP.
+</I>&gt;<i> 
+</I>&gt;<i> &#183;         Routing stanzas, again, are not in the XEP.
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> Here comes the big one: given that binding is for all intents and
+</I>&gt;<i> purposes &#8216;official&#8217;, how do I handle these scenarios:
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> &#183;         I want to send a message directly to &#8220;router15&#8221; (one of the
+</I>&gt;<i> components) and not have it leave the network.
+</I>&gt;<i> 
+</I>&gt;<i> &#183;         I want to send a message to all components of a specific type
+</I>&gt;<i> (related to the above).
+</I>&gt;<i> 
+</I>&gt;<i> &#183;         I want to send a message to a user.
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> My current best guess is (these are embedded in the body of stream:stream):
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> &lt;!-- send message to specific component --&gt;
+</I>&gt;<i> 
+</I>&gt;<i> &lt;route from=&#8221;sm&#8221; to=&#8221;sqlAuth&#8221;&gt;
+</I>&gt;<i> 
+</I>&gt;<i>   &lt;client:iq type=&#8221;get&#8221; from=&#8221;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jim at foo.com</A>&#8221; to=&#8221;foo.com&#8221;&gt;
+</I>&gt;<i> 
+</I>&gt;<i>    &lt;!-- SASL stuff --&gt;
+</I>&gt;<i> 
+</I>&gt;<i>  &lt;/client:iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> &lt;/route&gt;
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> &lt;!-- send message to all components of a specific type --&gt;
+</I>&gt;<i> 
+</I>&gt;<i> &lt;route from=&#8221;router2&#8221; to=&#8221;router*&#8221;&gt;
+</I>&gt;<i>   &lt;presence type=&#8221;unavailable&#8221;/&gt; &lt;!-- router going down --&gt;
+</I>&gt;<i> 
+</I>&gt;<i> &lt;/route&gt;
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> &lt;!-- send message from component to user --&gt;
+</I>&gt;<i> 
+</I>&gt;<i> &lt;client:iq type=&#8221;result&#8221; from=&#8221;foo.com&#8221; to=&#8221;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jim at foo.com</A>&#8221;&gt;
+</I>&gt;<i> 
+</I>&gt;<i>   &lt;!-- SASL stuff --&gt;
+</I>&gt;<i> 
+</I>&gt;<i> &lt;/client:iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> Thanks again.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> ------------------------------------------------------------------------
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> FAQ: <A HREF="http://www.jabber.org/discussion-lists/jdev-faq">http://www.jabber.org/discussion-lists/jdev-faq</A>
+</I>&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>
+
+-- 
+Peter Saint-Andre
+<A HREF="https://stpeter.im/">https://stpeter.im/</A>
+
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 6751 bytes
+Desc: S/MIME Cryptographic Signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20090303/35d84f56/attachment-0003.bin">https://www.jabber.org/jdev/attachments/20090303/35d84f56/attachment-0003.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="087428.html">[jdev] Mixing Attribute Namespaces
+</A></li>
+	<LI>Next message: <A HREF="087429.html">[jdev] WSDL with HTTP binding/REST interface/WSDL with XMPP	bindings for XMPP server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87421">[ date ]</a>
+              <a href="thread.html#87421">[ thread ]</a>
+              <a href="subject.html#87421">[ subject ]</a>
+              <a href="author.html#87421">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

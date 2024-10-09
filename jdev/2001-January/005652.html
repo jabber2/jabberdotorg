@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] (long) Jabber Authenticating from LDAP kludge
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20%28long%29%20Jabber%20Authenticating%20from%20LDAP%20kludge&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005651.html">
+   <LINK REL="Next"  HREF="005653.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] (long) Jabber Authenticating from LDAP kludge</H1>
+    <B>beej at bryanland.com</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20%28long%29%20Jabber%20Authenticating%20from%20LDAP%20kludge&In-Reply-To="
+       TITLE="[JDEV] (long) Jabber Authenticating from LDAP kludge">beej at bryanland.com
+       </A><BR>
+    <I>Wed Jan 17 15:39:10 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005651.html">[JDEV] AIM Transport problems with 1.4pre1 server
+</A></li>
+        <LI>Next message: <A HREF="005653.html">[JDEV] AIM problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5652">[ date ]</a>
+              <a href="thread.html#5652">[ thread ]</a>
+              <a href="subject.html#5652">[ subject ]</a>
+              <a href="author.html#5652">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I've written a replacement for $JABBER/jsm/modules/mod_auth_plain.c
+that will attempt to bind to an LDAP server with the username part of
+a person's jid and the password they supply. We plan on using this at
+my company to make jabber authenticate off of our LDAP
+server. Unfortunately my C is limited in that I couldn't create a
+mod_auth_ldap.c that seemed to work with JSM. So I just overwrote
+mod_auth_plain.c with this file, and that seemed to work. Since we
+aren't planning on authenticating any other way than LDAP, it was the
+most expedient solution.
+
+This is a kludge at best. It does not attempt to write to the LDAP
+server at all, for password resets and such. It doesn't autoprovision
+accounts (if they exist in LDAP but not in Jabber, autocreate and
+don't require a registration). So folks still have to register a
+jabber account, but they do it with <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ldapuid at jabber</A>/resource and their
+LDAP password.
+
+This has been tested with the Jabber2 from CVS as of last Friday (I
+haven't updated since then...), and with OpenLDAP 2.0.7. It doesn't do
+LDAPS that I can tell. ;-)
+
+If anyone would like to use (or improve) this, you can get the file
+from &lt;<A HREF="http://www.comsecmilnavpac.net/jabber/mod_auth_plain.c">http://www.comsecmilnavpac.net/jabber/mod_auth_plain.c</A>&gt; This
+message will also be saved at:
+&lt;<A HREF="http://www.comsecmilnavpac.net/jabber/ldapreadme.txt">http://www.comsecmilnavpac.net/jabber/ldapreadme.txt</A>&gt;.
+
+A couple of caveats:
+
+In $JABBER/platform-settings
+
+Change the line:
+
+LIBS= -lpth -ldl -lresolv
+
+to:
+
+LIBS= -lpth -ldl -lresolv -lldap -llber
+
+
+And add the following to your jabber.xml file under the 
+&lt;sessions&gt;&lt;jsm xmlns=&quot;jabber:config:jsm&quot;&gt; section:
+
+&lt;authldap&gt;
+  &lt;ldaphost&gt;ldaphostname&lt;/ldaphost&gt;
+ &lt;ldapport&gt;389&lt;/ldapport&gt;
+ &lt;binddnpre&gt;uid=&lt;/binddnpre&gt;
+ &lt;binddnpost&gt;,ou=auth,ou=pseudoaccounts,dc=net&lt;/binddnpost&gt;
+&lt;/authldap&gt;
+
+
+The binddnpre and binddnpost are strings which are used to make the
+binddn in combination with your userid. Example:
+
+I'm <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">beej at jabber</A>/whatever
+
+My binddn would be:
+
+uid=beej,ou=auth,ou=pseudoaccounts,dc=net
+
+Also, my &lt;load main=&quot;jsm&quot;&gt; looks like this now:
+
+    &lt;load main=&quot;jsm&quot;&gt;
+      &lt;jsm&gt;./jsm/jsm.so&lt;/jsm&gt;
+      &lt;mod_echo&gt;./jsm/jsm.so&lt;/mod_echo&gt;
+      &lt;mod_roster&gt;./jsm/jsm.so&lt;/mod_roster&gt;
+      &lt;mod_time&gt;./jsm/jsm.so&lt;/mod_time&gt;
+      &lt;mod_vcard&gt;./jsm/jsm.so&lt;/mod_vcard&gt;
+      &lt;mod_last&gt;./jsm/jsm.so&lt;/mod_last&gt;
+      &lt;mod_version&gt;./jsm/jsm.so&lt;/mod_version&gt;
+      &lt;mod_announce&gt;./jsm/jsm.so&lt;/mod_announce&gt;
+      &lt;mod_agents&gt;./jsm/jsm.so&lt;/mod_agents&gt;
+      &lt;mod_browse&gt;./jsm/jsm.so&lt;/mod_browse&gt;
+      &lt;mod_admin&gt;./jsm/jsm.so&lt;/mod_admin&gt;
+      &lt;mod_filter&gt;./jsm/jsm.so&lt;/mod_filter&gt;
+      &lt;mod_presence&gt;./jsm/jsm.so&lt;/mod_presence&gt;
+      &lt;mod_auth_plain&gt;./jsm/jsm.so&lt;/mod_auth_plain&gt;
+&lt;!-- LDAP ONLY
+      &lt;mod_auth_digest&gt;./jsm/jsm.so&lt;/mod_auth_digest&gt;
+      &lt;mod_auth_0k&gt;./jsm/jsm.so&lt;/mod_auth_0k&gt;
+--&gt;
+      &lt;mod_log&gt;./jsm/jsm.so&lt;/mod_log&gt;
+      &lt;mod_register&gt;./jsm/jsm.so&lt;/mod_register&gt;
+      &lt;mod_xml&gt;./jsm/jsm.so&lt;/mod_xml&gt;
+    &lt;/load&gt;
+
+Since I didn't want to use anything but LDAP.
+
+I think that's about it. I hope those of you wanting to use LDAP like
+me can make use of this until someone better does a proper
+implementation.
+
+BrYan
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005651.html">[JDEV] AIM Transport problems with 1.4pre1 server
+</A></li>
+	<LI>Next message: <A HREF="005653.html">[JDEV] AIM problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5652">[ date ]</a>
+              <a href="thread.html#5652">[ thread ]</a>
+              <a href="subject.html#5652">[ subject ]</a>
+              <a href="author.html#5652">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: VTD-XML version 1.6
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20VTD-XML%20version%201.6&In-Reply-To=%3Ce4jonl%243i3%241%40sea.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="053910.html">
+   <LINK REL="Next"  HREF="053912.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: VTD-XML version 1.6</H1>
+    <B>Alexander Gnauck</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20VTD-XML%20version%201.6&In-Reply-To=%3Ce4jonl%243i3%241%40sea.gmane.org%3E"
+       TITLE="[jdev] Re: VTD-XML version 1.6">gnauck at ag-software.de
+       </A><BR>
+    <I>Fri May 19 01:31:16 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="053910.html">[jdev] VTD-XML version 1.6
+</A></li>
+        <LI>Next message: <A HREF="053912.html">[jdev] Re: VTD-XML version 1.6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53911">[ date ]</a>
+              <a href="thread.html#53911">[ thread ]</a>
+              <a href="subject.html#53911">[ subject ]</a>
+              <a href="author.html#53911">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">crackeur at comcast.net</A> schrieb:
+&gt;<i>  
+</I>&gt;<i> you confused me even more...
+</I>&gt;<i> I thought IM apps exchange xml messages (usually small),
+</I>
+let me explain XMPP with this small example of a session:
+
+the client connects, open the socket and the XML Document
+C-&gt;S: &lt;?xml version=&quot;1.0&quot;?&gt;
+C-&gt;S: &lt;stream:stream xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> 
+xmlns=&quot;jabber:client&quot; to=&quot;jabber.org&quot; &gt;
+
+server accepts the socket and opens the XML document
+S-&gt;C: &lt;stream:stream xmlns='jabber:client' 
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> from='jabber.org' 
+id='596931'&gt;
+
+the client starts to authenticate
+C-&gt;S: &lt;iq type=&quot;get&quot; to=&quot;jabber.org&quot; id=&quot;auth_1&quot; &gt;
+	&lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+		&lt;username&gt;alex&lt;/username&gt;
+	&lt;/query&gt;
+&lt;/iq&gt;
+
+S-&gt;C: &lt;iq type=&quot;result&quot; id=&quot;auth_1&quot; &gt;
+	&lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+		&lt;username&gt;gnauck&lt;/username&gt;
+		&lt;password/&gt;
+		&lt;digest/&gt;
+		&lt;resource/&gt;
+	&lt;/query&gt;
+       &lt;/iq&gt;
+
+C-&gt;S: &lt;iq type=&quot;set&quot; to=&quot;jabber.org&quot; id=&quot;auth_2&quot; &gt;
+	&lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+	 &lt;username&gt;gnauck&lt;/username&gt;
+	 &lt;password&gt;secret&lt;/password&gt;
+	 &lt;resource&gt;Psi&lt;/resource&gt;
+	&lt;/query&gt;
+       &lt;/iq&gt;
+
+
+S-&gt;C: &lt;iq type=&quot;result&quot; id=&quot;auth_2&quot; /&gt;
+
+C-&gt;S: &lt;message type=&quot;chat&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at jabber.org</A>&quot; &gt;	
+	&lt;body&gt;Test&lt;/body&gt;
+      &lt;/message&gt;
+
+Client closes the connection, which means it closes the XML Document
+C-&gt;S: &lt;/stream:stream&gt;
+
+Server is closing the XML Doc too
+S-&gt;C: &lt;/stream:stream&gt;
+
+you see we have 2 complete XML Documents. The client doc and the server 
+doc. Our messages, also called stanzas are the 1st level child elements 
+of the document. If you see the stanzas as a single xml doc and not in 
+the context of the whole document you loose the namespace of the 
+stanzas, and your software is not namespace correct. This is why parsing 
+XMPP XML is a bit tricky and the most out of the box parsers don't work 
+very well without modifying them. My exapmple shows the old jabber style 
+authentication. It gets even more complicated when using SASL, START-TLS 
+and other stuff which resets the stream and opens the document again.
+
+ &gt; why do they exchange huge XML docs? It sounds not just bad, but
+ &gt; unnecessary...
+
+i don' think so. Because of this XMPP is a very clean and solid 
+protocol. Clean, simple, powerful, extensible.....
+
+Alex
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="053910.html">[jdev] VTD-XML version 1.6
+</A></li>
+	<LI>Next message: <A HREF="053912.html">[jdev] Re: VTD-XML version 1.6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53911">[ date ]</a>
+              <a href="thread.html#53911">[ thread ]</a>
+              <a href="subject.html#53911">[ subject ]</a>
+              <a href="author.html#53911">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

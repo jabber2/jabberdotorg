@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Second-guessing dns for s2s
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Second-guessing%20dns%20for%20s2s&In-Reply-To=%3C2d24841705092416141f55199b%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="081538.html">
+   <LINK REL="Next"  HREF="081541.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Second-guessing dns for s2s</H1>
+    <B>Johannes Fr&#246;hlich</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Second-guessing%20dns%20for%20s2s&In-Reply-To=%3C2d24841705092416141f55199b%40mail.gmail.com%3E"
+       TITLE="[jdev] Second-guessing dns for s2s">johannes.froehlich at gmail.com
+       </A><BR>
+    <I>Sat Sep 24 18:14:06 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="081538.html">[jdev] Second-guessing dns for s2s
+</A></li>
+        <LI>Next message: <A HREF="081541.html">[jdev] Second-guessing dns for s2s
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81539">[ date ]</a>
+              <a href="thread.html#81539">[ thread ]</a>
+              <a href="subject.html#81539">[ subject ]</a>
+              <a href="author.html#81539">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 9/25/05, Matt Tucker &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">matt at jivesoftware.com</A>&gt; wrote:
+&gt;<i> Hey all,
+</I>&gt;<i>
+</I>&gt;<i> We take security issues very seriously and appreciate the feedback.
+</I>&gt;<i> However, some of the reactions in this thread are simply unreasonable.
+</I>&gt;<i> Why do so many JSF discussions wax into flame wars? :)
+</I>&gt;<i>
+</I>&gt;<i> So, I'd like to take a step back and try to step through the issues.
+</I>&gt;<i> First, unless there's an evil XMPP server, you'll never run into
+</I>&gt;<i> problems. Servers are required to reject stream connections for domains
+</I>&gt;<i> that they don't control. So, if &quot;example.blah.com&quot; isn't controlled by
+</I>&gt;<i> the XMPP server &quot;blah.com&quot;, than an s2s connection for that subdomain
+</I>&gt;<i> will be rejected.
+</I>&gt;<i>
+</I>&gt;<i> Now, let's consider the case of an evil XMPP server. If somebody has
+</I>&gt;<i> managed to subvert your DNS tree, you're pretty much already screwed.
+</I>&gt;<i> Why wouldn't they just take over DNS of your normal server address? Even
+</I>&gt;<i> those of you that use dyndns and other such services where you don't
+</I>&gt;<i> control the full tree are in the same boat. Let's take the example:
+</I>&gt;<i>
+</I>&gt;<i>  someuser.dyndns.org
+</I>&gt;<i>
+</I>&gt;<i> Assume your server is down so some Jive Messenger instance tries to make
+</I>&gt;<i> the connection to dyndns.org. If an evil XMPP server truly lives at that
+</I>&gt;<i> address, how could you possibly trust that your dynamic DNS entry is
+</I>&gt;<i> also valid? Can anyone come up with a real example of this DNS attack
+</I>&gt;<i> being a greater vulnerability than standard dialback? If you don't trust
+</I>&gt;<i> your DNS tree, I would argue that the security of dialback is already
+</I>&gt;<i> compromised.
+</I>&gt;<i>
+</I>&gt;<i> So, dialback itself. I think it provides good security for most users.
+</I>&gt;<i> However, dialback + TLS doesn't seem to be implemented by any servers
+</I>&gt;<i> yet. We're going to create an implementation for Jive Messenger because
+</I>&gt;<i> we think it offers a great mix of security and ease of use. The most
+</I>&gt;<i> common secure s2s mechanism we've found so far is dialback + SASL
+</I>&gt;<i> external. For security, it's pretty much critical that the certificate
+</I>&gt;<i> presented through SASL external be signed by a CA. We're just completing
+</I>&gt;<i> our TLS + SASL external implementation now and will likely support all
+</I>&gt;<i> the major CA's by default. Based on many threads on this mailing list
+</I>&gt;<i> I'd also like to support certs signed by CACert.org by default. Anyway,
+</I>&gt;<i> assuming that servers are using TLS + SASL external, even a DNS attack
+</I>&gt;<i> wouldn't compromise the security of the Jive Messenger algorithm -- they
+</I>&gt;<i> would also need to subvert the CA cert signing process.
+</I>&gt;<i>
+</I>&gt;<i> &gt; I disagree that this is a minor security hole. The fact that
+</I>&gt;<i> &gt; my JM server can potentially contact two completely different
+</I>&gt;<i> &gt; servers for the same JID is a very bad thing. Jabber ID's are
+</I>&gt;<i> &gt; designed to be unique, and they should be. This uniqueness is
+</I>&gt;<i> &gt; provided by using domain names to help partition off the
+</I>&gt;<i> &gt; namespace. What you are essentially doing is flattening this
+</I>&gt;<i> &gt; namespace by changing your implementation.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ie, when my server contacts <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at conference.jabber.org</A>, it
+</I>&gt;<i> &gt; should NEVER, EVER, try to send that message to
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at jabber.org</A> instead. This seems very bad to me.
+</I>&gt;<i>
+</I>&gt;<i> Umm, I think you misunderstand. Actually what happens is that the JM
+</I>&gt;<i> instance will connect to jabber.org but attempt to send the packet to
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at conference.jabber.org.</A> JID uniqueness is never violated.
+</I>&gt;<i>
+</I>&gt;<i> &gt;From David Waite:
+</I>&gt;<i>
+</I>&gt;<i> &gt; It is that servers which implement the XMPP standard and which don't
+</I>&gt;<i> add
+</I>&gt;<i> &gt; this DNS hack will not be able to contact all the services someone may
+</I>&gt;<i> if
+</I>&gt;<i> &gt; they are also running under Jive.
+</I>&gt;<i>
+</I>&gt;<i> We still tell users to make the DNS entries for compatibility with other
+</I>&gt;<i> servers. But, a good example of when users might not bother to make the
+</I>&gt;<i> DNS entries when using JM is when they want to connect multiple XMPP
+</I>&gt;<i> servers together but only inside their org (east-coast.example.com,
+</I>&gt;<i> west-coast.example.com, etc).
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i> Matt
+</I>&gt;<i>
+</I>
+Hmm. I didn't read the specs or jeps fully yet but mainaining a jabber server.
+I agree with Matt that it's a bummer how jids are constructed. But my suggestion
+would be to make it as consistant as possible for the user. As a user
+I know that
+a jid is &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at server.net</A>&quot;. And from this view I can browse for services on
+the server &quot;server.net&quot;.
+
+My suggestion would be to list services like &quot;server.net/service&quot;.
+This would be a
+resource for the server. A muc-room would be &quot;server.net/muc/room&quot; and
+a user using
+this mucroom would have the jid &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server.net</A>/muc/room&quot; or
+just &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/room&quot;.
+
+Just an idea.
+
+--
+-- Johannes
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="081538.html">[jdev] Second-guessing dns for s2s
+</A></li>
+	<LI>Next message: <A HREF="081541.html">[jdev] Second-guessing dns for s2s
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81539">[ date ]</a>
+              <a href="thread.html#81539">[ thread ]</a>
+              <a href="subject.html#81539">[ subject ]</a>
+              <a href="author.html#81539">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

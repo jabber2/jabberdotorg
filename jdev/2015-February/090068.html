@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Websockets RFC: stream: prefix required or not?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Websockets%20RFC%3A%20stream%3A%20prefix%20required%20or%20not%3F&In-Reply-To=%3C7D39F485-7381-4D95-8DE6-F23C9C0E507F%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="090067.html">
+   <LINK REL="Next"  HREF="090069.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Websockets RFC: stream: prefix required or not?</H1>
+    <B>Lance Stout</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Websockets%20RFC%3A%20stream%3A%20prefix%20required%20or%20not%3F&In-Reply-To=%3C7D39F485-7381-4D95-8DE6-F23C9C0E507F%40gmail.com%3E"
+       TITLE="[jdev] Websockets RFC: stream: prefix required or not?">lancestout at gmail.com
+       </A><BR>
+    <I>Mon Feb  2 22:17:35 UTC 2015</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="090067.html">[jdev] Websockets RFC: stream: prefix required or not?
+</A></li>
+        <LI>Next message: <A HREF="090069.html">[jdev] Websockets RFC: stream: prefix required or not?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90068">[ date ]</a>
+              <a href="thread.html#90068">[ thread ]</a>
+              <a href="subject.html#90068">[ subject ]</a>
+              <a href="author.html#90068">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+&gt;<i> What is your opinion on this? Is MongooseIM or Strophe.js&#8217; behaviour correct?
+</I>
+
+MongooseIM is correct here. I would also check that Strophe is handling stream errors correctly.
+
+
+
+Every WebSocket message has to be a well-formed, independently parseable chunk of XML. Which means that all namespaces and prefixes MUST be defined inside that chunk. Everything else follows from that requirement.
+
+
+
+You can either use the namespace directly without a prefix:
+
+&lt;features xmlns=&quot;<A HREF="http://etherx.jabber.org/streams">http://etherx.jabber.org/streams</A>&quot; /&gt;
+&lt;error xmlns=&quot;<A HREF="http://etherx.jabber.org/streams">http://etherx.jabber.org/streams</A>&quot; /&gt;
+
+or if you wish to use the 'stream' prefix (or any prefix) you MUST declare it inside that element:
+
+&lt;stream:features xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams">http://etherx.jabber.org/streams</A>&quot; /&gt;
+&lt;stream:error xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams">http://etherx.jabber.org/streams</A>&quot; /&gt;
+
+
+
+
+I called this out in 7395 because both stream features and errors traditionally use the 'stream' prefix while relying on the opening &lt;stream&gt; tag to define to define the prefix. But for WebSocket there is no parent &lt;stream&gt; tag providing those declarations, and it seemed like an easy item for implementors to either miss entirely or do incorrectly like so:
+
+// Not define the namespace or prefix at all
+&lt;stream:features /&gt;
+&lt;stream:error /&gt;
+
+// Define the namespace without a prefix, while still using a prefix
+&lt;stream:features xmlns=&quot;<A HREF="http://etherx.jabber.org/streams">http://etherx.jabber.org/streams</A>&quot; /&gt;
+&lt;stream:error xmlns=&quot;<A HREF="http://etherx.jabber.org/streams">http://etherx.jabber.org/streams</A>&quot; /&gt;
+
+// Stamp 'jabber:client' as the namespace because it has no xmlns attribute
+&lt;stream:error xmlns=&quot;jabber:client&quot; /&gt;
+&lt;stream:features xmlns=&quot;jabber:client&quot; /&gt;
+
+
+
+&#8212; Lance
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 4240 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20150202/21dfc2f8/attachment.bin">https://www.jabber.org/jdev/attachments/20150202/21dfc2f8/attachment.bin</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="090067.html">[jdev] Websockets RFC: stream: prefix required or not?
+</A></li>
+	<LI>Next message: <A HREF="090069.html">[jdev] Websockets RFC: stream: prefix required or not?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90068">[ date ]</a>
+              <a href="thread.html#90068">[ thread ]</a>
+              <a href="subject.html#90068">[ subject ]</a>
+              <a href="author.html#90068">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

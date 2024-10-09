@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Invalid handshake in component written with Jabber::Component
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Invalid%20handshake%20in%20component%20written%20with%20Jabber%3A%3AComponent&In-Reply-To=%3C20011105192223.K9285%40server.pizzahut.com.ph%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="068657.html">
+   <LINK REL="Next"  HREF="068660.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Invalid handshake in component written with Jabber::Component</H1>
+    <B>Migs Paraz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Invalid%20handshake%20in%20component%20written%20with%20Jabber%3A%3AComponent&In-Reply-To=%3C20011105192223.K9285%40server.pizzahut.com.ph%3E"
+       TITLE="[JDEV] Invalid handshake in component written with Jabber::Component">map at internet.org.ph
+       </A><BR>
+    <I>Mon Nov  5 05:22:23 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="068657.html">[JDEV] XML::Stream::Parser
+</A></li>
+        <LI>Next message: <A HREF="068660.html">[JDEV] Invalid handshake in component written with Jabber::Component
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68659">[ date ]</a>
+              <a href="thread.html#68659">[ thread ]</a>
+              <a href="subject.html#68659">[ subject ]</a>
+              <a href="author.html#68659">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm trying to write my own JUD transport in Perl using Jabber::Connection.
+I think the problem is the Perl script's &quot;localname.&quot;  Thanks in advance!
+
+Here's the script output:
+
+SEND: &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns='jabber:component:accept' xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> to='localhost'&gt;
+RECV: &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='3BE66CA0' xmlns='jabber:component:accept' from='jud'&gt;
+SEND: &lt;handshake id='1'&gt;a4e308bfb34c7bade5130d882ad71599bb4bca89&lt;/handshake&gt;
+RECV: &lt;stream:error&gt;Invalid handshake&lt;/stream:error&gt;&lt;handshake/&gt;
+stream error: Invalid handshake at /usr/lib/perl5/site_perl/5.6.0/i386-linux/XML/Parser/Expat.pm line 614
+
+
+Here's the jabberd output:
+
+Mon Nov  5 18:40:32 2001  mio.c:750 MIO read from socket 11: &lt;handshake id='1'&gt;a4e308bfb34c7bade5130d882ad71599bb4bca89&lt;/handshake&gt;
+Mon Nov  5 18:40:32 2001  base_accept.c:105 process XML: m:8140B40 state:3, arg:8108AA8, x:81F2BA0
+Mon Nov  5 18:40:32 2001  mio.c:1032 mio_write called on x: 0 buffer: &lt;stream:error&gt;Invalid handshake&lt;/stream:error&gt;
+Mon Nov  5 18:40:32 2001  mio.c:1032 mio_write called on x: 0 buffer: &lt;handshake/&gt;
+Mon Nov  5 18:40:32 2001  mio.c:275 write_dump writing data: &lt;stream:error&gt;Invalid handshake&lt;/stream:error&gt;
+Mon Nov  5 18:40:32 2001  mio.c:275 write_dump writing data: &lt;handshake/&gt;
+Mon Nov  5 18:40:32 2001  base_accept.c:105 process XML: m:8140B40 state:4, arg:8108AA8, x:8050ADC
+
+
+Here's the relevant part of the script:
+
+use Jabber::Connection;
+use Jabber::NodeFactory;
+use Jabber::NS qw(:all);
+
+my $c = new Jabber::Connection(
+  ns =&gt; &quot;jabber:component:accept&quot;,                             
+  server =&gt; 'localhost:1234',
+  localname =&gt; &quot;jud.localhost&quot;,
+  log    =&gt; 1,
+);
+
+$c-&gt;connect or die &quot;oops: &quot;.$c-&gt;lastError;
+
+
+Here's the relevant part of the configuration:
+
+&lt;service id=&quot;sessions&quot;&gt;
+...
+   &lt;jsm xmlns=&quot;jabber:config:jsm&quot;&gt;
+      ...
+      &lt;service type=&quot;jud&quot; jid=&quot;jud.localhost&quot; name=&quot;Jabber User Directory&quot;&gt;
+        &lt;ns&gt;jabber:iq:search&lt;/ns&gt;
+        &lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+      &lt;/service&gt;
+      ... 
+   &lt;/jsm&gt;
+   ...
+&lt;/service&gt; 
+
+...
+
+&lt;service id=&quot;jud&quot;&gt;
+  &lt;host&gt;jud.localhost&lt;/host&gt;
+  &lt;accept&gt;
+    &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+    &lt;port&gt;1234&lt;/port&gt;
+    &lt;secret&gt;test&lt;/secret&gt;
+  &lt;/accept&gt;
+&lt;/service&gt;
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="068657.html">[JDEV] XML::Stream::Parser
+</A></li>
+	<LI>Next message: <A HREF="068660.html">[JDEV] Invalid handshake in component written with Jabber::Component
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68659">[ date ]</a>
+              <a href="thread.html#68659">[ thread ]</a>
+              <a href="subject.html#68659">[ subject ]</a>
+              <a href="author.html#68659">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

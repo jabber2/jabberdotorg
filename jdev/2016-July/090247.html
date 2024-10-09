@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Message sending performance XEP-0124
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Message%20sending%20performance%20XEP-0124&In-Reply-To=%3C1467369975.10424.9.camel%40uni-konstanz.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="090246.html">
+   <LINK REL="Next"  HREF="090248.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Message sending performance XEP-0124</H1>
+    <B>Marcel Waldvogel</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Message%20sending%20performance%20XEP-0124&In-Reply-To=%3C1467369975.10424.9.camel%40uni-konstanz.de%3E"
+       TITLE="[jdev] Message sending performance XEP-0124">marcel.waldvogel at uni-konstanz.de
+       </A><BR>
+    <I>Fri Jul  1 10:46:15 UTC 2016</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="090246.html">[jdev] Message sending performance XEP-0124
+</A></li>
+        <LI>Next message: <A HREF="090248.html">[jdev] Message sending performance XEP-0124
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90247">[ date ]</a>
+              <a href="thread.html#90247">[ thread ]</a>
+              <a href="subject.html#90247">[ subject ]</a>
+              <a href="author.html#90247">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&quot;4. The BOSH Technique&quot; says:
+&quot;If the client has data to send while a request is still open, it
+establishes a second socket connection to the connection manager to
+send a new request. The connection manager immediately responds to the
+previously held request (possibly with no data) and holds open this new
+request. This results in the connections switching roles; the &quot;old&quot;
+connection is responded to and left awaiting new requests, while the
+&quot;new&quot; connection is now used for the long polling loop.&quot;
+So if you know that there are other messages pending at the client, do
+not use hold/wait until your sending queue is empty. If during a hold,
+the client needs to send a new message, open/reuse the secondary
+connection, if it needs to be sent before the wait interval has
+expired.
+-Marcel
+On Fre, 2016-07-01 at 15:46 +0530, Vaibhav Ranglani wrote:
+&gt;<i> Hello devs,
+</I>&gt;<i> 
+</I>&gt;<i> I am implementing a custom solution in XMPP.
+</I>&gt;<i> 
+</I>&gt;<i> During the session creation request, the client sends a session
+</I>&gt;<i> creation request as follows.
+</I>&gt;<i> 
+</I>&gt;<i> &lt;body content='text/xml; charset=utf-8'
+</I>&gt;<i> &#160; &#160; &#160; from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at example.com</A>'
+</I>&gt;<i> &#160; &#160; &#160; hold='1'
+</I>&gt;<i> &#160; &#160; &#160; rid='1573741820'
+</I>&gt;<i> &#160; &#160; &#160; to='example.com'
+</I>&gt;<i> &#160; &#160; &#160; route='xmpp:example.com:9999'
+</I>&gt;<i> &#160; &#160; &#160; ver='1.6'
+</I>&gt;<i> &#160; &#160; &#160; wait='60'
+</I>&gt;<i> &#160; &#160; &#160; ack='1'
+</I>&gt;<i> &#160; &#160; &#160; xml:lang='en'
+</I>&gt;<i> &#160; &#160; &#160; xmlns='<A HREF="http://jabber.org/protocol/httpbind">http://jabber.org/protocol/httpbind</A>'/&gt;;
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> In this request, the hold attribute is specified as 1.&#160;
+</I>&gt;<i> Due to this the issue I am encountering is that I am able to send
+</I>&gt;<i> only 1 message per minute.
+</I>&gt;<i> 
+</I>&gt;<i> Can I specify a value of 30-40 for hold variable. If yes, then what
+</I>&gt;<i> will be the performance ramifications of this?
+</I>&gt;<i> 
+</I>&gt;<i> Regards
+</I>&gt;<i> Vaibhav
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20160701/162e5231/attachment.html">https://www.jabber.org/jdev/attachments/20160701/162e5231/attachment.html</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 6240 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20160701/162e5231/attachment.bin">https://www.jabber.org/jdev/attachments/20160701/162e5231/attachment.bin</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="090246.html">[jdev] Message sending performance XEP-0124
+</A></li>
+	<LI>Next message: <A HREF="090248.html">[jdev] Message sending performance XEP-0124
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90247">[ date ]</a>
+              <a href="thread.html#90247">[ thread ]</a>
+              <a href="subject.html#90247">[ subject ]</a>
+              <a href="author.html#90247">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

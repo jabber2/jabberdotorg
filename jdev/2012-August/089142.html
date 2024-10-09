@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Necessity of stringprep support for the client
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Necessity%20of%20stringprep%20support%20for%20the%20client&In-Reply-To=%3CCALm9TZ95Pwab00gbwBSv%2BX82JeYUm_gJe0eHyYfcofFWgPnsrw%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089141.html">
+   <LINK REL="Next"  HREF="089143.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Necessity of stringprep support for the client</H1>
+    <B>Waqas Hussain</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Necessity%20of%20stringprep%20support%20for%20the%20client&In-Reply-To=%3CCALm9TZ95Pwab00gbwBSv%2BX82JeYUm_gJe0eHyYfcofFWgPnsrw%40mail.gmail.com%3E"
+       TITLE="[jdev] Necessity of stringprep support for the client">waqas20 at gmail.com
+       </A><BR>
+    <I>Sun Aug 19 03:29:12 UTC 2012</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089141.html">[jdev] Necessity of stringprep support for the client
+</A></li>
+        <LI>Next message: <A HREF="089143.html">[jdev] Necessity of stringprep support for the client
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89142">[ date ]</a>
+              <a href="thread.html#89142">[ thread ]</a>
+              <a href="subject.html#89142">[ subject ]</a>
+              <a href="author.html#89142">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sun, Aug 19, 2012 at 7:13 AM, Peter Saint-Andre &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at stpeter.im</A>&gt; wrote:
+&gt;<i> -----BEGIN PGP SIGNED MESSAGE-----
+</I>&gt;<i> Hash: SHA1
+</I>&gt;<i>
+</I>&gt;<i> On 8/17/12 5:57 PM, Ralph Meijer wrote:
+</I>&gt;&gt;<i> On 2012-08-17 18:22, Peter Saint-Andre wrote:
+</I>&gt;&gt;&gt;<i> -----BEGIN PGP SIGNED MESSAGE----- Hash: SHA1
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> On 8/17/12 10:16 AM, Jack Moffitt wrote:
+</I>&gt;&gt;&gt;&gt;&gt;<i> Heck, it sounds like a simple little spec, maybe I'll write
+</I>&gt;&gt;&gt;&gt;&gt;<i> it up over the weekend. ;-)
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> I suggest that the JavaScript side API be the same as the W3C
+</I>&gt;&gt;&gt;&gt;<i> one, so that this can act as a shim for browsers that don't yet
+</I>&gt;&gt;&gt;&gt;<i> have that support.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> If we made it an HTTP API, then people outside the XMPP world
+</I>&gt;&gt;&gt;&gt;<i> could use the same thing. The only thing we'd really need is
+</I>&gt;&gt;&gt;&gt;<i> some modification of the stream features to include the API
+</I>&gt;&gt;&gt;&gt;<i> endpoint so that clients can find it.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Well, I'd see HTTP and XMPP as two different ways of accessing
+</I>&gt;&gt;&gt;<i> the same service. Given that such a service could be
+</I>&gt;&gt;&gt;<i> resource-intensive to run (in fact, the XEP would need some
+</I>&gt;&gt;&gt;<i> security considerations about denial of service attacks), I would
+</I>&gt;&gt;&gt;<i> think that client authentication or registration would be
+</I>&gt;&gt;&gt;<i> necessary or strongly suggested. In the case of XMPP, the server
+</I>&gt;&gt;&gt;<i> is in charge and I expect that it would offer this service only
+</I>&gt;&gt;&gt;<i> to its registered users (and any abusive users from its domain
+</I>&gt;&gt;&gt;<i> could be easily disabled). In the case of HTTP, the story is less
+</I>&gt;&gt;&gt;<i> clear to me.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> What about stringprepping (parts of) the JIDs used to connect to
+</I>&gt;&gt;<i> the server? I.e. before feature negotiation is complete and the
+</I>&gt;&gt;<i> client may start sending stanzas? I'm thinking of the stream's
+</I>&gt;&gt;<i> addressing attributes, username (SASL) and resource (resource
+</I>&gt;&gt;<i> binding).
+</I>&gt;<i>
+</I>&gt;<i> Right, but the server will correct your full JID during
+</I>&gt;<i> authentication. After that, you could check every non-ASCII JID or
+</I>&gt;<i> JID-part with the server-side prepping service.
+</I>&gt;<i>
+</I>&gt;<i> Peter
+</I>&gt;<i>
+</I>
+There are four classes of JID slots relevant to this problem:
+1. The stream tag
+2. SASL
+3. Top level attributes of stanzas
+4. JID fields inside stanzas
+
+1. The stream tag
+
+The server preps for you. The client doesn't need to know prepping. In
+case a hostname fails prepping, you would get a &lt;host-unknown/&gt; error.
+
+A host-unknown error seems to be enough here. The client can show a
+helpful message saying the hostname is incorrect. What else would it
+say if it knew the hostname failed prepping? How is a prepping failure
+different from a simple typo which passes prepping as far as users are
+concerned? Users don't know what prepping is.
+
+If you really really need the information, add an application specific
+error element:
+
+&lt;stream:error&gt;
+  &lt;host-unknown xmlns=&quot;urn:ietf:params:xml:ns:xmpp-streams&quot;/&gt;
+  &lt;jid-malformed xmlns=&quot;urn:ietf:params:xml:ns:xmpp-stanzas&quot;/&gt;
+&lt;/stream:error&gt;
+
+Or define a new stream error.
+
+2. SASL
+
+Almost the same thing applies to SASL, except it doesn't actually:
+Only SASLprep is certain for SASL. It's common for deployments to
+delegate SASL to other services such as LDAP servers. SASL authcid may
+happen to be the XMPP username in many server configurations by
+default, but this is not a requirement of the protocol. Clients
+forcefully applying nodeprep here is harmful, and a constant source of
+annoyance when authenticating against external systems.
+
+3. Stanzas
+
+The server gives you back a &lt;jid-malformed/&gt; error. What more do you need?
+
+4. JID slots inside stanzas
+
+Now this is a sticky problem. But this problem isn't associated with
+just javascript based applications. Most (all? I tested a while ago
+and found zero; has this changed?) mobile clients and many desktop
+clients simply don't prep. Or when they do it's as simple as
+lower-casing ASCII characters and checking for a few forbidden ASCII
+characters. This requires further discussion and thought.
+
+--
+Now, as for the JID validating service that is being discussed:
+
+1. A server side service
+
+This seems very problematic. Client gets roster with 1000 JIDs. Roster
+JIDs are not guaranteed to be normalized (might have upper case
+characters, etc). Does it send them all back for normalization? This
+will get very expensive very fast. And not just for the user, but the
+server as well.
+
+2. Javascript based prepping library
+
+Is this not considered feasible? I'd very much like to see some
+numbers. How large are the relevant data tables? And the data can be
+split up by language, compressed, and loaded on demand, so download
+size may not be an issue at all. You also get to use CDNs, since it
+would all be static files. The XSF could fund this.
+
+3.  &lt;message|iq|presence to=&quot;...&quot; from=&quot;...&quot; xmlns:j=&quot;jidprep
+namespace&quot; j:jids=&quot;space separated list of JIDs&quot;/&gt;
+
+The server (if it supports the feature) checks the 'to' and 'from'
+attributes as normal, and in addition also checks the jids in that
+prefixed attribute. It returns a jid-malformed error on failure.
+
+This cleanly avoids any extra round trips for outgoing stanzas. For
+incoming stanzas, you can send the JID list to yourself (ping
+yourself, or send a message to yourself). That said, I don't
+personally like the idea of such a protocol.
+
+--
+Waqas Hussain
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089141.html">[jdev] Necessity of stringprep support for the client
+</A></li>
+	<LI>Next message: <A HREF="089143.html">[jdev] Necessity of stringprep support for the client
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89142">[ date ]</a>
+              <a href="thread.html#89142">[ thread ]</a>
+              <a href="subject.html#89142">[ subject ]</a>
+              <a href="author.html#89142">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

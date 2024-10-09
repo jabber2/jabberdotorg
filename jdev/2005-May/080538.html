@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] s2s doubts
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20s2s%20doubts&In-Reply-To=%3CE631842E8FB95345A9C4E431CD68742D0291BA05%40yoda.adnative.local%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="080537.html">
+   <LINK REL="Next"  HREF="080539.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] s2s doubts</H1>
+    <B>Darryl Rhodes</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20s2s%20doubts&In-Reply-To=%3CE631842E8FB95345A9C4E431CD68742D0291BA05%40yoda.adnative.local%3E"
+       TITLE="[jdev] s2s doubts">Darryl.Rhodes at sanmina-sci.com
+       </A><BR>
+    <I>Wed May 18 08:33:08 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="080537.html">[jdev] &quot;MySQL client libraries not found&quot; error
+</A></li>
+        <LI>Next message: <A HREF="080539.html">[jdev] s2s doubts
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80538">[ date ]</a>
+              <a href="thread.html#80538">[ thread ]</a>
+              <a href="subject.html#80538">[ subject ]</a>
+              <a href="author.html#80538">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Why am I getting this email?
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf
+Of JD Conley
+Sent: Tuesday, May 17, 2005 6:46 PM
+To: Jabber software development list
+Subject: RE: [jdev] s2s doubts
+
+Sounds like you're having fun with S2S. Make sure you test with all the
+implementations out there and with subdomains on all of them.  For
+example, make sure you S2S to jabber.org and also conference.jabber.org
+and make a two way connection happen.  Do the same for any other servers
+you wish to be compatible with.  They all have their quirks. :)
+
+&gt;<i> Lets suppose that server1 has successfully accepted a connection with
+</I>&gt;<i> server2 using server dialback. If a client sends a message to server1
+</I>with
+&gt;<i> TO=conference.server2, does server1 have to send the packet to server2
+</I>&gt;<i> assuming that conference.server2 is handled by server2? Or does
+</I>server2
+&gt;<i> need
+</I>&gt;<i> to inform server1 that that subdomain is valid?
+</I>
+Server1 should connect to conference.server2.  S2S does not make any
+considerations for sub domains.
+
+However, many servers will re-use the existing TCP connection for the
+sub domain if both resolve to the same IP.  This is especially true for
+the actual dialback connection.  Instead of establishing a new
+connection and stream, they will simply send in a new db packet to setup
+the dialback connection for the other domain (like you mentioned below).
+I believe J2 does this, at least. 
+
+&gt;<i> Is it correct to create the second connection
+</I>&gt;<i> after
+</I>&gt;<i> the first connection was established? I guess this is an
+</I>implementation
+&gt;<i> decision but I would like to know if that is the standard way of doing
+</I>it.
+
+This is an implementation decision.  In our server we chose to not
+establish the other connection until it is needed.  Obviously you have
+to establish a connection for the dialback, but it is thrown away.  From
+what I've seen this is standard practice.
+
+&gt;<i> What happens to the first connection if the second connection fails to
+</I>be
+&gt;<i> established? What happens to the other connection if one connection
+</I>goes
+&gt;<i> down? I assume that the remaining connection will be used and that the
+</I>&gt;<i> server will try to regenerate the other connection. 
+</I>
+The connections should be treated independently.  Also, connections will
+&quot;go down&quot; all the time.  Most servers have idle timers and will drop S2S
+connections if they haven't been used in a while.  Others will send keep
+alive packets (XML whitespace) and keep the connection alive.  This is
+also configurable in some servers.
+
+&gt;<i> Is it necessary to have 2 connections when using TLS/SASL?
+</I>
+I remember this being a topic of debate last year.  Since you can do
+mutual verification with TLS certs this answer is technically &quot;no&quot;.  In
+our implementation I believe we use just one connection and require
+mutual certificate verification.  However, I believe you are supposed to
+establish two connections.
+
+&gt;<i> After successful dialback negotiation, the Receiving Server SHOULD
+</I>accept
+&gt;<i> subsequent &lt;db:result/&gt; packets (e.g., validation requests sent to a
+</I>&gt;<i> subdomain or other hostname serviced by the Receiving Server) from the
+</I>&gt;<i> Originating Server over the existing validated connection; this
+</I>enables
+&gt;<i> &quot;piggybacking&quot; of the original validated connection in one direction.
+</I>Is
+&gt;<i> this being used for &quot;registering&quot; subdomains/services or virtual hosts
+</I>&gt;<i> with
+</I>&gt;<i> the Receiving Server? 
+</I>
+This is just a shortcut to re-use existing TCP channels when domains
+resolve to the same IP.  For example we host soapbox.net, coversant.net,
+conference.soapbox.net, conference.coversant.net on our server.  It
+would be a bit wasteful for jivesoftware.com to establish an outgoing
+dialback connection for all of those domains when they are on the same
+system.
+
+&gt;<i> If the answer is yes then how do you implement the
+</I>&gt;<i> same thing using TLS/SASL? If the Originating Server never registered
+</I>&gt;<i> other
+</I>&gt;<i> subdomains is it valid to assume that &quot;conference.server2 is handled
+</I>by
+&gt;<i> server2&quot; (see first question)?
+</I>
+TLS/SASL requires a separate connection per domain since XMPP makes no
+provisions for establishing streams to multiple domains over the same
+connection.  Opening a stream within a stream is prohibited.
+
+Hope this helps.
+
+-JD
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+
+________________________________________________________________________
+_____
+Scanned by Sanmina-SCI eShield
+________________________________________________________________________
+_____
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="080537.html">[jdev] &quot;MySQL client libraries not found&quot; error
+</A></li>
+	<LI>Next message: <A HREF="080539.html">[jdev] s2s doubts
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80538">[ date ]</a>
+              <a href="thread.html#80538">[ thread ]</a>
+              <a href="subject.html#80538">[ subject ]</a>
+              <a href="author.html#80538">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

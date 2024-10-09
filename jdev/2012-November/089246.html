@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Help choosing the right technology
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Help%20choosing%20the%20right%20technology&In-Reply-To=%3CCAOENXSSGDD7VbepCyEGXx4GoLqpyrTrrPrjj43onBHcVdCH61g%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089238.html">
+   <LINK REL="Next"  HREF="089249.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Help choosing the right technology</H1>
+    <B>andy nes</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Help%20choosing%20the%20right%20technology&In-Reply-To=%3CCAOENXSSGDD7VbepCyEGXx4GoLqpyrTrrPrjj43onBHcVdCH61g%40mail.gmail.com%3E"
+       TITLE="[jdev] Help choosing the right technology">andynes83 at gmail.com
+       </A><BR>
+    <I>Fri Nov 16 05:42:48 UTC 2012</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089238.html">[jdev] Help choosing the right technology
+</A></li>
+        <LI>Next message: <A HREF="089249.html">[jdev] Help choosing the right technology
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89246">[ date ]</a>
+              <a href="thread.html#89246">[ thread ]</a>
+              <a href="subject.html#89246">[ subject ]</a>
+              <a href="author.html#89246">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thank you guys for your suggestions. Decided to go ahead with XMPP. Now I'm
+trying to figure out a good enough architecture for my application (plan is
+to structure it as a component and connect to XMPP). I have put my thoughts
+and questions in a separate mail, love to pick your brains on those
+questions.
+
+@Abhinav
+I did look at MQTT. But lack of open source implementations pushed us more
+towards XMPP.
+
+@StPeter
+Will look into the XEPs 0198 and 0184. Thank you. My application might
+start with 10,000 concurrent sessions and might scale to 100,000 in six
+months. That's Scalability for me. I am going ahead with XMPP choosing it
+over AMQP and MQTT. Hope the decision pays off.
+
+@Dave
+Thank you for the inputs. The only reliability requirement that we have is
+not to miss the data sent over XMPP for a particular user as the data can
+be part of business workflow and missing that can disrupt the work flow
+itself. Will look into the XEPs though. As for Scalability, as mentioned my
+starts with 10,000 concurrent sessions and might scale to 100,000 in six
+months.
+
+@All
+Thank you for helping me choose a technology. It might help me further if
+you can suggest an architecture for a Component that needs to connect to
+XMPP Server which has business logic and database IO operations. I have
+written a detailed mail asking suggestions.
+
+/andy
+
+
+On Wed, Nov 14, 2012 at 4:37 AM, Dave Cridland &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A>&gt; wrote:
+
+&gt;<i> I'll chip in too, why not. :-)
+</I>&gt;<i>
+</I>&gt;<i> So for the case of &quot;user [device?] accidentally goes offline and comes
+</I>&gt;<i> back&quot;, this could be dealt with by offline messages (which as Peter says
+</I>&gt;<i> are available in every XMPP server), or by XEP-0198, depending on the
+</I>&gt;<i> circumstances. XEP-0198 will handle the interesting case when the message
+</I>&gt;<i> has already gone to the TCP buffer before the connection drop is noticed -
+</I>&gt;<i> and do so in both directions - but offline messaging is usually used for
+</I>&gt;<i> longer term cases from the server's perspective.
+</I>&gt;<i>
+</I>&gt;<i> However, if XEP-0199 is actually good enough, you don't really have very
+</I>&gt;<i> stringent reliability requirements, I suspect. :-)
+</I>&gt;<i>
+</I>&gt;<i> As for scalability, my own observation (as an XMPP server developer) is
+</I>&gt;<i> that different servers have wildly different scalability characteristics,
+</I>&gt;<i> depending on whether compression, TLS, and so on are in play. As Kevin
+</I>&gt;<i> says, the ideal case is to simulate the kinds of traffic you're intending,
+</I>&gt;<i> but in general terms the scaling issues on most higher performance servers
+</I>&gt;<i> are based on memory rather than outright numbers, which is convenient for
+</I>&gt;<i> you because you can do those tests on smaller, more carefully simulated
+</I>&gt;<i> runs and just ensure the scaling is roughly linear, and will fit your
+</I>&gt;<i> server[s]. Tsung will, of course, tell you if a server can keep pace with
+</I>&gt;<i> the traffic speeds.
+</I>&gt;<i>
+</I>&gt;<i> XML is not an issue in the higher performance servers, most of which have
+</I>&gt;<i> custom XML processors designed for XMPP specifically, or else use off the
+</I>&gt;<i> shelf XML parsers in ways that are quite inventive in order to avoid most
+</I>&gt;<i> of the overheads. In particular, if your experience of XML is from DOM
+</I>&gt;<i> manipulation in Javascript, then I can assure you this is way different.
+</I>&gt;<i>
+</I>&gt;<i> In terms of bandwidth, my employer has deployed XMPP over HF radio
+</I>&gt;<i> networks running at 2400bps on really good days; while we do have to be
+</I>&gt;<i> fairly careful (and it's running over S'5066 not IP), the stanzas
+</I>&gt;<i> themselves are standard, if simple, XMPP. Over satellite at 9600bps, we can
+</I>&gt;<i> be considerably less careful - even chat state notifications work OK.
+</I>&gt;<i> Latency for connection is more of an issue at these speeds; we run S2S
+</I>&gt;<i> without the traditional connection negotiation to handle this.
+</I>&gt;<i>
+</I>&gt;<i> On mobile (high bandwidth!), things are pretty relaxed, C2S is entirely
+</I>&gt;<i> viable, and your main concern will be battery life - XEP-0286 has some
+</I>&gt;<i> information on this; I should really update that and give Peter another XEP
+</I>&gt;<i> or two to publish...
+</I>&gt;<i>
+</I>&gt;<i> {Disclaimer: I work for Isode, on M-Link, so I'm unashamedly biased toward
+</I>&gt;<i> that, or Stroke/Swiften, too.}
+</I>&gt;<i>
+</I>&gt;<i> HTH,
+</I>&gt;<i>
+</I>&gt;<i> Dave.
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20121116/0c5582af/attachment.html">https://www.jabber.org/jdev/attachments/20121116/0c5582af/attachment.html</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089238.html">[jdev] Help choosing the right technology
+</A></li>
+	<LI>Next message: <A HREF="089249.html">[jdev] Help choosing the right technology
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89246">[ date ]</a>
+              <a href="thread.html#89246">[ thread ]</a>
+              <a href="subject.html#89246">[ subject ]</a>
+              <a href="author.html#89246">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

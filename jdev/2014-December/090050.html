@@ -1,0 +1,353 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] File transfer not working using GLOOX
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20File%20transfer%20not%20working%20using%20GLOOX&In-Reply-To=%3CCA%2BP%2BXzLCpJ-n%3Ds%3DNpPdbh%3DiRohGZN-b-4L38Yq7Nn%3DhmvtLCug%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="090051.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] File transfer not working using GLOOX</H1>
+    <B>Kalpana Anbalagan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20File%20transfer%20not%20working%20using%20GLOOX&In-Reply-To=%3CCA%2BP%2BXzLCpJ-n%3Ds%3DNpPdbh%3DiRohGZN-b-4L38Yq7Nn%3DhmvtLCug%40mail.gmail.com%3E"
+       TITLE="[jdev] File transfer not working using GLOOX">kalpanaanbalagann at gmail.com
+       </A><BR>
+    <I>Wed Dec 24 09:19:29 UTC 2014</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="090051.html">[jdev] File transfer not working using GLOOX
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90050">[ date ]</a>
+              <a href="thread.html#90050">[ thread ]</a>
+              <a href="subject.html#90050">[ subject ]</a>
+              <a href="author.html#90050">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+  I m using GLOOX example code to do file transfer..(ft_send.cpp file)
+I have a eJabberd server in my machine (binding to localhost : 5222) and a
+Jabber Messenger.
+I m running my code in windows platform using the example code given in
+ft_send.cpp..
+I m not able to transfer the file.
+Please let me know what I m doing wrong here..And also wanted to know when
+handleFTBytestream() API will get called..
+
+Thanks in advance for your help.
+
+see below my code//
+
+#include &quot;client.h&quot;
+#include &quot;connectionlistener.h&quot;
+#include &quot;stanza.h&quot;
+#include &quot;gloox.h&quot;
+#include &quot;disco.h&quot;
+#include &quot;loghandler.h&quot;
+#include &quot;logsink.h&quot;
+#include &quot;siprofileft.h&quot;
+#include &quot;siprofilefthandler.h&quot;
+#include &quot;bytestreamdatahandler.h&quot;
+#include &quot;socks5bytestreamserver.h&quot;
+using namespace gloox;
+
+#include &lt;sys/types.h&gt;
+#include &lt;sys/stat.h&gt;
+//#include &lt;unistd.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;string&gt;
+#include &lt;fstream&gt;
+#include &lt;ios&gt;
+#include &lt;time.h&gt;
+#include &lt;cstdio&gt; // [s]print[f]
+
+#if defined( WIN32 ) || defined( _WIN32 )
+# include &lt;windows.h&gt;
+#endif
+
+/**
+ * Usage:
+ *   ft_send <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jid at server</A>/full /path/to/file
+ *
+ * Sends the given file to the given full JID.
+ */
+class FTTest : public LogHandler, ConnectionListener, SIProfileFTHandler,
+BytestreamDataHandler
+{
+  public:
+    FTTest( const JID&amp; to, const std::string&amp; file ) : m_bs( 0 ), m_to( to
+), m_file( file ), m_quit( false ) {}
+
+    virtual ~FTTest() {}
+
+    void start()
+    {
+
+      struct stat f_stat;
+      if( stat( m_file.c_str(), &amp;f_stat ) )
+        return;
+
+      m_size = f_stat.st_size;
+      std::ifstream ifile( m_file.c_str(), std::ios_base::in |
+std::ios_base::binary );
+      if( !ifile )
+        return;
+
+      JID jid( &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kalpana at 127.0.0.1</A>/Jabber Messenger&quot; );
+      j = new Client( jid, &quot;kalpana&quot; );
+      j-&gt;registerConnectionListener( this );
+      j-&gt;disco()-&gt;setVersion( &quot;ftsend&quot;, GLOOX_VERSION, &quot;Linux&quot; );
+      j-&gt;disco()-&gt;setIdentity( &quot;client&quot;, &quot;bot&quot; );
+      StringList ca;
+      ca.push_back( &quot;/path/to/cacert.crt&quot; );
+      j-&gt;setCACerts( ca );
+
+      j-&gt;logInstance().registerLogHandler( LogLevelDebug, LogAreaAll, this
+);
+
+
+      m_server = new SOCKS5BytestreamServer( j-&gt;logInstance(), 7777 );
+      printf( &quot;about to listen\n&quot; );
+      ConnectionError le = ConnNoError;
+      if( ( le = m_server-&gt;listen() ) != ConnNoError )
+        printf( &quot;listen returned: %d\n&quot;, le );
+      printf( &quot;listening\n&quot; );
+
+      f = new SIProfileFT( j, this );
+      f-&gt;registerSOCKS5BytestreamServer( m_server );
+  f-&gt;addStreamHost( j-&gt;jid(),&quot;localhost&quot;, 7777);
+      // you should obtain this using disco, really:
+     f-&gt;addStreamHost( JID( &quot;reflector.amessage.eu&quot; ), &quot;
+reflector.amessage.eu&quot;, 6565 );
+//       f-&gt;addStreamHost( JID( &quot;proxy.jabber.org&quot; ), &quot;208.245.212.98&quot;,
+7777 );
+
+      if( j-&gt;connect( false ) )
+      {
+        char input[200024];
+        ConnectionError ce = ConnNoError;
+        ConnectionError se = ConnNoError;
+        while( ce == ConnNoError )
+        {
+          if( m_quit )
+            j-&gt;disconnect();
+
+          ce = j-&gt;recv( 1 );
+          if( m_server )
+          {
+            se = m_server-&gt;recv( 1 );
+            if( se != ConnNoError )
+            {
+              printf( &quot;SOCKS5BytestreamServer returned: %d\n&quot;, se );
+              delete m_server;
+              m_server = 0;
+              m_quit = true;
+            }
+          }
+          if(!ifile.eof() )
+  {
+  if( m_bs )
+          {
+            if( m_bs-&gt;isOpen() )
+            {
+              ifile.read( input, 200024 );
+              std::string t( input, ifile.gcount() );
+              if( !m_bs-&gt;send( t ) )
+                m_quit = true;
+            }
+            m_bs-&gt;recv( 1 );
+          }
+  }
+          else if( m_bs )
+            m_bs-&gt;close();
+        }
+        printf( &quot;ce: %d\n&quot;, ce );
+      }
+
+      f-&gt;dispose( m_bs );
+      delete f;
+      delete m_server;
+      delete j;
+    }
+
+    virtual void onConnect()
+    {
+      printf( &quot;connected!!!\n&quot; );
+
+ f-&gt;requestFT( m_to, m_file, m_size);
+    //  f-&gt;requestFT( m_to, m_file, m_size );
+    }
+
+    virtual void onDisconnect( ConnectionError e )
+    {
+      printf( &quot;ft_send: disconnected: %d\n&quot;, e );
+      if( e == ConnAuthenticationFailed )
+        printf( &quot;auth failed. reason: %d\n&quot;, j-&gt;authError() );
+    }
+
+    virtual bool onTLSConnect( const CertInfo&amp; info )
+    {
+      time_t from( info.date_from );
+      time_t to( info.date_to );
+
+      printf( &quot;status: %d\nissuer: %s\npeer: %s\nprotocol: %s\nmac:
+%s\ncipher: %s\ncompression: %s\n&quot;
+              &quot;from: %s\nto: %s\n&quot;,
+              info.status, info.issuer.c_str(), info.server.c_str(),
+              info.protocol.c_str(), info.mac.c_str(), info.cipher.c_str(),
+              info.compression.c_str(), ctime( &amp;from ), ctime( &amp;to ) );
+      return true;
+    }
+
+    virtual void handleLog( LogLevel level, LogArea area, const
+std::string&amp; message )
+    {
+      printf(&quot;log: level: %d, area: %d, %s\n&quot;, level, area, message.c_str()
+);
+    }
+
+    virtual void handleFTRequest( const JID&amp; from, const JID&amp; /*to*/, const
+std::string&amp; sid,
+                                  const std::string&amp; name, long size, const
+std::string&amp; hash,
+                                  const std::string&amp; date, const
+std::string&amp; mimetype,
+                                  const std::string&amp; desc, int /*stypes*/ )
+    {
+      printf( &quot;received ft request from %s: %s (%ld bytes, sid: %s). hash:
+%s, date: %s, mime-type: %s\n&quot;
+              &quot;desc: %s\n&quot;,
+              from.full().c_str(), name.c_str(), size, sid.c_str(),
+hash.c_str(), date.c_str(),
+              mimetype.c_str(), desc.c_str() );
+      f-&gt;acceptFT( from, sid, SIProfileFT::FTTypeS5B );
+    }
+
+//     virtual void handleFTRequestResult( const JID&amp; /*from*/, const
+std::string&amp; /*sid*/ )
+//     {
+//     }
+
+    virtual void handleFTRequestError( const IQ&amp; /*iq*/, const std::string&amp;
+/*sid*/ )
+    {
+      printf( &quot;ft request error\n&quot; );
+      m_quit = true;
+    }
+
+    virtual void handleFTBytestream( Bytestream* bs )
+    {
+      printf( &quot;received bytestream of type: %s&quot;, bs-&gt;type() ==
+Bytestream::S5B ? &quot;s5b&quot; : &quot;ibb&quot; );
+      m_bs = bs;
+      m_bs-&gt;registerBytestreamDataHandler( this );
+      if( m_bs-&gt;connect() )
+      {
+        if( bs-&gt;type() == Bytestream::S5B )
+          printf( &quot;ok! s5b connected to streamhost\n&quot; );
+        else
+          printf( &quot;ok! ibb sent request to remote entity\n&quot; );
+      }
+    }
+
+    virtual const std::string handleOOBRequestResult( const JID&amp; /*from*/,
+const JID&amp; /*to*/, const std::string&amp; /*sid*/ )
+    {
+      return std::string();
+    };
+
+    virtual void handleBytestreamData( Bytestream* /*bs*/, const
+std::string&amp; data )
+    {
+      printf( &quot;received %d bytes of data:\n%s\n&quot;, data.length(),
+data.c_str() );
+    }
+
+    virtual void handleBytestreamError( Bytestream* /*bs*/, const IQ&amp;
+/*iq*/ )
+    {
+      printf( &quot;bytestream error\n&quot; );
+    }
+
+    virtual void handleBytestreamOpen( Bytestream* /*bs*/ )
+    {
+      printf( &quot;bytestream opened\n&quot; );
+    }
+
+    virtual void handleBytestreamClose( Bytestream* /*bs*/ )
+    {
+      printf( &quot;bytestream closed\n&quot; );
+      m_quit = true;
+    }
+
+  private:
+    Client *j;
+    SIProfileFT* f;
+    Bytestream* m_bs;
+    SOCKS5BytestreamServer* m_server;
+    JID m_to;
+    std::string m_file;
+    bool m_quit;
+    int m_size;
+};
+
+int main( int argc, char** argv )
+{
+ // if( argc == 3 )
+  {
+    JID j( &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">best at 127.0.0.1</A>/Jabber Messenger&quot; );
+    if( j.resource().empty() )
+    {
+      printf( &quot;error: need full jid\n&quot; );
+      return 1;
+    }
+FTTest *r = new FTTest( j, &quot;c:\\read.xml&quot; );
+    r-&gt;start();
+    delete( r );
+  }
+//  else
+  {
+    printf( &quot;error: need jid + file\n&quot; );
+  }
+  return 0;
+}
+
+
+Thanks,
+kalpana
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20141224/f5831b4a/attachment.html">https://www.jabber.org/jdev/attachments/20141224/f5831b4a/attachment.html</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="090051.html">[jdev] File transfer not working using GLOOX
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90050">[ date ]</a>
+              <a href="thread.html#90050">[ thread ]</a>
+              <a href="subject.html#90050">[ subject ]</a>
+              <a href="author.html#90050">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

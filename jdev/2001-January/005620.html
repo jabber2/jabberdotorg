@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [PATCH] rpms for libxode
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20%5BPATCH%5D%20rpms%20for%20libxode&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005619.html">
+   <LINK REL="Next"  HREF="005621.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [PATCH] rpms for libxode</H1>
+    <B>Dennis Bjorklund</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20%5BPATCH%5D%20rpms%20for%20libxode&In-Reply-To="
+       TITLE="[JDEV] [PATCH] rpms for libxode">db at zigo.dhs.org
+       </A><BR>
+    <I>Sun Jan 14 11:30:47 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005619.html">[JDEV] Re: SMS Transport
+</A></li>
+        <LI>Next message: <A HREF="005621.html">[JDEV] membership xml file management by server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5620">[ date ]</a>
+              <a href="thread.html#5620">[ thread ]</a>
+              <a href="subject.html#5620">[ subject ]</a>
+              <a href="author.html#5620">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I've created an spec file so that one easily can create rpm files for
+libxode. Should I send it somewhere for inclusion?
+
+It's a libxode.spec.in file and two small patches to Makefile.am and
+configure.in.
+
+I just subscribed to this list and I don't know how you usually work here.
+But sending patches is usually right everywhere :-)
+
+I've use the spec file to create packages for my redhat 6.2 system. But I
+think they should work for other systems as well.
+
+-- 
+/Dennis
+-------------- next part --------------
+%define prefix /usr
+
+Summary: libxode provides XML, memory, and string helper functions.
+Name: libxode
+Version: @VERSION@
+Release: 1
+Copyright: GPL
+Group: System Environment/Libraries
+Source: <A HREF="http://download.jabber.org/dists/%{version}/libxode-%{version}.tar.gz">http://download.jabber.org/dists/%{version}/libxode-%{version}.tar.gz</A>
+BuildRoot: /var/tmp/libxode-%{PACKAGE_VERSION}-root
+
+%description
+libxode provides a library of XML, memory, and string helper functions.
+Jabber server software uses libxode extensively.
+
+
+%package devel
+Summary: Libraries and include files for the libxode library.
+Group: Development/Libraries
+
+%description devel
+The libxode-devel package includes the static libraries and header files for the
+libxode package.
+
+Install libxode-devel if you want to develop programs which will use libxode.
+
+%changelog
+* Sun Jan 14 2001 Dennis Bj?rklund &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">db at zigo.dhs.org</A>&gt;
+- Created spec file.
+
+%prep
+%setup
+
+%build
+./configure --prefix=%{prefix} --sysconfdir=/etc --enable-static --enable-shared
+make RPM_OPT_FLAGS=&quot;$RPM_OPT_FLAGS&quot;
+
+%install
+rm -rf $RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT%{prefix}
+
+make install DESTDIR=$RPM_BUILD_ROOT
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%post -p /sbin/ldconfig
+
+%postun -p /sbin/ldconfig
+
+%files
+%doc README AUTHORS COPYING ChangeLog NEWS
+%{prefix}/lib/*.so.*
+
+%files devel
+%defattr(-, root, root)
+%{prefix}/bin/libxode-config
+%{prefix}/lib/*.so
+%{prefix}/lib/*.a
+%{prefix}/lib/*.la
+%{prefix}/include/*.h
+-------------- next part --------------
+Index: Makefile.am
+===================================================================
+RCS file: /home/cvs/libxode/Makefile.am,v
+retrieving revision 1.2
+diff -u -w -r1.2 Makefile.am
+--- Makefile.am	2000/04/26 16:50:12	1.2
++++ Makefile.am	2001/01/14 17:29:06
+@@ -1,3 +1,6 @@
+ bin_SCRIPTS = libxode-config
+-EXTRA_DIST = libxode-config.in
++EXTRA_DIST = libxode-config.in libxode.spec.in
+ SUBDIRS = include src
++
++dist-hook: libxode.spec
++	cp libxode.spec $(distdir)
+Index: configure.in
+===================================================================
+RCS file: /home/cvs/libxode/configure.in,v
+retrieving revision 1.20
+diff -u -w -r1.20 configure.in
+--- configure.in	2000/10/30 06:55:15	1.20
++++ configure.in	2001/01/14 17:29:06
+@@ -25,4 +25,5 @@
+ AC_OUTPUT(Makefile \
+     libxode-config \
+ 	src/Makefile \
+-	include/Makefile)
++	include/Makefile \
++	libxode.spec )
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005619.html">[JDEV] Re: SMS Transport
+</A></li>
+	<LI>Next message: <A HREF="005621.html">[JDEV] membership xml file management by server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5620">[ date ]</a>
+              <a href="thread.html#5620">[ thread ]</a>
+              <a href="subject.html#5620">[ subject ]</a>
+              <a href="author.html#5620">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

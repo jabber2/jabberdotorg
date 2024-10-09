@@ -1,0 +1,305 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] msn-t maintainence
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20msn-t%20maintainence&In-Reply-To=%3C20021226102804.GA1398%40nautilus%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="073904.html">
+   <LINK REL="Next"  HREF="073906.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] msn-t maintainence</H1>
+    <B>Andrew Sayers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20msn-t%20maintainence&In-Reply-To=%3C20021226102804.GA1398%40nautilus%3E"
+       TITLE="[JDEV] msn-t maintainence">andrew-list-jabber-jdev at ccl.bham.ac.uk
+       </A><BR>
+    <I>Thu Dec 26 04:28:04 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="073904.html">[JDEV] Using the cygwin jabber 1.4.2 server
+</A></li>
+        <LI>Next message: <A HREF="073906.html">[JDEV] msn-t maintainence
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#73905">[ date ]</a>
+              <a href="thread.html#73905">[ thread ]</a>
+              <a href="subject.html#73905">[ subject ]</a>
+              <a href="author.html#73905">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I'm Andrew Sayers - I've been using Jabber for a year or so, and I'm
+starting to get into Jabber programming - mostly because I need to know
+about the basic technologies behind it (Unicode, XML, network
+programming, etc.) and I need a project to learn on :)
+
+I'm thinking about writing a new msn-t in C.  I've been talking around
+this issue in the jdev conference room for the last few days, and I
+thought it was time to bring this to the list.
+
+I'm not interested in maintaining the old msn-t - I disagree with many
+of its design decisions, a quick look through it suggests that it's
+poorly documented and not that well written (e.g. it doesn't use
+pass-by-reference at all).
+
+As you might have guessed, I'm not that hot on Jabber internals right
+now - I've skip-read the protocol document, and I'm now starting from
+first principles, so I'm up to chapter 3 of the unicode standard :).  I
+need help mostly with two things: where to find libraries etc. and how
+best to design the transport.
+
+After talking with many people in the conference room (especially Paul
+Curtis, who has been very helpful), I've scribbled out a rough plan for
+a new msn-t.  I'd appreciate any comments or ideas - notably, how big a
+fool I am for suggesting this :)
+
+The rough plan is below, but the questions I still don't have answers
+for are:
+
+* How does a transport support invisible Jabber clients?  How
+  does a transport tell that the user is still on-line?  This isn't
+  supported in the current msn-t.
+
+* Is it useful/possible to try and synchronise Jabber filters with MSN
+  allow/block lists, e.g. to conserve bandwidth?
+
+* How should e-mail notification be supported?  Any method would have to
+  be controllable on a per-user basis.  This isn't an MSN-specific
+  problem, so the solution shouldn't be MSN-specific.  Is JEP-0024
+  (pub/sub) a good solution?
+
+Anyway, with all that said, here is the plan:
+
+*** MISCELLANEOUS ***
+
+Most of the protocol (everything except chat) is fairly easy to support.
+The easy things are:
+
+* Profile information is kept synchronised with Jabber personal
+  information.  Any information which can't be handled by MSN is ignored.
+
+* MSN users' information is sent as vCards.
+
+* JEP-0022 (Message Events) is supported - this means, for example, that &quot;user
+  is composing&quot; is supported.
+
+* Presence information:
+
+  MSN status	Jabber Status
+  NLN		Online
+  BSY		dnd
+  PHN		dnd (Message: On the Phone)
+  BRB		away (Message: Be Right Back)
+  IDL		away (Message: due to idleness)
+  AWY		xa
+  LUN		xa (Message: Out to lunch)
+  HDN		offline
+  FLN		offline
+
+* Types of MSN list
+
+  Forward and reverse lists are (obviously) mapped to subscription
+  types.
+
+  Jabber has its own mechanisms for allowing or denying messages from
+  specific users.  MSN's allow/block lists are therefore redundant.
+
+* MSN groups are redundant, so ignored.
+
+* File transfer can be supported, using the normal HTTP PUT/GET method, if
+  enabled in the configuration file.
+
+* Messages to offline users will be stored until the Jabber user logs out, or
+  some time-limit (24 hours?  Can be configured to 0) is reached.  At that
+  point, chat messages will be returned as unsendable, and normal messages will
+  be sent to the users' hotmail account using smtp-t.
+
+*** CHAT ***
+
+Chat between Jabber and MSN is non-trivial, because the two systems have wildly
+different feature-sets.
+
+_Definition of terms_
+
+I'm not sure what the proper terms for these concepts are, but here are the
+terms I'll use in this document:
+
+one-to-one messaging	conversation between exactly two clients
+one-to-many messaging	conversation between more than two clients
+Groupchat (GC)		an implementation of one-to-many messaging used by Jabber.
+MSN Messaging (MSNM)	an implementation of one-to-many messaging used by MSN.
+Chat			an implementation of one-to-one messaging used by Jabber.
+
+Note1: MSN has no specific &quot;one-to-one&quot; messaging implementation -
+it's just a special case of one-to-many chat.
+
+Note2: I'll use Capital Case for &quot;Chat&quot; and Groupchat to show as not to confuse
+it with the lip-flapping activity of the same name.
+
+_Chat modes_
+
+MSNM doesn't have a direct translation into Jabber.  Its feature set is a
+super-set of Chat (e.g. it supports many people), but a sub-set of GC (e.g. it
+does not support room names or subjects).  Therefore any solution that doesn't
+involve change to one or other protocol can only ever be kludgey at best.
+
+Since one-to-many chat is possible in both Jabber and MSN, it seems
+perverse not to allow one-to-many intercommunication, although the
+details of how this work are quite knotty.
+
+Some Jabber users make a strong mental distinction between a
+one-to-one chat and a one-to-many chat*.  Some applications of Jabber are
+inherently one-to-one.  Therefore, some Jabber clients will be happy to chat
+with an MSN client in a one-to-one context, but not in a one-to-many context.
+
+Given the above paragraph, we should layer some kind of one-to-one
+system over MSN messaging.  It should be possible to move from
+one-to-one context into one-to-many context, but it should also be
+possible to end a session rather than move into one-to-many context.
+We will see later that many technical problems arise when moving from
+a one-to-one context into a one-to-many context.
+
+_Implementation_
+
+Four chat methods are described.  If it is supported, the client can use
+JEP-0020 to choose which is used.  Otherwise, the transport uses its best
+guess.  Discussion below assumes that the client does not support JEP-0020.
+
+Also assumed is that a client will always keep the id tag intact for a
+message.  If a message is sent with no id tag, it is transmitted to the
+receiver in the first available MSNM session which has no other users in (or a
+new session if none exists).
+
+1) Modified Chat &lt;-&gt; MSN
+
+  This method is not currently a part of the Jabber protocol.  It is a
+  specially modified version of Chat to match MSNM's feature set.  As explained
+  above, it is necessary to create a new Chat method in order to perfectly
+  support MSN &lt;-&gt; Jabber interaction.
+
+  People who feel that breaking Jabber to fix MSN is a bad idea should feel
+  free to ignore this method :)
+
+  In addition to normal use of the &lt;message/&gt; tag, conforming clients must:
+  
+  a) treat any message with the same id as being part of a single conversation,
+     no matter who the sender is.
+  b) Provide a facility to invite MSN users only (i.e. for a transport
+     msn.server, only users @msn.server may be invited)
+
+2) Groupchat &lt;-&gt; MSN
+
+  This method is similar to the Groupchat hack used at the moment.  It is used
+  if the server has configured a groupchat.msn.server.
+  Obviously, the client must accept invitations for GC to be used.
+
+  A session is massaged so that Jabber users see a GC and MSN users see an MSNM
+  session.  The chat will in fact be a normal MSNM session managed on MSN's
+  switchboard server.  No GC server will be used.
+
+3) Pretend Groupchat &lt;-&gt; MSN
+
+  This method is used when three or more people are in an MSNM session if there
+  is no groupchat.msn.server available.  This solution is very ugly, but I
+  believe it's the least bad solution to the problem.
+
+  The transport simulates a Groupchat with normal &lt;message/&gt;s.  The transport
+  simulates a Groupchat by sending messages like &quot;[MSN_user1] blah blah blah&quot;
+  and &quot;* MSN_user2 has joined&quot;.  Invitations are handled by sending a message
+  &quot;/invite <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at hotmail.com</A>&quot;
+
+  This is better than opening several Chat sessions because (in a session with
+  many people) the number of windows created by a client can become
+  unmanageable.
+
+4) Chat &lt;-&gt; MSN
+
+  This method is used when conversing with exactly one other person.  If
+  Groupchat is available, this method is used until an invitation is accepted
+  (if the invitation isn't accepted, this is used until a third user joins).
+  This method is similar to the default behaviour of the current msn-t.
+
+  MSNMs are massaged into a session of normal &lt;message/&gt;s so long as only two
+  people are in the MSNM.  When a third person joins the MSNM session, a GC
+  invitation is sent if possible, otherwise a Pretend GC session is started.
+ 
+  If GC is possible, two actions are taken:
+  
+  * Further messages are queued until it is clear whether the user will be
+    upgrading to a GC.
+  * A software version request is sent.
+
+  If the client accepts the invitation, the Chat is upgraded to a Groupchat,
+  and queued messages are sent to that Groupchat.
+
+  If the client continues sending messages after the software version reply is
+  received, it is assumed that they have declined the invitation.  In this
+  case, queued messages from the initial sender are sent in the current
+  session, and messages from other participants will trigger the creation of a
+  new Chat session.
+
+_Events_
+
+The three significant events that can happen are:
+
+A - User connects to MSN transport
+
+The transport sets a preferred communication method.  If available, this is
+(2).  Otherwise, (4) is used.  The transport also stores whether the client
+supports method (1) (by default, no)
+
+The transport uses JEP-0020 to request a preferred communication method, and
+whether (1) is supported.  The client may respond at any time.
+
+B - Client is invited to an MSNM.
+
+The transport hands the invitation over to the communication method, which acts as explained above.
+
+C - Client begins an MSNM.
+
+If the client sends a normal &lt;message&gt;, the session is handed to (1) (if
+possible) or (4) (otherwise).  If the client sends a Groupchat, the session is
+handed to (2).
+
+* I am not such a person, but I consider it a valid point-of-view.
+  Essentially, a one-to-one chat is a private forum, whereas a
+  one-to-many chat is a public forum.  Just as you wouldn't want to be
+  thrust into a public place without being asked, you wouldn't want to
+  be thrust into a public forum without being asked.
+
+
+	- Andrew
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 362 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20021226/16002e3e/attachment-0002.pgp">https://www.jabber.org/jdev/attachments/20021226/16002e3e/attachment-0002.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="073904.html">[JDEV] Using the cygwin jabber 1.4.2 server
+</A></li>
+	<LI>Next message: <A HREF="073906.html">[JDEV] msn-t maintainence
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#73905">[ date ]</a>
+              <a href="thread.html#73905">[ thread ]</a>
+              <a href="subject.html#73905">[ subject ]</a>
+              <a href="author.html#73905">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

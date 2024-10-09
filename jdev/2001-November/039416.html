@@ -1,0 +1,350 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] juddi, a JUD component using Jabber::Connection
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20juddi%2C%20a%20JUD%20component%20using%20Jabber%3A%3AConnection&In-Reply-To=%3C20011109162929.C32578%40server.pizzahut.com.ph%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039430.html">
+   <LINK REL="Next"  HREF="039436.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] juddi, a JUD component using Jabber::Connection</H1>
+    <B>Migs Paraz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20juddi%2C%20a%20JUD%20component%20using%20Jabber%3A%3AConnection&In-Reply-To=%3C20011109162929.C32578%40server.pizzahut.com.ph%3E"
+       TITLE="[JDEV] juddi, a JUD component using Jabber::Connection">map at internet.org.ph
+       </A><BR>
+    <I>Fri Nov  9 02:29:29 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039430.html">[JDEV] Jabber help required.
+</A></li>
+        <LI>Next message: <A HREF="039436.html">[JDEV] juddi, a JUD component using Jabber::Connection
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39416">[ date ]</a>
+              <a href="thread.html#39416">[ thread ]</a>
+              <a href="subject.html#39416">[ subject ]</a>
+              <a href="author.html#39416">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks to DJ Adams, I have a component that can store (but not yet retrieve)
+JUD info from a MySQL database... I intend this to be a teaching example
+(for myself as well, since I'm learning), so I hope you enjoy!
+
+
+-------------- next part --------------
+#!/usr/bin/perl
+# juddi.pl, a JUD component that uses Database Independent libraries
+#
+#
+# Migs Paraz &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">map at internet.org.ph</A>&gt; November 9, 2001
+# Initial release - only &quot;Register&quot; works, written for MySQL 
+# License: GNU GPL, as this is a teaching example.
+#
+# TODO:
+# Search function
+# External config file.  XML?
+# Make it easy to change database backends.
+# How to implement searches that take long without blocking other clients?
+#
+# Current table:
+# create table juddi (jid varchar(32) not null primary key,
+#                     first varchar(32), last varchar(32),
+#                     nick varchar(32), email varchar(64))
+#
+
+use Jabber::Connection;
+use Jabber::NodeFactory;
+use Jabber::NS qw(:all);
+
+use DBI;
+use DBD::mysql;
+
+use strict;
+
+
+#### Configuration section ####
+
+our $config_jabber_server   = &quot;localhost:1234&quot;;
+our $config_jabber_password = &quot;test&quot;;
+our $config_localname       = &quot;jud.localhost&quot;;
+our $config_log             =  1;
+
+# Database 
+our $config_db_database = &quot;jabber&quot;;
+our $config_db_username = &quot;jabber&quot;;
+our $config_db_password = &quot;imjabber&quot;;
+our $config_db_table    = &quot;juddi&quot;;
+
+# Fields for display and for database.
+our %config_db_fields = (&quot;first&quot; =&gt; &quot;first&quot;,
+	 		 &quot;last&quot;  =&gt; &quot;last&quot;,
+			 &quot;nick&quot;  =&gt; &quot;nick&quot;,
+			 &quot;email&quot; =&gt; &quot;email&quot;);
+
+# This is an ordered list since it will come out in the dialog box.
+our @config_jud_list = (&quot;first&quot;, &quot;last&quot;, &quot;nick&quot;, &quot;email&quot;);
+
+# Text
+our $config_text_search   = &quot;juddi search&quot;;
+our $config_text_register = &quot;juddi register&quot;;
+
+###############################
+
+
+
+# Keep state in between connections
+our %state;
+
+our $c = new Jabber::Connection(
+  ns =&gt; &quot;jabber:component:accept&quot;,
+  server =&gt; $config_jabber_server,
+  localname =&gt; $config_localname,
+  log    =&gt; $config_log,
+);
+
+
+$c-&gt;connect or die &quot;oops: &quot;.$c-&gt;lastError;
+$c-&gt;register_handler('message', \&amp;message);
+$c-&gt;register_handler('iq', \&amp;iq);
+
+$c-&gt;auth($config_jabber_password);
+
+# Connect to the database.  We will autocommit.
+# TODO allow change of db
+my $cn = &quot;dbi:mysql:&quot; . $config_db_database;
+
+our $dbh = DBI-&gt;connect($cn, $config_db_username,
+			$config_db_password, { AutoCommit =&gt; 1 });
+
+if (!defined ($dbh)) {
+    # TODO: There should be a nicer reporting method.
+    die ($dbh-&gt;errstr);
+}
+
+# We only have one constant select, which is for the register method.
+# This will come out like:
+# INSERT INTO juddi (jid, first, last, nick, email) VALUES (?, ?, ?, ?, ?)
+# jid will always be present.
+
+# This ugly loop, because Perl can't duplicate lists.
+my @q;
+for (my $i = 0; $i &lt; $#config_jud_list + 2; $i++) {
+    push (@q, &quot;?&quot;);
+}
+
+my $statement  = &quot;INSERT INTO &quot; . $config_db_table . &quot; (jid, &quot; .
+    join (&quot;,&quot;, map {$config_db_fields{$_}} @config_jud_list) .
+    &quot;) VALUES (&quot; .
+    join (&quot;,&quot;, @q) .
+    &quot;)&quot;;
+
+our $sth_register = $dbh-&gt;prepare($statement);
+
+
+
+#### Main Loop ####
+
+$c-&gt;start();
+
+# This never gets called since the entire loop is in the start() call.
+$c-&gt;disconnect();
+
+
+sub message {
+  my $node = shift;
+  print &quot;Message --&gt; &quot;, $node-&gt;toStr, &quot;\n&quot;;
+}
+
+sub iq {
+  my $node = shift;
+
+  # Different kinds of XML content
+
+  # Get list for register or search.
+  # Pretend we're not yet registered.
+  # (Make a database for that!)
+  if ($node-&gt;attr(&quot;type&quot;) eq IQ_GET) {
+
+      my $id = $node-&gt;attr(&quot;id&quot;);
+
+      # Create a new node for the reply.
+      my $nf = new Jabber::NodeFactory;
+      my $tag = $nf-&gt;newNode(&quot;iq&quot;);
+      $tag-&gt;attr(&quot;type&quot;, IQ_RESULT);
+      $tag-&gt;attr(&quot;from&quot;, &quot;jud.localhost&quot;);
+      $tag-&gt;attr(&quot;id&quot;, $id);
+
+      # Set &quot;to&quot; to original &quot;from&quot;
+      $tag-&gt;attr(&quot;to&quot;, $node-&gt;attr(&quot;from&quot;));
+      
+      my $tag2 = $tag-&gt;insertTag(&quot;query&quot;, NS_SEARCH);
+
+      foreach my $k (@config_jud_list) {
+	  $tag2-&gt;insertTag($k);
+      }
+
+      # Key is needed to keep state between searches.
+
+      my $key = time();
+      $tag2-&gt;insertTag(&quot;key&quot;)-&gt;data($key);
+
+      # Store the from and id so we can reply later
+      $state{&quot;from&quot;}{$key} = $node-&gt;attr(&quot;from&quot;);
+
+      my $data;
+      if ($node-&gt;getTag(&quot;query&quot;, NS_SEARCH)) {
+	  $data = $config_text_search;
+      }
+      elsif ($node-&gt;getTag(&quot;query&quot;, NS_REGISTER)) {
+	  $data = $config_text_register;
+      }
+
+      $tag2-&gt;insertTag(&quot;instructions&quot;)-&gt;data($data);
+
+      # Send back to client
+      $c-&gt;send($tag);
+  }
+  elsif (($node-&gt;attr(&quot;type&quot;) eq IQ_SET) &amp;&amp;
+      (my $tag = $node-&gt;getTag(&quot;query&quot;, NS_SEARCH))) {
+
+      my $id = $node-&gt;attr(&quot;id&quot;);
+
+      # Construct a bogus result.
+
+      # Grab parameters and store in a hash.
+      my %param;
+
+      foreach my $k (@config_jud_list) {
+	  my $tag2 = $tag-&gt;getTag($k);
+	  if (defined ($tag2)) {
+	      $param{$k} = $tag2-&gt;data();
+	  }
+      }
+
+      my $nf = new Jabber::NodeFactory;
+
+      my $tag = $nf-&gt;newNode(&quot;iq&quot;);
+      $tag-&gt;attr(&quot;type&quot;, IQ_RESULT);
+      $tag-&gt;attr(&quot;from&quot;, &quot;jud.localhost&quot;);
+      $tag-&gt;attr(&quot;id&quot;, $id);
+
+      # It's a reply.
+      $tag-&gt;attr(&quot;to&quot;, $node-&gt;attr(&quot;from&quot;));
+
+      my $tag3 = $tag-&gt;insertTag(&quot;query&quot;, NS_SEARCH);
+      my $tag4 = $tag3-&gt;insertTag(&quot;item&quot;);
+
+      # <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">result at localhost</A> is the dummy answer
+      $tag4-&gt;attr(&quot;jid&quot;, &quot;result\@localhost&quot;);
+
+      foreach my $k (@config_jud_list) {
+	  if ($param{$k}) {
+	      $tag4-&gt;insertTag($k)-&gt;data(&quot;Result &quot; . $param{$k});
+	  }
+      }
+
+      # Send back to client
+      $c-&gt;send($tag);
+  }
+  elsif (($node-&gt;attr(&quot;type&quot;) eq IQ_SET) &amp;&amp;
+      ($tag = $node-&gt;getTag(&quot;query&quot;, NS_REGISTER))) {
+
+      my (%param, @jud_param);
+
+      # Get parameters from the XML, substituting blanks if there are no tags.
+      foreach my $k (@config_jud_list) {
+	  my $tag2 = $tag-&gt;getTag($k);
+	  if ($tag2) {
+	      $param{$k} = $tag2-&gt;data();
+	      push (@jud_param, $param{$k});
+	  }
+	  else {
+	      push (@jud_param, &quot;&quot;);
+	  }
+      }
+
+      # Fetch the requstor (&quot;from&quot;) from state
+      my $key = $tag-&gt;getTag(&quot;key&quot;)-&gt;data();
+
+      # Start building the response.
+      my $nf = new Jabber::NodeFactory;
+      my ($tag3, $success);
+
+      $tag3 = $nf-&gt;newNode(&quot;iq&quot;);
+
+
+      # At this point, @jud_param has the ordered list of parameters to set.
+      # jid is in front, and does not include the resource.
+      # (this is more elegant as a regexp but I'm not familiar with optional
+      #  matches)
+      my $jid = $state{&quot;from&quot;}{$key};
+      $jid =~ s!/.*$!!;
+		   
+      
+      if (($success = $sth_register-&gt;execute($jid, @jud_param))) {
+	  # Success
+	  $tag3-&gt;attr(&quot;type&quot;, IQ_RESULT);
+      }
+      else {
+	  # TODO Make this registration error friendlier.
+	  $tag3-&gt;attr(&quot;type&quot;, IQ_ERROR);
+
+	  my $tag4 = $tag3-&gt;insertTag(&quot;error&quot;);
+	  $tag4-&gt;attr(&quot;code&quot;, 406);
+	  $tag4-&gt;data(&quot;Database error: &quot; . $dbh-&gt;errstr());
+      }
+
+      # Continue composing the reply.
+      $tag3-&gt;attr(&quot;from&quot;, $config_localname);
+      $tag3-&gt;attr(&quot;id&quot;, $node-&gt;attr(&quot;id&quot;));
+	  
+      $tag3-&gt;attr(&quot;to&quot;, $state{&quot;from&quot;}{$key});
+
+      # Repeat the query.
+      my $tag4 = $tag3-&gt;insertTag(&quot;query&quot;, NS_REGISTER);
+
+      if ($success) {
+	  $tag4-&gt;insertTag(&quot;registered&quot;);
+      }
+	  
+      foreach my $k (@config_jud_list) {
+	  if ($param{$k}) {
+	      $tag4-&gt;insertTag($k)-&gt;data($param{$k});
+	  }
+      }
+
+      # Copy the key value.
+      $tag4-&gt;insertTag(&quot;key&quot;)-&gt;data($key);
+      
+      # Send
+      $c-&gt;send($tag3);
+
+  }
+}
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039430.html">[JDEV] Jabber help required.
+</A></li>
+	<LI>Next message: <A HREF="039436.html">[JDEV] juddi, a JUD component using Jabber::Connection
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39416">[ date ]</a>
+              <a href="thread.html#39416">[ thread ]</a>
+              <a href="subject.html#39416">[ subject ]</a>
+              <a href="author.html#39416">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

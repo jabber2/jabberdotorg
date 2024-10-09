@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Modification to running jabberd on Mac OS X
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Modification%20to%20running%20jabberd%20on%20Mac%20OS%20X&In-Reply-To=59A55540-4E76-11D6-91AF-00039366CDF0%40ucla.edu">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="012141.html">
+   <LINK REL="Next"  HREF="012177.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Modification to running jabberd on Mac OS X</H1>
+    <B>Max Horn</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Modification%20to%20running%20jabberd%20on%20Mac%20OS%20X&In-Reply-To=59A55540-4E76-11D6-91AF-00039366CDF0%40ucla.edu"
+       TITLE="[JDEV] Modification to running jabberd on Mac OS X">max at quendi.de
+       </A><BR>
+    <I>Sat Apr 13 06:48:34 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="012141.html">[JDEV] Modification to running jabberd on Mac OS X
+</A></li>
+        <LI>Next message: <A HREF="012177.html">[JDEV] Modification to running jabberd on Mac OS X
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12147">[ date ]</a>
+              <a href="thread.html#12147">[ thread ]</a>
+              <a href="subject.html#12147">[ subject ]</a>
+              <a href="author.html#12147">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>At 17:35 Uhr -0700 12.04.2002, Sean Voisen wrote:
+&gt;<i>After quite a bit of pain, I successfully got jabberd 1.4.2 running 
+</I>&gt;<i>on Mac OS X.  I was having problems with the dlcompat library 
+</I>&gt;<i>packaged with fink.
+</I>
+Note that the olde ones were also packaged with Fink at some point, 
+and all the dlcompats versions you see out there are probably based 
+on us :-)
+
+
+&gt;<i>For some reason the older dlcompat version 20020120 works, while the 
+</I>&gt;<i>newer 20020322 does not.  I'm not sure why - but if anyone is able 
+</I>&gt;<i>to succeed with the newer version, I'd like to know.
+</I>&gt;<i>
+</I>&gt;<i>Just thought any Mac developers might find this useful.
+</I>
+Most interesting. We (or rather Jorge and Peter) have rewritten 
+dlcompat from scratch in the newer releases, adding some features.
+
+But I can reproduce your problem over here when trying to run jabberd 
+with the new dlcompat:
+
+&gt;<i>Loading ./jsm/jsm.so failed: 'dlcompat: unable to find symbol &quot;__init&quot;'
+</I>
+
+What happens is this: jabberd tries to dlopen jsm.so in 
+jabberd/load.c, function load_loader(). Now our dlopen method works 
+fine, but in the end, it tries to run an &quot;_init&quot; method, if existing, 
+from the module. This function is not there, so  _init() is not 
+called - fine. Only that we use dlsym to retrieve the symbol, which, 
+upon failing, sets the error string used by dlerror. Not good, since 
+now we indicate an error occured! A clear bug, I think
+
+OTOH, this is also a bug in Jabberd, since it relies on dlerror to 
+detect an error - but it should rather check the return value of 
+dlopen, and only if that is NULL, should it call dlerror()!
+
+
+Thanks Sean, we'll look into it, and if Peter agrees, will release a 
+fixed version ASAP. I hope jabberd will also be fixed soon, too :-)
+
+
+Max
+-- 
+-----------------------------------------------
+Max Horn
+Software Developer
+
+email: &lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">max at quendi.de</A>&gt;
+phone: (+49) 6151-494890
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="012141.html">[JDEV] Modification to running jabberd on Mac OS X
+</A></li>
+	<LI>Next message: <A HREF="012177.html">[JDEV] Modification to running jabberd on Mac OS X
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12147">[ date ]</a>
+              <a href="thread.html#12147">[ thread ]</a>
+              <a href="subject.html#12147">[ subject ]</a>
+              <a href="author.html#12147">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

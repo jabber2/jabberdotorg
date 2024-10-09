@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Conference component is silent
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Conference%20component%20is%20silent&In-Reply-To=%3C200207102113.RAA12460%40boo-mda02.boo.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042720.html">
+   <LINK REL="Next"  HREF="042666.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Conference component is silent</H1>
+    <B>sarkar at boo.net</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Conference%20component%20is%20silent&In-Reply-To=%3C200207102113.RAA12460%40boo-mda02.boo.net%3E"
+       TITLE="[JDEV] Conference component is silent">sarkar at boo.net
+       </A><BR>
+    <I>Wed Jul 10 15:13:31 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042720.html">[JDEV] Per SSL 2.0, SSL 3.0, TLS 1.0, PCT 1.0.
+</A></li>
+        <LI>Next message: <A HREF="042666.html">[JDEV] infection[sorry]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42668">[ date ]</a>
+              <a href="thread.html#42668">[ thread ]</a>
+              <a href="subject.html#42668">[ subject ]</a>
+              <a href="author.html#42668">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The service for conferencing is there all right. During startup, the debug 
+output has the following line
+
+&lt;&lt;  Tue Jul  9 17:16:46 2002  deliver.c:288 Registering conference.localhost 
+with instance conference.localhost  &gt;&gt;
+
+I noticed this in the main entry function of conference.so library. There is a 
+debug output statement
+
+&lt;&lt;   log_debug(ZONE,&quot;conference loading&quot;);  &gt;&gt;
+
+in the beginning of  'conference(instance i, xmlnode x)' method but it never 
+gets called.
+
+I have verified that the library  gets loaded as the following lines indicate
+
+&lt;&lt; Wed Jul 10 08:22:43 2002  load.c:214 dynamic loader processing    
+configuration  
+     &lt;load&gt;
+        &lt;conference&gt;./conference-0.4/conference.so&lt;/conference&gt;
+     &lt;/load&gt;    &gt;&gt;
+
+Checked the code and it seems that the library is loaded and a pointer to the 
+main entry function is stored
+but not called at this point. The entry function is called later when the 
+conference instance is created and
+registered. I entered the following two debug output lines just before and 
+after the main entry function is executed(Load.c)
+
+&lt;&lt;      
+        log_debug(ZONE,&quot;Calling main function  %s\n&quot;,xmlnode2str(x));
+        ((load_init)f)(id, x); /* fire up the main function for this extension 
+*/
+	log_debug(ZONE,&quot;After Calling main function  %s\n&quot;,xmlnode2str(x));
+&gt;&gt;<i>
+</I>
+It seems that for other modules such as jsm.dll,dnsrv.dll, there are plenty of 
+debug outputs between the
+before-after calls, but there are none for the conference component. It seems  
+that the library is correctly loaded and the pointer to the main entry 
+functions is correctly stored but for 
+some reason the function is not getting executed.
+
+I have created the conference component using exactly the same makefile 
+settings as for the other components.
+
+Thanks,
+
+S. Sarkar
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+Thomas Muldowney
+Sent: Tuesday, July 09, 2002 11:40 AM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: RE: [JDEV] Conference component is silent
+
+
+Are you sure the service is not commented out?  Watch the debug log
+during startup to see if the conference is loaded correctly.
+
+--temas
+
+
+On Mon, 2002-07-08 at 20:45, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sarkar at boo.net</A> wrote:
+&gt;<i> The debug output just after a user has connected to the conference:
+</I>&gt;<i> 
+</I>&gt;<i> ------------------------------------------------------------------------------
+</I>-
+&gt;<i> Mon Jul  8 22:34:34 2002  mio.c:620 mio while loop, working
+</I>&gt;<i> Mon Jul  8 22:34:34 2002  mio.c:760 MIO read from socket 15:
+</I>&gt;<i> Mon Jul  8 22:34:34 2002  mio.c:607 mio while loop top
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  mio.c:620 mio while loop, working
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  mio.c:760 MIO read from socket 15: &lt;presence 
+</I>to=&quot;ChatR
+&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">oom at conference.localhost</A>/MyNickName&quot;/&gt;
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  c2s [client.c:277] pthsock_client_read called with: 
+</I>m:
+&gt;<i> A05B170 flag:3 arg:A05B270
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  deliver.c:474 DELIVER 4:localhost &lt;route 
+</I>to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ssarkar at l</A>
+&gt;<i> ocalhost/A16CCE0' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">15 at c2s</A>/A05B170'&gt;&lt;presence 
+</I>to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ChatRoom at conference.localh</A>
+&gt;<i> ost/MyNickName'/&gt;&lt;/route&gt;
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  deliver.c:678 delivering to instance 'sessions'
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  deliver.c:94 (A01CBC0)incoming packet &lt;route 
+</I>to='ssark
+&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ar at localhost</A>/A16CCE0' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">15 at c2s</A>/A05B170'&gt;&lt;presence 
+</I>to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ChatRoom at conference.lo</A>
+&gt;<i> calhost/MyNickName'/&gt;&lt;/route&gt;
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  users.c:143 js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ssarkar at localhost</A>,A0B9F80)
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  mtq A0CB938 entering from pth
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  mtq A0CB938 queue call A0B8C78
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  sessions.c:246 THREAD:SESSION:FROM received a 
+</I>packet!
+&gt;<i> Mon Jul  8 22:35:10 2002  modules.c:135 mapi_call 1
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  modules.c:158 MAPI A16CFA8
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  modules.c:158 MAPI A16CFF0
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  mod_presence.c:337 track presence sent to jids
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  modules.c:158 MAPI A16D000
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  modules.c:175 mapi_call returning unhandled
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  deliver.c:257 deliver(to
+</I>[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ChatRoom at conference.localhost</A>
+&gt;<i> /MyNickName],from[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ssarkar at localhost</A>/Exodus],type[2],packet[&lt;presence 
+</I>to='ChatRoo
+&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">m at conference.localhost</A>/MyNickName' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ssarkar at localhost</A>/Exodus'/&gt;])
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  deliver.c:474 DELIVER 1:conference.localhost 
+</I>&lt;presence
+&gt;<i>  to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ChatRoom at conference.localhost</A>/MyNickName' 
+</I>from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ssarkar at localhost</A>/Exodus'/&gt;
+&gt;<i> 
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  deliver.c:678 delivering to 
+</I>instance 'conference.local
+&gt;<i> host'
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  mtq A0CB938 leaving to pth
+</I>&gt;<i> Mon Jul  8 22:35:10 2002  mio.c:607 mio while loop top
+</I>&gt;<i> Mon Jul  8 22:35:17 2002  jabberd.c:255 main load check of 1.00 with 14 total 
+</I>th
+&gt;<i> reads
+</I>&gt;<i> Mon Jul  8 22:35:20 2002  users.c:88 checking users for host localhost
+</I>&gt;<i> Mon Jul  8 22:35:20 2002  usercount 1   total users
+</I>&gt;<i> ------------------------------------------------------------------------------
+</I>--
+&gt;<i> ----
+</I>&gt;<i> S. Sarkar
+</I>&gt;<i> 
+</I>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+</I>&gt;<i> Thomas Muldowney
+</I>&gt;<i> Sent: Friday, July 05, 2002 11:44 AM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] Conference component is silent
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Do you have any debug output from the jabberd when a user tries to
+</I>&gt;<i> connect to the conference?
+</I>&gt;<i> 
+</I>&gt;<i> --temas
+</I>
+
+---------------------------------------------
+This message was sent using Endymion MailMan.
+<A HREF="http://www.endymion.com/products/mailman/">http://www.endymion.com/products/mailman/</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042720.html">[JDEV] Per SSL 2.0, SSL 3.0, TLS 1.0, PCT 1.0.
+</A></li>
+	<LI>Next message: <A HREF="042666.html">[JDEV] infection[sorry]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42668">[ date ]</a>
+              <a href="thread.html#42668">[ thread ]</a>
+              <a href="subject.html#42668">[ subject ]</a>
+              <a href="author.html#42668">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

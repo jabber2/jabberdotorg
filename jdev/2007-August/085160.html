@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] SOAP over XMPP, does my server need anything special?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SOAP%20over%20XMPP%2C%20does%20my%20server%20need%20anything%20special%3F&In-Reply-To=%3C46CC6BE6.2050605%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085159.html">
+   <LINK REL="Next"  HREF="085161.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] SOAP over XMPP, does my server need anything special?</H1>
+    <B>Jonathan Dickinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SOAP%20over%20XMPP%2C%20does%20my%20server%20need%20anything%20special%3F&In-Reply-To=%3C46CC6BE6.2050605%40gmail.com%3E"
+       TITLE="[jdev] SOAP over XMPP, does my server need anything special?">chayce.za at gmail.com
+       </A><BR>
+    <I>Wed Aug 22 12:01:26 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085159.html">[jdev] SOAP over XMPP, does my server need anything special?
+</A></li>
+        <LI>Next message: <A HREF="085161.html">[jdev] SOAP over XMPP, does my server need anything special?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85160">[ date ]</a>
+              <a href="thread.html#85160">[ thread ]</a>
+              <a href="subject.html#85160">[ subject ]</a>
+              <a href="author.html#85160">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Wow! That's awesome! I just want to re-iterate that XMPP is stateful, I 
+would really like to be able to write code like this against a server:
+
+ImageServer.LoadImage(&quot;somebackground.png&quot;);
+ImageServer.OverlayImage(&quot;someavatar.png&quot;, 100, 100);
+ImageServer.GetImage();
+
+That's just a demonstration, but I am sure you can see that it has far 
+better qualities than SOAP over HTTP, in which you would probably have 
+to write the following:
+
+int token = ImageServer.LoadImage(&quot;somebackground.png&quot;);
+ImageServer.OverlayImage(token, &quot;someavatar.png&quot;, 100, 100);
+ImageServer.GetImage(token);
+
+I really, really, really, just want to point out that you should adapt 
+the framework (Axis2 in your case) to cater for stateful SOAP calls. If 
+you use the host JID for hosting the SOAP methods you could even use 
+SASL to handle authentication instead of ugly Login() methods. (WildFire 
+meets Axis, what fun!). I am a C# programmer, but I can think of many 
+ways in which it will be simple to implement (associating a class with 
+the SOAP methods with each client connection).
+
+You really need to sit down and think about how you can streamline SOAP 
+as a whole using XMPP. You definitely have me thinking!
+
+Good Luck! Java is definitely the way to go when you want to get ideas 
+out there.
+
+Jonathan
+
+sumedha rubasinghe wrote:
+&gt;<i> Hi,
+</I>&gt;<i> I have written a XMPP transport for Axis2/Java [1]. I am planning to submit
+</I>&gt;<i> a patch soon.
+</I>&gt;<i> Right now I do not have the full spec complacency. But you can call Axis2
+</I>&gt;<i> web service from a  Axis2 client using  XMPP as the transport &amp; get the
+</I>&gt;<i> response using the same.
+</I>&gt;<i> 
+</I>&gt;<i> /sumedha
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> [1] <A HREF="http://ws.apache.org/axis2/">http://ws.apache.org/axis2/</A>
+</I>&gt;<i> 
+</I>&gt;<i> On 8/22/07, Jonathan Dickinson &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chayce.za at gmail.com</A>&gt; wrote:
+</I>&gt;&gt;<i> If you want your server to expose a SOAP endpoint you will need a
+</I>&gt;&gt;<i> plugin, otherwise you could always have a custom Jabber client and have
+</I>&gt;&gt;<i> JIDs like <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creditcards at bank.com</A> and <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">accounts at bank.com.</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> It makes more sense to make the server JID (e.g. bank.com) the SOAP
+</I>&gt;&gt;<i> endpoint, but that isn't always possible: as it seems to be in your case.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Furthermore, I would recommend you alter your SOAP framework somehow,
+</I>&gt;&gt;<i> because SOAP is stateless where XMPP is stateful, you can leverage this
+</I>&gt;&gt;<i> to your advantage (in my honest opinion, XMPP is better suited to Remote
+</I>&gt;&gt;<i> API than HTTP). E.g. most SOAP endpoints require a login of some form,
+</I>&gt;&gt;<i> you can have the user log in once using a Login method instead of
+</I>&gt;&gt;<i> sending credentials/tokens each time another method is called.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Good luck!
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Devraj Mukherjee wrote:
+</I>&gt;&gt;&gt;<i> Hi everyone,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I am a new to Jabber development, and am trying to carry SOAP messages
+</I>&gt;&gt;&gt;<i> over XMPP. I noticed the SOAP extension to XMPP on the XMPP web site.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> My questions is do Jabber servers require additional
+</I>&gt;&gt;&gt;<i> plugins/implementations to carry SOAP messages across or can any
+</I>&gt;&gt;&gt;<i> standard Jabber server be able to carry the message?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Thanks.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085159.html">[jdev] SOAP over XMPP, does my server need anything special?
+</A></li>
+	<LI>Next message: <A HREF="085161.html">[jdev] SOAP over XMPP, does my server need anything special?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85160">[ date ]</a>
+              <a href="thread.html#85160">[ thread ]</a>
+              <a href="subject.html#85160">[ subject ]</a>
+              <a href="author.html#85160">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

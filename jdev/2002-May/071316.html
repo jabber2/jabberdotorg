@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Non-blocking connect in mio.c
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Non-blocking%20connect%20in%20mio.c&In-Reply-To=%3C1021508157.2834.37.camel%40catonella.squalor.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="071315.html">
+   <LINK REL="Next"  HREF="071317.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Non-blocking connect in mio.c</H1>
+    <B>Michael Ngarimu</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Non-blocking%20connect%20in%20mio.c&In-Reply-To=%3C1021508157.2834.37.camel%40catonella.squalor.org%3E"
+       TITLE="[JDEV] Non-blocking connect in mio.c">jabber at squalor.org
+       </A><BR>
+    <I>Wed May 15 19:15:56 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="071315.html">[JDEV] news about JEPs
+</A></li>
+        <LI>Next message: <A HREF="071317.html">[JDEV] Non-blocking connect in mio.c
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71316">[ date ]</a>
+              <a href="thread.html#71316">[ thread ]</a>
+              <a href="subject.html#71316">[ subject ]</a>
+              <a href="author.html#71316">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+I'm trying to actually build (from source) and run jabberd 1.4.2. I seem
+to have a problem with s2s comms so I jumped into the source and strace.
+
+strace shows an attempt at a non-blocking connect....(see below)
+
+fcntl64(14, F_GETFL)                    = 0x802 (flags
+O_RDWR|O_NONBLOCK)
+connect(14, {sin_family=AF_INET, sin_port=htons(5269),
+sin_addr=inet_addr(&quot;208.245.212.108&quot;)}}, 16) = -1 EINPROGRESS (Operation
+now in progress)
+fcntl64(14, F_GETFL)                    = 0x802 (flags
+O_RDWR|O_NONBLOCK)
+
+Unfortunately, mio.c (_mio_connect) doesn't seem to allow for
+non-blocking connects!
+
+see mio.c(approx line 528)
+
+    if((*cd-&gt;cf)(new, (struct sockaddr*)&amp;sa, sizeof sa) &lt; 0)
+    {
+        if(cd-&gt;cb != NULL)
+            (*(mio_std_cb)cd-&gt;cb)(new, MIO_CLOSED, cd-&gt;cb_arg);
+        cd-&gt;connected = -1;
+
+        if(new-&gt;fd &gt; 0)
+            close(new-&gt;fd);
+        mio_handlers_free(new-&gt;mh);
+        pool_free(p);
+        return;
+    }
+
+
+It calls connect (a few lines above an fcntl is done with flags |=
+O_NONBLOCK) and then checks for return -1, but within the if block
+doesn't checking for EINPROGRESS anywhere but instead just cleans up the
+socket.
+
+Surely, this must be an issue for people other than just me?
+
+&quot;Help me Obi-Wan-Kenobi, you're my only hope!&quot;
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="071315.html">[JDEV] news about JEPs
+</A></li>
+	<LI>Next message: <A HREF="071317.html">[JDEV] Non-blocking connect in mio.c
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71316">[ date ]</a>
+              <a href="thread.html#71316">[ thread ]</a>
+              <a href="subject.html#71316">[ subject ]</a>
+              <a href="author.html#71316">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] What to do with Invalid XML Characters
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20What%20to%20do%20with%20Invalid%20XML%20Characters&In-Reply-To=%3C46BF05A7.7000802%40tthias.eu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085128.html">
+   <LINK REL="Next"  HREF="085131.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] What to do with Invalid XML Characters</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20What%20to%20do%20with%20Invalid%20XML%20Characters&In-Reply-To=%3C46BF05A7.7000802%40tthias.eu%3E"
+       TITLE="[jdev] What to do with Invalid XML Characters">m at tthias.eu
+       </A><BR>
+    <I>Sun Aug 12 08:05:43 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085128.html">[jdev]  What to do with Invalid XML Characters
+</A></li>
+        <LI>Next message: <A HREF="085131.html">[jdev] What to do with Invalid XML Characters
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85130">[ date ]</a>
+              <a href="thread.html#85130">[ thread ]</a>
+              <a href="subject.html#85130">[ subject ]</a>
+              <a href="author.html#85130">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Norman Rasmussen schrieb:
+&gt;<i> XML defines the list of valid characters to be:
+</I>&gt;<i>    #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+</I>&gt;<i> 
+</I>&gt;<i> Which of the following should an IM application perform if the user
+</I>&gt;<i> (attempts to) enter characters outside of this range?
+</I>
+What might the user enter outside this range? I guess that the user is 
+not able to accidently enter characters outside this range.
+
+&gt;<i> 1) Reject the entry at the UI level - have to check both keypresses,
+</I>&gt;<i> and clipboard paste
+</I>&gt;<i> 2) UI should filter invalid chars before sending data to xmpp object layer
+</I>
+I'd check for invalid characters when converting data from the UI to the 
+Application-Backend in methods of the backend. But I would not filter, 
+but reject function/method containing invalid characters.
+
+This allows you to reuse the checking if your UI changes but keep the 
+backend which most likely will represent the data in an XML-DOM like 
+manner in a state where only characters that are allowed by XML are present.
+
+&gt;<i> 3) xmpp object layer should filter/reject data
+</I>&gt;<i> 4) xmpp stream layer should filter/reject xmpp object
+</I>
+An alternate possibility to handle the characters from #x0 - #x1F 
+(excluding #x9, #xA and #xD) is to substitude them with the characters 
+from #x2400 - #x241F.
+
+... or you could use XML1.1 where the set of allowed characters is less 
+restrictive: Char	   ::=   	[#x1-#xD7FF] | [#xE000-#xFFFD] | 
+[#x10000-#x10FFFF]	/* any Unicode character, excluding the surrogate 
+blocks, FFFE, and FFFF. */
+
+But I am not sure if XMPP allowes usage of XML 1.1. I could not find 
+anything on that at my first look at RFC3920 / RFC3920bis. It seems to 
+be undefined.
+
+
+Matthias
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085128.html">[jdev]  What to do with Invalid XML Characters
+</A></li>
+	<LI>Next message: <A HREF="085131.html">[jdev] What to do with Invalid XML Characters
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85130">[ date ]</a>
+              <a href="thread.html#85130">[ thread ]</a>
+              <a href="subject.html#85130">[ subject ]</a>
+              <a href="author.html#85130">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

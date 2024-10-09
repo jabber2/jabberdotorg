@@ -1,0 +1,331 @@
+// AddEntry.cpp : Defines the entry point for the console application.
+//
+
+
+
+/***************************************************************************
+                          main.c  -  description
+                             -------------------
+    begin                : Thu Apr  4 13:07:00 IST 2002
+    copyright            : (C) 2002 by shriram a pore
+    email                : callshri@vxindia.veritas.com
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+
+#include "stdafx.h"
+
+#include <stdlib.h>
+#include <string.h>
+//nclude <time.h>
+
+#ifdef WIN32
+#include <Winldap.h> /*Needs  wldap32.dll*/
+
+#else
+// i.e on linux    Needs libLdap.so file
+#include <ldap.h>
+typedef char * PCHAR;
+typedef unsigned long ULONG;
+#define LDAPModA LDAPMod 
+#endif
+
+char host[]= "solutionshri.vxindia.veritas.com";
+//"vmwaresrv.vxindia.veritas.com";
+//"10.212.86.171";
+
+#define PORT 389
+char DN[] = "CN=Administrator, CN=users, DC=intranet";
+ 
+char PassWd[] = "os2";
+
+#define NEW_DN "CN=newuser1, CN=users, DC=intranet"
+
+
+
+
+int main(int argc, char *argv[])
+{
+	LDAP			*objLdap = NULL;
+	// to change 
+	LDAPModA 		*mods[10];
+	LDAPModA		attr0,attr1,attr2,attr3,attr4,attr5,attr6,attr7,attr8;
+	//
+	PCHAR			sn_values[] = {(PCHAR)"sn_newuser",(PCHAR)NULL};
+	PCHAR			objectClass_Values[] = {"top","person","organizationalPerson",
+											"user",NULL};
+	PCHAR			cn_values[] = {"newuser1",NULL};
+	PCHAR			gn_values[] = {"newuser1",NULL};
+	PCHAR			mail_values[] = {"newuser1@veritas.com",NULL};
+	PCHAR			objectcategory_value[] = {"CN=Person,CN=Schema,CN=Configuration,DC=intranet",NULL};
+	PCHAR			uid_values[] = {"newuser1",NULL};
+	PCHAR			UserPrincipalName_value[] = {"newuser1@intranet",NULL};
+	PCHAR			ou_values[] = {"ou=VSIL, ou=new",NULL};
+	PCHAR			passwd_value[] = {"newpwd",NULL};
+
+	int				ret=0,parse_rc=0,cnt =0,noOfEntry = 0 ;
+	
+	
+
+#ifdef WIN32
+    l_timeval t;
+    t.tv_sec = 30;
+    t.tv_usec = 30;
+#endif
+
+	printf("Hello, world!\n");
+
+
+    /*Making initialization include connecting the server */
+	objLdap = ldap_init((PCHAR)host,PORT);
+
+
+	//ldapConnection->ld_lberoptions = 0; 
+    //ret = ldap_set_option( ldapConnection, LDAP_OPT_VERSION, &version ); 
+
+#ifdef WIN32
+	//ret = ldap_connect(objLdap,&t);
+#endif
+
+	if(ret != LDAP_SUCCESS)
+	{		
+		printf("Connection failed %s\n" ,ldap_err2string(ret));		
+		ldap_unbind(objLdap);
+		exit(1);
+	}
+
+	printf("Connection successful\n");
+
+
+	ret = ldap_bind_s(objLdap,DN,PassWd,LDAP_AUTH_SIMPLE);
+	if(ret != LDAP_SUCCESS)
+  	{
+		printf("Bind failed %s\n" ,ldap_err2string(ret));		
+		ldap_unbind(objLdap);
+		exit(1);
+	}
+
+	printf("Bind successful\n");
+		
+			
+	// create an entry
+
+	attr0.mod_op = LDAP_MOD_ADD;
+	attr0.mod_type = "sAMAccountName";
+	attr0.mod_vals.modv_strvals  = cn_values;
+
+	attr1.mod_op = LDAP_MOD_ADD;
+	attr1.mod_type = "objectClass";
+	attr1.mod_vals.modv_strvals  = objectClass_Values;
+
+	
+	attr2.mod_op = LDAP_MOD_ADD;
+	attr2.mod_type = "sn";
+	attr2.mod_vals.modv_strvals  = sn_values;
+
+	attr3.mod_op = LDAP_MOD_ADD;
+	attr3.mod_type = "cn";
+	attr3.mod_vals.modv_strvals  = cn_values;
+
+	attr4.mod_op = LDAP_MOD_ADD;
+	attr4.mod_type = "givenname";
+	attr4.mod_vals.modv_strvals  = gn_values;
+
+	attr5.mod_op = LDAP_MOD_ADD;
+	attr5.mod_type = "userPrincipalName";
+	attr5.mod_vals.modv_strvals  = UserPrincipalName_value;
+
+	attr6.mod_op = LDAP_MOD_ADD;
+	attr6.mod_type = "mail";
+	attr6.mod_vals.modv_strvals  = mail_values;
+
+	attr7.mod_op = LDAP_MOD_ADD;
+	attr7.mod_type = "userPassword";
+	attr7.mod_vals.modv_strvals  = passwd_value;
+	 
+	//attr6.mod_type = "uid";
+	//attr6.mod_vals.modv_strvals  = uid_values;
+
+	
+	
+	attr8.mod_op = LDAP_MOD_ADD;
+	attr8.mod_type = "ou";
+	attr8.mod_vals.modv_strvals  = ou_values;
+
+	
+	mods[0] = &attr0;
+	mods[1] = &attr1;	
+	mods[2] = &attr2;
+	mods[3] = &attr3;
+	mods[4] = &attr4;
+	mods[5] = &attr5;
+	mods[6] = &attr6;
+	mods[7] = &attr7;
+	mods[8] = &attr8;
+	mods[9] = NULL;
+	
+
+	ret = ldap_add_ext_s(objLdap,NEW_DN,mods,NULL,NULL);
+	//ret = ldap_add_s(objLdap,NEW_DN,mods);
+	if(ret != LDAP_SUCCESS)
+	{
+		printf("unable to add entry %x %s \n",ret,ldap_err2string(ret));
+		ldap_unbind(objLdap);
+		exit(1);
+	}
+
+
+  printf("operation successfull\n");
+  ldap_unbind(objLdap);
+  return EXIT_SUCCESS;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+#include <stdlib.h>
+#include <Winldap.h>
+
+
+//NEEDPROTOS,WINSOCK
+
+
+char host[]="vmwaresrv.vxindia.veritas.com";
+//"10.212.86.171"
+ULONG port = 389;
+
+//ldap (*procadd)(char*, int);
+int main(int argc, char* argv[])
+{
+	printf("Hello World!\n");
+
+	l_timeval t;
+		 t.tv_sec = 30;
+		 t.tv_usec = 30;
+	ldap *objLdap;
+	objLdap = ldap_init((PCHAR)host,389);
+	//objLdap->ld_host = (char*)calloc( strlen(host)+1, sizeof(char) );
+	//strcpy( objLdap->ld_host, host);
+	ULONG ret= 0;
+	ULONG retval =0;
+	__try {
+
+	  ret = ldap_connect(objLdap,&t);
+
+					
+	  if ( LDAP_SUCCESS == ret )
+					// Connect successful.
+	  {
+		  printf("Connect return success\n");
+
+			 retval = ldap_bind(
+				objLdap, //LDAP* ld,
+				"CN=Mahesh S. Joshi, CN=users, DC=techpune",
+				//"CN=root, DC=solutionshri, DC=vxindia, DC=veritas, DC=com", // dn
+				"maheshj", // cred.
+				LDAP_AUTH_SIMPLE//ULONG method 
+				);
+
+		printf("Bind returned %d:\n", LdapGetLastError());
+
+		LDAPMessage *entry 
+		//= (LDAPMessage*) calloc(1, sizeof( LDAPMessage));
+		retval = ldap_search_s(
+		  objLdap,//LDAP* ld,
+		  "CN=Mahesh S. Joshi, CN=users, DC=techpune",
+		  //"CN=root,DC=solutionshri, DC=vxindia, DC=veritas, DC=com",
+		  LDAP_SCOPE_SUBTREE, //ULONG scope,
+		  "objectClass=*",
+		  NULL,
+		  0,		  //ULONG attrsonly
+		  &entry
+		);
+
+
+		if ( LDAP_SUCCESS == retval)
+		{
+			printf("no of entries searched : %d\n", ldap_count_entries(objLdap,entry)); 
+			char*** test = (char***) calloc(1, sizeof(char**));
+			while ( ! entry->lm_eom) 
+			{				*test = ldap_get_values(objLdap, entry, "name");
+				printf("Get Value returned : %s\n", **test);
+				printf("value is : %d\n", LdapGetLastError());
+				entry = entry->lm_next;
+			}
+		}
+
+//		entry->lm_msgid = retval;
+  
+
+	 
+
+
+		ret = ldap_unbind(objLdap);
+		printf("Unbind return %d\n",ret);
+
+	  }
+	  else
+	  {
+			printf("Connect return fail %d\n",ret);
+			
+	  }
+
+		
+	}
+	__except(1)
+	{
+		
+		printf("\nerror is %d %d %s",ret ,LdapGetLastError(),ldap_err2string(LdapGetLastError()));
+		exit(0);
+	}
+		
+
+//	ldap_connect();    
+//	ldap_connect(&objLdap,&objLdap.ld_timelimit);
+    if ( NULL == objLdap ) 
+	{
+		printf("ObjLdap is null.\n");
+	}
+	else 
+	{
+		printf("ObjLdap is not null.\n");
+	}
+
+      
+
+
+
+
+
+	return 0;
+}
+
+*/

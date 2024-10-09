@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Net::Jabber - XDB-&gt;GetData() returns undef?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Net%3A%3AJabber%20-%20XDB-%3EGetData%28%29%20returns%20undef%3F&In-Reply-To=%3C87n0eo43ya.fsf%40alice.lan%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="075841.html">
+   <LINK REL="Next"  HREF="075843.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Net::Jabber - XDB-&gt;GetData() returns undef?</H1>
+    <B>Chris Searle</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Net%3A%3AJabber%20-%20XDB-%3EGetData%28%29%20returns%20undef%3F&In-Reply-To=%3C87n0eo43ya.fsf%40alice.lan%3E"
+       TITLE="[JDEV] Net::Jabber - XDB-&gt;GetData() returns undef?">jdev at chrissearle.org
+       </A><BR>
+    <I>Tue Aug  5 08:41:17 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="075841.html">[JDEV] [ANNOUNCE] Loudmouth 0.13
+</A></li>
+        <LI>Next message: <A HREF="075843.html">[JDEV] Net::Jabber - XDB-&gt;GetData() returns undef?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75842">[ date ]</a>
+              <a href="thread.html#75842">[ thread ]</a>
+              <a href="subject.html#75842">[ subject ]</a>
+              <a href="author.html#75842">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Net::Jabber 1.0024 on debian stable.
+
+Just starting in on XDB.
+
+OK - I have jabberd sending jabber:iq:auth through to my perl
+script. If I dump the incoming xdb object thus (the rest of the script
+is cribbed almost directly from component_accept.pl):
+
+sub xdbCB {
+  my $sid = shift;
+  my $xdb = shift;
+
+  print Dumper($xdb);
+}
+
+I get:
+
+$VAR1 = bless( {
+                 'CHILDREN' =&gt; {},
+                 'TAG' =&gt; 'xdb',
+                 'DATA' =&gt; {
+                             'id' =&gt; '62',
+                             'type' =&gt; 'get',
+                             'to' =&gt; bless( {
+                                              'RESOURCE' =&gt; '',
+                                              'JID' =&gt; '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chris at jabber.longship.org</A>',
+                                              'USERID' =&gt; 'chris',
+                                              'VERSION' =&gt; '1.0024',
+                                              'SERVER' =&gt; 'jabber.longship.org'
+                                            }, 'Net::Jabber::JID' ),
+                             'from' =&gt; bless( {
+                                                'RESOURCE' =&gt; '',
+                                                'JID' =&gt; 'sessions',
+                                                'USERID' =&gt; '',
+                                                'VERSION' =&gt; '1.0024',
+                                                'SERVER' =&gt; 'sessions'
+                                              }, 'Net::Jabber::JID' ),
+                             'ns' =&gt; 'jabber:iq:auth'
+                           },
+                 'DEBUGHEADER' =&gt; 'XDB',
+                 'VERSION' =&gt; '1.0024'
+               }, 'Net::Jabber::XDB' );
+
+
+So - it looks like data is there.
+
+But - add the line:
+  my $reply = $xdb-&gt;Reply(type=&gt;&quot;result&quot;);
+
+and you get:
+
+Can't call method &quot;GetXMLNS&quot; on an undefined value at /usr/share/perl5/Net/Jabber/XDB.pm line 392.
+
+(the same happens if you call -&gt;Reply() also).
+
+line 392 is trying to call:
+
+$reply-&gt;NewData($selfData-&gt;GetXMLNS());
+
+where $selfData is the return from $self-&gt;GetData();
+
+I also get undef if I try to access $xdb-&gt;GetData().
+
+What have I missed? 
+
+Thanks in advance
+
+-- 
+Chris Searle
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="075841.html">[JDEV] [ANNOUNCE] Loudmouth 0.13
+</A></li>
+	<LI>Next message: <A HREF="075843.html">[JDEV] Net::Jabber - XDB-&gt;GetData() returns undef?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75842">[ date ]</a>
+              <a href="thread.html#75842">[ thread ]</a>
+              <a href="subject.html#75842">[ subject ]</a>
+              <a href="author.html#75842">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Gateway connection denied
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Gateway%20connection%20denied&In-Reply-To=%3C7887F4D2-DC5A-48FD-89F6-588B192500AF%40free.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="083094.html">
+   <LINK REL="Next"  HREF="083097.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Gateway connection denied</H1>
+    <B>Cedric Hyppolite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Gateway%20connection%20denied&In-Reply-To=%3C7887F4D2-DC5A-48FD-89F6-588B192500AF%40free.fr%3E"
+       TITLE="[jdev] Gateway connection denied">cedric.hyppolite at free.fr
+       </A><BR>
+    <I>Wed Apr 26 16:25:58 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="083094.html">[jdev] Jabber for intranet
+</A></li>
+        <LI>Next message: <A HREF="083097.html">Stream feature negotiation ordering. Was: Re: [jdev] S2S questions	-	from attribute and version support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83095">[ date ]</a>
+              <a href="thread.html#83095">[ thread ]</a>
+              <a href="subject.html#83095">[ subject ]</a>
+              <a href="author.html#83095">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I am trying to connect a gateway using code copied from this testcase:
+
+<A HREF="http://www.jivesoftware.org/fisheye/viewrep/~raw,r=2739/svn-org/">http://www.jivesoftware.org/fisheye/viewrep/~raw,r=2739/svn-org/</A> 
+transports/trunk/test/org/jivesoftware/messenger/gateway/test/ 
+JEP_100.java
+
+I am connected to im.apinc.org and tried using aim and msn gateways.  
+The login/pass for both are working fine using PSI client.
+
+But I get an error at the last line of the following code so I guess  
+that the registration is failing. Am I doing things in the wrong  
+order or is it a server problem ?
+
+Thanks,
+Cedric HYPPOLITE
+
+
+
+... DiscoverInfo info set after service discovery  ...
+
+if (! info.containsFeature(&quot;jabber:iq:register&quot;)) {
+			throw new Exception(&quot;Gateway does not support registering&quot;);
+		}
+		
+		PacketCollector collector = conn.createPacketCollector(new  
+PacketFilter() {
+			public boolean accept(Packet arg0) {
+				return arg0 instanceof Registration;
+			}});
+		
+		// 4.1.1.3 Jabber User sends IQ get qualified by the In-Band  
+Registration
+		Registration conv1 = new Registration();
+		conv1.setType(IQ.Type.GET);
+		conv1.setTo(gatewayName);
+		conn.sendPacket(conv1);
+		
+		// 4.1.1.4 Gateway returns IQ result to Jabber User, specifying  
+information that
+		//  is required in order to register
+		Registration response = (Registration)collector.nextResult();
+		
+		// 4.1.1.5 Jabber User sends IQ set qualified by the  
+'jabber:iq:register' namespace
+		//  to Gateway
+		Registration regRegister = new Registration();
+		regRegister.setType(IQ.Type.SET);
+		regRegister.setTo(response.getFrom());
+
+		DataForm df = new DataForm(&quot;submit&quot;);
+		FormField pwdField = new FormField(&quot;password&quot;);
+		pwdField.addValue(password);
+		FormField usrField = new FormField(&quot;username&quot;);
+		usrField.addValue(username);
+		
+		df.addField(pwdField);
+		df.addField(usrField);
+		regRegister.addExtension(df);
+		
+		PacketCollector subscription = conn.createPacketCollector(new  
+PacketTypeFilter(Presence.class));
+		
+		conn.sendPacket(regRegister);
+		
+		// 4.1.1.6 Gateway verifies that registration information provided  
+by Jabber User is valid
+		response = (Registration) collector.nextResult();
+		XMPPError error = response.getError();
+-----&gt;&gt;&gt;	if(error != null) { /// Here an error is found
+			throw new Exception(&quot;Cannot register to the gateway : &quot; +  
+error.toString() + &quot; user '&quot; + username + &quot;' password '&quot; + password +  
+&quot;'&quot;);
+		}
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="083094.html">[jdev] Jabber for intranet
+</A></li>
+	<LI>Next message: <A HREF="083097.html">Stream feature negotiation ordering. Was: Re: [jdev] S2S questions	-	from attribute and version support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83095">[ date ]</a>
+              <a href="thread.html#83095">[ thread ]</a>
+              <a href="subject.html#83095">[ subject ]</a>
+              <a href="author.html#83095">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

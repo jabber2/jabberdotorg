@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Extending Jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Extending%20Jabber&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000123.html">
+   <LINK REL="Next"  HREF="000130.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Extending Jabber</H1>
+    <B>Jeremie Miller</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Extending%20Jabber&In-Reply-To="
+       TITLE="[JDEV] Extending Jabber">jeremie at netins.net
+       </A><BR>
+    <I>Thu Jan 14 02:42:31 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000123.html">[JDEV] mac client/C xml parsing
+</A></li>
+        <LI>Next message: <A HREF="000130.html">[JDEV] Client nicks
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#129">[ date ]</a>
+              <a href="thread.html#129">[ thread ]</a>
+              <a href="subject.html#129">[ subject ]</a>
+              <a href="author.html#129">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I think this is going to be a confusing thing, even I get confused by it
+at times... There are quite a few different ways to extend Jabber, each
+with their own purpose/speciality, but many times the functionality
+desired by the extender/developer can be achieved more than one way(which
+is good, but confusing).
+
+I think this has already been the source of some difficulties for a few.  
+IF I get a chance I'll try to write up an official guide and post it on
+the site somewhere, but for now I'll give it my go in ASCII-land:
+
+Ways of extending Jabber:
+
+	Servers
+	Transports
+	Modules
+	Clients
+
+Servers: You can write an entire server that will live on a port on some
+IP somewhere on the net, and if it speaks Jabber, then all other Jabber
+servers will talk to it no prob.
+
+Transports: A layer just under the server, so that you can write an app to
+just &quot;translate&quot; between incoming Jabber data and some other system, and
+send replies.
+
+Modules: This lives specifically underneath the &quot;Jabber&quot; transport, it
+handles the details of users, authentication, roster list management,
+offline messages, logging, etc... Apache style.
+
+Clients: I think the name says it all... just a piece of running software
+that represents a channel to the user (channel being the screen in most
+cases).
+
+
+There should be very few reasons you'd want to extend by just writing a
+new server, but it's not all that hard so I'm sure it will happen.
+Actually, in the cases where there will always only be one transport
+behind a server, it might be good to just roll the two together... as
+mentioned, a special purpose &quot;ISP&quot; server that only provides the basics
+for Jabber clients might be one way of extending at the &quot;Server&quot; level.
+
+Transports.  This is the way to go whenever you want to build a two way
+channel between different systems or userbases... ICQ, AIM, IRC, etc...
+Another way of putting it: whenever you need your own addressable space
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">userid at server</A> where you have many difrerent &quot;userid&quot;, you need a
+transport.  I would try to avoid using Transports for any other purpose
+than to build a TWO WAY system between real-live users, or anything that
+would be uniquely identified as a single user/individual on a roster.  It
+probably is overkill to use it for simpler purposes, but the reasons
+exist, but it should be a last resort :)
+
+Importantly, modules exist.  Not much focus has happened here yet and
+there is still plenty of work that needs to be done here.  A Module is
+probably the *best* way to provide more functionality or special
+functionality for users.  Modules usually make the final decision about
+many things on the server, yet they are quite easy to write and maintain.
+The API is still in flux and mostly needs to grow as more development
+effort happens in this area.  Adding functionality for users should happen
+from withing a module... nuff said :)
+
+And finally, the last yet commonly forgotten way of extending the &quot;Jabber
+platform&quot; is by building software-only clients :)  Yes, that's right...
+just software that logs into the Jabber server and pretends it's a client.
+These work out very nicely since Jabber allows multiple simultaneous
+logins for every user and this &quot;software agent&quot; can lower it's priority so
+that it can't recieve messages unless they are specifically addressed to
+it.  A good example might be for pagers... Say there is a &quot;pager server&quot;
+that is always running and accepts input via various means and can send
+pages to a set of pre-determined users.  It could also log into the Jabber
+server for each user and set it's nickname to &quot;Pager&quot;.  Then, that users
+friends/co-workers could just click on that users &quot;Pager&quot; session and send
+them a page.  Of course security would be in place on the &quot;pager server&quot;
+to only accept pages from certian users/friends.
+
+
+ALSO, to note, there are OTHER ways of extending the platform but from a
+different point of view... every status packet and message packet contain
+an &lt;ext&gt;&lt;/ext&gt; tag that can contain anything the client so desires, and is
+always just passed on untouched by the server(s).  It could be used in
+combination between special clients, or between special servers,
+transports, or even between a special module and a client.  I'm sure these
+will be fairly popular and I encourage their use.
+
+Of course, because of the way XML works, the Jabber protocol could be
+significantly built upon and extra tags and attributes added throughout,
+and as long as the &quot;extended&quot; client was talking to an &quot;extended&quot; server,
+all would be happy.
+
+
+Anyway, these are just some things to keep in mind since there are so many
+ways of extending Jabber *grin*... actually, is there anything that isn't
+extendable about Jabber? :)  
+
+&lt;action&gt;raising hands above the crowd&lt;/action&gt;
+&lt;say voice=&quot;booming&quot;&gt;you may now return to your &lt;divine&gt;terminals&lt;/divine&gt;
+and resume coding&lt;/say&gt;
+
+And all was good,
+
+Jer
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000123.html">[JDEV] mac client/C xml parsing
+</A></li>
+	<LI>Next message: <A HREF="000130.html">[JDEV] Client nicks
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#129">[ date ]</a>
+              <a href="thread.html#129">[ thread ]</a>
+              <a href="subject.html#129">[ subject ]</a>
+              <a href="author.html#129">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

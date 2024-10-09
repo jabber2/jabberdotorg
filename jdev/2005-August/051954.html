@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Auto-configured external gateways
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Auto-configured%20external%20gateways&In-Reply-To=%3C5b698f5a05082813292f8e5e2b%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="051915.html">
+   <LINK REL="Next"  HREF="051887.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Auto-configured external gateways</H1>
+    <B>Norman Rasmussen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Auto-configured%20external%20gateways&In-Reply-To=%3C5b698f5a05082813292f8e5e2b%40mail.gmail.com%3E"
+       TITLE="[jdev] Re: Auto-configured external gateways">normanr at gmail.com
+       </A><BR>
+    <I>Sun Aug 28 15:29:04 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="051915.html">R: R: [jdev] about spim techniques
+</A></li>
+        <LI>Next message: <A HREF="051887.html">[jdev] Re: Auto-configured external gateways
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51954">[ date ]</a>
+              <a href="thread.html#51954">[ thread ]</a>
+              <a href="subject.html#51954">[ subject ]</a>
+              <a href="author.html#51954">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>[crosspost from xmpp.py list]
+
+I have put together a first pass patch [1] at getting xmpp.py to speak
+the jabberd 2.0 Component Protocol [2].
+
+I do not like the way I have hooked the dispatch event. I'm less
+horrified, by how I've mangled the send event.  That being said, the
+patch *does* work (proven on my server with the yahoo transport).  I
+would probably end up doing dispatch a similar way to send, and just
+move all the current dispatch code into a new method, which is called
+from the old one.  My issues with this are speed (It's bad enough I
+had to mangle the send event this way).
+
+I guess in reality the dispatcher needs to be unplugged, and a new one
+needs to be inserted in the middle that handels the wrapping and
+unwrapping of packets to the router.  All-in-all I think the jabberd2
+protocol should be changed so you don't need route stanzas. (all the
+other commands should become standard iq, and presence stanzas)
+
+I'm open to comments, and suggestions, so please let me know.
+
+[1] <A HREF="http://www.darkskies.za.net/~norman/jabber/xmpp-jabberd2-component.patch">http://www.darkskies.za.net/~norman/jabber/xmpp-jabberd2-component.patch</A>
+[2] <A HREF="http://jabberd.jabberstudio.org/dev/docs/component.shtml">http://jabberd.jabberstudio.org/dev/docs/component.shtml</A>
+
+-- 
+- Norman Rasmussen
+ - Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>
+ - Home page: <A HREF="http://norman.rasmussen.co.za/">http://norman.rasmussen.co.za/</A>
+
+On 26/08/05, Norman Rasmussen &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">normanr at gmail.com</A>&gt; wrote:
+&gt;<i> ahh, yes, i did debug this, and now i come and read email....
+</I>&gt;<i> 
+</I>&gt;<i> I've managed to get it to take the binding *yay*, it was a matter of
+</I>&gt;<i> sticking the namespace in right :-)  also I found I have to use sasl,
+</I>&gt;<i> and I can't use the old 'handshake' method to connect, does this sound
+</I>&gt;<i> right?
+</I>&gt;<i> 
+</I>&gt;<i> also moving from handshake to component, meant that I had to supply a
+</I>&gt;<i> username, which I nailed down too.
+</I>&gt;<i> 
+</I>&gt;<i> On 26/08/05, Stephen Marquard &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">scm at marquard.net</A>&gt; wrote:
+</I>&gt;<i> &gt; Norman Rasmussen wrote:
+</I>&gt;<i> &gt; &gt; I've been having at trying to get the yahoo-transport from the xmpp.py
+</I>&gt;<i> &gt; &gt; project to work with this JEP....., here's my problem
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Is &lt;bind&gt; in the root namespace?
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; for most componenents the default namespace is set to
+</I>&gt;<i> &gt; &gt; jabber:component:accept, so this makes any bind calls occur in the
+</I>&gt;<i> &gt; &gt; jabber:component:accept namespace too.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The JEP says:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The namespace URI for elements in this protocol is
+</I>&gt;<i> &gt; '<A HREF="http://jabberd.jabberstudio.org/ns/component/1.0'.">http://jabberd.jabberstudio.org/ns/component/1.0'.</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; and from a j2 debug log (sm binding to router):
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &lt;bind xmlns='<A HREF="http://jabberd.jabberstudio.org/ns/component/1.0'">http://jabberd.jabberstudio.org/ns/component/1.0'</A> name='some.fqdn'/&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; I'm trying to send (after the handshake, but before the disco results):
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; &lt;bind from=&quot;transport.domain&quot; name=&quot;transport.domain&quot; id=&quot;1&quot; /&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; You don't need from and id.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Regards
+</I>&gt;<i> &gt; Stephen
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> --
+</I>&gt;<i> - Norman Rasmussen
+</I>&gt;<i>  - Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>
+</I>&gt;<i>  - Home page: <A HREF="http://norman.rasmussen.co.za/">http://norman.rasmussen.co.za/</A>
+</I>&gt;<i> 
+</I>
+
+-- 
+- Norman Rasmussen
+ - Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>
+ - Home page: <A HREF="http://norman.rasmussen.co.za/">http://norman.rasmussen.co.za/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="051915.html">R: R: [jdev] about spim techniques
+</A></li>
+	<LI>Next message: <A HREF="051887.html">[jdev] Re: Auto-configured external gateways
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51954">[ date ]</a>
+              <a href="thread.html#51954">[ thread ]</a>
+              <a href="subject.html#51954">[ subject ]</a>
+              <a href="author.html#51954">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

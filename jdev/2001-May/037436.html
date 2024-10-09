@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Packets not sent from server
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Packets%20not%20sent%20from%20server&In-Reply-To=%3C20010529105212.A1415%40jabber.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="037428.html">
+   <LINK REL="Next"  HREF="037458.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Packets not sent from server</H1>
+    <B>Schuyler Heath</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Packets%20not%20sent%20from%20server&In-Reply-To=%3C20010529105212.A1415%40jabber.org%3E"
+       TITLE="[JDEV] Packets not sent from server">sheath at jabber.org
+       </A><BR>
+    <I>Tue May 29 11:52:12 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="037428.html">[JDEV] Packets not sent from server
+</A></li>
+        <LI>Next message: <A HREF="037458.html">[JDEV] Packets not sent from server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37436">[ date ]</a>
+              <a href="thread.html#37436">[ thread ]</a>
+              <a href="subject.html#37436">[ subject ]</a>
+              <a href="author.html#37436">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+Yes, your analysis is correct.  The xdb_get() blocks the thread
+which the packet was delivered from, in this case the main MIO
+thread used by pthsock.  Since base_accept also uses MIO, the packet
+delivered to it is never written until the request expires and the
+thread is unblocked.  I'll get a fix into CVS in a few hours.
+
+Because auth is done by another component, JSM never &quot;learns&quot; anything
+about the user prior to the session start after auth.  It doesn't even
+know the user name actually exists.
+
+The jabber:iq:auth xdb_get() is done to make sure the user exists, since
+all valid users should have jabber:iq:auth set.  JSM doesn't actually check the
+result, just that there was indeed data returned.  It will do this xdb_get()
+when ever it receives a packet to a user without a session or a previously
+cached result(before storing offline messages, for example).
+
+When auth is handled by JSM, it still does the jabber:iq:auth request, just in another
+thread.  The result is cached, so the xdb_get() which is blocking MIO when the session
+starts is rarely called.
+
+Schuyler
+
+On Tue, May 29, 2001 at 04:43:36PM +0200, Gerard BUNEL wrote:
+&gt;<i> After a few analyze of what happens:
+</I>&gt;<i> 
+</I>&gt;<i> It seems that the thread handling the XDB requests is locked, as it can be seen in the logs, there are 3 attempts to deliver to
+</I>&gt;<i> the instance, and so 3calls to mio_write. But this calls are not followed by the _mio_write_dump
+</I>&gt;<i> These one occurs after a probable timeout.
+</I>&gt;<i> 
+</I>&gt;<i> Does anyone ever encountered this problem ?
+</I>&gt;<i> Is there a solution ?
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Mon May 28 15:54:16 2001  deliver.c:649 delivering to instance
+</I>&gt;<i> 'xdb_test'
+</I>&gt;<i> Mon May 28 15:54:16 2001  mio.c:908 mio_write called on x: 8377CD0
+</I>&gt;<i> buffer: (null)
+</I>&gt;<i> Mon May 28 15:54:16 2001  xdb.c:201 xdb_get() waiting for
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gbunel at cezon.ago.fr</A> jabber:iq:auth
+</I>&gt;<i> Mon May 28 15:54:27 2001  deliver.c:460 DELIVER 2:cezon.ago.fr &lt;xdb
+</I>&gt;<i> type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gbunel at cezon.ago.fr</A>' from='sessions' ns='jabber:iq:auth'
+</I>&gt;<i> id='1'/&gt;
+</I>&gt;<i> Mon May 28 15:54:27 2001  deliver.c:649 delivering to instance
+</I>&gt;<i> 'xdb_test'
+</I>&gt;<i> Mon May 28 15:54:27 2001  mio.c:908 mio_write called on x: 83731F0
+</I>&gt;<i> buffer: (null)
+</I>&gt;<i> Mon May 28 15:54:38 2001  deliver.c:460 DELIVER 2:cezon.ago.fr &lt;xdb
+</I>&gt;<i> type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gbunel at cezon.ago.fr</A>' from='sessions' ns='jabber:iq:auth'
+</I>&gt;<i> id='1'/&gt;
+</I>&gt;<i> Mon May 28 15:54:38 2001  deliver.c:649 delivering to instance
+</I>&gt;<i> 'xdb_test'
+</I>&gt;<i> Mon May 28 15:54:38 2001  mio.c:908 mio_write called on x: 8373A48
+</I>&gt;<i> buffer: (null)
+</I>&gt;<i> Mon May 28 15:54:49 2001  xdb.c:206 xdb_get() done waiting for
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gbunel at cezon.ago.fr</A> jabber:iq:auth
+</I>&gt;<i> 
+</I>&gt;<i> --
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gerard.bunel at ago.fr</A> - Atlantide - <A HREF="http://www.ago.fr/atlantide/">http://www.ago.fr/atlantide/</A>
+</I>&gt;<i> Technopole Brest Iroise BP 80802 - Site du Vernis - 29608 Brest cedex - France
+</I>&gt;<i> Tel. : +33 2 98 05 43 21 - Fax. : +33 2 98 05 20 34
+</I>&gt;<i> e-mail: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">atlantide-brest at ago.fr</A>
+</I>&gt;<i> Centre Affaires Oberthur - 74D, rue de Paris -  35700 Rennes - France
+</I>&gt;<i> Tel. : +33 2 99 84 15 84 - Fax : +33 2 99 84 15 85
+</I>&gt;<i> e-mail: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">atlantide-rennes at ago.fr</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010529/29b13c0d/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20010529/29b13c0d/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="037428.html">[JDEV] Packets not sent from server
+</A></li>
+	<LI>Next message: <A HREF="037458.html">[JDEV] Packets not sent from server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37436">[ date ]</a>
+              <a href="thread.html#37436">[ thread ]</a>
+              <a href="subject.html#37436">[ subject ]</a>
+              <a href="author.html#37436">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

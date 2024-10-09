@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] sniffing
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20sniffing&In-Reply-To=33206412.20041027112632%40widestep.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="020461.html">
+   <LINK REL="Next"  HREF="020472.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] sniffing</H1>
+    <B>Justin Karneges</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20sniffing&In-Reply-To=33206412.20041027112632%40widestep.com"
+       TITLE="[jdev] sniffing">justin-keyword-jabber.093179 at affinix.com
+       </A><BR>
+    <I>Wed Oct 27 04:08:07 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="020461.html">[jdev] sniffing
+</A></li>
+        <LI>Next message: <A HREF="020472.html">[jdev] sniffing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20463">[ date ]</a>
+              <a href="thread.html#20463">[ thread ]</a>
+              <a href="subject.html#20463">[ subject ]</a>
+              <a href="author.html#20463">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wednesday 27 October 2004 01:26 am, Alex Kogan wrote:
+&gt;<i> Hello Justin,
+</I>&gt;<i>
+</I>&gt;<i> &gt; SASL would be even easier (if PHP can do it...).  But yes he should
+</I>&gt;<i> &gt; definitely use one of these at least.  No sense in making a new security
+</I>&gt;<i> &gt; protocol.
+</I>&gt;<i>
+</I>&gt;<i>  I do not intend to invent a new security protocol, I will rework XMPP
+</I>&gt;<i>  for  my  needs, however, I need some practical advice on implementing
+</I>&gt;<i>  either SASL or TSL to prevent sniffing.
+</I>
+Get some libraries. :)
+
+TLS acts as a filter over your entire connection.  When you have data to 
+write, you instead write it to your TLS library for encryption first.  When 
+data comes from the TCP socket, you pass it to your TLS library to have it 
+decrypted.  It acts as a middleman for your socket.  There is an initial 
+negotiation phase where optional certificates are exchanged so that both 
+parties can identify themselves.  The most common case is for the client to 
+not provide one (anonymous), but the server does.  The client will then prove 
+who it is later using a separate authentication method over this 
+now-encrypted connection.
+
+SASL is similar, but it has two phases.  The first step is authentication, 
+whereby the client and server exchange blocks of data constructed by each 
+others' SASL libraries.  The applications themselves pass this data across as 
+defined by the application protocol (for example, in XMPP, the SASL auth 
+blocks are Base64-encoded and placed in an XML element).  Once the login is 
+complete, the application then runs all further incoming and outgoing data 
+through the SASL library (just like how TLS works) to encrypt the connection.
+
+In XMPP, we generally use TLS for connection encryption, with either SASL or 
+some older mechanism for login/password authentication.  The reason for using 
+both when SASL should suffice is because SASL is relatively new to the world 
+of Jabber.
+
+-Justin
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="020461.html">[jdev] sniffing
+</A></li>
+	<LI>Next message: <A HREF="020472.html">[jdev] sniffing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20463">[ date ]</a>
+              <a href="thread.html#20463">[ thread ]</a>
+              <a href="subject.html#20463">[ subject ]</a>
+              <a href="author.html#20463">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

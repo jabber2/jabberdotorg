@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber Transports - New Architecture
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20Transports%20-%20New%20Architecture&In-Reply-To=%3CLingoMAIL.080302013533.6599.llama%40studenten.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="040889.html">
+   <LINK REL="Next"  HREF="040894.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber Transports - New Architecture</H1>
+    <B>Tijl Houtbeckers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20Transports%20-%20New%20Architecture&In-Reply-To=%3CLingoMAIL.080302013533.6599.llama%40studenten.net%3E"
+       TITLE="[JDEV] Jabber Transports - New Architecture">tijl at druppel.nl
+       </A><BR>
+    <I>Thu Mar  7 18:35:33 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="040889.html">[JDEV] Docs on the XDB element ?
+</A></li>
+        <LI>Next message: <A HREF="040894.html">[JDEV] Yahoo With Jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40884">[ date ]</a>
+              <a href="thread.html#40884">[ thread ]</a>
+              <a href="subject.html#40884">[ subject ]</a>
+              <a href="author.html#40884">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>---------- Original Message ----------
+
+&gt;<i>First off, a central server will never work since AOL and others can shut
+</I>&gt;<i>off the IP.  So it's up to the client to make the connections.  The problem
+</I>&gt;<i>is that protocols are always changing, or being slightly modified to shut
+</I>&gt;<i>down &quot;unauthorized&quot; users.
+</I>
+True..
+
+&gt;<i>The solution would be to create an XML namespace to define protocols.  There
+</I>&gt;<i>would be a small engine built into clients to process the latest XML file
+</I>&gt;<i>for a given protocol.  If a protocol changes, the client automatically knows
+</I>&gt;<i>to get the latest XML protocol file (via JabberUpdate or something).
+</I>
+This is very hard to inplement. Property-protocols do not let themselves be described 
+in this way that easily.. the implemention on the clientside would be huge and 
+complex, You need to anticipate things like acking, different authentication ways, 
+challenge packets, etc. Do not let the sheer beauty and simplicity of the 
+jabberprotocol confuse you on this one ;) 
+And even then they can always come up with something new that you're XML 
+description doesn't know how to handle so you'll have to update your client all over 
+again. Besides that, it is against the jabber design philosophy.. what you're basically 
+building then is different messengers in one, one of those being a jabber client.
+
+A better solution for your problem would be to keep the conversion from the jabber 
+XML format to the property binary formats like AIM, Yahoo, ICQ etc. on the server, 
+then send this binary data back to the client either embedding it in the XML (base64?) 
+wich can get a bit CPU intensive, or using XML to describe how to establish a socket 
+connecion between the protocol transport (preferably one from the client to the 
+protocol and not vv. to avoid firewall issues etc.). Then the client opens it's own 
+connection to the property format server, and sends the binary data supplied by the 
+transport to it, as well as sending any binary data is receives from the property format 
+server back to transport.
+
+This does keep complexity on the server for quite a bit, sticking with the jabber design 
+philosophy, however is has some major disadvantages:
+More datatraffic for the client, more socket-connections for the client, and if you use 
+base64 or anything like it for encoding the binary data, more CPU power required for 
+both the client and the server (though this would actually mean the server has to have 
+*less* socketconnections). For a desktop client, this would be acceptable, but for 
+most mobile clients it unforuntatly isn't (1 socket often is a bit too much already ;). 
+You'd have to start looking at weird solutions like letting your desktop machine 
+somewhere route the property protocol information for your mobile client... in the end I 
+don't think it's worth going through all this trouble for a bunch of stupid companies 
+that think they can lock in their customers like this, unless you just want to really piss 
+off AOL in your life :)
+
+-- 
+Tijl Houtbeckers
+GPRS / J2ME programmer
+Druppel Internet Services,
+The Netherlands
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="040889.html">[JDEV] Docs on the XDB element ?
+</A></li>
+	<LI>Next message: <A HREF="040894.html">[JDEV] Yahoo With Jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40884">[ date ]</a>
+              <a href="thread.html#40884">[ thread ]</a>
+              <a href="subject.html#40884">[ subject ]</a>
+              <a href="author.html#40884">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

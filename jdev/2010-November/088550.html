@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Understanding target SOCKS5 connection flow with	streamhost/requester
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Understanding%20target%20SOCKS5%20connection%20flow%20with%0A%09streamhost/requester&In-Reply-To=%3C719790.25487.qm%40web31810.mail.mud.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088548.html">
+   <LINK REL="Next"  HREF="088557.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Understanding target SOCKS5 connection flow with	streamhost/requester</H1>
+    <B>Abhinav Singh</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Understanding%20target%20SOCKS5%20connection%20flow%20with%0A%09streamhost/requester&In-Reply-To=%3C719790.25487.qm%40web31810.mail.mud.yahoo.com%3E"
+       TITLE="[jdev] Understanding target SOCKS5 connection flow with	streamhost/requester">abhinavsingh at ymail.com
+       </A><BR>
+    <I>Tue Nov  9 15:57:57 CST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088548.html">[jdev] Understanding target SOCKS5 connection flow with streamhost/requester
+</A></li>
+        <LI>Next message: <A HREF="088557.html">[jdev] Understanding target SOCKS5 connection flow with	streamhost/requester
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88550">[ date ]</a>
+              <a href="thread.html#88550">[ thread ]</a>
+              <a href="subject.html#88550">[ subject ]</a>
+              <a href="author.html#88550">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks Dave, I overlooked for the value of Target JID :(
+
+Further I tried to establish S5B connection between the target and streamhost:
+1) Target sends initial version selection message $pkt = pack(&quot;C3&quot;, 0x05, 0x01, 
+0x00); 
+
+2) Upon success, Target tries to send request details $pkt = pack(&quot;C4H*n&quot;, 0x05, 
+0x01, 0x00, 0x03, $dstAddr, 0);
+3) Upon success, Target should notify requester about established S5B stream
+
+However, my client don't get a success response from the proxy server after the 
+2nd step.
+I am using ejabberd mod_proxy65 module to test this out.
+
+Any pointer/help is greatly appreciated.
+
+--
+Abhinav Singh,
+Founder, Jaxl Inc.
+Bangalore, India
+<A HREF="http://abhinavsingh.com/blog">http://abhinavsingh.com/blog</A>
+
+
+
+
+________________________________
+From: Dave Cridland &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A>&gt;
+To: Jabber/XMPP software development list &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Sent: Wed, November 10, 2010 3:01:31 AM
+Subject: Re: [jdev] Understanding target SOCKS5 connection flow with 
+streamhost/requester
+
+On Tue Nov  9 21:22:59 2010, Abhinav Singh wrote:
+&gt;<i> (01:56:47) jabber:Sending (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1 at dev.jaxl.im</A>/2557233831289334472350031):
+</I>&gt;<i> <A HREF="http://jabber.org/protocol/bytestreams'">http://jabber.org/protocol/bytestreams'</A>&gt;
+</I>
+Note the target jid above.
+
+
+sha1(&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">purplee6c1c0cbjaxl at dev.jaxl.im</A>/<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">5859500411289328645518583jaxl at dev.jaxl.im</A>/5859500411289328645518583&quot;)
+
+&gt;<i>  which equates to 59aadec011bdb96cb0f2fea5e6f6596e5a0d6f93 and not
+</I>&gt;<i> 50c0abe90692f69b56e49a53334daf8c6ad26f9e as shown in the logs.
+</I>
+It's SHA1(SID + Requester JID + Target JID):
+
+&gt;&gt;&gt;<i> import hashlib
+</I>&gt;&gt;&gt;<i> hash = hahslib.sha1()
+</I>&gt;&gt;&gt;<i> hash.update('purplee6c1c0cb')
+</I>&gt;&gt;&gt;<i> hash.update('<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jaxl at dev.jaxl.im</A>/5859500411289328645518583')
+</I>&gt;&gt;&gt;<i> hash.update('<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1 at dev.jaxl.im</A>/2557233831289334472350031')
+</I>&gt;&gt;&gt;<i> hash.hexdigest()
+</I>'50c0abe90692f69b56e49a53334daf8c6ad26f9e'
+
+Dave.
+--Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at dave.cridland.net</A>
+- <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+- <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+_______________________________________________
+JDev mailing list
+Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+_______________________________________________
+
+
+
+      
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20101109/a02cca89/attachment.htm">https://www.jabber.org/jdev/attachments/20101109/a02cca89/attachment.htm</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088548.html">[jdev] Understanding target SOCKS5 connection flow with streamhost/requester
+</A></li>
+	<LI>Next message: <A HREF="088557.html">[jdev] Understanding target SOCKS5 connection flow with	streamhost/requester
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88550">[ date ]</a>
+              <a href="thread.html#88550">[ thread ]</a>
+              <a href="subject.html#88550">[ subject ]</a>
+              <a href="author.html#88550">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

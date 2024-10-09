@@ -1,0 +1,271 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabberd 1.4 to 2.0 migration script
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%201.4%20to%202.0%20migration%20script&In-Reply-To=%3C200401212335.04632.trejkaz%40xaoza.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="077262.html">
+   <LINK REL="Next"  HREF="077269.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabberd 1.4 to 2.0 migration script</H1>
+    <B>Trejkaz Xaoza</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%201.4%20to%202.0%20migration%20script&In-Reply-To=%3C200401212335.04632.trejkaz%40xaoza.net%3E"
+       TITLE="[JDEV] jabberd 1.4 to 2.0 migration script">trejkaz at xaoza.net
+       </A><BR>
+    <I>Wed Jan 21 06:34:58 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="077262.html">[JDEV] Client support for XMPP Privacy and Jabberd 2
+</A></li>
+        <LI>Next message: <A HREF="077269.html">[JDEV] jabberd 1.4 to 2.0 migration script
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77253">[ date ]</a>
+              <a href="thread.html#77253">[ thread ]</a>
+              <a href="subject.html#77253">[ subject ]</a>
+              <a href="author.html#77253">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+
+Attached is a Ruby script for migrating jabberd1.4 spool directories to 
+jabberd2 mysql.  Unlike the script provided with jabberd2 itself, this one 
+migrates all the data, or at least all the data possible under the jabberd2 
+database schema.
+
+It migrates offline messages, which was the primary reason for writing it.
+
+Warning: this script is in beta state.  I cannot guarantee it will work on all 
+spool directories, and I claim no responsibilities for what damage it might 
+do to your system.  The last time I ran it, a tiger jumped in my window, 
+swear to god.  'Buyer beware', YMMV, and so forth.
+
+Requirements:
+    - Ruby (tested on 1.8.1 but I don't think I used any new features so it
+      might work on earlier.  If it does work on earlier, let me know and I'll
+      update this!)
+    - rexml
+    - mysql-ruby
+
+To use:
+    - cd to your spool directory.
+    - type:   /path/to/migrate.rb jabber.example.com &gt; jabber-data.sql
+
+It will sit and whir for a while, telling you every user it's processing as it 
+goes through its work.
+
+At present it uses the mysql-ruby library *only* for the string escape method.  
+I know this is not ideal, however I'm working in a situation where I can't 
+run this script on the server so I have to move all the data back to home, 
+then back to the server.  It could, however, be trivially modified to connect 
+to Mysql directly.  I chose Ruby because Perl's XML::DOM didn't feel like it 
+had enough support for namespaces, though I'm probably wrong.  Either way it 
+took about the same amount of time to write.
+
+A lot of the things it generates aren't 100% efficient.  Particularly, the 
+VCard migration is really heavy on the number of SQL statements it generates.  
+I could have done it better, but the most important thing was to get it to 
+work right, fast.  I know also that the VCard conversion isn't 100%.  There 
+are several VCard fields which are permitted in the VCard multiple times and 
+as far as I know the database for jabberd2 only allows one of each (that is, 
+the ADR and EMAIL elements.)
+
+It seems to work for me, with a bit of hacking of the script values I was able 
+to set this up on a test server with a different hostname, and my account was 
+set up correctly.
+
+Give me feedback, let me know if it works for you, or if it breaks.  If it 
+breaks, send me a stack trace to me directly (I have TMDA running on my mail 
+account so you will have to go through a confirmation process, no big deal 
+but I'll warn you anyway.)
+
+Have fun, chaps.
+
+TX
+
+- -- 
+'Every sufficiently advanced technology is indistinguishable from magic' - 
+Arthur C Clarke
+'Every sufficiently advanced magic is indistinguishable from technology' - Tom 
+Graves
+
+      Email: Trejkaz Xaoza &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">trejkaz at xaoza.net</A>&gt;
+   Web site: <A HREF="http://xaoza.net/trejkaz/">http://xaoza.net/trejkaz/</A>
+  Jabber ID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">trejkaz at jabber.xaoza.net</A>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.3 (GNU/Linux)
+
+iD8DBQFADnH0mifzwBMPxxoRAqrdAJ0fFIW5NblNyctOSfmqlneQCixWJQCfVuwn
+84mk3mfSBF33rn4Ins/qIic=
+=jx3I
+-----END PGP SIGNATURE-----
+-------------- next part --------------
+#!/usr/bin/ruby
+
+require &quot;rexml/document&quot;
+require &quot;mysql&quot;
+
+if not ARGV[0] then
+    $stderr.puts(&quot;ERROR: You must specify the realm (server id) to use.&quot;)
+    Kernel.exit(1)
+end
+
+realm = ARGV[0]
+if not File.stat(realm).directory? then
+    $stderr.puts(&quot;ERROR: You must be in the spool directory.&quot;)
+    Kernel.exit(1)
+end
+
+Dir.foreach(realm) do |filename|
+    username = filename.clone;
+    username.gsub!(/\.xml$/, '')
+    owner = username + &quot;@&quot; + realm
+    filename = realm + &quot;/&quot; + filename
+
+    if not File.stat(filename).directory? then
+        $stderr.puts &quot;Processing #{owner}...&quot;
+
+        puts &quot;INSERT INTO authreg (username, realm) VALUES ('&quot; + Mysql.escape_string(username) + &quot;', '&quot; + filename + &quot;');&quot;
+    
+        file = File.new(filename)
+        doc = REXML::Document.new(file)
+        doc.root.elements.each do |element|
+            qname = element.name
+            if element.namespace != nil then
+                qname = element.namespace + &quot; &quot; + qname
+            end
+        
+            case qname
+            when &quot;jabber:iq:auth:0k zerok&quot;
+                puts &quot;UPDATE authreg SET hash = '#{element.elements[&quot;hash&quot;].text}', token = '#{element.elements[&quot;token&quot;].text}', &quot; +
+                     &quot;sequence = #{element.elements[&quot;sequence&quot;].text} WHERE username = '#{Mysql.escape_string(username)}' AND realm = '#{realm}';&quot;
+                  
+            when &quot;jabber:iq:auth password&quot;
+                puts &quot;UPDATE authreg SET `password` = '#{Mysql.escape_string(element.text)}' &quot; +
+                     &quot;WHERE username = '#{Mysql.escape_string(username)}' AND realm = '#{realm}';&quot;
+
+            when &quot;jabber:iq:last query&quot;
+                puts &quot;INSERT INTO logout (`collection-owner`, time) VALUES ('#{Mysql.escape_string(owner)}', #{element.attributes[&quot;last&quot;]});&quot;
+
+            when &quot;jabber:iq:roster query&quot;
+                element.elements.each(&quot;item&quot;) do |item|
+                    item_subscription = item.attributes[&quot;subscription&quot;]
+                    if (item_subscription == &quot;to&quot; || item_subscription == &quot;both&quot;) then
+                        item_to = 1
+                    else
+                        item_to = 0
+                    end
+                    if (item_subscription == &quot;from&quot; || item_subscription == &quot;both&quot;) then
+                        item_from = 1
+                    else
+                        item_from = 0
+                    end
+                    if (item.attributes[&quot;ask&quot;] == &quot;subscribe&quot;) then
+                        item_ask = 1
+                    else
+                        # Note: item_ask = 2 isn't possible since jabberd 1.4 doesn't store pending unsubscribe state.
+                        item_ask = 0
+                    end
+                    
+                    item_jid = item.attributes[&quot;jid&quot;]
+                    item_name = item.attributes[&quot;name&quot;]
+                
+                    if item_name then
+                        puts &quot;INSERT INTO `roster-items` (`collection-owner`, jid, name, `to`, `from`, ask) &quot; +
+                             &quot;VALUES ('#{Mysql.escape_string(owner)}', '#{Mysql.escape_string(item_jid)}', '#{Mysql.escape_string(item_name)}', &quot; +
+                             &quot;#{item_to.to_s}, #{item_from.to_s}, #{item_ask.to_s});&quot;
+                    else
+                        puts &quot;INSERT INTO `roster-items` (`collection-owner`, jid, `to`, `from`, ask) &quot; +
+                             &quot;VALUES ('#{Mysql.escape_string(owner)}', '#{Mysql.escape_string(item_jid)}', &quot; +
+                             &quot;#{item_to.to_s}, #{item_from.to_s}, #{item_ask.to_s});&quot;
+                    end
+            
+                    item.elements.each(&quot;group&quot;) do |group|
+                        if (group.text) then
+                            puts &quot;INSERT INTO `roster-groups` (`collection-owner`, jid, `group`) &quot; +
+                                 &quot;VALUES ('#{Mysql.escape_string(owner)}', '#{Mysql.escape_string(item_jid)}', '#{Mysql.escape_string(group.text)}');&quot;;
+                        end
+                    end
+                end
+
+            when &quot;jabber:x:offline foo&quot;
+                element.elements.each(&quot;message&quot;) do |message|
+                    puts &quot;INSERT INTO queue (`collection-owner`, `xml`) VALUES ('#{Mysql.escape_string(owner)}', '#{Mysql.escape_string(message.to_s)}');&quot;
+                end
+
+            when &quot;vcard-temp vCard&quot;, &quot;vcard-temp vcard&quot; # typo
+                puts &quot;INSERT INTO vcard (`collection-owner`) VALUES ('#{Mysql.escape_string(owner)}');&quot;
+
+                def vcard_iter
+                    yield &quot;fn&quot;, &quot;FN&quot;
+                    yield &quot;nickname&quot;, &quot;NICKNAME&quot;
+                    yield &quot;url&quot;, &quot;URL&quot;
+                    yield &quot;tel&quot;, &quot;TEL/NUMBER&quot;
+                    yield &quot;email&quot;, &quot;EMAIL[USERID]/USERID&quot;
+                    yield &quot;title&quot;, &quot;TITLE&quot;
+                    yield &quot;role&quot;, &quot;ROLE&quot;
+                    yield &quot;bday&quot;, &quot;BDAY&quot;
+                    yield &quot;desc&quot;, &quot;DESC&quot;
+                    yield &quot;n-given&quot;, &quot;N/GIVEN&quot;
+                    yield &quot;n-family&quot;, &quot;N/FAMILY&quot;
+                    yield &quot;adr-street&quot;, &quot;ADR/STREET&quot;
+                    yield &quot;adr-extadd&quot;, &quot;ADR/EXTADD&quot;
+                    yield &quot;adr-locality&quot;, &quot;ADR/LOCALITY&quot;
+                    yield &quot;adr-region&quot;, &quot;ADR/REGION&quot;
+                    yield &quot;adr-pcode&quot;, &quot;ADR/PCODE&quot;
+                    yield &quot;adr-country&quot;, &quot;ADR/COUNTRY&quot;
+                    yield &quot;org-orgname&quot;, &quot;ORG/ORGNAME&quot;
+                    yield &quot;org-orgunit&quot;, &quot;ORG/ORGUNIT&quot;
+                end
+
+                vcard_iter { |vcard_table_field, vcard_xpath|
+                    vcard_field = element.elements[vcard_xpath]
+                    if (vcard_field and vcard_field.text) then
+                        puts &quot;UPDATE vcard SET `#{vcard_table_field}` = '#{Mysql.escape_string(vcard_field.text)}' &quot; +
+                             &quot;WHERE `collection-owner` = '#{Mysql.escape_string(owner)}';&quot;
+                    end
+                }
+
+            else
+                if element.attributes[&quot;j_private_flag&quot;] == &quot;1&quot; then
+                    puts &quot;INSERT INTO private (`collection-owner`, ns, xml) VALUES ('#{Mysql.escape_string(owner)}', '#{element.namespace}', '#{Mysql.escape_string(element.to_s)}');&quot;
+                else
+                    # We ignore these because non-private arbitrary storage is out of the question.
+                end
+            end
+        end
+    end
+end
+
+$stderr.puts &quot;Completed processing for #{realm}!&quot;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="077262.html">[JDEV] Client support for XMPP Privacy and Jabberd 2
+</A></li>
+	<LI>Next message: <A HREF="077269.html">[JDEV] jabberd 1.4 to 2.0 migration script
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77253">[ date ]</a>
+              <a href="thread.html#77253">[ thread ]</a>
+              <a href="subject.html#77253">[ subject ]</a>
+              <a href="author.html#77253">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

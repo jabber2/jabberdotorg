@@ -1,0 +1,550 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] New to Client Side Jabber Programming.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20New%20to%20Client%20Side%20Jabber%20Programming.&In-Reply-To=%3C20021010171349.60755.qmail%40web11608.mail.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="043760.html">
+   <LINK REL="Next"  HREF="043761.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] New to Client Side Jabber Programming.</H1>
+    <B>brad cooper</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20New%20to%20Client%20Side%20Jabber%20Programming.&In-Reply-To=%3C20021010171349.60755.qmail%40web11608.mail.yahoo.com%3E"
+       TITLE="[JDEV] New to Client Side Jabber Programming.">coobr01 at yahoo.com
+       </A><BR>
+    <I>Thu Oct 10 12:13:49 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="043760.html">[JDEV] New to Client Side Jabber Programming.
+</A></li>
+        <LI>Next message: <A HREF="043761.html">[JDEV] New to Client Side Jabber Programming.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43762">[ date ]</a>
+              <a href="thread.html#43762">[ thread ]</a>
+              <a href="subject.html#43762">[ subject ]</a>
+              <a href="author.html#43762">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Below is my simple tests code that is failing. Any
+suggestions would be much appreciated :)
+
+-Dorg.xml.sax.driver=org.apache.crimson.parser.XMLReaderImpl
+
+Below code opens up the socket stream and then
+attempts to tie stream to parser to get initial jabber
+communication going and then print out the
+xml....coarse I'm doing something wrong and I'm not
+sure what it is. 
+---------------------------------------------------
+
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+
+//import org.xml.sax.*;
+
+import java.io.IOException;
+
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.*;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLReaderFactory;
+
+
+
+public class MyJabberTest  extends DefaultHandler
+{
+    StringBuffer textBuffer;
+    Socket socket = null;
+
+    InputStream rx = null;
+	PrintWriter tx = null;
+	
+	XMLReader       producer;
+    DefaultHandler  consumer;
+
+    
+    public static void main(String argv[])
+    {
+		MyJabberTest Jabber = new MyJabberTest();
+		    
+		
+		Jabber.test();
+    }
+
+
+	public void test()
+	{
+		try
+		{
+			socket = new Socket(&quot;jabber.org&quot;, 5222);
+			rx = new
+BufferedInputStream(socket.getInputStream());
+	  	    tx = new PrintWriter(new
+OutputStreamWriter(socket.getOutputStream()));
+		} 
+		catch (IOException e)
+		{
+			System.out.println(&quot;Unable to connect to
+jabber.org&quot;);
+			System.exit(1);
+		}
+		
+		
+		System.out.println(&quot;Sending Init XML...Begin&quot;);
+		
+		String xmlInit = &quot;&lt;stream:stream to=\&quot;&quot;;
+		xmlInit += &quot;jabber.org&quot; + &quot;\&quot;
+xmlns=\&quot;jabber:client\&quot;
+xmlns:stream=\&quot;<A HREF="http://etherx.jabber.org/streams\&quot;">http://etherx.jabber.org/streams\&quot;</A>&gt;&quot;;
+		tx.print(xmlInit);
+		tx.flush();
+
+		System.out.println(&quot;Sending Init XML...End&quot;);
+
+	
+		System.out.println(&quot;Initializing Parser...Begin&quot;);
+				
+				
+  		// Get an instance of the default XML parser class
+        try {
+        	SAXParserFactory factory;
+        	
+        	factory = SAXParserFactory.newInstance();
+        	//factory.setNamespaceAware(true);
+        	//factory.setValidating(false);
+        	producer =
+factory.newSAXParser().getXMLReader();
+        	
+            producer =
+XMLReaderFactory.createXMLReader ();
+           
+//producer.setFeature(&quot;<A HREF="http://xml.org/sax/features/namespaces&quot;">http://xml.org/sax/features/namespaces&quot;</A>
+,true);
+           
+//producer.setFeature(&quot;<A HREF="http://xml.org/sax/features/namespace-prefixes&quot;">http://xml.org/sax/features/namespace-prefixes&quot;</A>
+,false);
+        }
+        catch (SAXException e)
+        {
+            System.err.println (&quot;Can't get parser,
+check configuration: &quot; + e.getMessage ());
+            return;
+        }
+        catch (FactoryConfigurationError e)
+        {
+        	System.err.println (&quot;Can't get parser, check
+configuration: &quot; + e.getMessage ());
+            return;
+        }
+        catch (ParserConfigurationException e)
+        {
+        	System.err.println (&quot;Can't get parser, check
+configuration: &quot; + e.getMessage ());
+            return;
+        }
+
+		// set up the consumer
+		try {
+
+	   	    // Connect the most important standard
+handler
+		    producer.setContentHandler (new MyJabberTest());
+
+		    // Arrange error handling
+		    producer.setErrorHandler (new MyJabberTest());
+		}
+		catch (Exception e)
+		{
+	    	// consumer setup can uncover errors,
+		    // though this simple one shouldn't
+		    System.err.println (
+	          &quot;Can't set up consumers:&quot; + e.getMessage
+());
+            return;
+		}
+	
+	    // Do the parse!
+        try
+        {
+	      	out = new OutputStreamWriter(System.out,
+&quot;UTF8&quot;);
+
+            producer.parse (new InputSource (rx));
+        } 
+        catch (IOException e)
+        {
+            System.err.println (&quot;I/O error: &quot;);
+	    	e.printStackTrace ();
+        }
+        catch (SAXException e)
+        {
+            System.err.println (&quot;Parsing error: &quot; +
+e.getMessage());
+	    	e.printStackTrace ();
+        }
+	
+	
+		System.out.println(&quot;Initializing Parser...End&quot;);
+	
+	
+		
+		System.out.println(&quot;Sending Ending XML...Begin&quot;);
+		xmlInit = &quot;&lt;/stream:stream&gt;&quot;;
+		tx.print(xmlInit);
+		tx.flush();
+		System.out.println(&quot;Sending Ending XML...End&quot;);
+
+
+
+		try {
+			rx.close();
+			tx.close();
+			socket.close();
+		}
+		catch (IOException ioe) {}
+
+		
+	}
+
+
+
+
+
+
+
+
+
+
+    static private Writer  out;
+    private String indentString = &quot;    &quot;; // Amount to
+indent
+    private int indentLevel = 0;
+
+   
+//===========================================================
+    // SAX DocumentHandler methods
+   
+//===========================================================
+
+    public void startDocument()
+    throws SAXException
+    {
+        nl();
+        nl();
+        emit(&quot;START DOCUMENT&quot;);
+        nl();
+        emit(&quot;&lt;?xml version='1.0'
+encoding='UTF-8'?&gt;&quot;);
+    }
+
+    public void endDocument()
+    throws SAXException
+    {
+        nl(); 
+        emit(&quot;END DOCUMENT&quot;);
+        try {
+            nl();
+            out.flush();
+        } catch (IOException e) {
+            throw new SAXException(&quot;I/O error&quot;, e);
+        }
+    }
+
+    public void startElement(String namespaceURI,
+                             String sName, // simple
+name
+                             String qName, //
+qualified name
+                             Attributes attrs)
+    throws SAXException
+    {
+        echoText();
+        indentLevel++;
+        nl(); 
+        emit(&quot;ELEMENT: &quot;);
+        String eName = sName; // element name
+        if (&quot;&quot;.equals(eName)) eName = qName; // not
+namespaceAware
+        emit(&quot;&lt;&quot;+eName);
+        if (attrs != null) {
+            for (int i = 0; i &lt; attrs.getLength();
+i++) {
+                String aName = attrs.getLocalName(i);
+// Attr name 
+                if (&quot;&quot;.equals(aName)) aName =
+attrs.getQName(i);
+                nl();
+                emit(&quot;   ATTR: &quot;);
+                emit(aName);
+                emit(&quot;\t\&quot;&quot;);
+                emit(attrs.getValue(i));
+                emit(&quot;\&quot;&quot;);
+            }
+        }
+        if (attrs.getLength() &gt; 0) nl();
+        emit(&quot;&gt;&quot;);
+    }
+
+    public void endElement(String namespaceURI,
+                           String sName, // simple
+name
+                           String qName  // qualified
+name
+                          )
+    throws SAXException
+    {
+        echoText();
+        nl();
+        emit(&quot;END_ELM: &quot;);
+        String eName = sName; // element name
+        if (&quot;&quot;.equals(eName)) eName = qName; // not
+namespaceAware
+        emit(&quot;&lt;/&quot;+eName+&quot;&gt;&quot;);
+        indentLevel--;
+    }
+
+    public void characters(char buf[], int offset, int
+len)
+    throws SAXException
+    {
+        if (textBuffer != null) {
+          echoText();
+          textBuffer = null;
+        }
+        String s = new String(buf, offset, len);
+        if (textBuffer == null) {
+           textBuffer = new StringBuffer(s);
+        } else {
+           textBuffer.append(s);
+        }
+    }
+    
+   
+//===========================================================
+    // Utility Methods ...
+   
+//===========================================================
+    
+    // Display text accumulated in the character
+buffer
+    private void echoText()
+    throws SAXException
+    {
+        if (textBuffer == null) return;
+        nl(); 
+        emit(&quot;CHARS:   &quot;);
+        String s = &quot;&quot;+textBuffer;
+        if (!s.trim().equals(&quot;&quot;)) emit(s);
+        textBuffer = null;
+    }
+
+    // Wrap I/O exceptions in SAX exceptions, to
+    // suit handler signature requirements
+    private void emit(String s)
+    throws SAXException
+    {
+        try {
+            out.write(s);
+            out.flush();
+        } catch (IOException e) {
+            throw new SAXException(&quot;I/O error&quot;, e);
+        }
+    }
+
+    // Start a new line
+    // and indent the next line appropriately
+    private void nl()
+    throws SAXException
+    {
+        String lineEnd = 
+System.getProperty(&quot;line.separator&quot;);
+        try {
+            out.write(lineEnd);
+            for (int i=0; i &lt; indentLevel; i++)
+out.write(indentString);
+        } catch (IOException e) {
+            throw new SAXException(&quot;I/O error&quot;, e);
+        }
+    }
+}
+-------------------------------------------------------
+
+--- Ulrich Staudinger &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chicago5 at gmx.de</A>&gt; wrote:
+&gt;<i> I use TinyXML for java for e3. it runs like a dream
+</I>&gt;<i> and is only 6kb in
+</I>&gt;<i> size.
+</I>&gt;<i> 
+</I>&gt;<i> Ulrich
+</I>&gt;<i> 
+</I>&gt;<i> brad cooper wrote:
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Ty for the quikc responses.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I am currently trying to use crimson parser but
+</I>&gt;<i> &gt; getting the effects of
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 1) I run the program
+</I>&gt;<i> &gt; 2) Seems to hang a bit
+</I>&gt;<i> &gt; 3) Givings me the below error messages
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; org.xml.sax.SAXParseException: End of entity not
+</I>&gt;<i> &gt; allowed; an end tag is missing.
+</I>&gt;<i> &gt;         at
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>org.apache.crimson.parser.Parser2.fatal(Parser2.java:3182)
+&gt;<i> &gt;         at
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>org.apache.crimson.parser.Parser2.fatal(Parser2.java:3170)
+&gt;<i> &gt;         at
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>org.apache.crimson.parser.Parser2.content(Parser2.java:1837)
+&gt;<i> &gt;         at
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>org.apache.crimson.parser.Parser2.maybeElement(Parser2.java:1507)
+&gt;<i> &gt;         at
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>org.apache.crimson.parser.Parser2.parseInternal(Parser2.java:500)
+&gt;<i> &gt;         at
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>org.apache.crimson.parser.Parser2.parse(Parser2.java:305)
+&gt;<i> &gt;         at
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>org.apache.crimson.parser.XMLReaderImpl.parse(XMLReaderImpl.java:442)
+&gt;<i> &gt;         at
+</I>&gt;<i> MyJabberTest.test(MyJabberTest.java:129)
+</I>&gt;<i> &gt;         at MyJabberTest.main(MyJabberTest.java:45)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Would you happen to have a sample of how you
+</I>&gt;<i> &gt; initialize the crimson parser and tie the stream
+</I>&gt;<i> to
+</I>&gt;<i> &gt; the parse method?
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Thank you so much,
+</I>&gt;<i> &gt;   Brad
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; --- Chris Chen &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ckchris at idream.net</A>&gt; wrote:
+</I>&gt;<i> &gt; &gt; Actually,
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; If you use Crimson with JAXP, it will work. 
+</I>&gt;<i> Crimson
+</I>&gt;<i> &gt; &gt; will support streaming
+</I>&gt;<i> &gt; &gt; XML.  Xerces does not really support streaming
+</I>&gt;<i> XML..
+</I>&gt;<i> &gt; &gt; However, Xerces2 has an
+</I>&gt;<i> &gt; &gt; option you can use to enable streaming XML
+</I>&gt;<i> &gt; &gt; processing.  Thus, you have two
+</I>&gt;<i> &gt; &gt; XML APIs to use and test.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Thanks,
+</I>&gt;<i> &gt; &gt; Chris
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; On Thursday 10 October 2002 07:07, brad cooper
+</I>&gt;<i> &gt; &gt; wrote:
+</I>&gt;<i> &gt; &gt; &gt; Hello all,
+</I>&gt;<i> &gt; &gt; &gt;   I'm looking to learn more about the jabber
+</I>&gt;<i> &gt; &gt; protocol.
+</I>&gt;<i> &gt; &gt; &gt; I want to start of making a simple java based
+</I>&gt;<i> &gt; &gt; client
+</I>&gt;<i> &gt; &gt; &gt; that connects to a server and sends a login
+</I>&gt;<i> &gt; &gt; message. I
+</I>&gt;<i> &gt; &gt; &gt; would like to write this in pure java not
+</I>&gt;<i> using
+</I>&gt;<i> &gt; &gt; any
+</I>&gt;<i> &gt; &gt; &gt; java/jabber libs, so i can learn. I have the
+</I>&gt;<i> &gt; &gt; sockets
+</I>&gt;<i> &gt; &gt; &gt; connected and am now at the point of
+</I>&gt;<i> over-coming
+</I>&gt;<i> &gt; &gt; the
+</I>&gt;<i> &gt; &gt; &gt; (EOF) stream problem.  I would like to be able
+</I>&gt;<i> to
+</I>&gt;<i> &gt; &gt; hook
+</I>&gt;<i> &gt; &gt; &gt; my JAXP XML parser right 2 the stream, but
+</I>&gt;<i> this
+</I>&gt;<i> &gt; &gt; seems
+</I>&gt;<i> &gt; &gt; &gt; impossible because my parser wants the whole
+</I>&gt;<i> &gt; &gt; document
+</I>&gt;<i> &gt; &gt; &gt; upfront. Any suggestions on over-coming this
+</I>&gt;<i> &gt; &gt; &gt; limitation would be helpful (another parser?
+</I>&gt;<i> &gt; &gt; custom
+</I>&gt;<i> &gt; &gt; &gt; built stream filter then send to a parser?)
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Thanks in advance,
+</I>&gt;<i> &gt; &gt; &gt;   Brad
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> __________________________________________________
+</I>&gt;<i> &gt; &gt; &gt; Do you Yahoo!?
+</I>&gt;<i> &gt; &gt; &gt; Faith Hill - Exclusive Performances, Videos &amp;
+</I>&gt;<i> More
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://faith.yahoo.com">http://faith.yahoo.com</A>
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> &gt; &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; __________________________________________________
+</I>&gt;<i> &gt; Do you Yahoo!?
+</I>&gt;<i> &gt; Faith Hill - Exclusive Performances, Videos &amp; More
+</I>&gt;<i> &gt; <A HREF="http://faith.yahoo.com">http://faith.yahoo.com</A>
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+__________________________________________________
+Do you Yahoo!?
+Faith Hill - Exclusive Performances, Videos &amp; More
+<A HREF="http://faith.yahoo.com">http://faith.yahoo.com</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="043760.html">[JDEV] New to Client Side Jabber Programming.
+</A></li>
+	<LI>Next message: <A HREF="043761.html">[JDEV] New to Client Side Jabber Programming.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43762">[ date ]</a>
+              <a href="thread.html#43762">[ thread ]</a>
+              <a href="subject.html#43762">[ subject ]</a>
+              <a href="author.html#43762">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

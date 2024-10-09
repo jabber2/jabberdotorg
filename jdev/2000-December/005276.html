@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Capabilities Discussion
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Capabilities%20Discussion&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005287.html">
+   <LINK REL="Next"  HREF="005286.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Capabilities Discussion</H1>
+    <B>Dave Smith</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Capabilities%20Discussion&In-Reply-To="
+       TITLE="[JDEV] Capabilities Discussion">dizzyd at dizzyd.com
+       </A><BR>
+    <I>Wed Dec 20 15:22:17 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005287.html">[JDEV] Multiple servers - same box
+</A></li>
+        <LI>Next message: <A HREF="005286.html">[JDEV] Capabilities Discussion
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5276">[ date ]</a>
+              <a href="thread.html#5276">[ thread ]</a>
+              <a href="subject.html#5276">[ subject ]</a>
+              <a href="author.html#5276">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey all..
+
+So, to summarize the discussion..
+
+The original discussion was all about trying to figure out how to encode
+messages in a nice format -- that is, do we use XHTML for _all_ messages
+or not. This mutated into talking about how to exchange capabilities which
+is where we are now.
+
+There are two basic camps for capability exchange:
+1.) Embed capability in presence
+      Pros:
+      - Capability info is pushed on a per-resource basis -- you get it
+      without having to ask for it
+      - It is a fairly &quot;natural&quot; extension to presence since it gives more
+      specifics about a particular resource
+      
+      Cons:
+      - Information overload; some clients don't _want_ this information
+      since they never use it
+      
+2.) Have a iq for requesting capability
+      Pros:
+      - Lazy evaluation; you only get information that you _really_ need.
+
+      Cons:
+      - Added architectural overhead; you have to use &lt;iq&gt; (which isn't bad,
+      just more work)
+
+
+Additional pros/cons of both would be welcome.
+
+Personally, I'm still for having capabilities in the presence -- at least for
+the moment. The question is, how do we have the server filter this for us?
+Maybe we have a &lt;iq&gt; interface to the server to allow certain capabilities to
+be filtered?
+
+&lt;iq type='set'&gt;
+      &lt;query xmlns='jabber:iq:capabilities'&gt;
+            &lt;message-xhtml/&gt;
+      &lt;/..&gt;
+&lt;/..&gt;
+
+That would let you tell the server which capabilities you wanted? If you _didn't_ specify, the server would strip out capabilities information (DENY by default). The problem with this approach is the added overhead which this places on the
+server, since for each &lt;presence&gt; packet sent by someone, the server has to not
+only relay it to you, but also check the packet and strip out the capabilities
+you're not interested in. (Although this happens on _your_ server, not the one
+which originated the &lt;presence&gt; packet, so we do benefit from the distributed
+nature..)
+
+As noted by some other people (Dave Waite, in particular) there is the general
+issue of what to do with abitrary data embedded in &lt;presence&gt; packets. Should
+the server protect users from this information? I believe this to be a 
+foundational question that affects most future development. Indeed, this is one
+of the caveats of having such a flexible, extensible architecture -- how do you
+control/filter information that some people view as required?
+
+I'm not sure at this point, what the best way to proceed is. To answer the 
+question about &quot;rich text&quot;, I believe that by default we stick with plain text
+in the &lt;body&gt; tag and stick a &quot;rich text&quot; in a seperate namespace -- this is
+in keeping with the general minimalist philosophy upon which Jabber is based.
+
+The more general question of _when_ to include &quot;rich text&quot; and doing it in an
+intelligent manner requires more thought as it encompasses the general problem
+of filtering unwanted data. For now, I would say that clients which support
+&quot;rich text&quot; just send it on in the namespace.
+
+One thing I must comment on is how proud I am to be apart of the Jabber 
+community. It's great to take part in a discussion where even tho people 
+disagree on a methodolgy, they still are able to carry on an intelligent 
+conversation. It's a happy, happy thing. :)
+
+D.
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005287.html">[JDEV] Multiple servers - same box
+</A></li>
+	<LI>Next message: <A HREF="005286.html">[JDEV] Capabilities Discussion
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5276">[ date ]</a>
+              <a href="thread.html#5276">[ thread ]</a>
+              <a href="subject.html#5276">[ subject ]</a>
+              <a href="author.html#5276">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

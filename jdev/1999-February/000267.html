@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: Jabber sigs/crypto
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20Jabber%20sigs/crypto&In-Reply-To=Pine.LNX.3.96.990218114133.3011A-100000%40olaf.nick.org">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000264.html">
+   <LINK REL="Next"  HREF="000259.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: Jabber sigs/crypto</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20Jabber%20sigs/crypto&In-Reply-To=Pine.LNX.3.96.990218114133.3011A-100000%40olaf.nick.org"
+       TITLE="[JDEV] Re: Jabber sigs/crypto">jeremie at jabber.org
+       </A><BR>
+    <I>Fri Feb 19 09:44:35 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000264.html">[JDEV] Re: Jabber sigs/crypto
+</A></li>
+        <LI>Next message: <A HREF="000259.html">[JDEV] MacOS Client?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#267">[ date ]</a>
+              <a href="thread.html#267">[ thread ]</a>
+              <a href="subject.html#267">[ subject ]</a>
+              <a href="author.html#267">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+&gt;<i> &gt; Hmmm...I'm not sure of an obvious way around this right now, but this seems
+</I>&gt;<i> &gt; to be an unacceptable (to me at least) requirement...if I were a user of a
+</I>&gt;<i> &gt; problem like this and was told 'yeah, type your message here, but whatever
+</I>&gt;<i> &gt; you do, don't start with this particular string'...it just would give me
+</I>&gt;<i> &gt; the impression that the system was somehow shoddy.  There must be one way
+</I>&gt;<i> &gt; or another around it...
+</I>&gt;<i> 
+</I>&gt;<i> I agree with this. The jabber protocol is specified by xml tags, it would
+</I>&gt;<i> be relatively easy to simply add it as an option to a &lt;message
+</I>&gt;<i> encrypted=&quot;yes&quot;&gt; tag. 
+</I>
+Well, I'd like to avoid extending the protocol for specific purposes, but
+instead use the built in extension mechanisms.
+
+A message looks like this:
+&lt;message&gt;
+ &lt;to&gt;jeremie&lt;/to&gt;
+ &lt;subject&gt;Hey!&lt;/subject&gt;
+ &lt;say&gt;This is just a test message.&lt;/say&gt;
+&lt;/message&gt;
+
+To extend it, you just have to add:
+ &lt;ext&gt;ANYTHING CAN GO HERE&lt;/ext&gt;
+
+So, a signed message *could* be:
+&lt;message&gt;
+ &lt;to&gt;jeremie&lt;/to&gt;
+ &lt;ext&gt;
+  &lt;secure&gt;
+   &lt;sig type=&quot;whatever&quot;&gt;asdf asdg ashqrtq134643yqd&lt;/sig&gt;
+  &lt;/secure&gt;
+ &lt;/ext&gt;
+ &lt;subject&gt;Hey!&lt;/subject&gt;
+ &lt;say&gt;This is just a test message.&lt;/say&gt;
+&lt;/message&gt;
+
+Or, based on above, you could put just about anything you wanted between
+the &lt;secure&gt;&lt;/secure&gt; tags.  Everything the the &lt;ext&gt;&lt;/ext&gt; gets passed
+right through the server untouched.  I'm guessing that different projects
+for different purposes will create their own little &quot;namespace&quot; within the
+ext tags, such as the security/encryption stuff might use
+&lt;secure&gt;&lt;/secure&gt;.
+
+&gt;<i> &gt; Yeah, so this is what I was talking about earlier...if the Jabber server
+</I>&gt;<i> &gt; needs to verify a digital sig for every user as they log on, will this
+</I>&gt;<i> &gt; place an unacceptable processing burden on the server's CPU?  (or in other
+</I>&gt;<i> &gt; words will server scalability suck because of this processing overhead)  I
+</I>&gt;<i> &gt; think I need to do some investigation into how fast verification is with a
+</I>&gt;<i> &gt; variety of algorithms.
+</I>&gt;<i> 
+</I>&gt;<i> We currently verify a user based on a login name and password. Surely the
+</I>&gt;<i> digital signature can be incorporated into some type of password scheme.
+</I>&gt;<i> Verifying the digital signature shouldn't be any more computationally
+</I>&gt;<i> intensive than verifying a password, ideally anyway.
+</I>
+Well, wouldn't the digital sig used for authentication just BE the
+password?  Such as:
+&lt;login&gt;
+ &lt;user&gt;myuserid&lt;/user&gt;
+ &lt;pass&gt;Q#$^@#%Yqfdgq346 My DIGITAL SIGNATURE&lt;/pass&gt;
+ &lt;nick&gt;My NickName&lt;/nick&gt;
+&lt;/login&gt;
+
+This would work GREAT, because the user/pass is fed to the module API so
+you could just have an optional &quot;secure&quot; module that allows you to have
+digital sigs as the password and authenticates the user.
+
+Jer
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000264.html">[JDEV] Re: Jabber sigs/crypto
+</A></li>
+	<LI>Next message: <A HREF="000259.html">[JDEV] MacOS Client?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#267">[ date ]</a>
+              <a href="thread.html#267">[ thread ]</a>
+              <a href="subject.html#267">[ subject ]</a>
+              <a href="author.html#267">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

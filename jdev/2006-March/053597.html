@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: tls + plain sasl not working
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20tls%20%2B%20plain%20sasl%20not%20working&In-Reply-To=%3C442183F0.7000300%40jabber.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="053596.html">
+   <LINK REL="Next"  HREF="053598.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: tls + plain sasl not working</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20tls%20%2B%20plain%20sasl%20not%20working&In-Reply-To=%3C442183F0.7000300%40jabber.org%3E"
+       TITLE="[jdev] Re: tls + plain sasl not working">stpeter at jabber.org
+       </A><BR>
+    <I>Wed Mar 22 11:05:52 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="053596.html">[jdev] Re: tls + plain sasl not working
+</A></li>
+        <LI>Next message: <A HREF="053598.html">[jdev] tls + plain sasl not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53597">[ date ]</a>
+              <a href="thread.html#53597">[ thread ]</a>
+              <a href="subject.html#53597">[ subject ]</a>
+              <a href="author.html#53597">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Ralph Meijer wrote:
+&gt;<i> On Wed, Mar 22, 2006 at 01:25:47PM -0300, Gaston Dombiak wrote:
+</I>&gt;&gt;<i> Hey Norman,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Wildfire implementation is based on 
+</I>&gt;&gt;<i> <A HREF="http://www.ietf.org/internet-drafts/draft-ietf-sasl-plain-08.txt.">http://www.ietf.org/internet-drafts/draft-ietf-sasl-plain-08.txt.</A> My 
+</I>&gt;&gt;<i> understanding after reading &quot;
+</I>&gt;&gt;<i> The mechanism consists of a single message, a string of [UTF-8]
+</I>&gt;&gt;<i>   encoded [Unicode] characters, from the client to the server.  The
+</I>&gt;&gt;<i>   client presents the authorization identity (identity to act as),
+</I>&gt;&gt;<i>   followed by a NULL (U+0000) character, followed by the authentication
+</I>&gt;&gt;<i>   identity (identity whose password will be used), followed by a NULL
+</I>&gt;&gt;<i>   (U+0000) character, followed by the clear-text password.&quot;
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> is that the client MUST include the user and password in the &lt;auth&gt; PLAIN 
+</I>&gt;&gt;<i> stanza. I don't see any option for sending an empty &lt;auth&gt; PLAIN stanza and 
+</I>&gt;&gt;<i> expecting the server to send a challenge so that the client can send the 
+</I>&gt;&gt;<i> user and password information. Have I missed something here? :)
+</I>&gt;<i> 
+</I>&gt;<i> The point is that SASL allows for two different ways of conveying the
+</I>&gt;<i> so-called initial response (a similar thing happens with 'additional
+</I>&gt;<i> data on success').
+</I>&gt;<i> 
+</I>&gt;<i> 1. The SASL profile defines a way to send along the initial response
+</I>&gt;<i> with the start of the authentication exchange in one message. The XMPP
+</I>&gt;<i> SASL profile allows for this in by putting this data in the &lt;auth/&gt;
+</I>&gt;<i> element as CDATA.
+</I>&gt;<i> 
+</I>&gt;<i> 2. The protocol using SASL doesn't provide that ability. This is solved
+</I>&gt;<i> by having the server send an empty challenge, to which the client
+</I>&gt;<i> responds with the initial response. An example of this is the IMAP SASL
+</I>&gt;<i> profile.
+</I>&gt;<i> 
+</I>&gt;<i> (Very) unfortunately, the MD5-DIGEST examples in RFC 3920 (XMPP Core)
+</I>&gt;<i> use method #2, basically because the most prominent use of SASL is in
+</I>&gt;<i> IMAP. This will be rectified in RFC 3920bis
+</I>&gt;<i> 
+</I>&gt;<i> Now, the question really is: if you (as a SASL profile) support method
+</I>&gt;<i> #1, do you also have to support #2? 
+</I>
+rfc2222bis (just approved by the IESG for publication as an RFC to
+superseded RFC 2222) states:
+
+******
+
+  Some mechanisms specify that the first data sent in the authentication
+  exchange is from the client to the server.  Protocols may provide an
+  optional initial response field in the request message to carry this
+  data.  Where the mechanism specifies the first data sent in the
+  exchange is from the client to the server, the protocol provides an
+  optional initial response field, and the client uses this field, the
+  exchange is shortened by one round-trip:
+
+      C: Request authentication exchange + Initial response
+      &lt;additional challenge/response messages&gt;
+      S: Outcome of authentication exchange
+
+  Where the mechanism specifies the first data sent in the exchange is
+  from the client to the server and this field is unavailable or unused,
+  the client request is followed by an empty challenge.
+
+      C: Request authentication exchange
+      S: Empty Challenge
+      C: Initial Response
+      &lt;additional challenge/response messages&gt;
+      S: Outcome of authentication exchange
+
+  Should a client include an initial response in its request where the
+  mechanism does not allow the client to send data first, the
+  authentication exchange fails.
+
+******
+
+Now this is still not crystal clear, I think. Does &quot;protocols may
+provide an optional initial response field&quot; mean that &quot;optionally, a
+protocol may require the client to send the initial response&quot; or does it
+mean &quot;a protocol may specify a way for the client to send the initial
+response, and sending the initial response is optional&quot;? I read this as
+stating the former -- that a protocol may require the client to send an
+initial response. But I will seek clarification on this point with my
+SASL friends.
+
+Peter
+
+- --
+Peter Saint-Andre
+Jabber Software Foundation
+<A HREF="http://www.jabber.org/people/stpeter.shtml">http://www.jabber.org/people/stpeter.shtml</A>
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (Darwin)
+Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org">http://enigmail.mozdev.org</A>
+
+iD8DBQFEIYPwNF1RSzyt3NURAvXMAJ0UjtBCqtUDTsyibO3PksT3yFhG+QCgp82e
+DStE3FBP1eymjLCP3PhLOmg=
+=G8CG
+-----END PGP SIGNATURE-----
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 3641 bytes
+Desc: S/MIME Cryptographic Signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20060322/b714edd1/attachment-0001.bin">https://www.jabber.org/jdev/attachments/20060322/b714edd1/attachment-0001.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="053596.html">[jdev] Re: tls + plain sasl not working
+</A></li>
+	<LI>Next message: <A HREF="053598.html">[jdev] tls + plain sasl not working
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53597">[ date ]</a>
+              <a href="thread.html#53597">[ thread ]</a>
+              <a href="subject.html#53597">[ subject ]</a>
+              <a href="author.html#53597">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

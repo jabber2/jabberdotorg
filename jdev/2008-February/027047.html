@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] XEP-0115: Distinguishing new usage of 'ver' attribute as	hash from old usage as version string.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20XEP-0115%3A%20Distinguishing%20new%20usage%20of%20%27ver%27%20attribute%20as%0A%09hash%20from%20old%20usage%20as%20version%20string.&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="027053.html">
+   <LINK REL="Next"  HREF="027048.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] XEP-0115: Distinguishing new usage of 'ver' attribute as	hash from old usage as version string.</H1>
+    <B>Armando Jagucki</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20XEP-0115%3A%20Distinguishing%20new%20usage%20of%20%27ver%27%20attribute%20as%0A%09hash%20from%20old%20usage%20as%20version%20string.&In-Reply-To="
+       TITLE="[jdev] XEP-0115: Distinguishing new usage of 'ver' attribute as	hash from old usage as version string.">armando.jagucki at jivesoftware.com
+       </A><BR>
+    <I>Wed Feb  6 16:38:23 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="027053.html">[jdev] Bytestreams fallback mechanism
+</A></li>
+        <LI>Next message: <A HREF="027048.html">[jdev] XEP-0115: Distinguishing new usage of 'ver' attribute as	hash from old usage as version string.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27047">[ date ]</a>
+              <a href="thread.html#27047">[ thread ]</a>
+              <a href="subject.html#27047">[ subject ]</a>
+              <a href="author.html#27047">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Version 1.4 of XEP-0115, Entity Capabilities, changes the usage of the 'ver' 
+attribute sent with a presence packet. In clients supporting an older version 
+of XEP-0115, they use this attribute to signify the version of the client. 
+With version 1.4 of the XEP, the 'ver' attribute is used as a hash containing 
+the capabilities of the client (identities and features).
+
+XEP-0115 states: &quot;The client MUST check the identities and supported features 
+against the 'ver' value by calculating the hash as described under Generating 
+the ver Attribute and making sure that the values match. If the values do not 
+match, the client MUST NOT accept or cache the 'ver' value as reliable and 
+SHOULD check the value of another user who advertises that value (if any). 
+This helps to prevent poisoning of entity capabilities information.&quot;
+
+Let us examine the case where a client connects with a 'ver' attribute 
+containing a version string (eg. an older client), and not a hash of its 
+capabilities.
+
+&lt;presence&gt;
+  &lt;c xmlns='<A HREF="http://jabber.org/protocol/caps'">http://jabber.org/protocol/caps'</A>
+     node='<A HREF="http://exodus.jabberstudio.org/caps'">http://exodus.jabberstudio.org/caps'</A>
+     ver='0.9'/&gt;
+&lt;/presence&gt;
+
+The server checks its cache for a 'ver' hash of '0.9' and after noticing it is 
+not present it sends a disco#info to discover the client's capabilities. When 
+the capabilities are returned the server generates a hash as described in the 
+XEP and then compares this generated hash with the received 'ver' 
+string, '0.9', which will of course not match. If I understand correctly, the 
+server must NOT cache the capabilities because they could not be verified, 
+and they may have been poisoned. 
+
+As you can see, the server will never cache the capabilities for the older 
+clients, because their 'ver' attributes will never match the generated hash. 
+This results in the server sending out a disco#info on each presence since 
+the capabilities will never be added to the cache. Sending a disco#info 
+request on each presence is of course not ideal. 
+
+How then can we distinguish between the new usage of 'ver' attribute as a hash 
+from the old usage as version string. Am I misunderstanding something here? I 
+read that the new XEP was backwards compatible with clients implementing the 
+older version. What are the cache rules for these 'old' clients?
+
+
+
+P.S. This is the current behavior in Openfire, as I implemented it myself. Joe 
+Hildebrand noticed the extraneous disco#info packets and brought it to Gato's 
+attention who brought it to mine. :)
+
+
+Regards,
+-- 
+Armando Jagucki
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="027053.html">[jdev] Bytestreams fallback mechanism
+</A></li>
+	<LI>Next message: <A HREF="027048.html">[jdev] XEP-0115: Distinguishing new usage of 'ver' attribute as	hash from old usage as version string.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27047">[ date ]</a>
+              <a href="thread.html#27047">[ thread ]</a>
+              <a href="subject.html#27047">[ subject ]</a>
+              <a href="author.html#27047">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

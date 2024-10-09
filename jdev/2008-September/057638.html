@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] SIMPLE or XMPP?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SIMPLE%20or%20XMPP%3F&In-Reply-To=%3C7206.1222793948.545683%40invsysm1%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="057637.html">
+   <LINK REL="Next"  HREF="057640.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] SIMPLE or XMPP?</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SIMPLE%20or%20XMPP%3F&In-Reply-To=%3C7206.1222793948.545683%40invsysm1%3E"
+       TITLE="[jdev] SIMPLE or XMPP?">dave at cridland.net
+       </A><BR>
+    <I>Tue Sep 30 11:59:08 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="057637.html">[jdev] SIMPLE or XMPP?
+</A></li>
+        <LI>Next message: <A HREF="057640.html">[jdev] jabber server integration consulting work
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57638">[ date ]</a>
+              <a href="thread.html#57638">[ thread ]</a>
+              <a href="subject.html#57638">[ subject ]</a>
+              <a href="author.html#57638">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tue Sep 30 17:28:14 2008, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aragalo at cs.uct.ac.za</A> wrote:
+&gt;<i> My question is: Is it possible that the UDP version of SIMPLE could  
+</I>&gt;<i> be
+</I>&gt;<i> more bandwidth efficient than XMPP over TCP for the conveyance of  
+</I>&gt;<i> presence
+</I>&gt;<i> information? Evidently SIMPLE is more verbose than XMPP, however  
+</I>&gt;<i> UDP is a
+</I>&gt;<i> much lighter transport layer protocol than TCP.
+</I>
+Short answer: No.
+
+TCP is indeed marginally heavier than UDP - the header is 12 octets  
+bigger. Unfortunately, SIMPLE's presence data is typically more than  
+12 octets bigger than XMPP, so the net gain isn't in SIMPLE's favour.
+
+In addition, there's two other factors that come into play. The  
+largest factor - not as common as it should be - is compression,  
+which, due to using previous TCP packets in the stream, can be very  
+effective - again more than amply outweighing any overhead of TCP.
+
+Also, more than one XMPP stanza can share a single TCP packet - this  
+means the header overhead can be shared between stanzas. So if three  
+or more stanzas share a single TCP packet, it's lower overhead than  
+UDP.
+
+Finally, I would note that whilst TCP is certainly more heavyweight  
+than UDP, traditionally UDP's benefits are that it's connectionless,  
+meaning both fewer resources on the server (not helpful here IMHO,  
+because we're generally dealing with manageable numbers of clients  
+and connected servers) and much more significantly a lower latency  
+from cold to sending data.
+
+XMPP will take up several RTTs before a presence packet is sent from  
+cold - potentially as many as ten or so, although you'll find a very  
+good analysis in the archives of the standards list by Tony Finch.
+
+SIMPLE, on the other hand, can send that immediately, albeit without  
+any TLS etc, so the latency is, in principle, much lower in the &quot;from  
+cold&quot; case.
+
+It's this heavyweight aspect of TCP based protocols that's the reason  
+behind DNS, for example, typically using UDP, since the additional  
+latency of using TCP would really show in session startup times. But  
+it's worth noting that due to the lack of error handling, many  
+operating systems run resolution DNS - ie, workstation-to-resolver -  
+over TCP rather than UDP, maintaining a single TCP session for the  
+OS's resolver service.
+
+Similarly, I'd argue that for client-to-server cases, TCP is much  
+more suitable. An argument could be made that for server-to-server  
+cases UDP might be better, but that ignores aspects like TLS and  
+authentication, which are much harder to get right on UDP, and would  
+likely overshadow the additional setup cost of TCP anyway.
+
+Dave.
+-- 
+Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at dave.cridland.net</A>
+  - <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+  - <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="057637.html">[jdev] SIMPLE or XMPP?
+</A></li>
+	<LI>Next message: <A HREF="057640.html">[jdev] jabber server integration consulting work
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57638">[ date ]</a>
+              <a href="thread.html#57638">[ thread ]</a>
+              <a href="subject.html#57638">[ subject ]</a>
+              <a href="author.html#57638">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

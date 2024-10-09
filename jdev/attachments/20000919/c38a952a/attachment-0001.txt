@@ -1,0 +1,61 @@
+Index: pthsock_client.c
+===================================================================
+RCS file: /home/cvs/pthsock/pthsock_client.c,v
+retrieving revision 1.27
+diff -r1.27 pthsock_client.c
+253c253
+<     pth_msgport_destory(c->queue);
+---
+>     pth_msgport_destroy(c->queue);
+Index: pthsock_server.c
+===================================================================
+RCS file: /home/cvs/pthsock/pthsock_server.c,v
+retrieving revision 1.11
+diff -r1.11 pthsock_server.c
+61a62
+>     xmlnode cfg;
+86a88,93
+> /*
+>     Added by TCharron
+>     Reusing the s->sock member on the way in, so it's the socket we're connecting to..
+>     After this, it's overwritten byu the actual socket.  Easier to do this then
+>     Add a new member to be passed into the function.,.
+> */
+88c95
+<     sa.sin_port = htons(5269);
+---
+>     sa.sin_port = htons(s->sock);
+179a187,194
+> /*
+>     Added by TCharron
+>     Reusing the s->sock member on the way in, so it's the socket we're connecting to..
+>     After this, it's overwritten byu the actual socket.  Easier to do this then
+>     Add a new member to be passed into the function.,.
+> */
+>         s->sock = atoi(xmlnode_get_tag_data(si->cfg,"listen"));
+> 
+498a514,515
+>     xdbcache xc;
+>     char *port;
+503c520,530
+<     asock = make_netsocket(5269,NULL,NETSOCKET_SERVER);
+---
+>     si = pmalloco(i->p,sizeof(_ssi));
+> 
+>     xc = xdb_cache(i);
+> 
+>     si->cfg = xdb_get(xc,NULL,jid_new(xmlnode_pool(x),"config@-internal"),"jabberd:pth-ssock:config");
+> 
+>     port = xmlnode_get_tag_data(si->cfg,"listen");
+> 
+>     asock = make_netsocket(atoi(port),NULL,NETSOCKET_SERVER);
+> 
+>     log_error(NULL, "%i is netsocket..", asock);
+512c539
+<         log_error(NULL,"pthsock_server is unable to listen on port 5269");
+---
+>         log_error(NULL,"pthsock_server is unable to listen on port %s", port);
+516d542
+<     si = pmalloco(i->p,sizeof(_ssi));
+
+

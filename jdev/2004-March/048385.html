@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Help parsing incremental XML
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Help%20parsing%20incremental%20XML&In-Reply-To=%3C20040330025039.GK20658%40dev.xaoza.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="048381.html">
+   <LINK REL="Next"  HREF="048360.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Help parsing incremental XML</H1>
+    <B>Trejkaz Xaoza</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Help%20parsing%20incremental%20XML&In-Reply-To=%3C20040330025039.GK20658%40dev.xaoza.net%3E"
+       TITLE="[jdev] Help parsing incremental XML">trejkaz at xaoza.net
+       </A><BR>
+    <I>Mon Mar 29 20:50:39 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="048381.html">[jdev] Help parsing incremental XML
+</A></li>
+        <LI>Next message: <A HREF="048360.html">[jdev] Jabber Source And Sink
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48385">[ date ]</a>
+              <a href="thread.html#48385">[ thread ]</a>
+              <a href="subject.html#48385">[ subject ]</a>
+              <a href="author.html#48385">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> Java has pull parsers available that get around the problem and I find 
+</I>&gt;<i> are much better suited for streaming XML found in XMPP. Pull parsers 
+</I>&gt;<i> are the mirror opposite of push parsers like SAX; in pull parsing 
+</I>&gt;<i> events are pulled from the parser by calling methods on the parser when 
+</I>&gt;<i> you're ready for the next token - as opposed to SAX where the events 
+</I>&gt;<i> are pushed to you in callbacks. For XMPP, you can simplify your logic 
+</I>&gt;<i> by handing the parser over to specialized event consumers based on the 
+</I>&gt;<i> first tag (e.g. see iq tag, give parser to iq handler to read and 
+</I>&gt;<i> handle, etc). The pull parser I've used quite a lot is: 
+</I>&gt;<i> <A HREF="http://www.xmlpull.org">http://www.xmlpull.org</A> which has the benefit of being open source, 
+</I>&gt;<i> small, and wicked fast. BEA is chairing a JCP committee to establish a 
+</I>&gt;<i> Java pull parsing standard (named stax). You can find it at BEA's site, 
+</I>&gt;<i> or the JCP site (search for stax).
+</I>&gt;<i> 
+</I>&gt;<i> Finally, since you're working with Java, I have to push Smack. Java, 
+</I>&gt;<i> open source, simple, extensible, small, and uses xml pull parsing under 
+</I>&gt;<i> the covers. You may want to check it out. Makes working with XMPP in 
+</I>&gt;<i> Java a breeze: <A HREF="http://www.jivesoftware.com/xmpp/smack">http://www.jivesoftware.com/xmpp/smack</A>
+</I>
+Pull parsers are great but I have to feed my input on Smack in here.  It's very nice...
+for the person using the API.  The person who has to write new extension packets is in
+for a world of hurt because you have to use the pull parser directly.  The result of making
+a single mistake, forgetting to parse a tag or what not, is that the entire stream breaks.
+
+It would be much more same to use XPP in a single loop to build up a miniature DOM,
+and then to wrap the DOM with data classes.  You then have no risk of the extension
+developer busting up the stream since all the stream is handled in the same place.
+
+My other gripe with Smack is fairly minor, and it's that they don't reflect the Jabber
+data model.  I'm sure it was done for convenience though because the only place where
+this really sticks out is that they bundle together the Query and the IQ into a single class
+(I would much rather it be in one class.)
+
+But in every other way they rule.  And if you don't need to write any extension packets
+ever, it really is the easiest API.
+
+TX
+
+
+-- 
+'Every sufficiently advanced technology is indistinguishable from magic' - Arthur C Clarke
+'Every sufficiently advanced magic is indistinguishable from technology' - Tom Graves
+
+             Email: Trejkaz Xaoza &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">trejkaz at xaoza.net</A>&gt;
+          Web site: <A HREF="http://xaoza.net/trejkaz/">http://xaoza.net/trejkaz/</A>
+         Jabber ID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">trejkaz at jabber.xaoza.net</A>
+   GPG Fingerprint: 26CF 8621 223F 3916 8872  65C5 9A27 F3C0 130F C71A
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20040330/fcd2045f/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20040330/fcd2045f/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="048381.html">[jdev] Help parsing incremental XML
+</A></li>
+	<LI>Next message: <A HREF="048360.html">[jdev] Jabber Source And Sink
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48385">[ date ]</a>
+              <a href="thread.html#48385">[ thread ]</a>
+              <a href="subject.html#48385">[ subject ]</a>
+              <a href="author.html#48385">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

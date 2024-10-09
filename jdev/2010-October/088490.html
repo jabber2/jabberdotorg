@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Alternate MUC Authentication Mechanisms
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3C779.1287734528.577843%40puncture%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088488.html">
+   <LINK REL="Next"  HREF="088489.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Alternate MUC Authentication Mechanisms</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3C779.1287734528.577843%40puncture%3E"
+       TITLE="[jdev] Alternate MUC Authentication Mechanisms">dave at cridland.net
+       </A><BR>
+    <I>Fri Oct 22 02:02:08 CST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088488.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+        <LI>Next message: <A HREF="088489.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88490">[ date ]</a>
+              <a href="thread.html#88490">[ thread ]</a>
+              <a href="subject.html#88490">[ subject ]</a>
+              <a href="author.html#88490">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu Oct 21 23:58:22 2010, Alex Milowski wrote:
+&gt;<i> I don't see how having a non-cleartext authentication mechanism for
+</I>&gt;<i> MUC rooms changes any security issues that might already be present
+</I>&gt;<i> via a MUC room service.
+</I>
+Well, I think that's really my point, right there.
+
+Given an attacker who is in a position to hijack C2S or S2S streams  
+and inject stanzas, mere replacement of a plaintext method with even  
+a challenge/response-based hash method doesn't appear to change the  
+security issues of MUC all that much at all.
+
+All, in fact, it protects against (that a plaintext password doesn't)  
+is that a purely passive easvesdropper cannot acquire the password.  
+But if that's your sole threat, then Kurt's original salted hash is  
+fine, sans timestamp.
+
+On the other hand, if you're concerned about tampering with the  
+stanzas between the client and the service to any degree, then of  
+course you note Kurt's hash replays. But, equally, so does all the  
+other traffic, allowing someone to hijack a stream and inject any  
+other traffic they choose the moment their victim has joined, leaving  
+all the traffic in the MUC - that presumably you're trying to  
+establish trust for - vulnerable to a wide range of attacks.
+
+To put it another way, even if you proof the join request against  
+replay and spoofing, such that it becomes a (mythical) perfectly  
+secure operation, it'll still be rather like having a six-inch thick  
+steel front door but leaving all your windows open.
+
+Therefore, in order to minimize round-trips and provide security, you  
+need to:
+
+1) Sign all the stanzas with a certificate trusted by the MUC service.
+
+2) Arrange some mechanism for provisioning that certificate. (Which  
+might be a prearranged common trust anchor, or some mechanism whereby  
+the client authenticates in a more complex manner with the MUC  
+service as a one-off to agree on, or sign, a certificate.)
+
+It's this latter case where I propose using SASL, not in the MUC join.
+
+I'm not saying, by the way, that I feel this model is at all  
+sensible. I think it's a fantastic overkill. But it's a sensible  
+option *if* you think the threat model includes a likely injection  
+attack, including replay.
+
+This is why I've been trying to figure out exactly what your threat  
+model is - that is, what potential attacks you're attempting to  
+protect against - in order to figure out how far we need to go to  
+mitigate those attacks.
+
+Dave.
+-- 
+Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at dave.cridland.net</A>
+  - <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+  - <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088488.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+	<LI>Next message: <A HREF="088489.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88490">[ date ]</a>
+              <a href="thread.html#88490">[ thread ]</a>
+              <a href="subject.html#88490">[ subject ]</a>
+              <a href="author.html#88490">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

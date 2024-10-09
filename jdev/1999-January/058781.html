@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Well-formed XML.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Well-formed%20XML.&In-Reply-To=%3C36A79AD9.460C641B%40usa.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058778.html">
+   <LINK REL="Next"  HREF="058779.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Well-formed XML.</H1>
+    <B>Jason Diamond</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Well-formed%20XML.&In-Reply-To=%3C36A79AD9.460C641B%40usa.net%3E"
+       TITLE="[JDEV] Well-formed XML.">sendangels at usa.net
+       </A><BR>
+    <I>Thu Jan 21 15:23:37 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058778.html">[JDEV] Well-formed XML.
+</A></li>
+        <LI>Next message: <A HREF="058779.html">[JDEV] Well-formed XML.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58781">[ date ]</a>
+              <a href="thread.html#58781">[ thread ]</a>
+              <a href="subject.html#58781">[ subject ]</a>
+              <a href="author.html#58781">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Very nice. My workaround used the same hack but was nowhere near as pretty.
+Would this be as easy in other languages like C? I imagine that's what most of
+the clients will be written in.
+
+I patched the server to use &lt;jabber&gt;&lt;/jabber&gt; as a root element and
+everything's parsing fine now.
+
+If the protocol did require the root element, it might actually resemble any
+other XML document. Maybe clients can log every message from their servers for
+a sort of recording of a session. You can playback the log like you were
+watching a movie.
+
+Anyways, I'm gonna to get back to work.
+
+Jason.
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">qbradley at csc.UVic.CA</A> wrote:
+
+&gt;<i> One hackish solution to this problem in Java is to create a custom
+</I>&gt;<i> InputStream like this:
+</I>&gt;<i>
+</I>&gt;<i> public class JabberInputStream extends InputStream
+</I>&gt;<i> {
+</I>&gt;<i>   InputStream inputs[];
+</I>&gt;<i>   InputStream current;
+</I>&gt;<i>   int index;
+</I>&gt;<i>
+</I>&gt;<i>   InputStream input;
+</I>&gt;<i>
+</I>&gt;<i>   public JabberInputStream(InputStream input)
+</I>&gt;<i>   {
+</I>&gt;<i>     this.input = input;
+</I>&gt;<i>     inputs = new InputStream[3];
+</I>&gt;<i>     inputs[0] = new StringBufferInputStream(&quot;&lt;jabber&gt;&quot;);
+</I>&gt;<i>     inputs[1] = input;
+</I>&gt;<i>     inputs[2] = new StringBufferInputStream(&quot;&lt;/jabber&gt;&quot;);
+</I>&gt;<i>     index = 0;
+</I>&gt;<i>     current = inputs[index];
+</I>&gt;<i>   }
+</I>&gt;<i>
+</I>&gt;<i>   public void close() throws IOException { input.close(); }
+</I>&gt;<i>   public int read() throws IOException
+</I>&gt;<i>   {
+</I>&gt;<i>     try {
+</I>&gt;<i>       return current.read();
+</I>&gt;<i>     } catch (EOFException eofe) {
+</I>&gt;<i>       if (index &gt;= inputs.length) throw eofe
+</I>&gt;<i>       index++;
+</I>&gt;<i>       current = inputs[index];
+</I>&gt;<i>       return current.read();
+</I>&gt;<i>     }
+</I>&gt;<i>   }
+</I>&gt;<i> }
+</I>&gt;<i>
+</I>&gt;<i> By passing the above class to the XML parsing library, it will basically
+</I>&gt;<i> wrap the &lt;jabber&gt; .. &lt;/jabber&gt; tags around whatever was originally going
+</I>&gt;<i> to be there.
+</I>&gt;<i>
+</I>&gt;<i> However, I agree it would be really nice if the protocol required an
+</I>&gt;<i> entire connection to be wrapped in a surrounding tag.
+</I>&gt;<i>
+</I>&gt;<i> On Thu, 21 Jan 1999, Jason Diamond wrote:
+</I>&gt;<i>
+</I>&gt;<i> &gt; Hi, I have another protocol related suggestion. I've been experimenting
+</I>&gt;<i> &gt; with a Java client and have been using several of the major XML parsers
+</I>&gt;<i> &gt; to test it out. Apparently, a well-formed XML document needs to have a
+</I>&gt;<i> &gt; single root element. Much like the root &lt;html&gt;&lt;!-- everything else goes
+</I>&gt;<i> &gt; here --&gt;&lt;/html&gt; element in HTML. All of the parsers I've tried so far,
+</I>&gt;<i> &gt; stopped parsing at the second &lt;j&gt; element. There are several ugly
+</I>&gt;<i> &gt; workarounds but I think it would be much more conducive to our goals if
+</I>&gt;<i> &gt; we could take any off the shelf XML parser and not have to modify it in
+</I>&gt;<i> &gt; order to write a Jabber client. So, I propose that both the server and
+</I>&gt;<i> &gt; client wrap all their messages in a root &lt;jabber&gt;&lt;/jabber&gt; element.
+</I>&gt;<i> &gt; Attributes could be used to specify the client and protocol much like
+</I>&gt;<i> &gt; the current &lt;j type='connection'&gt; element. Maybe something like this:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &lt;jabber agent='Jabzilla v1.0' protocol='19990121'&gt;
+</I>&gt;<i> &gt;   &lt;j type='login'&gt;&lt;user&gt;foo&lt;/user&gt;&lt;pass&gt;bar&lt;/pass&gt;&lt;/j&gt;
+</I>&gt;<i> &gt;   &lt;!-- etc. --&gt;
+</I>&gt;<i> &gt; &lt;/jabber&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The end &lt;/jabber&gt; element could be used to indicate that the server or
+</I>&gt;<i> &gt; client is getting ready to close the connection. Comments? I'm in the
+</I>&gt;<i> &gt; process of downloading Cygwin32 so that I can make the necessary changes
+</I>&gt;<i> &gt; to the server to test it out.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Just out of curiosity, why are all the messages between client and
+</I>&gt;<i> &gt; server wrapped in a &lt;j type='foo'&gt; element? Why not &lt;login&gt; or
+</I>&gt;<i> &gt; &lt;message&gt;? If we used element names rather than attribute types to
+</I>&gt;<i> &gt; distinguish the purpose of a message, we could create a DTD specifying
+</I>&gt;<i> &gt; what elements are allowed to be nested in others. For example, &lt;user&gt;
+</I>&gt;<i> &gt; and &lt;pass&gt; would only be allowed in a &lt;login&gt; element. I'm not proposing
+</I>&gt;<i> &gt; that we validate the XML as it comes in from the server, but it could be
+</I>&gt;<i> &gt; used as a specification. Much like EBNF is for more traditional
+</I>&gt;<i> &gt; protocols. And who knows, maybe while implementing and debugging our
+</I>&gt;<i> &gt; clients we could have it validate the XML as an aid to determine a
+</I>&gt;<i> &gt; source of errors.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Bye,
+</I>&gt;<i> &gt; Jason.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i> Quetzalcoatl Bradley
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">qbradley at csc.uvic.ca</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058778.html">[JDEV] Well-formed XML.
+</A></li>
+	<LI>Next message: <A HREF="058779.html">[JDEV] Well-formed XML.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58781">[ date ]</a>
+              <a href="thread.html#58781">[ thread ]</a>
+              <a href="subject.html#58781">[ subject ]</a>
+              <a href="author.html#58781">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

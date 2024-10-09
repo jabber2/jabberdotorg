@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] A query regarding &lt;iq/&gt; element
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20A%20query%20regarding%20%3Ciq/%3E%20element&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="012103.html">
+   <LINK REL="Next"  HREF="012108.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] A query regarding &lt;iq/&gt; element</H1>
+    <B>Ritu Khetan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20A%20query%20regarding%20%3Ciq/%3E%20element&In-Reply-To="
+       TITLE="[JDEV] A query regarding &lt;iq/&gt; element">ritu at netcore.co.in
+       </A><BR>
+    <I>Thu Apr 11 05:13:34 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="012103.html">[JDEV] msn headlines fix
+</A></li>
+        <LI>Next message: <A HREF="012108.html">[JDEV] A query regarding &lt;iq/&gt; element
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12104">[ date ]</a>
+              <a href="thread.html#12104">[ thread ]</a>
+              <a href="subject.html#12104">[ subject ]</a>
+              <a href="author.html#12104">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello all, 
+
+I am studying the Programming Jabber book wherein I was
+studying about the \&quot;to\&quot; attribute in the &lt;iq/&gt; element.
+I found  some explanation there which I do not
+understand, I am thoroughly confused...
+
+Here is what it says.. [Page 163, CHapter 5 - Jabber
+Building Blocks]
+
+to attribute - Optional
+
+Synopsis
+&lt;iq to=\'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at conference.jabber.org</A>\'/&gt;
+
+This attribute is used to specify the intended recipient
+of the info/query action or response.
+If no to attribute is specified, the delivery of the
+packet is set to the sender, as is the case for
+&lt;message/&gt; packets. However, unlike the case for
+&lt;message/&gt; packets, &lt;iq/&gt; packets are usually dealt with
+enroute and handled by the JSM.
+
+What does that mean? Packets sent from a client travel
+over a jabber:client XML stream and reach the Jabber
+server, where they\'re routed to the JSM. [7]
+
+A large part of the JSM consists of a series of packet
+handlers whose job it is to review packets as they pass
+through and act upon them as appropriate; some of these
+actions may cause the packet to be deemed to have been
+?delivered? to its intended destination (thus causing
+the packet routing to end for that packet) before it
+gets there.
+
+So in the case of &lt;iq/&gt; packets without a to attribute,
+the default destination is the sender\'s JID, as we\'ve
+already seen with the &lt;message/&gt; element. But because
+JSM handlers that receive the packet may perform some
+action to handle it and cause that packet\'s delivery to
+be terminated (marked complete) prematurely, the effect
+is that something sensible will happen to the &lt;iq/&gt;
+packet that doesn\'t have a to attribute and it won\'t
+appear to act like a boomerang.
+
+Here\'s an example:
+
+The namespace jabber:iq:browse represents a powerful
+browsing mechanism that pervades much of the Jabber
+server\'s services and components. Sending a simple
+browse request without specifying a destination (no to
+attribute):
+
+SEND: &lt;iq type=\'get\'&gt;
+&lt;query xmlns=\'jabber:iq:browse\'/&gt;
+&lt;/iq&gt;
+
+will technically be determined to have a destination of
+the sender\'s JID. However, a JSM handler called
+mod_browse which performs browsing services gets a
+look-in at the packet before it reaches the sender and
+handles the packet to the extent that the query is
+deemed to have been answered and so the delivery
+completed. The packet stops travelling in the sender\'s
+direction, having been responded to by mod_browse:
+
+RECV: &lt;iq type=\'result\' to=\'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dj at yak</A>/sjabber\' from=\'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dj at yak</A>\'&gt;
+&lt;user name=\'DJ Adams\' xmlns=\'jabber:iq:browse\'
+jid=\'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dj at yak</A>\'/&gt;
+&lt;/iq&gt;
+
+And while we\'re digressing, here\'s a meta-digression: We
+see from this example that a browse to a particular JID
+is handled at the server. The client doesn\'t even get a
+chance to respond. So, as one of browsing\'s remits is to
+facilitate resource discovery (the idea is that you can
+query someone\'s client to find out what that client
+supports?whiteboarding or XHTML text display, for
+example), how is this going to work if the client
+doesn\'t see the request and can\'t respond? [8]
+
+The answer lies in the distinction of specifying the
+recipient JID with or without resource. As a resource is
+per-client connection and often represents that client,
+it makes sense to send a browse request to a JID
+including a specific resource:
+
+SEND: &lt;iq type=\'get\' to=\'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">qmacro at jabber.org</A>/sjabber\'&gt;
+&lt;query xmlns=\'jabber:iq:browse\'/&gt;
+&lt;/iq&gt;
+
+This time the destination JID is resource-specific and
+the packet passes by the mod_browse handler to reach the
+client (sjabber), where a response can be returned: [9]
+
+RECV: &lt;iq type=\'result\' to=\'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">piers at jabber.org</A>/WinJab
+                      from=\'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">qmacro at jabber.org</A>/sjabber\'&gt;
+&lt;user type=\'client\' xmlns=\'jabber:iq:browse\'
+                         jid=\'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">qmacro at jabber.org</A>/sjabber\'&gt;
+&lt;whiteboard/&gt;
+&lt;videochat/&gt;
+&lt;PGP/&gt;
+&lt;/user&gt;
+&lt;/iq&gt;
+
+
+Can someone explain why does the iq result come in the
+form of &lt;user name...DJ Adams ...jid=\'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dj at yak</A>\'/&gt;
+
+Further, what is this funda about the client nothing
+getting a chance to respond..I do not understand this...
+
+Thanks in advance.
+
+Regards,
+Ritu
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="012103.html">[JDEV] msn headlines fix
+</A></li>
+	<LI>Next message: <A HREF="012108.html">[JDEV] A query regarding &lt;iq/&gt; element
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12104">[ date ]</a>
+              <a href="thread.html#12104">[ thread ]</a>
+              <a href="subject.html#12104">[ subject ]</a>
+              <a href="author.html#12104">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

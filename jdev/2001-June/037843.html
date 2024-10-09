@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: [jadmin] Firewall/NAT in front of jabber server
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20%5Bjadmin%5D%20Firewall/NAT%20in%20front%20of%20jabber%20server&In-Reply-To=%3C20010622083316.A32454%40gnu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="037842.html">
+   <LINK REL="Next"  HREF="037844.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: [jadmin] Firewall/NAT in front of jabber server</H1>
+    <B>DJ Adams</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20%5Bjadmin%5D%20Firewall/NAT%20in%20front%20of%20jabber%20server&In-Reply-To=%3C20010622083316.A32454%40gnu%3E"
+       TITLE="[JDEV] Re: [jadmin] Firewall/NAT in front of jabber server">dj.adams at pobox.com
+       </A><BR>
+    <I>Fri Jun 22 02:33:16 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="037842.html">[JDEV] Re: [dev] Jabelin meeting
+</A></li>
+        <LI>Next message: <A HREF="037844.html">[JDEV] [jadmin] Firewall/NAT  --&gt; where must be put the &lt;alias/&gt; ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37843">[ date ]</a>
+              <a href="thread.html#37843">[ thread ]</a>
+              <a href="subject.html#37843">[ subject ]</a>
+              <a href="author.html#37843">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, Jun 21, 2001 at 08:58:31PM -0700, Steven P. Donegan wrote:
+&gt;<i> I have just built the jabber server, tested it locally, and see that
+</I>&gt;<i> connections from the client to the server appear to require a match of
+</I>&gt;<i> IP/DNS - ie the server is 192.168.1.15 (internal), it's dns is X and if I
+</I>&gt;<i> attempt to connect via IP it refuses the connection. This is with a vanilla
+</I>
+Hi 
+
+I'm not quite sure I've understood your question (because one answer would
+be to run a local (internal) DNS), but if the question is &quot;how do I run a
+Jabber server so that people can connect using an IP address or a hostname&quot;, 
+then I'll have a go at answering:
+
+Status Quo
+----------
+What normally happens is that when given a (physical) address to connect
+to, whether that be a hostname or IP address, a client will use that to
+determine the socket to connect to, and also specify it in the opening
+XML stream root tag:
+
+In the case of an IP address specified, it'd look like this:
+
+&lt;stream:stream xmlns='jabber:client'
+               xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> 
+               to='192.168.0.21'&gt;
+
+
+
+Possible Solution
+-----------------
+You can use the &lt;alias/&gt; directive in the c2s configuration like this:
+
+&lt;alias to='hostname.com'&gt;192.168.0.21&lt;/alias&gt;
+
+to say &quot;when 192.168.0.21 is given in the to='', it's really hostname.com&quot;
+
+or even
+
+&lt;alias to='hostname.com'/&gt;
+
+to say &quot;whatever is specified in the to='', make it hostname.com&quot;.
+
+With the latter alias config, the jabber server will return this in 
+response to the stream header tag above:
+
+&lt;stream:stream xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>
+               id='3B32E988'
+               xmlns='jabber:client'
+               from='hostname.com'&gt;
+
+If you've set the &lt;host/&gt; to hostname.com in your sessions instance, then
+all should be well, and you can give 'hostname.com' to the client, or 
+'192.168.0.21' to the client, and all should be fine. This is because the
+client should look at the from='' attrib in the returned stream header and
+use that in forming any JIDs for that Jabber server host.
+
+Gotcha
+------
+I'm not sure that all clients make use of this feature, not least because
+I don't think it's that well known.
+
+
+Hope that helps
+dj
+
+p.s. I'm sending this to the jdev list too to see if there any further
+comments on this &lt;alias/&gt; directive.
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="037842.html">[JDEV] Re: [dev] Jabelin meeting
+</A></li>
+	<LI>Next message: <A HREF="037844.html">[JDEV] [jadmin] Firewall/NAT  --&gt; where must be put the &lt;alias/&gt; ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37843">[ date ]</a>
+              <a href="thread.html#37843">[ thread ]</a>
+              <a href="subject.html#37843">[ subject ]</a>
+              <a href="author.html#37843">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

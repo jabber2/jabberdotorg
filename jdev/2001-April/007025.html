@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Non english messages problem (solution)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Non%20english%20messages%20problem%20%28solution%29&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007024.html">
+   <LINK REL="Next"  HREF="007044.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Non english messages problem (solution)</H1>
+    <B>wil at home</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Non%20english%20messages%20problem%20%28solution%29&In-Reply-To="
+       TITLE="[JDEV] Non english messages problem (solution)">wil at dready.org
+       </A><BR>
+    <I>Sun Apr  8 17:21:32 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007024.html">[JDEV] Non english messages problem (solution)
+</A></li>
+        <LI>Next message: <A HREF="007044.html">[JDEV] Non english messages problem (solution)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7025">[ date ]</a>
+              <a href="thread.html#7025">[ thread ]</a>
+              <a href="subject.html#7025">[ subject ]</a>
+              <a href="author.html#7025">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>You have a valid point that it places a lot of effort on the client side to
+do charset conversion.  However, that is the most complete solution, simply
+because it puts the power at the users hands.
+If the conversion is done on the ICQ transport, e.g.
+Hackee has 2 friends, A and B.  A uses linux with koi8-r encoding, while B
+uses Windows with cp1251 encoding.  If the preferred encoding is set to
+cp1251, and Hackee receives a message from A, the ICQ transport would
+convert the raw bytes from ICQ, treating it like it was cp1251, and the end
+result would be wrong.  How is Hackee gonna reverse engineer it, switch the
+encoding for the ICQ agent and tell A to resend?
+
+Another way would be to associate each user with a preferred encoding, that
+sort of solves the problem, but still could be frustrating if the sender
+decides to switch OS :)
+
+wil
+
+----- Original Message -----
+From: &quot;Alexander Tsvyashchenko&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ndl at ndl.unicyb.kiev.ua</A>&gt;
+To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Cc: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">icq-dev at jabber.org</A>&gt;
+Sent: Monday, April 09, 2001 4:26 AM
+Subject: Re: [JDEV] Non english messages problem (solution)
+
+
+&gt;<i> Hello, &quot;wil at home&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">wil at dready.org</A>&gt;!
+</I>&gt;<i>
+</I>&gt;<i> AFAIK ICQ doesn't support encoding information.
+</I>&gt;<i> But I think Hackee is right proposing &quot;right click on the ICQ agent, and
+</I>set preferred encoding&quot;.
+&gt;<i>   For first, it seems in most cases user will know encoding for all
+</I>incoming/outgoing messages from ICQ (for example, all russian/ukrainian
+users use cp1251 encoding in ICQ messages).
+&gt;<i>   For second: how are You imaging process of &quot;setting encoding
+</I>individually for every message&quot;? ICQ transport receives an ICQ message for
+me. ICQ transport should convert it to unicode and send to the client. How
+can it know what encoding incoming message has? I see only one realistic way
+to handle this: set assumed encoding for ICQ transport by user for all
+messages. Of course, second way is to encode this message just as sequence
+of bytes and send to client to let client handle encoding of this message.
+Then Your proposition (setting encoding for every message individually) will
+work, but as I understand this way will break general idea of jabber:
+equality of handling of all messages by client without relation to the
+transport.
+&gt;<i>   With outgoing messages situation is simplier (it's possible to add extra
+</I>tag to the message with desired outgoing encoding), but this also will
+somewhat break uniformity of handling messages.
+&gt;<i>   So I think that setting assumed encoding for ICQ transport for all
+</I>incoming/outgoing messages is the best and the easiest way. There is only
+one problem: is anyone going to implement this?
+&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Good luck!                                     Alexander.
+</I>&gt;<i>
+</I>&gt;<i> On Mon, 9 Apr 2001 01:39:07 +0800
+</I>&gt;<i> &quot;wil at home&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">wil at dready.org</A>&gt; wrote:
+</I>&gt;<i>
+</I>&gt;<i> WAH&gt; We have encountered similar problems with non i18n aware
+</I>applications, esp.
+&gt;<i> WAH&gt; interoperability between applications who use different encodings.
+</I>&gt;<i> WAH&gt;
+</I>&gt;<i> WAH&gt; I don't know much about the ICQ protocol, maybe someone could point
+</I>out if
+&gt;<i> WAH&gt; it does send encoding information.  Working on the assumption that
+</I>ICQ does
+&gt;<i> WAH&gt; not support it, then messages would of course be treated as iso8859-1
+</I>(or
+&gt;<i> WAH&gt; rather most apps will not even care, these days we're luckier because
+</I>&gt;<i> WAH&gt; programmers don't strip the 8th bit of a characters).
+</I>&gt;<i> WAH&gt;
+</I>&gt;<i> WAH&gt; Hackee brought out an interesting workaround, which is to do allow
+</I>the users
+&gt;<i> WAH&gt; to select the encoding at the application level, since you can't do
+</I>it at
+&gt;<i> WAH&gt; the protocol level due to missing encoding information.  However, I
+</I>disagree
+&gt;<i> WAH&gt; with him to &quot;right click on the ICQ agent, and set preferred
+</I>encoding&quot;.  It
+&gt;<i> WAH&gt; should be done at individual message level, that is when viewing /
+</I>composing
+&gt;<i> WAH&gt; a message, you select the encoding that this message should be viewed
+</I>in /
+&gt;<i> WAH&gt; converted to for sending.
+</I>&gt;<i> WAH&gt;
+</I>&gt;<i> WAH&gt; This is similar to the browsers / email clients.  When a html page
+</I>does not
+&gt;<i> WAH&gt; contain the encoding tag, IE would use the default encoding, but user
+</I>can
+&gt;<i> WAH&gt; override the encoding using the &quot;View-&gt;Encoding&quot; menu.
+</I>&gt;<i> WAH&gt;
+</I>&gt;<i> WAH&gt; wil
+</I>&gt;<i> WAH&gt;
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007024.html">[JDEV] Non english messages problem (solution)
+</A></li>
+	<LI>Next message: <A HREF="007044.html">[JDEV] Non english messages problem (solution)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7025">[ date ]</a>
+              <a href="thread.html#7025">[ thread ]</a>
+              <a href="subject.html#7025">[ subject ]</a>
+              <a href="author.html#7025">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

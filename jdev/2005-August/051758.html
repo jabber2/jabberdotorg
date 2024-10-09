@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] jabber:iq:auth in the component:accept namespace?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20jabber%3Aiq%3Aauth%20in%20the%20component%3Aaccept%20namespace%3F&In-Reply-To=%3C4A56FFB281DE7C4B88AE10579458A42A02BEE8B9%40NYWEXMB57.msad.ms.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="051776.html">
+   <LINK REL="Next"  HREF="051768.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] jabber:iq:auth in the component:accept namespace?</H1>
+    <B>Katz, Dov B (IT)</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20jabber%3Aiq%3Aauth%20in%20the%20component%3Aaccept%20namespace%3F&In-Reply-To=%3C4A56FFB281DE7C4B88AE10579458A42A02BEE8B9%40NYWEXMB57.msad.ms.com%3E"
+       TITLE="[jdev] jabber:iq:auth in the component:accept namespace?">Dov.Katz at morganstanley.com
+       </A><BR>
+    <I>Thu Aug 18 06:53:18 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="051776.html">[jdev] TLS and SASL procedure
+</A></li>
+        <LI>Next message: <A HREF="051768.html">[jdev] jabber:iq:auth in the component:accept namespace?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51758">[ date ]</a>
+              <a href="thread.html#51758">[ thread ]</a>
+              <a href="subject.html#51758">[ subject ]</a>
+              <a href="author.html#51758">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>This is long, and it's early, so if it doesn't make sense, don't be
+angry with me....
+
+You can do this if you write a component which creates and maintains
+sessions.
+
+I do this in 1.4.x for a web-based jabber client, where the webapp makes
+a component connection to the server, and then brings sessions online
+and routes traffic etc.  It would be the same if you wanted to write
+your own external socket acceptor and accept jabber traffic on other
+ports.  It's a great way to scale up the number of concurrent
+connections since the select loops over client connections is out of
+process.  
+
+The only thing I've found is that I need to have a successful auth
+before I can bring a session up.  In our case, that's fine since I wrote
+the external auth component as well:
+
+Here's what I do:
+
+Let's call my jabber server dovkatz.com
+
+I have ldapauth.dovkatz.com which is an external &quot;accept&quot; component
+handling auth.  This was possible in jabberd 1.4.2x by having
+&lt;auth&gt;jid&lt;/auth&gt; in the config... So first you make your own unique JIDs
+up for your local component's &quot;user sessions&quot;.  This allows you to
+segregate incoming routed traffic.
+
+Then you'll want to process/send route[@type=auth] packets  with the iq
+set for auth (addressed directly to the user's real jabber jid, from
+your local internal jid).  Handle the auth result.  
+
+After that, you can send a route[@type=session] from the internal JID
+for that user, to the real jabber jid of that user.  You will get a
+route[@type=session] response to your internal JID, from the &quot;Session
+Handle&quot; (usually <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">real-username at real-servername</A>/HEX-HASHCODE).  All
+future packets must be routed to that Handle in order for them to appear
+to originate from the user.
+
+When you send or receive a route[@type=error] to/from the Handle, it
+will destroy the session, or if received, notify you that it was
+destroyed.
+
+So basically, any app which has a component connection to the server can
+bring up its own sessions on the server....
+
+BE CAREFUL, b/c if your external process dies there is no way to bring
+the sessions you made offline unless you remember what handles were sent
+to you, or you log in as the user again with the same resource, bouncing
+the previous instance.
+
+Here is my log transcript (servername renamed) of my web-IM component...
+I wrote a java framework for making external sessionvmanagement easy in
+1.4.x jabberd implementations. If I can open source it, I will... (its
+difficult to get approval for these types of things).
+
+
+SEND:
+ &lt;route to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dovkatz at dovkatz.com</A>/super&quot;
+from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">someCustomJID at webclients.dovkatz.com</A>/SomeResource&quot; id=&quot;CTG-C2S-0&quot;
+type=&quot;auth&quot;&gt;
+ &lt;iq to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dovkatz at dovkatz.com</A>/super&quot; id=&quot;189&quot; type=&quot;set&quot;&gt;
+  &lt;query
+xmlns=&quot;jabber:iq:auth&quot;&gt;&lt;username&gt;dovkatz&lt;/username&gt;&lt;password&gt;*******&lt;/pa
+ssword&gt;&lt;resource&gt;super&lt;/resource&gt;
+  &lt;/query&gt;
+ &lt;/iq&gt;
+ &lt;/route&gt;
+
+RECV:
+ &lt;route to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">someCustomJID at webclients.dovkatz.com</A>/SomeResource&quot;
+from=&quot;ldapauth.dovkatz.com&quot; id=&quot;CTG-C2S-0&quot; type=&quot;auth&quot;&gt;
+ &lt;iq id=&quot;189&quot; type=&quot;result&quot;&gt;&lt;query
+xmlns=&quot;jabber:iq:auth&quot;&gt;&lt;username&gt;dovkatz&lt;/username&gt;&lt;resource&gt;super&lt;/reso
+urce&gt;&lt;/query&gt;
+ &lt;/iq&gt;
+ &lt;/route&gt;
+
+SEND:
+ &lt;route to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dovkatz at dovkatz.com</A>/super&quot;
+from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">someCustomJID at webclients.dovkatz.com</A>/SomeResource&quot; id=&quot;190&quot;
+type=&quot;session&quot;&gt;&lt;/route&gt;
+
+RECV:
+ &lt;route to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">someCustomJID at webclients.dovkatz.com</A>/SomeResource&quot;
+from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dovkatz at dovkatz.com</A>/2B20C78&quot; id=&quot;190&quot; type=&quot;session&quot;&gt;&lt;/route&gt;
+
+SEND:
+ &lt;route to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dovkatz at dovkatz.com</A>/2B20C78&quot;
+from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">someCustomJID at webclients.dovkatz.com</A>/SomeResource&quot;
+id=&quot;CTG-C2S-2&quot;&gt;&lt;iq id=&quot;CTG-C2S-1&quot; type=&quot;get&quot;&gt;&lt;query
+xmlns=&quot;jabber:iq:roster&quot;&gt;&lt;/query&gt;&lt;/iq&gt;&lt;/route&gt;
+
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf
+Of Konstantin Klyagin
+Sent: Thursday, August 18, 2005 6:48 AM
+To: Jabber software development list
+Subject: Re: [jdev] jabber:iq:auth in the component:accept namespace?
+
+On Thu, Aug 18, 2005 at 11:42:09AM +0100, Richard Dobson wrote:
+
+&gt;<i> Another solution you might want to look into is using the component 
+</I>&gt;<i> protocol to connect to the server depending on what you are trying to 
+</I>&gt;<i> do this might work for you:
+</I>&gt;<i> <A HREF="http://www.jabber.org/jeps/jep-0114.html">http://www.jabber.org/jeps/jep-0114.html</A>
+</I>
+Thanks, I did read this document. Apart from pretending a user, my
+component does some component-specific things, so the choice of the
+technology was right. But since it allows me to talk to IM gateways and
+login under different user IDs to them, I wonder why not let a component
+pretend to be a Jabber user as well. Otherwise, would I need a Jabber
+gateway for Jabber? :) Just like I have for ICQ, Yahoo!, MSN and other
+networks.
+
+--
+konst at <A HREF="http://thekonst.net/">http://thekonst.net/</A>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+--------------------------------------------------------
+
+NOTICE: If received in error, please destroy and notify sender.  Sender does not waive confidentiality or privilege, and use is prohibited.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="051776.html">[jdev] TLS and SASL procedure
+</A></li>
+	<LI>Next message: <A HREF="051768.html">[jdev] jabber:iq:auth in the component:accept namespace?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51758">[ date ]</a>
+              <a href="thread.html#51758">[ thread ]</a>
+              <a href="subject.html#51758">[ subject ]</a>
+              <a href="author.html#51758">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

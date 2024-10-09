@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Bug in base_accpet?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Bug%20in%20base_accpet%3F&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006326.html">
+   <LINK REL="Next"  HREF="006328.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Bug in base_accpet?</H1>
+    <B>Gang Liu</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Bug%20in%20base_accpet%3F&In-Reply-To="
+       TITLE="[JDEV] Bug in base_accpet?">gang_l at 21cn.com
+       </A><BR>
+    <I>Wed Feb 21 03:34:08 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006326.html">[JDEV] [patch config.c]
+</A></li>
+        <LI>Next message: <A HREF="006328.html">[JDEV] JabberBeans 0.9.0 pre 2 released
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6327">[ date ]</a>
+              <a href="thread.html#6327">[ thread ]</a>
+              <a href="subject.html#6327">[ subject ]</a>
+              <a href="author.html#6327">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+	I go to view the source code of jabberd. I found pth_raise() in mio_write() can not wake up the select loop sometimes.So the xdb request can not send to xdb_file quickly.
+	I am a newbie of pth.Is this a pth problem?
+
+Linux box info: RedHat 6.1
+
+[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at dev</A> jabberd]# uname -a
+Linux dev.vista.internal 2.2.18 #1 Wed Jan 17 11:48:49 CST 2001 i686 unknown
+
+[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at dev</A> jabberd]# gcc -v
+Reading specs from /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/specs
+gcc version egcs-2.91.66 19990314/Linux (egcs-1.1.2 release)
+	
+
+----- Original Message ----- 
+From: Keith Minkler&lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kminkler at jabber.com</A>&gt;
+To: jdev&lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Sent: 2001-2-20 17:01:00
+Subject: Re: [JDEV] Bug in base_accpet?
+
+&gt;<i>Change the &lt;host/&gt; tag in your &lt;service/&gt; section to an &lt;uplink/&gt; and that should fix your problem.
+</I>&gt;<i>
+</I>&gt;<i>The reason for this is that &lt;service/&gt; only routes iq, message, presence, or route tags, not xdb or log..
+</I>&gt;<i>if you want xdb and log routed to this service, you need the &lt;uplink/&gt; which will send ANY undelivered
+</I>&gt;<i>packet to that instance. (which is why it replaces the &lt;host/&gt; tag)
+</I>&gt;<i>
+</I>&gt;<i>Keith Minkler
+</I>&gt;<i>
+</I>&gt;<i>On Tue, Feb 20, 2001 at 08:37:23PM +0800, Gang Liu wrote:
+</I>&gt;&gt;<i> Hi,
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 	I use base_accpet to setup xdb_file in another linux box. Jabber server is 1.4 release.Linux is RedHat 6.1.But jabberd often hang up in xdb request..I also use tcpdump to see network traffic.When jabberd do something like below, nothing is captured by tcpdump.
+</I>&gt;&gt;<i> 	Thanks for your help.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Tue Feb 20 20:24:00 2001  deliver.c:460 DELIVER 2:vista.internal &lt;xdb type='get'
+</I>&gt;&gt;<i>  to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">amx at vista.internal</A>' from='sessions' ns='jabber:iq:roster' id='61'/&gt;
+</I>&gt;&gt;<i> Tue Feb 20 20:24:00 2001  deliver.c:649 delivering to instance 'xdb.vista..intern
+</I>&gt;&gt;<i> al'
+</I>&gt;&gt;<i> Tue Feb 20 20:24:00 2001  mio.c:898 mio_write called on x: 81D4850 buffer: (null
+</I>&gt;&gt;<i> )
+</I>&gt;&gt;<i> Tue Feb 20 20:24:00 2001  xdb.c:201 xdb_get() waiting for <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">amx at vista.internal</A> jab
+</I>&gt;&gt;<i> ber:iq:roster
+</I>&gt;&gt;<i> Tue Feb 20 20:24:15 2001  users.c:82 checking users for host vista.internal
+</I>&gt;&gt;<i> Tue Feb 20 20:24:15 2001  usercount 1   total users
+</I>&gt;&gt;<i> Tue Feb 20 20:24:19 2001  deliver.c:460 DELIVER 2:vista.internal &lt;xdb type='get'
+</I>&gt;&gt;<i>  to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">amx at vista.internal</A>' from='sessions' ns='jabber:iq:roster' id='61'/&gt;
+</I>&gt;&gt;<i> Tue Feb 20 20:24:19 2001  deliver.c:649 delivering to instance 'xdb.vista..intern
+</I>&gt;&gt;<i> al'
+</I>&gt;&gt;<i> Tue Feb 20 20:24:19 2001  mio.c:898 mio_write called on x: 81FC930 buffer: (null
+</I>&gt;&gt;<i> )
+</I>&gt;&gt;<i> Tue Feb 20 20:24:30 2001  deliver.c:460 DELIVER 2:vista.internal &lt;xdb type='get'
+</I>&gt;&gt;<i>  to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">amx at vista.internal</A>' from='sessions' ns='jabber:iq:roster' id='61'/&gt;
+</I>&gt;&gt;<i> Tue Feb 20 20:24:30 2001  deliver.c:649 delivering to instance 'xdb.vista..intern
+</I>&gt;&gt;<i> al'
+</I>&gt;&gt;<i> Tue Feb 20 20:24:30 2001  mio.c:898 mio_write called on x: 81F8D00 buffer: (nu
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Jabber Server config:
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> ....
+</I>&gt;&gt;<i> &lt;xdb id=&quot;xdb.vista.internal&quot;&gt;
+</I>&gt;&gt;<i>  	&lt;host/&gt;
+</I>&gt;&gt;<i>     &lt;accept&gt;
+</I>&gt;&gt;<i>         &lt;ip/&gt;
+</I>&gt;&gt;<i>         &lt;port&gt;5280&lt;/port&gt;
+</I>&gt;&gt;<i>         &lt;secret&gt;secret&lt;/secret&gt;
+</I>&gt;&gt;<i>     &lt;/accept&gt;
+</I>&gt;&gt;<i> &lt;/xdb&gt;
+</I>&gt;&gt;<i> ....
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> xdb_file config:
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> &lt;jabber&gt;
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i>   &lt;service id=&quot;xdb.vista.internal&quot;&gt;
+</I>&gt;&gt;<i>     &lt;host/&gt;
+</I>&gt;&gt;<i>     &lt;connect&gt;
+</I>&gt;&gt;<i>       &lt;ip&gt;192.168.0.1&lt;/ip&gt;
+</I>&gt;&gt;<i>       &lt;port&gt;5280&lt;/port&gt;
+</I>&gt;&gt;<i>       &lt;secret&gt;secret&lt;/secret&gt;
+</I>&gt;&gt;<i>     &lt;/connect&gt;
+</I>&gt;&gt;<i>   &lt;/service&gt;
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i>   &lt;log id='xdblog'&gt;
+</I>&gt;&gt;<i>     &lt;host/&gt;
+</I>&gt;&gt;<i>     &lt;format&gt;%d: [%t] (%h): %s&lt;/format&gt;
+</I>&gt;&gt;<i>     &lt;file&gt;./xdb-error.log&lt;/file&gt;
+</I>&gt;&gt;<i>     &lt;stderr/&gt;
+</I>&gt;&gt;<i>   &lt;/log&gt;
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i>   &lt;xdb id=&quot;xdb_handler&quot;&gt;
+</I>&gt;&gt;<i>     &lt;host&gt;vista.internal&lt;/host&gt;
+</I>&gt;&gt;<i>     &lt;load&gt;&lt;xdb_file&gt;./xdb_file/xdb_file.so&lt;/xdb_file&gt;&lt;/load&gt;
+</I>&gt;&gt;<i>     &lt;xdb_file xmlns=&quot;jabber:config:xdb_file&quot;&gt;&lt;spool&gt;./spool&lt;/spool&gt;&lt;/xdb_file&gt;
+</I>&gt;&gt;<i>   &lt;/xdb&gt;
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> &lt;/jabber&gt;
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Regards,
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> - Lg
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 2001-2-20 20:22:14
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> --
+</I>&gt;&gt;<i>   Gang Liu / Vista Team / ShenZhen City / China
+</I>&gt;&gt;<i>   Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gang_l at 21cn.com</A> &amp; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gang_l at hotmail.com</A>
+</I>&gt;&gt;<i>   Phone: +86 13923425035   
+</I>&gt;&gt;<i>   ICQ: 70670666   Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gang_l at jabber.org</A>
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i> jdev mailing list
+</I>&gt;&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>-----BEGIN PGP SIGNATURE-----
+</I>&gt;<i>Version: GnuPG v1.0.4 (GNU/Linux)
+</I>&gt;<i>Comment: For info see <A HREF="http://www.gnupg.org">http://www.gnupg.org</A>
+</I>&gt;<i>
+</I>&gt;<i>iD8DBQE6kulFmQjXLBmX48wRAh90AJ0VzDSlovEqXV+PovrsPNXvm1YcngCfeGmg
+</I>&gt;<i>UW0IiphfxeVlR5D4nTD39Mk=
+</I>&gt;<i>=XkG/
+</I>&gt;<i>-----END PGP SIGNATURE-----
+</I>
+	
+
+Regards,
+
+- Lg
+
+2001-2-21 17:08:59
+
+--
+  Gang Liu / Vista Team / ShenZhen City / China
+  Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gang_l at 21cn.com</A> &amp; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gang_l at hotmail.com</A>
+  Phone: +86 13923425035   
+  ICQ: 70670666   Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gang_l at jabber.org</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006326.html">[JDEV] [patch config.c]
+</A></li>
+	<LI>Next message: <A HREF="006328.html">[JDEV] JabberBeans 0.9.0 pre 2 released
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6327">[ date ]</a>
+              <a href="thread.html#6327">[ thread ]</a>
+              <a href="subject.html#6327">[ subject ]</a>
+              <a href="author.html#6327">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

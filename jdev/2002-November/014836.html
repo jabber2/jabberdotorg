@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber and user database
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20and%20user%20database&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="014831.html">
+   <LINK REL="Next"  HREF="014838.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber and user database</H1>
+    <B>Daniel Chote</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20and%20user%20database&In-Reply-To="
+       TITLE="[JDEV] Jabber and user database">daniel at chote.net
+       </A><BR>
+    <I>Wed Nov 13 02:00:18 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="014831.html">[JDEV] Jabber and user database
+</A></li>
+        <LI>Next message: <A HREF="014838.html">[JDEV] Jabber and user database
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14836">[ date ]</a>
+              <a href="thread.html#14836">[ thread ]</a>
+              <a href="subject.html#14836">[ subject ]</a>
+              <a href="author.html#14836">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Actually.. I found that this issue occurs when a client probes for a 
+namespace that is not handeled by the jabber server, when your using 
+xdb_sql..
+
+The thing I found that did it was iq:private, when a client requested 
+iq:private, jabberd would sit there and do nothing until the xdb request 
+timed out... the solution to this was to run xdb_sql along side 
+xdb_file, and map the relevant  namespaces to each.
+
+raditha dissanayake wrote:
+
+&gt;<i> Hi,
+</I>&gt;<i> my experience is that xdb_sql is a triffle slower than xdb_file. 
+</I>&gt;<i> However i haven't had it dying on me like this.
+</I>&gt;<i> One of the reasons for the performance drop is that when ever you add 
+</I>&gt;<i> or remove a roster item the whole roster is created and inserted again.
+</I>&gt;<i> That is if you have 25 memebers in your roster and you add another, 
+</I>&gt;<i> there will be one delete followed by 26 inserts!!
+</I>&gt;<i> However this is NOT a shortcoming of xdb_sql, xdb_file needs this 
+</I>&gt;<i> behaviour and xdb_sql has to live with it.
+</I>&gt;<i> The good news is that you can tweak things a bit and eliminate all 
+</I>&gt;<i> these extra inserts.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Yanming Xiao wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> Hi guys,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> How the performance of xdb_sql? I am runing it with jabber-1.4.2 on 
+</I>&gt;&gt;<i> RH 7.3,
+</I>&gt;&gt;<i> but it always causes sudden death of jabber when a new user tries
+</I>&gt;&gt;<i> to register.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> -Yanming
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> ----- Original Message -----
+</I>&gt;&gt;<i> From: &quot;raditha dissanayake&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber at raditha.com</A>&gt;
+</I>&gt;&gt;<i> To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;&gt;<i> Sent: Saturday, November 09, 2002 2:42 PM
+</I>&gt;&gt;<i> Subject: Re: [JDEV] Jabber and user database
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>  
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Hi Bart,
+</I>&gt;&gt;&gt;<i> I have good news for you, xdb_sql is extremely flexible with it's
+</I>&gt;&gt;&gt;<i> database design. In fact it's not an exageration to say the database
+</I>&gt;&gt;&gt;<i> structure is completely abtracted from the xdb_sql code. All the queries
+</I>&gt;&gt;&gt;<i> are defined in xdb_sql.xml and you can change this so that it can work
+</I>&gt;&gt;&gt;<i> with your phpdb database.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> btw: can i join your phpdb jabber integration effort?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Bart van Bragt wrote:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>   
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> Master Brian wrote:
+</I>&gt;&gt;&gt;&gt;<i>     
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> I hope that I can use a user database that I've already in use under
+</I>&gt;&gt;&gt;&gt;&gt;<i> MySql. The user database is mantained by my forum, made in phpbb (do
+</I>&gt;&gt;&gt;&gt;&gt;<i>       
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> you
+</I>&gt;&gt;&gt;&gt;<i>     
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i> know it?).
+</I>&gt;&gt;&gt;&gt;&gt;<i>       
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> I'm one of the senior developers of phpBB. I've been playing with the
+</I>&gt;&gt;&gt;&gt;<i> same idea. Haven't had time to implement this yet. Main reason is that
+</I>&gt;&gt;&gt;&gt;<i> I don't want to run jabberd on my main server (on domain.com) to do
+</I>&gt;&gt;&gt;&gt;<i> that my client (Psi) first needs to support SRV DNS entries.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> When this is done I'm probably going to try to accomplish this. I
+</I>&gt;&gt;&gt;&gt;<i> already saw that jabberd can use MySQL for keeping track of things. I
+</I>&gt;&gt;&gt;&gt;<i> don't know how trivial it would be to link the phpBB user table with
+</I>&gt;&gt;&gt;&gt;<i> the Jabberd process. Of course you could alter profile.php to make it
+</I>&gt;&gt;&gt;&gt;<i> insert/delete/update approriate rows when a user creates, deletes or
+</I>&gt;&gt;&gt;&gt;<i> alters a username.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> BTW you will have to make some modifications to phpBB. You'll at least
+</I>&gt;&gt;&gt;&gt;<i> need to limit the usernames that users can't choos (i.e. disallow
+</I>&gt;&gt;&gt;&gt;<i> spaces, etc).
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> Curious if someone else can tell us how (non-)trivial it would be to
+</I>&gt;&gt;&gt;&gt;<i> link jabberd to another user database.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>     
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;&gt;<i> jdev mailing list
+</I>&gt;&gt;&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>   
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i> jdev mailing list
+</I>&gt;&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;&gt;<i>  
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+-- 
+
+*. Daniel Chote*
+email/jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">daniel at chote.net</A>
+web: www.chote.net
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20021113/fdbb4015/attachment.htm">https://www.jabber.org/jdev/attachments/20021113/fdbb4015/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="014831.html">[JDEV] Jabber and user database
+</A></li>
+	<LI>Next message: <A HREF="014838.html">[JDEV] Jabber and user database
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14836">[ date ]</a>
+              <a href="thread.html#14836">[ thread ]</a>
+              <a href="subject.html#14836">[ subject ]</a>
+              <a href="author.html#14836">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

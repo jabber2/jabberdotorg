@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] question regarding jabber:x:conference
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20question%20regarding%20jabber%3Ax%3Aconference&In-Reply-To=3A81DF20.8090007%40littledevil.com.au">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006082.html">
+   <LINK REL="Next"  HREF="006088.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] question regarding jabber:x:conference</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20question%20regarding%20jabber%3Ax%3Aconference&In-Reply-To=3A81DF20.8090007%40littledevil.com.au"
+       TITLE="[JDEV] question regarding jabber:x:conference">kminkler at jabber.com
+       </A><BR>
+    <I>Wed Feb  7 22:24:14 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006082.html">[JDEV] question regarding jabber:x:conference
+</A></li>
+        <LI>Next message: <A HREF="006088.html">[JDEV] question regarding jabber:x:conference
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6087">[ date ]</a>
+              <a href="thread.html#6087">[ thread ]</a>
+              <a href="subject.html#6087">[ subject ]</a>
+              <a href="author.html#6087">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>from implementing the draft-proto for conferencing in IRC transport, I ran
+into this problem.. turns out that the document is just a little unclear
+on certain aspects of operation.. lemmi clear everything up..
+
+&gt;<i> The thing that I've never understood is what happens when someone wants 
+</I>&gt;<i> to leave a group... what would seem to happen is that their final nick 
+</I>&gt;<i> will remain tied up and also everytime someone logs in their (now 
+</I>&gt;<i> unused) member information will continue to be iq/set out to all new 
+</I>&gt;<i> group members.
+</I>
+When the group gets the unavailable presence from the user, they are considered
+gone from the group. each person in the group will get a iq:browse push from the
+group, for that user:
+
+&lt;user jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">group at conference</A>/a34de..&quot; type=&quot;remove&quot;/&gt;
+
+this tells the group that they are gone, (and the nick is freed)
+
+&gt;<i> The two issues as i see it are:
+</I>&gt;<i> 1. how does a user indicate that they are leaving for good
+</I>&gt;<i> 2. how does the transport tell all users that the member is leaving for good
+</I>
+see above..
+
+&gt;<i> My thoughts are this:
+</I>&gt;<i> - when a presence/unavailable is retrieved from a group member he is 
+</I>&gt;<i> considered to have left for good (unless the are 'registered').
+</I>
+well.. current conference does not allow any sort of registration for nicks..
+if you are writing a module that uses a nick registration, i suggest you simply
+use the &quot;conflict&quot; error code (don't know the # offhand) to tell someone that
+they cannot have that nick... that should take care of ever'thing..
+
+&gt;<i> - to indicate a member has gone for good to other members send out a 
+</I>&gt;<i> jabber:iq:browse where the user tag has no name attribute _or_ (if 
+</I>&gt;<i> jabber:iq:browse tags are a complete roster) just send a new complete 
+</I>&gt;<i> roster out.
+</I>
+the remove attribute is already used in roster pushes, and this is how the
+iq:browse for conferencing is done, with pushes.. the concept is basically,
+the user will get one full roster, or browse, then, if they have sent presence
+to the jid, they will receive &quot;updates&quot; as type='set' these are the pushes.
+the client should take them only as updates to the initial result, never as
+a full roster/browse.  only the type='result' will be a full set. and result
+should only ever be sent in responce to a type='get'
+
+&lt;snip/&gt;
+&gt;<i> Hope that makes sense, I'm pleased that the jabber:iq:conference 
+</I>&gt;<i> protocol has been proposed we needed it.
+</I>
+mind you that this protocol is already in effect... conference.jabber.org is
+using this protocol to serve up groupchats (in addition to the 1.0 presence
+style protocl), and irc.jabber.org, the IRC transport is using this protocol 
+exclusivly.  It's a good change IMHO, and fixes all the problems that we had
+with the &quot;1.2&quot; groupchat protocol. and the &quot;1.0&quot; protocol drawbacks.
+
+
+Keith Minkler
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20010207/9e470785/attachment.pgp">https://www.jabber.org/jdev/attachments/20010207/9e470785/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006082.html">[JDEV] question regarding jabber:x:conference
+</A></li>
+	<LI>Next message: <A HREF="006088.html">[JDEV] question regarding jabber:x:conference
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6087">[ date ]</a>
+              <a href="thread.html#6087">[ thread ]</a>
+              <a href="subject.html#6087">[ subject ]</a>
+              <a href="author.html#6087">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

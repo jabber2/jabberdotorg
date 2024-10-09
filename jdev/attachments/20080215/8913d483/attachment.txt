@@ -1,0 +1,61 @@
+Index: TlsProtocolHandler.java
+===================================================================
+--- TlsProtocolHandler.java	(revision 1262)
++++ TlsProtocolHandler.java	(working copy)
+@@ -157,6 +157,8 @@
+     private byte[] pms;
+ 
+     private CertificateVerifyer verifyer = null;
++    
++    private boolean clientAuth = false;
+ 
+     public TlsProtocolHandler(InputStream is, OutputStream os)
+     {
+@@ -420,6 +422,10 @@
+                             }
+                             break;
+                         case HP_SERVER_HELLO_DONE:
++                            if (clientAuth) {
++                                sendClientCertificate();
++                            }
++                                
+                             switch (connection_state)
+                             {
+ 
+@@ -696,9 +702,12 @@
+                                     this.failWithError(AL_fatal, AP_unexpected_message);
+                             }
+                             break;
++                        case HP_CERTIFICATE_REQUEST:
++			    clientAuth = true;
++                            read = true;
++			    break;
+                         case HP_HELLO_REQUEST:
+                         case HP_CLIENT_KEY_EXCHANGE:
+-                        case HP_CERTIFICATE_REQUEST:
+                         case HP_CERTIFICATE_VERIFY:
+                         case HP_CLIENT_HELLO:
+                         default:
+@@ -714,7 +723,22 @@
+         while (read);
+ 
+     }
++    
++    private void sendClientCertificate() throws IOException
++    {
++        /*
++         * just write back the "no client certificate" message
++         * see also gnutls, auth_cert.c:643 (0B 00 00 03 00 00 00)
++         */
++	ByteArrayOutputStream bos = new ByteArrayOutputStream();
++        TlsUtils.writeUint8(HP_CERTIFICATE, bos);
++        TlsUtils.writeUint24(3, bos);
++        TlsUtils.writeUint24(0, bos);
++        byte[] message = bos.toByteArray();
+ 
++        rs.writeMessage((short)RL_HANDSHAKE, message, 0, message.length);
++    }
++
+     private void processApplicationData()
+     {
+         /*

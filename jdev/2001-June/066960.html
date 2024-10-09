@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Admin Rights
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Admin%20Rights&In-Reply-To=%3C20010609114212.A3165%40gnu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="066954.html">
+   <LINK REL="Next"  HREF="066955.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Admin Rights</H1>
+    <B>DJ Adams</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Admin%20Rights&In-Reply-To=%3C20010609114212.A3165%40gnu%3E"
+       TITLE="[JDEV] Admin Rights">dj.adams at pobox.com
+       </A><BR>
+    <I>Sat Jun  9 05:42:12 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="066954.html">[JDEV] Admin Rights
+</A></li>
+        <LI>Next message: <A HREF="066955.html">[JDEV] bug in conferencing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66960">[ date ]</a>
+              <a href="thread.html#66960">[ thread ]</a>
+              <a href="subject.html#66960">[ subject ]</a>
+              <a href="author.html#66960">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Fri, Jun 08, 2001 at 04:32:49PM -0600, Todd Miller wrote:
+&gt;<i> Is there a way to determine if a user has admin rights on the server.  I
+</I>&gt;<i> have written a utility to send server announcements and I want to disallow a
+</I>&gt;<i> user from logging in to the utility if they do not have admin rights.  The
+</I>&gt;<i> utility connects using the JabberCOM.DLL.
+</I>
+(before I start, apologies if I'm on the wrong track)
+
+Although stpeter has answered referring to the jabber.xml config file,
+I'll assume that your utility doesn't have access to this, and you want to
+do it programatically (as you mention the JabberCOM library). 
+
+It's an interesting question that (to me) has a few wider implications, 
+over and above the 'how can I find out if a user has admin rights' question.
+
+But to this question first; there are at least two approaches - try to 
+discover before logging on, or try to discover after logging on.
+
+The latter is easy if a little crass - log on and try to do something
+that requires admin rights (e.g. an iq:admin 'who' query) and check for error
+messages. It's also not that neat either, as - even though you don't have to 
+end presence, to avoid an avalanche of offline messages that the user isn't
+going to get a chance to deal with - having already logged on, it's too late
+- we're already logged on, which was to be avoided. On the whole, not good.
+
+The former is a bit more interesting. Can we make a query before logging 
+on to find out about admin rights? Not really, as the only query namespaces
+that are honoured before a session is started on a stream are the iq:auth and
+iq:register namespaces. All other elements are buffered until authentication
+has taken place. But consider the iq-get request made in the iq:auth namespace.
+This (optional) step allows the client to discover the authentication methods
+supported for that user:
+
+SEND: &lt;iq type='get'&gt;
+        &lt;query xmlns='jabber:iq:auth'&gt;
+          &lt;username&gt;qmacro&lt;/username&gt;
+        &lt;/query&gt;
+      &lt;/iq&gt;
+
+RECV: &lt;iq type='result'&gt;
+        &lt;query xmlns='jabber:iq:auth'&gt;
+          &lt;username&gt;qmacro&lt;/username&gt;
+          &lt;password/&gt;
+          &lt;digest/&gt;
+          &lt;sequence&gt;123&lt;/sequence&gt;&lt;token&gt;ABCDEF12&lt;/token&gt;
+          &lt;resource/&gt;
+        &lt;/query&gt;
+      &lt;/iq&gt;
+
+JSM modules can register for the iq:auth namespace and will tack on 
+tags to the result for an iq-get announcing their readiness to handle
+an authorisation check via an iq-set. The &lt;resource/&gt; tag is tacked
+on the end too, which got me thinking. Taking advantage of the current
+lack of optional/mandatory determination in the result tags, would it
+be possible to write another module that would tack on extra information?
+
+I'm certainly not suggesting this is the right solution at all - I'm 
+ready to be shot down in flames for trying this out, but I just did it
+as a learning exercise. I created a new JSM module mod_dj_admin.c :
+
+#include &lt;jsm.h&gt;
+
+mreturn mod_dj_admin_yip(mapi m, void *arg)
+{
+  if(jpacket_subtype(m-&gt;packet) == JPACKET__GET)
+  {
+    if(js_admin(m-&gt;user,ADMIN_READ))
+      xmlnode_insert_tag(m-&gt;packet-&gt;iq,&quot;read&quot;);
+    if(js_admin(m-&gt;user,ADMIN_WRITE))
+      xmlnode_insert_tag(m-&gt;packet-&gt;iq,&quot;write&quot;);
+  }
+  return M_PASS;
+}
+
+void mod_dj_admin(jsmi si)
+{
+  js_mapi_register(si,e_AUTH, mod_dj_admin_yip, NULL);
+}
+
+and added it into JSM's &lt;load/&gt; area, below mod_auth_0k. 
+
+Now a 
+
+SEND: &lt;iq type='get'&gt;
+        &lt;query xmlns='jabber:iq:auth'&gt;
+          &lt;username&gt;qmacro&lt;/username&gt;
+        &lt;/query&gt;
+      &lt;/iq&gt;
+
+will return extra tags &lt;write/&gt; and / or &lt;read/&gt; depending on the admin
+rights of the username in the query, something like this:
+
+RECV: &lt;iq type='result'&gt;
+        &lt;query xmlns='jabber:iq:auth'&gt;
+          &lt;username&gt;qmacro&lt;/username&gt;
+          &lt;password/&gt;
+          &lt;digest/&gt;
+          &lt;sequence&gt;123&lt;/sequence&gt;&lt;token&gt;ABCDEF12&lt;/token&gt;
+          &lt;read/&gt;
+          &lt;write/&gt;
+          &lt;resource/&gt;
+        &lt;/query&gt;
+      &lt;/iq&gt;
+
+This way, a client could determine admin rights before deciding whether 
+to go ahead and authenticate. 
+
+Anyway, the other side to this question comes from other systems that I'm 
+more familiar with: SAP, for example, has a mode where you can prevent anyone
+logging in except admin users (e.g. SAP* or DDIC). I'm wondering whether this
+would be a useful feature for Jabber too, as more and more services are 
+added and those services administered using the Jabber protocol itself, with
+the ultimate goal not to have to take the server down. Of course, there's 
+another part of this to be addressed - in the switchover from 'normal' mode
+to 'admin' mode, there will be 'normal' users left connected, who will have
+to be 'thrown off'. Anyway, I'll stop here for now, otherwise I'll start to
+bore everyone to death. Has anyone else considered such 'mode switch' 
+functionality?
+
+dj
+on his 4th cup of coffee this morning
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="066954.html">[JDEV] Admin Rights
+</A></li>
+	<LI>Next message: <A HREF="066955.html">[JDEV] bug in conferencing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66960">[ date ]</a>
+              <a href="thread.html#66960">[ thread ]</a>
+              <a href="subject.html#66960">[ subject ]</a>
+              <a href="author.html#66960">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

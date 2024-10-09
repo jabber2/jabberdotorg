@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Help choosing the right technology
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Help%20choosing%20the%20right%20technology&In-Reply-To=%3CDUB002-W1322256D51A762AD547C5DBF7560%40phx.gbl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089246.html">
+   <LINK REL="Next"  HREF="089233.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Help choosing the right technology</H1>
+    <B>Jonathan Dickinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Help%20choosing%20the%20right%20technology&In-Reply-To=%3CDUB002-W1322256D51A762AD547C5DBF7560%40phx.gbl%3E"
+       TITLE="[jdev] Help choosing the right technology">jonathan at dickinsons.co.za
+       </A><BR>
+    <I>Mon Nov 19 06:55:09 UTC 2012</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089246.html">[jdev] Help choosing the right technology
+</A></li>
+        <LI>Next message: <A HREF="089233.html">[jdev] Persisting data in external Database XMPP application
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89249">[ date ]</a>
+              <a href="thread.html#89249">[ thread ]</a>
+              <a href="subject.html#89249">[ subject ]</a>
+              <a href="author.html#89249">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> Date: Tue, 13 Nov 2012 07:30:34 +0000
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kevin at kismith.co.uk</A>
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [jdev] Help choosing the right technology
+</I>&gt;<i> 
+</I>&gt;<i> Just to clear up a couple of things.
+</I>&gt;<i> 
+</I>&gt;<i> On Tue, Nov 13, 2012 at 7:12 AM, Michael Weibel
+</I>&gt;<i> &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">michael.weibel+xmpp at gmail.com</A>&gt; wrote:
+</I>&gt;<i> &gt;&gt; Push based communication.
+</I>&gt;<i> &gt; Besides ejabberd commercial, I don't know which servers implement this.
+</I>&gt;<i> 
+</I>&gt;<i> {SNIP}
+</I>&gt;<i> 
+</I>&gt;<i> JSON/XML is pretty much a red herring here - to encode the same data
+</I>&gt;<i> you're just switching &lt;&gt; for {}.
+</I>&gt;<i> 
+</I>&gt;<i> But XMPP stanzas aren't /that/ big before transmission, when you're
+</I>&gt;<i> talking about working over phone networks. Yes, compression will help
+</I>&gt;<i> with stanza size.
+</I>&gt;<i> 
+</I>&gt;<i> {SNIP}
+</I>&gt;<i> 
+</I>&gt;<i> /K
+</I>You could do what MXit did back in the day and shorten element names. E.g.:
+- {jabber:client}message = {jabber:client}m (jabber:client is usually defined on the stream:stream element, so there isn't much point in shortening it)- {jabber:client}iq = {jabber:client}i- {jabber:iq:roster}query = {j:i:r}q- @from = @f- And so forth
+You should be able to do this at the XML emission/parsing layer through encapsulation or polymorphism (this should be a really simple hashtable lookup if your server/client of choice sees XML as data and not a string). If you care about interopability (which you should), it would likely be appropriate in the transport features section of the stream.
+S:&lt;stream:features&gt;  &lt;nameshortening xmlns='<A HREF="http://mycompany.com/xmpp/features">http://mycompany.com/xmpp/features</A>' /&gt;  &lt;starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'&gt;    &lt;required/&gt;  &lt;/starttls&gt;  ...&lt;/stream:features&gt;
+C:&lt;optimize xmlns='<A HREF="http://mycompany.com/xmpp/features">http://mycompany.com/xmpp/features</A>' /&gt;
+S:&lt;proceed xmlns='<A HREF="http://mycompany.com/xmpp/features">http://mycompany.com/xmpp/features</A>' /&gt;
+That way clients that don't understand it would simply skip past it and head directly to STARTTLS.
+Compression alone *should* be good enough, but I remember the MXit team indicating that they did get some clutch savings from doing this: even with compression. You could take it further by also omitting the 'from' attribute on the client (assume that the server will fill it in for you), and omitting the 'to' element if the communication is directly C-&gt;S or S-&gt;C (that would likely be an additional customization you would need to make, likely as part of 'nameshortening').
+Taking all of that into consideration we can shorten this:&lt;message from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at example.com</A>' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at example.net</A>' xml:lang='en'&gt;&lt;body&gt;Art thou not Romeo, and a Montague?&lt;/body&gt;&lt;/message&gt; (130 characters)to this:&lt;m t='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at example.net</A>' xml:lang='en'&gt;&lt;b&gt;Art thou not Romeo, and a Montague?&lt;/b&gt;&lt;/m&gt; (85 characters, 65% of the length)
+XEP-0286&lt;<A HREF="http://xmpp.org/extensions/xep-0286.html">http://xmpp.org/extensions/xep-0286.html</A>&gt; has some really nice recommendations. Without compression, a few simple tricks like that will comfortably get you out of the 128 octet FACH threshold. With compression you should be able to send a fair amount of data comfortably. As always, though, test it out before committing to it - it may not be worth the additional interopability headaches.
+-- Jonathan Dickinson 		 	   		  
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20121119/cafcc08a/attachment.html">https://www.jabber.org/jdev/attachments/20121119/cafcc08a/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089246.html">[jdev] Help choosing the right technology
+</A></li>
+	<LI>Next message: <A HREF="089233.html">[jdev] Persisting data in external Database XMPP application
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89249">[ date ]</a>
+              <a href="thread.html#89249">[ thread ]</a>
+              <a href="subject.html#89249">[ subject ]</a>
+              <a href="author.html#89249">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

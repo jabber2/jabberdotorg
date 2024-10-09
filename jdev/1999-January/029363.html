@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Minor 'bug'let ?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Minor%20%27bug%27let%20%3F&In-Reply-To=%3C3695CCDD.227AAAD9%40jrc.it%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="029358.html">
+   <LINK REL="Next"  HREF="029365.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Minor 'bug'let ?</H1>
+    <B>Dirk-Willem van Gulik</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Minor%20%27bug%27let%20%3F&In-Reply-To=%3C3695CCDD.227AAAD9%40jrc.it%3E"
+       TITLE="[JDEV] Minor 'bug'let ?">dirk.vangulik at jrc.it
+       </A><BR>
+    <I>Fri Jan  8 03:16:13 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="029358.html">[JDEV] Minor 'bug'let ?
+</A></li>
+        <LI>Next message: <A HREF="029365.html">[JDEV] Minor 'bug'let ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29363">[ date ]</a>
+              <a href="thread.html#29363">[ thread ]</a>
+              <a href="subject.html#29363">[ subject ]</a>
+              <a href="author.html#29363">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Jeremie wrote:
+&gt;<i> 
+</I>&gt;<i> On the FD_SETSIZE issue in io.c, I updated it to track the largest
+</I>&gt;<i> descriptor and use that value... attached is the diff I'm going to check
+</I>&gt;<i> in tonight, let me know if it's wrong or broken...
+</I>
+Looks ok at first glance.. but it does not seem to track the write_fds.
+(Though
+from code logic I would assume that you always do a read and sometimes a
+right
+so the max from the writes is &lt;= the max from the reads.
+
+Dw.
+
+&gt;<i> 
+</I>&gt;<i>   ------------------------------------------------------------------------
+</I>&gt;<i> Index: io.c
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> RCS file: /work/cvs/jap/common/io.c,v
+</I>&gt;<i> retrieving revision 1.9
+</I>&gt;<i> diff -u -r1.9 io.c
+</I>&gt;<i> --- io.c        1999/01/05 20:30:10     1.9
+</I>&gt;<i> +++ io.c        1999/01/08 03:25:58
+</I>&gt;<i> @@ -13,7 +13,7 @@
+</I>&gt;<i>  void collect_packets(conn *(*handle_packet)())
+</I>&gt;<i>  {
+</I>&gt;<i>         char buffer[MAXMSG];
+</I>&gt;<i> -       int new, nbytes, err, first = 1;
+</I>&gt;<i> +       int new, nbytes, err, maxfd = 0, first = 1;
+</I>&gt;<i>         fd_set active_fd_set, read_fd_set, write_fd_set;
+</I>&gt;<i>         struct sockaddr_in sa;
+</I>&gt;<i>         size_t size = sizeof(sa);
+</I>&gt;<i> @@ -37,7 +37,7 @@
+</I>&gt;<i>                 if(!first)
+</I>&gt;<i>                 {
+</I>&gt;<i>                         DBUG(&quot;IO: waiting &quot;,&quot;&quot;)
+</I>&gt;<i> -                       h_err(select(FD_SETSIZE, &amp;read_fd_set, &amp;write_fd_set, NULL, NULL),&quot;select&quot;);
+</I>&gt;<i> +                       h_err(select(maxfd + 1, &amp;read_fd_set, &amp;write_fd_set, NULL, NULL),&quot;select&quot;);
+</I>&gt;<i> 
+</I>&gt;<i>                         FD_ZERO(&amp;active_fd_set);
+</I>&gt;<i>                 }else{
+</I>&gt;<i> @@ -63,6 +63,8 @@
+</I>&gt;<i>                                         c = conn_add(c,new);
+</I>&gt;<i>                                         c-&gt;name = strdup(inet_ntoa(sa.sin_addr));
+</I>&gt;<i>                                         c-&gt;ver = strdup(c_count-&gt;name); /* express the parent socket that it was created from */
+</I>&gt;<i> +                                       if(new &gt; maxfd)
+</I>&gt;<i> +                                               maxfd = new;
+</I>&gt;<i>                                         FD_SET(new, &amp;active_fd_set);
+</I>&gt;<i>                                 }else{
+</I>&gt;<i>                                         DBUG(&quot;IO: reading data from &quot;,c_count-&gt;name)
+</I>&gt;<i> @@ -86,6 +88,8 @@
+</I>&gt;<i>                                         }
+</I>&gt;<i>                                 }
+</I>&gt;<i>                         }
+</I>&gt;<i> +                       if(c_count-&gt;id &gt; maxfd)
+</I>&gt;<i> +                               maxfd = c_count-&gt;id;
+</I>&gt;<i>                         FD_SET(c_count-&gt;id, &amp;active_fd_set);
+</I>&gt;<i>                         c_count = c_count-&gt;next;
+</I>&gt;<i>                 }
+</I>-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: Dirk.VanGulik.vcf
+Type: text/x-vcard
+Size: 477 bytes
+Desc: Card for Dirk-Willem van Gulik
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/19990108/805a12c5/attachment-0001.vcf">https://www.jabber.org/jdev/attachments/19990108/805a12c5/attachment-0001.vcf</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="029358.html">[JDEV] Minor 'bug'let ?
+</A></li>
+	<LI>Next message: <A HREF="029365.html">[JDEV] Minor 'bug'let ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29363">[ date ]</a>
+              <a href="thread.html#29363">[ thread ]</a>
+              <a href="subject.html#29363">[ subject ]</a>
+              <a href="author.html#29363">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

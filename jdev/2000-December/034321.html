@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber on HPUX
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20on%20HPUX&In-Reply-To=%3C200012071100460810.00AC537C%40beta4.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034315.html">
+   <LINK REL="Next"  HREF="034312.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber on HPUX</H1>
+    <B>Julian Fitzell</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20on%20HPUX&In-Reply-To=%3C200012071100460810.00AC537C%40beta4.com%3E"
+       TITLE="[JDEV] Jabber on HPUX">julian-ml at beta4.com
+       </A><BR>
+    <I>Thu Dec  7 13:00:46 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034315.html">[JDEV] Jabber on HPUX
+</A></li>
+        <LI>Next message: <A HREF="034312.html">[JDEV] Extended error handling
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34321">[ date ]</a>
+              <a href="thread.html#34321">[ thread ]</a>
+              <a href="subject.html#34321">[ subject ]</a>
+              <a href="author.html#34321">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I converted the code in jabberd/load.c and jabberd/io/base_load.c to use shl_load() and shl_findsym() and it compiles fine.
+When I runn jabberd, though, it gets as far as the second configuration pass (configo(1) ) but then when base_load_config() tries to run the main function for the JSM module, I get a seg fault.
+
+The function pointer isn't NULL but I don't know how to check whether the module has really been loaded, etc.
+
+I found a post on an HP message board suggesting loading the library with BIND_IMMEDIATE to check for errors and there certainly were some:
+
+/usr/lib/dld.sl: Unresolved symbol: debug_flag (data)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: pool_new (code)  from /disk4/jabber1.2/lib/libjabber.sl.1
+/usr/lib/dld.sl: Unresolved module for symbol: jid_full (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: pool_heap (code)  from /disk4/jabber1.2/lib/libjabber.sl.1
+/usr/lib/dld.sl: Unresolved module for symbol: ppdb_get (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: debug_log (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: deliver (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: register_phandler (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: xdb_set (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: mtq_new (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: xdb_cache (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: log_notice (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: deliver_fail (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: xdb_get (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: log_alert (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: dpacket_new (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: mtq_send (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: register_beat (code)  from ./jsm/jsm.so
+/usr/lib/dld.sl: Unresolved symbol: log_warn (code)  from ./jsm/jsm.so
+
+But the main function doesn't seem to be there so I don't know if this is normal or not.  
+
+The code in jabberd/load.c never seems to get executed but I have included my modified jabberd/io/base_load.c
+
+Does anyone have any further ideas?
+
+Thanks,
+
+Julian
+
+*********** REPLY SEPARATOR  ***********
+
+On 07/12/00 at 12:02 PM David Le Corfec wrote:
+
+&gt;&gt;<i> Julian Fitzell wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> I have tried both version 1.2 and 1.0 but no matter what I try I always get an error about
+</I>&gt;&gt;<i> dlopen(), RTLD_LAZY, or some other constant, function, or filename which always seems to lead back
+</I>&gt;&gt;<i> to DLD.  I tried installing the Gnu version of DLD but it says it hasn't been ported for HP-UX and
+</I>&gt;&gt;<i> won't compile either.
+</I>&gt;<i>
+</I>&gt;<i>Yes, historically on HP-UX there is shl_load() to load modules,
+</I>&gt;<i>and not dlopen(). So either there's a dlopen-compatible API
+</I>&gt;<i>available for HP-UX, or the Jabber code must be modified
+</I>&gt;<i>(for example, see GLib's HP-UX support in gmodule/gmodule-dld.c)
+</I>&gt;<i>
+</I>&gt;<i>-- 
+</I>&gt;<i>David Le Corfec
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: base_load.c
+Type: application/octet-stream
+Size: 18565 bytes
+Desc: not available
+URL: &lt;<A HREF="http://mail.jabber.org/pipermail/jdev/attachments/20001207/41a3ceea/attachment-0001.obj">http://mail.jabber.org/pipermail/jdev/attachments/20001207/41a3ceea/attachment-0001.obj</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034315.html">[JDEV] Jabber on HPUX
+</A></li>
+	<LI>Next message: <A HREF="034312.html">[JDEV] Extended error handling
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34321">[ date ]</a>
+              <a href="thread.html#34321">[ thread ]</a>
+              <a href="subject.html#34321">[ subject ]</a>
+              <a href="author.html#34321">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

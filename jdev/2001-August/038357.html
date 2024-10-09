@@ -1,0 +1,273 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Sparse considerations about server status
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Sparse%20considerations%20about%20server%20status&In-Reply-To=%3C997987308.22385.45.camel%40crack.vedalabs.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="038289.html">
+   <LINK REL="Next"  HREF="038221.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Sparse considerations about server status</H1>
+    <B>Dustin Puryear</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Sparse%20considerations%20about%20server%20status&In-Reply-To=%3C997987308.22385.45.camel%40crack.vedalabs.com%3E"
+       TITLE="[JDEV] Sparse considerations about server status">dpuryear at usa.net
+       </A><BR>
+    <I>Thu Aug 16 13:41:48 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="038289.html">[JDEV] Sparse considerations about server status
+</A></li>
+        <LI>Next message: <A HREF="038221.html">[JDEV] Add-on support from Jabber protocol
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38357">[ date ]</a>
+              <a href="thread.html#38357">[ thread ]</a>
+              <a href="subject.html#38357">[ subject ]</a>
+              <a href="author.html#38357">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I had some time yesterday and today to play with jabbertest and jabberd
+1.4.1 and here are my results. 
+
+First, my changes to jabbertest: both the msgloadsnd and msgloadrec
+clients are now checking for closed sockets. In addition, msgloadsnd is
+watching for bounced messages. 
+
+Okay, so I first tested my socket handling code by running jabbertest
+with 5 user pairs sending 3 messages/sec for 60 seconds. Once the test
+begins I manually kill jabberd. Both the msgloadsnd and msgloadrec
+clients report that their sockets were closed and then abort. So that
+works.
+
+I then restart jabberd and run jabbertest with 200 user pairs sending 2
+messages/sec for 60 seconds, which gives me the following stats:
+
+UserPs Rate  Duration MinDelTime MaxDelTime AvgDelTime MsgCnt ExpMsg
+MsgLossRate
+200    2     60       0.01704    440.68959  151.83634  14322  24000
+0.40325
+
+That's a 40% loss rate for a 400 messages/sec test. I look in error.log
+and see a lot of:
+
+20010816T18:17:36: [notice] (elavil): bouncing a packet to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_77 at elavil</A>/Receiver from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_76 at elavil</A>/Sender: Socket Error to
+Client
+20010816T18:17:36: [notice] (elavil): bouncing a packet to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_77 at elavil</A>/Receiver from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_76 at elavil</A>/Sender: Socket Error to
+Client
+20010816T18:17:36: [notice] (elavil): bouncing a packet to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_77 at elavil</A>/Receiver from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_76 at elavil</A>/Sender: Socket Error to
+Client
+20010816T18:17:36: [notice] (elavil): bouncing a packet to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_77 at elavil</A>/Receiver from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_76 at elavil</A>/Sender: Socket Error to
+Client
+20010816T18:17:36: [notice] (elavil): bouncing a packet to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_77 at elavil</A>/Receiver from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_76 at elavil</A>/Sender: Socket Error to
+Client
+...
+
+This happens to several test_ users, not just test_76.
+
+Ok.. so does this must mean the sockets are getting closed somewhere? I
+checked both ends and none of my clients have reported a socket closed
+condition. Must be something else. However, I do find a [very] few of
+the following reported from msgloadsnd, which is catching bounce
+messages:
+
+[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dpuryear at zoloft</A> dpuryear]$ head s.test_76
+msg: 7 997985807 901646 I think it is about time to say bye-bye to ICQ,
+AIM, and MSN!
+msg: Offline Storage
+msg: Socket Error to Client
+msg: Socket Error to Client
+msg: 8 997985808 411677 I think it is about time to say bye-bye to ICQ,
+AIM, and MSN!
+msg: Offline Storage
+msg: Socket Error to Client
+msg: Socket Error to Client
+msg: 9 997985808 921620 Are you serious? You want to do what with
+Jabber?
+msg: Offline Storage
+
+I assume the &quot;int int int string&quot; messages are bounces? Regarding
+&quot;Offline Storage&quot; I assume that just means jabberd is putting the
+message into offline storage because it lost contact with the receiving
+client, as I confirmed by looking at the test_77.xml file:
+
+[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at elavil</A> jabber-1.4.1]# ll spool/elavil/test_77.xml
+-rw-------    1 jabber   jabber      15110 Aug 16 13:19
+spool/elavil/test_77.xml
+
+(Odds are receivers and evens are senders, so test_76 sends to test_77.)
+But notice that I got an Offline Storage message _before_ a Socket Error
+to Client message. What happened there? And why isn't my receiving
+client getting a socket closed condition? None of the clients ever
+report that their socket has been closed. 
+
+Also, I don't always get warnings or notices from jabberd. For example,
+examine the following:
+
+20010816T18:24:06: [notice] (elavil): bouncing a packet to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_391 at elavil</A>/Receiver from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_390 at elavil</A>/Sender: Socket Error to
+Client
+20010816T18:24:06: [notice] (elavil): bouncing a packet to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_391 at elavil</A>/Receiver from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test_390 at elavil</A>/Sender: Socket Error to
+Client
+
+But I have nothing in s.test_390, which contains stderr from my test_390
+sending client:
+
+[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dpuryear at zoloft</A> dpuryear]$ ll s.test_390
+-rw-r--r--    1 dpuryear dpuryear        0 Aug 16 13:16 s.test_390
+
+So sometimes bounces get through, and sometimes not? Not sure what is
+going on.
+
+BTW, I ran jabberd on another machine and swapped the client machines
+and get similar results.
+
+Temas, thoughts? I archived all of the data from this test, including
+the jabberd log files. Let me know if you want them.
+
+Regards, Dustin
+
+
+
+On 10 Aug 2001 11:56:55 -0500, Dustin Puryear wrote:
+&gt;<i> FYI, I plan on building checks for bounced messages within a few days
+</I>&gt;<i> into the tools. Is this feature documented?
+</I>&gt;<i> 
+</I>&gt;<i> On 09 Aug 2001 14:11:49 -0500, Thomas Muldowney wrote:
+</I>&gt;<i> &gt; Yeah I think sheath is doing stuff with them.  The reason I ask about bounces,
+</I>&gt;<i> &gt; is because most of the queues that have set lenght or sizes will bounce back to
+</I>&gt;<i> &gt; sender if they are overflowed (as far as I'm to understand).  So although there
+</I>&gt;<i> &gt; isn't guaranteed delivery, there is a response if it can't be.  That's why I 
+</I>&gt;<i> &gt; say clients shouldn't need ACK's.  Although IQ msgs are always discussed.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; --temas
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; On Wed, Aug 08, 2001 at 02:51:34PM -0500, Dustin Puryear wrote:
+</I>&gt;<i> &gt; &gt; On 08 Aug 2001 12:16:08 -0500, Thomas Muldowney wrote:
+</I>&gt;<i> &gt; &gt; &gt; Like I posted earlier I need more specifics to investigate this.  Having clients
+</I>&gt;<i> &gt; &gt; &gt; build in safeguards is ridiculous!  This would be a server bug by far if no
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; Well, I spoke with Colin (we are both with Vedalabs) about this and he
+</I>&gt;<i> &gt; &gt; mentioned that Jabber does not guarantee delivery. Is this true? If so
+</I>&gt;<i> &gt; &gt; then any application that requires all messages to be delivered will
+</I>&gt;<i> &gt; &gt; have to include some type of ACK feature.. I would think.
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; bounce is happening and it is actually getting lost somehow.  It has high 
+</I>&gt;<i> &gt; &gt; &gt; priority in my books, but I need info, debug logs, incoming/outgoing XML for 
+</I>&gt;<i> &gt; &gt; &gt; both parties involved, and anything else that will help.
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; I can do this. Note however that jabberd has to be under a high load for
+</I>&gt;<i> &gt; &gt; the problem to occur. That means you can expect _a lot_ of debug and log
+</I>&gt;<i> &gt; &gt; data. Perhaps you would like to run the test suite on a personal test
+</I>&gt;<i> &gt; &gt; box? It may be easier for you to see what data you need? Otherwise you
+</I>&gt;<i> &gt; &gt; can expect a 50MB email from me. :)
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; Hmm, a while ago a guy from the OSDN asked for developer access to the
+</I>&gt;<i> &gt; &gt; testing tools. It would be nice if he could run it on his test boxes as
+</I>&gt;<i> &gt; &gt; well, but I'm not sure what happened to him.
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; Regards, Dustin
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; --temas
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; On Thu, Aug 02, 2001 at 12:04:56PM -0500, Dustin Puryear wrote:
+</I>&gt;<i> &gt; &gt; &gt; &gt; On 29 Jul 2001 23:19:30 +0200, Gian Filippo Pinzari wrote:
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; &gt; Notice that at &gt;= 120 user pairs (240 connected users), which equates to 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; &gt; 120 msg/sec in this test, my message loss rate varies from 3% to 13%. 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; &gt; The average delivery also climbs to .14 seconds, but I don't consider 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; &gt; that a problem. (However, the worst case delivery times are bad: &gt; 6 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; &gt; seconds for 150 and 160 user pairs.)
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; We've just developed a project (client+server) for one of the 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; biggest ISP in Italy. We found since the beginning that each 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; Jabber server was not able to handle more than a couple hundreds 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; client, so we implemented an architecture that load balances the 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; traffic among many concurrent servers running on the same or 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; different hosts. We also encountered message losses, but we didn't 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; care much :-). As Dustin, we thought this was due to client 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; problems.
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; Well, now that I know someone else has had a similar experience I can
+</I>&gt;<i> &gt; &gt; &gt; &gt; only assume the problem is with jabberd. I had hoped that jabber.org
+</I>&gt;<i> &gt; &gt; &gt; &gt; would confirm this to either be a problem or something they had built
+</I>&gt;<i> &gt; &gt; &gt; &gt; into jabberd, but that information hasn't been very forthcoming.
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; In the end I suppose developers using jabberd need to realize that it
+</I>&gt;<i> &gt; &gt; &gt; &gt; only works in low to medium load environments where message delivery is
+</I>&gt;<i> &gt; &gt; &gt; &gt; not a big issue. Unfortunately, I am not sure if the same is true of the
+</I>&gt;<i> &gt; &gt; &gt; &gt; jabber.com server since they didn't present any information on this
+</I>&gt;<i> &gt; &gt; &gt; &gt; topic either.
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; Regards, Dustin
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; --
+</I>&gt;<i> &gt; &gt; &gt; &gt; Dustin Puryear &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dpuryear at usa.net</A>&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; <A HREF="http://members.telocity.com/~dpuryear">http://members.telocity.com/~dpuryear</A>
+</I>&gt;<i> &gt; &gt; &gt; &gt; In the beginning the Universe was created. 
+</I>&gt;<i> &gt; &gt; &gt; &gt; This has been widely regarded as a bad move. - Douglas Adams
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt; -- 
+</I>&gt;<i> &gt; &gt; Dustin Puryear &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dpuryear at usa.net</A>&gt;
+</I>&gt;<i> &gt; &gt; <A HREF="http://members.telocity.com/~dpuryear">http://members.telocity.com/~dpuryear</A>
+</I>&gt;<i> &gt; &gt; In the beginning the Universe was created. 
+</I>&gt;<i> &gt; &gt; This has been widely regarded as a bad move. - Douglas Adams
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> -- 
+</I>&gt;<i> Dustin Puryear &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dpuryear at usa.net</A>&gt;
+</I>&gt;<i> <A HREF="http://members.telocity.com/~dpuryear">http://members.telocity.com/~dpuryear</A>
+</I>&gt;<i> In the beginning the Universe was created. 
+</I>&gt;<i> This has been widely regarded as a bad move. - Douglas Adams
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>-- 
+Dustin Puryear &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dpuryear at usa.net</A>&gt;
+<A HREF="http://members.telocity.com/~dpuryear">http://members.telocity.com/~dpuryear</A>
+In the beginning the Universe was created. 
+This has been widely regarded as a bad move. - Douglas Adams
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="038289.html">[JDEV] Sparse considerations about server status
+</A></li>
+	<LI>Next message: <A HREF="038221.html">[JDEV] Add-on support from Jabber protocol
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38357">[ date ]</a>
+              <a href="thread.html#38357">[ thread ]</a>
+              <a href="subject.html#38357">[ subject ]</a>
+              <a href="author.html#38357">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

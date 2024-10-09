@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Federation server placement
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Federation%20server%20placement&In-Reply-To=%3C97D1B562-F022-4692-92C6-7DC7B6E21638%40deepdarc.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088087.html">
+   <LINK REL="Next"  HREF="088088.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Federation server placement</H1>
+    <B>Robert Quattlebaum</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Federation%20server%20placement&In-Reply-To=%3C97D1B562-F022-4692-92C6-7DC7B6E21638%40deepdarc.com%3E"
+       TITLE="[jdev] Federation server placement">darco at deepdarc.com
+       </A><BR>
+    <I>Wed Feb 17 17:39:39 CST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088087.html">[jdev] Federation server placement
+</A></li>
+        <LI>Next message: <A HREF="088088.html">[jdev] How to build &quot;response&quot; in sasl digest MD5
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88089">[ date ]</a>
+              <a href="thread.html#88089">[ thread ]</a>
+              <a href="subject.html#88089">[ subject ]</a>
+              <a href="author.html#88089">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello Matt!
+
+On Feb 17, 2010, at 10:34 AM, Mason, Matt wrote:
+
+&gt;<i> I am trying to understand best practices for server placement from a firewall perspective:
+</I>&gt;<i>  
+</I>&gt;<i> There are two layers of firewalls, the Web tier which is facing the public.  The App tier is behind the firewall.  The App Tier cannot instantiate a connection to the web tier for security reasons. 
+</I>&gt;<i>  
+</I>&gt;<i> Is the best practice to have a federation of servers such that the Web tier XMPP server is facing outward and automatically connects to an XMPP server sitting on the App tier so messaging can occur with all clients inside and outside the firewall?
+</I>&gt;<i>  
+</I>&gt;<i> I don&#8217;t think I have seen standard docs on how to place Federation servers with respect to firewalls, etc.  Any comments would be greatly appreciated.
+</I>
+
+I don't think I am quite understanding your setup. How many servers are you intending to deploy? Are they all servicing one domain? Do you intend to allow automatic federation with other domains (like google talk), or are you only federating internally? XMPP Servers cannot forward traffic, in case that is what you were thinking, so simply having one server in your &quot;Web tier&quot; and one server in your &quot;App tier&quot; won't get you very far. 
+
+I'll cover a few basics just in case there is a misunderstanding. Generally, a single XMPP server will be authoritative for one or more domains(Think &quot;gmail.com&quot; or &quot;livejournal.com&quot;). For security reasons, XMPP servers can't forward traffic, so if someone on your server wants to send a message to someone in a different domain then your XMPP server will need to be able to directly connect to the server that is authoritative for that domain (and vise-versa!). Unless you are using a jabber server which will allow you to run the S2S component on a separate machine, you will not be able to deploy as you described.
+
+Jabberd2 does allow you to separate the S2S component from the rest of the server, but I do not recommend using Jabberd2 for various reasons. There may be a way to do what you describe using an XMPP server which supports clustering (Like Openfire or ejabberd), but that is outside of my scope of expertise. This is not a standard feature as far as I know.
+
+There are two types of connections that an XMPP server can have: C2S (Client-to-Server) and S2S (Server-to-Server). For a client to connect to your server, it simply needs to be able to connect to the C2S port. If you are worried about someone compromising your XMPP server and using that as a point of entry to attack the rest of your network, you could simply disallow all connections to or from your &quot;App tier&quot; except for C2S connections. For automatic federation to work, you need to allow the S2S port to be open to connections from the internet as well as allow your sever to connect to make outbound connections to any port.
+
+I hope this helps. 
+
+__________________
+Robert Quattlebaum
+Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darco at deepdarc.com</A>
+eMail:  <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darco at deepdarc.com</A>
+www:    <A HREF="http://www.deepdarc.com/">http://www.deepdarc.com/</A>
+
+
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20100217/e169ea4b/attachment.htm">https://www.jabber.org/jdev/attachments/20100217/e169ea4b/attachment.htm</A>&gt;
+</PRE>
+
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088087.html">[jdev] Federation server placement
+</A></li>
+	<LI>Next message: <A HREF="088088.html">[jdev] How to build &quot;response&quot; in sasl digest MD5
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88089">[ date ]</a>
+              <a href="thread.html#88089">[ thread ]</a>
+              <a href="subject.html#88089">[ subject ]</a>
+              <a href="author.html#88089">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

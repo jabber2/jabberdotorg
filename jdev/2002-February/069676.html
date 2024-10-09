@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] server config questions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20server%20config%20questions&In-Reply-To=%3CE16Z1eP-0003jv-00%40tisch.mail.mindspring.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="069675.html">
+   <LINK REL="Next"  HREF="069679.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] server config questions</H1>
+    <B>zak sy</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20server%20config%20questions&In-Reply-To=%3CE16Z1eP-0003jv-00%40tisch.mail.mindspring.net%3E"
+       TITLE="[JDEV] server config questions">zsy at ix.netcom.com
+       </A><BR>
+    <I>Thu Feb  7 22:20:54 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="069675.html">[JDEV] server config questions
+</A></li>
+        <LI>Next message: <A HREF="069679.html">[JDEV] server config questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#69676">[ date ]</a>
+              <a href="thread.html#69676">[ thread ]</a>
+              <a href="subject.html#69676">[ subject ]</a>
+              <a href="author.html#69676">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thursday 07 February 2002 05:08pm, you wrote:
+&gt;<i> zak wrote:
+</I>&gt;<i> &gt;i just installed the jabber server so i could do local testing for a
+</I>&gt;<i> &gt; client i'm developing.  anyway, i noticed a couple things that i'm
+</I>&gt;<i> &gt; assuming deal with the server configuration and was hoping someone could
+</I>&gt;<i> &gt; explain.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;first of all when my cleint sends the ending xml stream packet
+</I>&gt;<i> &gt;&lt;/stream:stream&gt; i get no matching &lt;/stream:stream&gt; sent back from the
+</I>&gt;<i> &gt;server.  however, when i test on jabber.org i do get the matching end
+</I>&gt;<i> &gt; stream back.
+</I>&gt;<i>
+</I>&gt;<i> This might be that they are using a different client connection
+</I>&gt;<i> management piece than you are. The opening and closing tags are usually
+</I>&gt;<i> sent programmatically, and the particular implementation may be flawed
+</I>&gt;<i>
+</I>
+i'm using the 1.4.1 version downloaded from: 
+
+<A HREF="http://download.jabber.org/dists/1.4/final/">http://download.jabber.org/dists/1.4/final/</A>
+
+i basically just followed the install instructions from D.J. Adams' 
+Programming Jabber book.  i'm assuming it's a pretty vanilla install 
+procedure because there weren't any major server configurations made.
+
+&gt;<i> &gt;secondly, when i retrieve my roster, from the server that i just
+</I>&gt;<i> &gt; installed, the roster items only include the attributes jid and
+</I>&gt;<i> &gt; subscription.  the name attribute is not included.  For example:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;&lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">xxx at jabber.org</A>'
+</I>&gt;<i> &gt; subscription='both'&gt;&lt;group&gt;SomeGroup&lt;/group&gt;&lt;/item&gt;
+</I>&gt;<i>
+</I>&gt;<i> Odd - are you setting the names?
+</I>&gt;<i>
+</I>&gt;<i> &gt;additionally, when i register new accounts i do set the name and email
+</I>&gt;<i> &gt; fields and the are in the spool files on the server.
+</I>&gt;<i>
+</I>&gt;<i> I don't understand.
+</I>&gt;<i>
+</I>
+i hope this clears things up.  i have a feeling it's something stupid.
+
+the registration request:
+
+&lt;iq type=&quot;get&quot; id=&quot;P10002&quot; to=&quot;localhost&quot;&gt;
+   &lt;query xmlns=&quot;jabber:iq:register&quot; /&gt;
+&lt;/iq&gt;
+
+returns:
+
+&lt;iq type='result' id='P10002'&gt;
+   &lt;query xmlns='jabber:iq:register'&gt;
+      &lt;instructions&gt;
+      Choose a username and password to register with this server.
+      &lt;/instructions&gt;
+      &lt;name/&gt;
+      &lt;email/&gt;
+      &lt;username/&gt;
+      &lt;password/&gt;
+   &lt;/query&gt;
+&lt;/iq&gt;
+
+i then register a user via the snippet below.  it's this 'name' field that 
+i'm assuming gets returned as a roster item when someone subscribes to this 
+users presence.
+
+&lt;iq type=&quot;set&quot; id=&quot;Q10003&quot; to=&quot;localhost&quot;&gt;
+   &lt;query xmlns=&quot;jabber:iq:register&quot;&gt;
+      &lt;password&gt;secret&lt;/password&gt;
+      &lt;name&gt;bob smith&lt;/name&gt;
+      &lt;email&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">abc at foo.com</A>&lt;/email&gt;
+      &lt;username&gt;bob1&lt;/username&gt;
+   &lt;/query&gt;
+&lt;/iq&gt;
+
+the server returns the following so i assume everything is ok.  i verify by 
+connecting and authenticating as this user.
+
+&lt;iq type='result' id='Q10003'/&gt;
+
+finally, i check the spool file created by the server to make sure the 'name' 
+field was indeed set, and it is.  here's the data:
+
+&lt;xdb&gt;&lt;query xmlns='jabber:iq:last' last='1013140921' 
+xdbns='jabber:iq:last'&gt;Registered&lt;/query&gt;&lt;zerok xmlns='jabber:iq:auth:0k' 
+xdbns='jabber:iq:auth:0k'&gt;&lt;hash&gt;834a9f351331a9f8b5de55500196cd2971b97f2a&lt;/hash&gt;
+&lt;token&gt;3C634DB9&lt;/token&gt;&lt;sequence&gt;500&lt;/sequence&gt;&lt;/zerok&gt;&lt;password 
+xmlns='jabber:iq:auth' xdbns='jabber:iq:auth'&gt;secret&lt;/password&gt;&lt;query 
+xmlns='jabber:iq:register' xdbns='jabber:iq:register'&gt;&lt;name&gt;bob 
+smith&lt;/name&gt;&lt;email&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">abc at foo.com</A>&lt;/email&gt;&lt;x xmlns='jabber:x:delay' 
+stamp='20020208T04:02:01'&gt;registered&lt;/x&gt;&lt;/query&gt;&lt;foo xdbns='jabber:x:offline' 
+xmlns='jabber:x:offline'&gt;&lt;message from='localhost' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bob1 at localhost</A>'&gt;
+        &lt;subject&gt;Welcome!&lt;/subject&gt;
+        &lt;body&gt;Welcome to the Jabber server at localhost -- we hope you enjoy 
+this service! For information about how to use Jabber, visit the Jabber 
+User&amp;apos;s Guide at <A HREF="http://docs.jabber.org/&lt;/body">http://docs.jabber.org/&lt;/body</A>&gt;
+      &lt;x xmlns='jabber:x:delay' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bob1 at localhost</A>' 
+stamp='20020208T04:02:01'&gt;Offline Storage&lt;/x&gt;&lt;/message&gt;&lt;/foo&gt;&lt;/xdb&gt;
+
+as you can see the 'name' field data was successfully saved.  
+
+i hope this helps to shed some light on the problem.
+
+thanks, i appreciate the help. 
+
+zak.
+
+&gt;<i> -David Waite
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="069675.html">[JDEV] server config questions
+</A></li>
+	<LI>Next message: <A HREF="069679.html">[JDEV] server config questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#69676">[ date ]</a>
+              <a href="thread.html#69676">[ thread ]</a>
+              <a href="subject.html#69676">[ subject ]</a>
+              <a href="author.html#69676">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

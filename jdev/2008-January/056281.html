@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Financial messaging via XMPP
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Financial%20messaging%20via%20XMPP&In-Reply-To=%3C479A108D.8090700%40fastmq.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="056280.html">
+   <LINK REL="Next"  HREF="056282.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Financial messaging via XMPP</H1>
+    <B>Martin Sustrik</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Financial%20messaging%20via%20XMPP&In-Reply-To=%3C479A108D.8090700%40fastmq.com%3E"
+       TITLE="[jdev] Financial messaging via XMPP">sustrik at fastmq.com
+       </A><BR>
+    <I>Fri Jan 25 10:38:37 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="056280.html">[jdev] Financial messaging via XMPP
+</A></li>
+        <LI>Next message: <A HREF="056282.html">[jdev] Financial messaging via XMPP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#56281">[ date ]</a>
+              <a href="thread.html#56281">[ thread ]</a>
+              <a href="subject.html#56281">[ subject ]</a>
+              <a href="author.html#56281">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dave,
+
+Thanks for extensive clarification.
+
+I believe I have some idea of how XMPP plugin can be implemented now. 
+When we have something working I'll post the performance figures on this 
+list.
+
+The issues that still may be performance bottlenecks are:
+
+1. Size of XMPP wrapper of the binary message - 360 bytes in the example 
+in the article - with financial protocol like FIX/FAST the binary data 
+tend to be quite small (30-40 bytes) thus 360 bytes of wrapping XML can 
+extend the message size tenfold.
+
+2. Compression and decompression (binary-&gt;base64-&gt;TLS compression-&gt;TLS 
+decompression-&gt;base64-&gt;binary data) may cause latency to be worse. 
+However, I am not sure what exactly the impact would be.
+
+Martin
+
+Dave Cridland wrote:
+&gt;<i> I was going to wade in on this one sooner, but I wanted to read the 
+</I>&gt;<i> AMQP specification first. It strikes me that the bulk of the 
+</I>&gt;<i> specification actually maps onto XML (and, by inference, XMPP) quite 
+</I>&gt;<i> well, so I'm a little surprised by the conclusion you draw.
+</I>&gt;<i>
+</I>&gt;<i> I apologise for answering points that are already answered by other 
+</I>&gt;<i> people - I've seen Maciek's reply but left my similar comments in - 
+</I>&gt;<i> and I apologise if I've got bits of AMQP wrong - I've spent not much 
+</I>&gt;<i> more than an hour learning it.
+</I>&gt;<i>
+</I>&gt;<i> On Fri Jan 25 15:02:32 2008, Martin Sustrik wrote:
+</I>&gt;&gt;<i> 1. XMPP can be used for sending opaque messages, however, there are 
+</I>&gt;&gt;<i> several limitations:
+</I>&gt;&gt;<i> 2. Binary content has to be translated into Base64, adding 1/3 of 
+</I>&gt;&gt;<i> overhead to message size
+</I>&gt;<i>
+</I>&gt;<i> Not really - assuming the binary message is incompressible to begin 
+</I>&gt;<i> with, the base64 encoding is recovered through compression - XMPP 
+</I>&gt;<i> gives you this both by XEP-0138 and by TLS. On the assumption that you 
+</I>&gt;<i> care about bandwidth, you'll have compression on, and your messages 
+</I>&gt;<i> will be compressed anyway. Equally, they'll potentially be end-to-end 
+</I>&gt;<i> encrypted, too.
+</I>&gt;<i>
+</I>&gt;<i> Rather oddly, AMQP contains nothing about either compression nor 
+</I>&gt;<i> encryption. I'd have thought the latter would be important in 
+</I>&gt;<i> financials. (Oh, and that SASL profile is incomplete - SASL can 
+</I>&gt;<i> negotiate encryption too, but there's no indication of where this 
+</I>&gt;<i> might kick in, nor any MTI mechanisms).
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;&gt;<i> 3. There's no way to do zero-copy as the message has to be translated 
+</I>&gt;&gt;<i> on both ends of the connection
+</I>&gt;<i>
+</I>&gt;<i> Sure. But then again, a lot of the data in AMQP needs to be copied 
+</I>&gt;<i> anyway to circumvent alignment issues, handle buffering, queuing, etc. 
+</I>&gt;<i> Unless you're sending really big chunks of longstr data about, the 
+</I>&gt;<i> impact is likely to be low - and even if you are, it's just one more 
+</I>&gt;<i> codec.
+</I>&gt;<i>
+</I>&gt;<i> For servers, where this would be the highest impact, it seems very 
+</I>&gt;<i> unlikely that any data is going to be examined anyway - servers look 
+</I>&gt;<i> at routing keys and topics, and more or less leave everything else 
+</I>&gt;<i> untouched, so it'd seem reasonable to stick topics and routing keys in 
+</I>&gt;<i> XML, and then leave the message payload as a blob.
+</I>&gt;<i>
+</I>&gt;<i> All this assumes that the messages can't be formatted as XML, of course.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;&gt;<i> 4. All the messages have to be acknowledged. No no-acknowledge mode 
+</I>&gt;&gt;<i> exists.
+</I>&gt;<i>
+</I>&gt;<i> &lt;message/&gt; is unacknowledged, &lt;iq/&gt; is acknowledged.
+</I>&gt;<i>
+</I>&gt;<i> (To put it another way, &lt;iq/&gt; are like your Request/Response frames.)
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;&gt;<i> 5. There's no batch acknowledge functionality (acknowledging sequence 
+</I>&gt;&gt;<i> of messages using single acknowledge).
+</I>&gt;<i>
+</I>&gt;<i> Depends what you mean by this. If you use &lt;iq/&gt;, then no, but then 
+</I>&gt;<i> again, these can be acknowledged end-to-end out of order, just as 
+</I>&gt;<i> Request/Response frames do in AMQP.
+</I>&gt;<i>
+</I>&gt;<i> If you mean across a connection, then look at XEP-0198, which provides 
+</I>&gt;<i> precisely this, as well as several other useful features for 
+</I>&gt;<i> reliability. (And much better than AMQP's heartbeat frames, too, IMO).
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;&gt;<i> 6. Pipelining of acknowledges is allowed, but discouraged. (&quot;The 
+</I>&gt;&gt;<i> sender need not wait for these acknowledgements before sending 
+</I>&gt;&gt;<i> further stanzas. However, it is RECOMMENDED that the sender does wait 
+</I>&gt;&gt;<i> in order to minimize possible rate-limiting penalties.&quot;)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i> That's a RECOMMENDED - a SHOULD not a MUST - and only for bytestreams. 
+</I>&gt;<i> If you're sending &lt;message/&gt; stanzas with binary content, there's no 
+</I>&gt;<i> need to concern yourself with whether the endpoint is acknowledging, 
+</I>&gt;<i> since it won't be. Worth noting that bytestreams are for arbitrary 
+</I>&gt;<i> length data - while AMQP does in principle allow frames of several G 
+</I>&gt;<i> (assuming they're made up of multiple longstrs, for example), I'm 
+</I>&gt;<i> under the impression that individual frames tend to be relatively 
+</I>&gt;<i> small, and would map to a single XMPP stanza.
+</I>&gt;<i>
+</I>&gt;<i> I'd suggest sitting down and examining RFC3920bis, and familiarizing 
+</I>&gt;<i> yourself with the general concepts. XMPP will not be as efficient as 
+</I>&gt;<i> AMQP, but the difference need not be huge. On the other hand, the 
+</I>&gt;<i> potential gains coming from using XMPP are very great indeed, giving 
+</I>&gt;<i> you improvements in security and multiple sites to name but two.
+</I>&gt;<i>
+</I>&gt;<i> I hope this helps.
+</I>&gt;<i>
+</I>&gt;<i> Dave.
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="056280.html">[jdev] Financial messaging via XMPP
+</A></li>
+	<LI>Next message: <A HREF="056282.html">[jdev] Financial messaging via XMPP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#56281">[ date ]</a>
+              <a href="thread.html#56281">[ thread ]</a>
+              <a href="subject.html#56281">[ subject ]</a>
+              <a href="author.html#56281">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Groupchat with 1.2 problems continue
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Groupchat%20with%201.2%20problems%20continue&In-Reply-To=%3C3A4CE849.BFA3A63E%40goto.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="063961.html">
+   <LINK REL="Next"  HREF="063963.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Groupchat with 1.2 problems continue</H1>
+    <B>Bruce Nelson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Groupchat%20with%201.2%20problems%20continue&In-Reply-To=%3C3A4CE849.BFA3A63E%40goto.com%3E"
+       TITLE="[JDEV] Groupchat with 1.2 problems continue">bruce.nelson at goto.com
+       </A><BR>
+    <I>Fri Dec 29 13:38:49 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="063961.html">[JDEV] Groupchat with 1.2 problems continue
+</A></li>
+        <LI>Next message: <A HREF="063963.html">[JDEV] Groupchat with 1.2 problems continue
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63962">[ date ]</a>
+              <a href="thread.html#63962">[ thread ]</a>
+              <a href="subject.html#63962">[ subject ]</a>
+              <a href="author.html#63962">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>P.S. -- Just to be clear on groupchat ... the difference is that you need to use
+an exec on a separate jabberd process -- using an additional
+jabber_groupchat.xml file .. -- see below....
+
+&lt;jabberd&gt; [this jabberd should be run from as an exec'd jabberd]
+    &lt;!--
+        The parent jabberd should have this configured:
+        &lt;service id=&quot;groupchat_transport&quot;&gt;
+            &lt;host&gt;gc.go2.com&lt;/host&gt;
+            &lt;exec&gt;./jabberd/jabberd -c groupchat.xml&lt;/exec&gt;
+        &lt;/service&gt;
+    --&gt;
+  &lt;service id=&quot;groupchat_transport&quot;&gt;
+    &lt;host&gt;gc.go2.com&lt;/host&gt;
+    &lt;load&gt;&lt;groupchat&gt;./groupchat/groupchat.so&lt;/groupchat&gt;&lt;/load&gt;
+  &lt;/service&gt;
+
+  &lt;service id=&quot;out&quot;&gt;
+    &lt;host/&gt;
+    &lt;stdout/&gt;
+  &lt;/service&gt;
+
+  &lt;log id=&quot;groupchat_logs&quot;&gt;
+    &lt;host/&gt;
+    &lt;file&gt;/u/oemmon/groupchat.log&lt;/file&gt;
+  &lt;/log&gt;
+
+ &lt;xdb id=&quot;Outgoing_xdb&quot;&gt;
+    &lt;host/&gt;
+    &lt;stdout/&gt;
+  &lt;/xdb&gt;
+
+&lt;/jabberd&gt;
+
+&quot;Malone, Pat&quot; wrote:
+
+&gt;<i> Ok,
+</I>&gt;<i> I tried renaming my service to groupchat.co.lsil.com (including the DNS work
+</I>&gt;<i> - just an alias pointing to the same IP as jabber.co.lsil.com)
+</I>&gt;<i> and still have problems.  Here are the entrys in jabber.xml...
+</I>&gt;<i>    &lt;agent jid=&quot;groupchat.co.lsil.com&quot;&gt;
+</I>&gt;<i>           &lt;name&gt;Group Conferencing&lt;/name&gt;
+</I>&gt;<i>           &lt;description&gt;You can create and participate in private
+</I>&gt;<i> chatrooms.&lt;/description&gt;
+</I>&gt;<i>           &lt;service&gt;conferencing&lt;/service&gt;
+</I>&gt;<i>           &lt;groupchat/&gt;
+</I>&gt;<i>           &lt;register/&gt;
+</I>&gt;<i>         &lt;/agent&gt;
+</I>&gt;<i>
+</I>&gt;<i> &lt;!-- Groupchat service --&gt;
+</I>&gt;<i>   &lt;/service&gt;
+</I>&gt;<i>    &lt;service id=&quot;conference&quot;&gt;
+</I>&gt;<i>    &lt;load&gt;&lt;groupchat&gt;./groupchat.so&lt;/groupchat&gt;&lt;/load&gt;
+</I>&gt;<i>   &lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i> This was returning with the message &quot;Could not contact this agent. It is
+</I>&gt;<i> possible the agent is not operating&quot;
+</I>&gt;<i> after a minute or two.  Debug logs seem to indicate jabber is trying to talk
+</I>&gt;<i> with groupchat (including some nice &quot;Dr. Pepper says&quot; messaged in the log!)
+</I>&gt;<i> with problems.
+</I>&gt;<i>
+</I>&gt;<i> For grins, I added &quot;groupchat.co.lsil.com&quot; as a 'host' entry.  This then
+</I>&gt;<i> returns an immediate server error 'not found'.
+</I>&gt;<i>     &lt;host&gt;jabber.co.lsil.com&lt;/host&gt;
+</I>&gt;<i>     &lt;host&gt;groupchat.co.lsil.com&lt;/host&gt;
+</I>&gt;<i>
+</I>&gt;<i> Looking around this morning, I found the jabberd_groupchat.xml file in the
+</I>&gt;<i> conferencing source tree that talks about a very different way to integrate
+</I>&gt;<i> the groupchat than was explained in the 1.2 'how to' document.  Is this a
+</I>&gt;<i> better way to implement this?
+</I>&gt;<i> --
+</I>&gt;<i> &lt;jabberd&gt; [this jabberd should be run from as an exec'd jabberd]
+</I>&gt;<i>     &lt;!--
+</I>&gt;<i>         The parent jabberd should have this configured:
+</I>&gt;<i>         &lt;service id=&quot;groupchat_transport&quot;&gt;
+</I>&gt;<i>             &lt;host&gt;groups.server.com&lt;/host&gt;
+</I>&gt;<i>             &lt;exec&gt;jabberd -c this_file.xml&lt;/exec&gt;
+</I>&gt;<i>         &lt;/service&gt;
+</I>&gt;<i>     --&gt;
+</I>&gt;<i>   &lt;service id=&quot;groupchat_transport&quot;&gt;
+</I>&gt;<i>     &lt;host&gt;groupchat.co.lsil.com&lt;/host&gt;
+</I>&gt;<i>     &lt;load&gt;&lt;groupchat&gt;groupchat.so&lt;/groupchat&gt;&lt;/load&gt;
+</I>&gt;<i>   &lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;service id=&quot;out&quot;&gt;
+</I>&gt;<i>     &lt;host/&gt;
+</I>&gt;<i>     &lt;stdout/&gt;
+</I>&gt;<i>   &lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;log id=&quot;groupchat_logs&quot;&gt;
+</I>&gt;<i>     &lt;host/&gt;
+</I>&gt;<i>     &lt;file&gt;groupchat.log&lt;/file&gt;
+</I>&gt;<i>   &lt;/log&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;xdb id=&quot;Outgoing_xdb&quot;&gt;
+</I>&gt;<i>     &lt;host/&gt;
+</I>&gt;<i>     &lt;stdout/&gt;
+</I>&gt;<i>   &lt;/xdb&gt;
+</I>&gt;<i> &lt;/jabberd&gt;
+</I>&gt;<i> --
+</I>&gt;<i>
+</I>&gt;<i> Can someone with a working groupchat under 1.2 send me your jabber.xml?
+</I>&gt;<i> That might give me some clues.
+</I>&gt;<i>
+</I>&gt;<i> Thanks
+</I>&gt;<i>
+</I>&gt;<i> Pat
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: bruce.nelson.vcf
+Type: text/x-vcard
+Size: 463 bytes
+Desc: Card for Bruce Nelson
+URL: &lt;<A HREF="http://mail.jabber.org/pipermail/jdev/attachments/20001229/d22e8acc/attachment-0002.vcf">http://mail.jabber.org/pipermail/jdev/attachments/20001229/d22e8acc/attachment-0002.vcf</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="063961.html">[JDEV] Groupchat with 1.2 problems continue
+</A></li>
+	<LI>Next message: <A HREF="063963.html">[JDEV] Groupchat with 1.2 problems continue
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63962">[ date ]</a>
+              <a href="thread.html#63962">[ thread ]</a>
+              <a href="subject.html#63962">[ subject ]</a>
+              <a href="author.html#63962">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

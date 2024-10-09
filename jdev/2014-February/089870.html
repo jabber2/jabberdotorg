@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Offline messages XEPs interoperability (XEPs 0013 and XEP-0160)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Offline%20messages%20XEPs%20interoperability%20%28XEPs%200013%20and%0A%20XEP-0160%29&In-Reply-To=%3C20140221165802.GA29035%40fils.amessage.eu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089869.html">
+   <LINK REL="Next"  HREF="089871.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Offline messages XEPs interoperability (XEPs 0013 and XEP-0160)</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Offline%20messages%20XEPs%20interoperability%20%28XEPs%200013%20and%0A%20XEP-0160%29&In-Reply-To=%3C20140221165802.GA29035%40fils.amessage.eu%3E"
+       TITLE="[jdev] Offline messages XEPs interoperability (XEPs 0013 and XEP-0160)">m at tthias.eu
+       </A><BR>
+    <I>Fri Feb 21 16:58:02 UTC 2014</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089869.html">[jdev] Offline messages XEPs interoperability (XEPs 0013 and	XEP-0160)
+</A></li>
+        <LI>Next message: <A HREF="089871.html">[jdev] Offline messages XEPs interoperability (XEPs 0013 and	XEP-0160)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89870">[ date ]</a>
+              <a href="thread.html#89870">[ thread ]</a>
+              <a href="subject.html#89870">[ subject ]</a>
+              <a href="author.html#89870">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Sergey,
+
+
+maybe its a bit hidden in XEP-0013. Support for this protocol gets
+activated by the client by sending a service discovery request to a node
+of &quot;<A HREF="http://jabber.org/protocol/offline">http://jabber.org/protocol/offline</A>&quot;.
+If the client does not support or not want to use the protocol, it just
+does not send this service discovery request. (Section 2.2)
+
+In section 3 it gets a bit clearer: a client not supporting XEP-0013
+gets the &quot;message flood&quot; after it sends the &lt;presence/&gt;. Clients
+supporting XEP-0013 will have sent the service discovery request before
+sending the &lt;presence/&gt;. The server therefore knows that the client uses
+the protocol and does not flood messages after receiving the &lt;presence/&gt;
+element.
+
+Therefore I think it is possible to support XEP-0013 and XEP-0160 in the
+same server implementation. The server floods the messages by default,
+but switches to XEP-0013 handling when the client requested it.
+
+Especially a server &quot;only supporting XEP-0013&quot; still has to flood
+messages, if the client does not support offline message retrieval. This
+is because XEP-0013 requires message flooding in this case as well.
+
+
+Hope that helps,
+
+Matthias
+
+
+
+El 2014-02-21 18:08:55, Sergey Dobrov escribi&#243;:
+&gt;<i> Date: Fri, 21 Feb 2014 18:08:55 +0200
+</I>&gt;<i> From: Sergey Dobrov &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">binary at jrudevels.org</A>&gt;
+</I>&gt;<i> Subject: [jdev] Offline messages XEPs interoperability (XEPs 0013 and
+</I>&gt;<i>  XEP-0160)
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:24.0) Gecko/20100101
+</I>&gt;<i>  Thunderbird/24.2.0
+</I>&gt;<i> X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.2.4
+</I>&gt;<i> 
+</I>&gt;<i> hey folks,
+</I>&gt;<i> 
+</I>&gt;<i> for now we have two different XEPs that allowing xmpp-servers to
+</I>&gt;<i> store messages that being sent while client was not available. XEP
+</I>&gt;<i> 0013 says that it's not very nice to flood all the messages on the
+</I>&gt;<i> client when it's becoming available, rather it advices to provide a
+</I>&gt;<i> way to discover such messages and query the necessary ones (and it's
+</I>&gt;<i> becoming something like inbox. the implementation is not the best to
+</I>&gt;<i> me, but it still nice), the XEP-0160 vice-versa says that we need to
+</I>&gt;<i> send all the messages when client has became available. And there is
+</I>&gt;<i> a good reason for that again: that way clients don't need any extra
+</I>&gt;<i> support of the offline storage.
+</I>&gt;<i> 
+</I>&gt;<i> Ok, we've seen that both XEPs cover some good usecase. But how to
+</I>&gt;<i> combine them? Can the xmpp server support both of them? I don't see
+</I>&gt;<i> a way for it to do that: if it supports 160 it needs to send all the
+</I>&gt;<i> messages immediately on client's presence but according to 13 it
+</I>&gt;<i> can't do that and I don't see any possibility for server to know
+</I>&gt;<i> which behaviour is the best for the client.
+</I>&gt;<i> 
+</I>&gt;<i> If server will support only 13, a big number of clients won't be
+</I>&gt;<i> able to obtain offline messages, but the 13 is still pretty nice to
+</I>&gt;<i> me (I just would want to add some more queries compatibility or even
+</I>&gt;<i> maybe combine it with MAM?). So, according to all these words above,
+</I>&gt;<i> what's the best way to me to implement such an inbox offline storage
+</I>&gt;<i> of messages?
+</I>&gt;<i> 
+</I>&gt;<i> Thanks.
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>
+-- 
+Matthias Wimmer
+Contact details:     <A HREF="http://matthias.wimmer.tel/">http://matthias.wimmer.tel/</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 3941 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20140221/b572496a/attachment.bin">https://www.jabber.org/jdev/attachments/20140221/b572496a/attachment.bin</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089869.html">[jdev] Offline messages XEPs interoperability (XEPs 0013 and	XEP-0160)
+</A></li>
+	<LI>Next message: <A HREF="089871.html">[jdev] Offline messages XEPs interoperability (XEPs 0013 and	XEP-0160)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89870">[ date ]</a>
+              <a href="thread.html#89870">[ thread ]</a>
+              <a href="subject.html#89870">[ subject ]</a>
+              <a href="author.html#89870">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

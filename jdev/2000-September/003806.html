@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] UDP vs TCP
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20UDP%20vs%20TCP&In-Reply-To=3.0.6.32.20000901191716.0089aa40%40latcs2.cs.latrobe.edu.au">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003801.html">
+   <LINK REL="Next"  HREF="003814.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] UDP vs TCP</H1>
+    <B>Benjamin Kahn</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20UDP%20vs%20TCP&In-Reply-To=3.0.6.32.20000901191716.0089aa40%40latcs2.cs.latrobe.edu.au"
+       TITLE="[JDEV] UDP vs TCP">xkahn at cybersites.com
+       </A><BR>
+    <I>Fri Sep  1 08:53:27 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003801.html">[JDEV] UDP vs TCP
+</A></li>
+        <LI>Next message: <A HREF="003814.html">[JDEV] UDP vs TCP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3806">[ date ]</a>
+              <a href="thread.html#3806">[ thread ]</a>
+              <a href="subject.html#3806">[ subject ]</a>
+              <a href="author.html#3806">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>	I haven't been paying close enough attention to this list to
+figure out WHY people are suddenly arguing UDP vs. TCP.  BUT!  It seems
+common that people want to discuss this.  
+
+	The IETF's discussion on this problem is here:
+
+<A HREF="http://www.imppwg.org/cgi-bin/ml_search.cgi?query_exp=UDP">http://www.imppwg.org/cgi-bin/ml_search.cgi?query_exp=UDP</A>
+
+	As a usage note, I believe that ICQ runs over (or used to run
+over; I haven't looked recently) UDP, whereas most other IM systems use
+TCP.  
+
+	The advantages of TCP are:
+
+	Simple to tell if a user is really there.  (They are connected)
+	Messages arrive in order they were sent in.
+	Lost messages get re-sent automatically.
+	Large messages are easy to handle.
+	TCP stacks are getting better and better, and it's hard to do
+		better than they can in an application.
+	Less code in the server means less code to test and have bugs.
+	Persistant state means that security is easier to impliment.
+	   &quot;&quot;        &quot;&quot;   &quot;&quot;    &quot;&quot;  authorization &quot;&quot;   &quot;&quot;   &quot;&quot;
+
+
+	The advantages of UDP are:
+	Lower overhead.
+
+	Umm...  Anything else?
+
+	Honestly, you can make a fairly decent IM system with
+UDP.  Messages can't be &gt; 64k.  (Unless you are willing to play
+fragmentation games with the packets.)  Messages may get lost, but that
+might be okay.  Only a few people really care about security
+ANYWAY.  Messages may come out of order, but that probably doesn't matter
+in this case.  And presence can be determined by pinging.  (Ping every 5
+seconds,  If the server hasn't heard from you in 12 seconds, you're
+offline.)  
+
+	But why are we discussing this?  Jabber is quite firmly TCP at
+this point.  It would be a MAJOR overhaul to change, and the benefits
+just aren't really there.  
+
+On Fri, 1 Sep 2000, Peter Donald wrote:
+
+&gt;<i> At 08:19  31/8/00 -0500, you wrote:
+</I>&gt;<i> &gt;UDP gets its performance boost because it doesn't care if its 
+</I>&gt;<i> &gt;packets get there or not. 
+</I>&gt;<i> 
+</I>&gt;<i> partially. It also is a lot less memory usage as memory beffers are done in
+</I>&gt;<i> application space and can be much much more efficiently managed - including
+</I>&gt;<i> size and content wise. It also gets a speed up because it doesn't have to
+</I>&gt;<i> maintain ordering.  Is order that important in sub-second range for IM ? I
+</I>&gt;<i> would say nay except for a single conversation between 2 parties.
+</I>&gt;<i> 
+</I>&gt;<i> UDP is a much more rawer - you get to do all management facilities and is
+</I>&gt;<i> thus potentially much faster and more memory efficient.
+</I>&gt;<i> 
+</I>&gt;<i> &gt;IM doesn't fall into either one of those categories. You do need to 
+</I>&gt;<i> &gt;make sure that all of the packets got there and in the proper order. 
+</I>&gt;<i> 
+</I>&gt;<i> do you ? I would only say that they have to be ordered in a single
+</I>&gt;<i> conversation ? How often do 2 messages from same conversation end up being
+</I>&gt;<i> co-located on server ???? Very rarely I would say.
+</I>&gt;<i> 
+</I>&gt;<i> &gt;While you could indeed add this capability to your IM application, 
+</I>&gt;<i> &gt;in the end, you'll just end up re-implementing TCP and probably 
+</I>&gt;<i> &gt;poorly.
+</I>&gt;<i> 
+</I>&gt;<i> unlikely - you need a very small subset of TC that TCP contains 
+</I>&gt;<i> 
+</I>&gt;<i> &gt;Also there's no gurantee of the sequence of packets sent via UDP, 
+</I>&gt;<i> &gt;you have a very hard time implementing standard security 
+</I>&gt;<i> &gt;mechanisms such as SSL.
+</I>&gt;<i> 
+</I>&gt;<i> true. UDP encryption/signing is more difficult to implement.
+</I>&gt;<i> 
+</I>&gt;<i> &gt;That's why most people stick to TCP instead of UDP. If UDP 
+</I>&gt;<i> &gt;provided more bang for the buck, it would be used. But it doesn't 
+</I>&gt;<i> &gt;so, we stick with TCP.
+</I>&gt;<i> 
+</I>&gt;<i> People stick with TCP because it is easier and most use cases of TCP/IP is
+</I>&gt;<i> consistent with design choices. IM has different demands IMO - sequencing
+</I>&gt;<i> is different as is frequency and type of data transmitted.
+</I>&gt;<i> 
+</I>&gt;<i> Using IM of TCP ends up with lots of small fragmented IP packets, excessive
+</I>&gt;<i> buffering and potentially long timeout times.
+</I>&gt;<i> 
+</I>&gt;<i> &gt;I&quot;m not saying you shouldn't try your system. It might be useful for 
+</I>&gt;<i> &gt;local IM where the network is a lot more reliable than over the 
+</I>&gt;<i> &gt;general Internet.
+</I>&gt;<i> 
+</I>&gt;<i> gee thanks. 
+</I>&gt;<i> 
+</I>&gt;<i> TCP is not a magic bullet. I do know the differences between the way you
+</I>&gt;<i> design applications. TCP is a lot easier and requires a lot less developer
+</I>&gt;<i> thought. UDP is a lot different, harder and requires more management code
+</I>&gt;<i> but can potentially be faster given the usage requirements of IM. 
+</I>&gt;<i> 
+</I>&gt;<i> It wont be as easy as TCP server nor can I safely saY I will be successful
+</I>&gt;<i> but if I am it is much more likely to be scalable than TCP. There is a
+</I>&gt;<i> reaons that many other protocols are UDP, scalability is one of them
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Cheers,
+</I>&gt;<i> 
+</I>&gt;<i> Pete
+</I>&gt;<i> 
+</I>&gt;<i> *------------------------------------------------------*
+</I>&gt;<i> | &quot;Nearly all men can stand adversity, but if you want |
+</I>&gt;<i> | to test a man's character, give him power.&quot;          |
+</I>&gt;<i> |       -Abraham Lincoln                               |
+</I>&gt;<i> *------------------------------------------------------*
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+						-Ben
+
+------------------------------------ |\      _,,,--,,_  ,) ----------
+Benjamin Kahn                        /,`.-'`'   -,  ;-;;'
+(212) 924 - 2220 ext 201            |,4-  ) )-,_ ) /\
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ben at cybersites.com</A> --------------- '---''(_/--' (_/-' ---------------
+   I just want to make the world a better place for me to live in.
+			-Lucy in a Peanuts comic
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003801.html">[JDEV] UDP vs TCP
+</A></li>
+	<LI>Next message: <A HREF="003814.html">[JDEV] UDP vs TCP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3806">[ date ]</a>
+              <a href="thread.html#3806">[ thread ]</a>
+              <a href="subject.html#3806">[ subject ]</a>
+              <a href="author.html#3806">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

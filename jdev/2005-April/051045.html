@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Question about Proxy65 support Voice Chat
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Question%20about%20Proxy65%20support%20Voice%20Chat&In-Reply-To=%3C42677647.7080102%40tthias.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="051061.html">
+   <LINK REL="Next"  HREF="051025.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Question about Proxy65 support Voice Chat</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Question%20about%20Proxy65%20support%20Voice%20Chat&In-Reply-To=%3C42677647.7080102%40tthias.net%3E"
+       TITLE="[jdev] Re: Question about Proxy65 support Voice Chat">m at tthias.net
+       </A><BR>
+    <I>Thu Apr 21 04:45:43 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="051061.html">[jdev] Re: Question about Proxy65 support Voice Chat
+</A></li>
+        <LI>Next message: <A HREF="051025.html">[jdev] Jabberd v1.4.4, GPL v2, and OpenSSL - more licensing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51045">[ date ]</a>
+              <a href="thread.html#51045">[ thread ]</a>
+              <a href="subject.html#51045">[ subject ]</a>
+              <a href="author.html#51045">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Nolan!
+
+Nolan Eakins schrieb:
+
+&gt;<i> You probably would want to use TCP for voice. You would not want to have
+</I>&gt;<i> an audio stream with someone saying &quot;George Bush has never lied&quot; to end
+</I>&gt;<i> up with a few packets lost along the way saying &quot;George Bush has lied&quot;.
+</I>&gt;<i> UDP would be good for video though where you can get away with dropping
+</I>&gt;<i> half a frame or even a whole one since the information essentially
+</I>&gt;<i> replaces the previous information.
+</I>&gt;<i>
+</I>&gt;<i> Voice and audio is not like that. You will need to transfer it reliably.
+</I>
+No ... TCP would take by far to long to resend the dropped frame. You
+can use TCP for internet radio streaming and that is why your streaming
+client is typically buffering about 15 seconds of audio data before
+playing it. It is hoping that TCP will retransmit lost packets within
+this time. But even for internet radio TCP is not used because it is
+suited for audio, but because HTTP is used to be able to pass proxies
+and HTTP is transmitted over TCP.
+For internet telephonie you cannot buffer 15 seconds of data. In the era
+of the traditional telephone networks, it had been thought that a
+maximum delay of 10 to 20 ms would be acceptable. In our days we accept
+about 100 to 200 ms delay. (Especially we accept this, as internet
+telephony systems have no echo and you don't hear your own voice.) But
+with a buffer of 15 seconds, it would take half a minute to get your
+answer back from the other person.
+
+&gt;<i> TCP is what SIP/SDP has selected (there's another protocol at that layer
+</I>&gt;<i> too that's been drafted for use). Their model of getting around NATs and
+</I>&gt;<i> firewalls is also a lot like proxy65 in that a third party server is used.
+</I>
+SIP is not a protocol for audio transfer, but for session establishment.
+It the protocol that calls the other side and sends back to the
+originator that the called party's phone is rinning. This does not need
+realtime, that's true. But even so SIP is specified using either TCP and
+UDP and if you check out the hardware phones you can buy, you will see
+that they typically use SIP over UDP.
+SDP is the session description protocol. It is used as a payload for SIP
+to signal which codecs the sender supports and to send back which codec
+the receiver accepted. In the SDP you can also select which protocol is
+used to carry our audio traffic, but it will nearly most of the time be
+RTP (real time  transfer protocol) which is based only on UDP.
+
+SIP phones are using STUN (Simple Traversal of User Datagram Protocol
+(UDP) through Network Address Translators (NATs)). STUN servers are not
+at all working like proxy65. A client just uses the STUN server to
+detect the type of NAT it is behind, who it is assigning external IP
+addresses and port numbers to it. With most NAT implementations you get
+a fixed IP and port if you send you packets from a fixed source port
+doesn't matter where you send them too. So you can discover with the
+help of the STUN server on which address you can directly receive UDP
+traffic from other hosts on the internet. The actual UDP transfer of
+voice data is made directly between the two endpoints.
+
+It is also possible to relay the voice data on on of the SIP servers
+that routed the call, but it is not intended to pass NAT, but to offer
+PBX-like features for which it might be necessary that the &quot;PBX&quot; stays
+in the so called &quot;media path&quot;.
+
+
+Tot kijk
+     Matthias
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="051061.html">[jdev] Re: Question about Proxy65 support Voice Chat
+</A></li>
+	<LI>Next message: <A HREF="051025.html">[jdev] Jabberd v1.4.4, GPL v2, and OpenSSL - more licensing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51045">[ date ]</a>
+              <a href="thread.html#51045">[ thread ]</a>
+              <a href="subject.html#51045">[ subject ]</a>
+              <a href="author.html#51045">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

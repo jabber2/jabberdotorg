@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Jingle e2e session establishment and security
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Jingle%20e2e%20session%20establishment%20and%20security&In-Reply-To=%3C4b21324c.02135e0a.422b.ffff8316%40mx.google.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="087928.html">
+   <LINK REL="Next"  HREF="087931.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Jingle e2e session establishment and security</H1>
+    <B>Suresh Kumar</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Jingle%20e2e%20session%20establishment%20and%20security&In-Reply-To=%3C4b21324c.02135e0a.422b.ffff8316%40mx.google.com%3E"
+       TITLE="[jdev] Jingle e2e session establishment and security">sureshkumar.pp at gmail.com
+       </A><BR>
+    <I>Thu Dec 10 11:39:39 CST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="087928.html">[jdev] Converting one-on-one chat into a multi-user conference
+</A></li>
+        <LI>Next message: <A HREF="087931.html">[jdev] plaintext passwords hack
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87921">[ date ]</a>
+              <a href="thread.html#87921">[ thread ]</a>
+              <a href="subject.html#87921">[ subject ]</a>
+              <a href="author.html#87921">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+A little background: I am studying the possibility of applying XMPP
+for a problem(the problem being connecting two entities, over the
+Internet, which are located in two different private networks, behind
+NATs). So XMPP + Jingle appears to be a natural solution for this kind
+of problem.
+
+The requirement is: end-to-end byte stream consisting of multiple
+transport options, along with end-to-end security. Since there is no
+ICE-TCP(i.e., &quot;urn:xmpp:jingle:transports:ice-tcp&quot;), I will define a
+custom transport method which will use its own NAT traversal, say that
+will be in &quot;urn:xmpp:jingle:transports:my-transport:0&quot; xmlns, for time
+being.
+
+I have been going through various XEPs and found that I have the
+following options
+
+* Define a new app type in, say &quot;urn:xmpp:jingle:apps:my-app:0&quot; and
+  use the transport &quot;urn:xmpp:jingle:transports:my-transport:0&quot; with
+  the security tag &quot;urn:xmpp:jingle:security:xtls:0&quot; as defined in
+  XEP-0166[fn:1] and [fn:3]. If for some reason my-transport fails, it
+  would call &quot;transport-replace&quot; with
+  &quot;urn:xmpp:jingle:transports:s5b:1&quot; which in turn, on failure will
+  fall back to &quot;urn:xmpp:jingle:transports:ibb:0&quot;.  This just follows
+  the suggestions from XEP-0166[fn:2], defines new &quot;what&quot; type and
+  &quot;how&quot; type, and uses Jingle notions for overall session management.
+
+Ex:
+,----
+|<i> &lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.lit</A>/orchard'
+</I>|<i>     id='zyw6m167'
+</I>|<i>     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.lit</A>/balcony'
+</I>|<i>     type='set'&gt;
+</I>|<i>   &lt;jingle xmlns='urn:xmpp:jingle:1'&gt;
+</I>|<i>           action='session-initiate
+</I>|<i>           initiator='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.lit</A>/orchard'
+</I>|<i>           sid='a73sjjvkla37jfea'&gt;
+</I>|<i>    &lt;content creator='initiator' name='something'&gt;
+</I>|<i>       &lt;description xmlns='urn:xmpp:jingle:apps:my-app:0' /&gt;
+</I>|<i>       &lt;transport xmlns='urn:xmpp:jingle:transports:my-transport:0'
+</I>|<i>                  sid='vj3hs98y' /&gt;
+</I>|<i>       &lt;security xmlns='urn:xmpp:jingle:security:xtls:0'&gt;
+</I>|<i>         &lt;fingerprint algo='sha1'&gt;RomeoX509CertSHA1Hash&lt;/fingerprint&gt;
+</I>|<i>         &lt;method name='x509'/&gt;
+</I>|<i>       &lt;/security&gt;
+</I>|<i>    &lt;/content&gt;
+</I>|<i>   &lt;/jingle&gt;
+</I>|<i> &lt;/iq&gt;
+</I>`----
+
+* Or just hack up the XEP-0234(Jingle File Transfer) to use a new
+transport method &quot;urn:xmpp:jingle:transports:my-transport:0&quot;.
+
+I would appreciate if you can share your views on this approach, and
+also possibly suggestions on any other alternate methods which I
+failed to envisage.
+
+Thanks for your time,
+Suresh
+
+Footnotes:
+
+[fn:1] <A HREF="http://xmpp.org/extensions/xep-0166.html#preconditions">http://xmpp.org/extensions/xep-0166.html#preconditions</A>
+
+[fn:2] <A HREF="http://xmpp.org/extensions/xep-0166.html#concepts">http://xmpp.org/extensions/xep-0166.html#concepts</A>
+
+[fn:3] <A HREF="http://tools.ietf.org/html/draft-meyer-xmpp-e2e-encryption-02">http://tools.ietf.org/html/draft-meyer-xmpp-e2e-encryption-02</A>
+</PRE>
+
+
+
+
+
+
+
+
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="087928.html">[jdev] Converting one-on-one chat into a multi-user conference
+</A></li>
+	<LI>Next message: <A HREF="087931.html">[jdev] plaintext passwords hack
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87921">[ date ]</a>
+              <a href="thread.html#87921">[ thread ]</a>
+              <a href="subject.html#87921">[ subject ]</a>
+              <a href="author.html#87921">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

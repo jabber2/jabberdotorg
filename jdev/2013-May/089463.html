@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Message Read Receipts
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Message%20Read%20Receipts&In-Reply-To=%3CA90DD5CF-7645-47F8-903E-54BE54624E2C%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089461.html">
+   <LINK REL="Next"  HREF="089464.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Message Read Receipts</H1>
+    <B>Lance Stout</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Message%20Read%20Receipts&In-Reply-To=%3CA90DD5CF-7645-47F8-903E-54BE54624E2C%40gmail.com%3E"
+       TITLE="[jdev] Message Read Receipts">lancestout at gmail.com
+       </A><BR>
+    <I>Sun May 19 08:23:23 UTC 2013</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089461.html">[jdev] Message Read Receipts
+</A></li>
+        <LI>Next message: <A HREF="089464.html">[jdev] Message Read Receipts
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89463">[ date ]</a>
+              <a href="thread.html#89463">[ thread ]</a>
+              <a href="subject.html#89463">[ subject ]</a>
+              <a href="author.html#89463">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> Any thoughts either way on my &quot;Chat Marker&quot; proposal?
+</I>
+So, after some pondering, there are three user experiences I can see:
+
+1) The primary clients talking to each other:
+
+So XEP-0085 by itself should cover this, as Stefan pointed out. However, it
+might leave holes because of non-instanaeous delivery. Eg, Juliet sends Romeo
+a message at the same time he sends an active state message. So Juliet would
+assume Romeo has read a message that he might not have actually received yet.
+
+If we make a new element to tie the update with a specific message
+ID, then that potential hole goes away. So we can add a new
+
+     &lt;lastread id=&quot;1234etc&quot; xmlns=&quot;urn:xmpp:lastread:tmp&quot; /&gt;
+
+element to outgoing messages when:
+
+a) The last ID sent by the other person has changed (so only send a
+   &lt;lastread /&gt; update once per change in ID)
+b) If the user doesn't send a response chat within some period of time,
+   automatically send a &lt;lastread /&gt; update. Basically, give the user a chance
+   to respond with a message and piggyback the &lt;lastread /&gt; update with that (maybe
+   a composing state message would suffice), but if after a few seconds the user
+   hasn't done something and the client is still focused and active, etc, emit a
+   standalone update.
+
+As usual, we don't send these updates when the other client doesn't advertise
+support for it in disco.
+
+The combination of just delivery receipt and chat state might be sufficient, 
+but I've not been able to convince myself yet that it would properly handle 
+case 3 with offline messages.
+
+
+2) A secondary client that is online, which wishes to stay in sync:
+
+This is the purpose of XEP-0280 Message Carbons. So long as the delivery receipts,
+chat state notifications and the &lt;lastread /&gt; updates from case 1 are also synced
+via carbons, everything should be covered.
+
+
+3) A user has received messages while offline:
+
+So this is the fun one because it requires some interaction with the archives.
+When requesting history, the results should note the ID where the offline
+storage began, as Zash pointed out.
+
+Based on that, the client can send a &lt;lastread /&gt; update. Likewise it can
+generate the delivery receipts requested in the offline messages (although,
+there shouldn't actually be any since you wouldn't request receipts when sending
+to an offline JID, and XEP-0184 has a slight ambiguity with how to handle offline
+messages).
+
+I would suggest that standalone lastread updates should be included in archived 
+history because they're required to fully resume conversation state to match
+other systems like iMessage, etc. The main question at this point is where to 
+send the updates (if at all), particularly when the sender JID is no longer online.
+
+
+
+In general, what makes things challenging is that message IDs are not required to
+be globally unique. The same ID could be used multiple times during the same
+conversation if a user is bouncing between clients or reconnects.
+
+
+-- Lance
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 4240 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20130519/147a8c0c/attachment.bin">https://www.jabber.org/jdev/attachments/20130519/147a8c0c/attachment.bin</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089461.html">[jdev] Message Read Receipts
+</A></li>
+	<LI>Next message: <A HREF="089464.html">[jdev] Message Read Receipts
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89463">[ date ]</a>
+              <a href="thread.html#89463">[ thread ]</a>
+              <a href="subject.html#89463">[ subject ]</a>
+              <a href="author.html#89463">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

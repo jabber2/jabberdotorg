@@ -1,0 +1,310 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabberd patch
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%20patch&In-Reply-To=%3CMWMail.psbodngf%40host.none%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="045231.html">
+   <LINK REL="Next"  HREF="045240.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabberd patch</H1>
+    <B>Tijl Houtbeckers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%20patch&In-Reply-To=%3CMWMail.psbodngf%40host.none%3E"
+       TITLE="[JDEV] jabberd patch">thoutbeckers at splendo.com
+       </A><BR>
+    <I>Wed Feb 26 18:32:52 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="045231.html">[JDEV] public server list
+</A></li>
+        <LI>Next message: <A HREF="045240.html">[JDEV] jabberd patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45234">[ date ]</a>
+              <a href="thread.html#45234">[ thread ]</a>
+              <a href="subject.html#45234">[ subject ]</a>
+              <a href="author.html#45234">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Richard Dobson &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">richard at dobson-i.net</A>&gt; wrote on 27-2-2003 1:17:37:
+&gt;<i>
+</I>&gt;&gt;<i> In fact when I shutdown my windows jabberd 1.4.2 with ctrl-c it 
+</I>&gt;&gt;<i> doesn't say anything at all.. it just disconnects the socket.
+</I>&gt;<i>
+</I>&gt;<i>Sure but the win32 server is not the best thing to judge by, it has 
+</I>&gt;<i>notorious problems, hopefully jabberd2 will solve them. Also that just 
+</I>&gt;<i>seems to be another implementation problem to me so doesn't strictly 
+</I>&gt;<i>have much bearing on these discussions.
+</I>
+I don't know if the linux version is any different. If it does send a 
+stream:error my guess is that it sends a 
+&lt;stream:error&gt;Disconnected&lt;/stream:error&gt; on shutdown. In wich case I 
+still definatly want to reconnect. 
+
+But this is besides the point, you shouldn't be looking at the CDATA, 
+as soon as you do this you're creating problems. Just because the most 
+used jabber server(s) happen to put &quot;Disconnect&quot; there doesn't mean you 
+should rely on it. If all clients would then it would basically become 
+a depcrecated field (cause you can't use it for anything else) that 
+will live on and on and on cause if you change it it will break clients.
+ Some clients that implement this will be less likely to &quot;upgrade&quot; to 
+ the new solution.. if they don't feel like fixing the same problem 
+ twice. 
+
+&gt;&gt;<i> Look, I already quoted from the documentation that there can be more
+</I>&gt;&gt;<i> then one reason why a jabber-server would send a stream:error. What 
+</I>&gt;&gt;<i> the description should be it doesn't say anywhere, nor should it 
+</I>&gt;&gt;<i> because it's supposed to be a human readable description, it's not 
+</I>&gt;&gt;<i> meant for letting your client distinguise what type of stream error 
+</I>&gt;&gt;<i> it is. 
+</I>&gt;<i>
+</I>&gt;<i>Of course it shouldnt be used if you have an alternative, but at the 
+</I>&gt;<i>moment until the stream error code discussions have finalised we dont, 
+</I>&gt;<i>it is the only thing we can use to even remotely guess what is 
+</I>&gt;<i>happening, im not arguing that the protocol shouldn't be altered to 
+</I>&gt;<i>make it better using the error codes but we need a solution now for 
+</I>&gt;<i>all the misbehaving clients until jabber servers with the new protocol 
+</I>&gt;<i>have been deployed everywhere (possibly quite a long way off).
+</I>
+If you want to put a hack in your client that's fine by me but it 
+doesn't mean other clients are obligated to. IMHO it's the protocol and 
+the server that are misbehaving since they kick the client without 
+giving any reason. 
+
+&gt;<i>
+</I>&gt;&gt;<i> Can you agree with me on this?
+</I>&gt;<i>
+</I>&gt;<i>Yes but as ive said above we need to work with what we have at the 
+</I>&gt;<i>moment to solve the problems until servers with the updated protocol 
+</I>&gt;<i>have been widely deployed. So if you dont want to use the CDATA to 
+</I>&gt;<i>determine the reason for disconnection then we will just need to have 
+</I>&gt;<i>it so clients must not try auto-reconnecting when they get a stream 
+</I>&gt;<i>error followed by a stream end, but if the client gets an error code 
+</I>&gt;<i>(because they are using an updated server) they can use that to 
+</I>&gt;<i>determine if they can try auto-reconnecting, but if there is no error 
+</I>&gt;<i>code must not try to auto-reconnect (the way Exodus works).
+</I>
+Clients and server should be based on documentation of the protocol, 
+not on the implementation of 1 or many servers. As long as the protocol 
+is broken you can't fix this without breaking something else. The CDATA 
+as descriped in the protocol is NOT meant to determine the reason for 
+so my strong advice to any client-developer is: Don't! 
+
+&gt;<i>
+</I>&gt;&gt;<i> If you can then maybe you can also agree with me that according to 
+</I>&gt;&gt;<i> the documentation there can be different causes, and that some 
+</I>&gt;&gt;<i> clients will want to auto-reconnect in some of those cases.
+</I>&gt;<i>
+</I>&gt;<i>Yes but if you dont want to use the CDATA to try and find out what the 
+</I>&gt;<i>error is we must just use the lowest denominator, and because at least 
+</I>&gt;<i>one reason for disconnection means you shouldn't reconnect if you get 
+</I>&gt;<i>a stream:error you must not reconnect.
+</I>
+So you can choose between a few options here: 
+1. accept the protocol is broken and not implement reconnect, thus 
+compromising on the functionality of your client (some people will 
+switch to clients with a different client if they can) 2. Introduce a 
+bad hack to solve this bug in some cases. Compromises functionality in 
+some other cases. 3. Leave things as they, accept the *protocol* is 
+flawed and should be fixed. The more the problem will occur the faster 
+it will be fixed properly and the sooner serveradmins will upgrade. 
+Don't compromise on functionality because the error is in the protocol 
+and servers. 
+
+As you can see I prefer 3. You can choose 1 or 2 if you want, but you 
+can't acuse developers who choose 3 of misbehaving. 
+
+&gt;&gt;<i> As far as I know jabberd 1.4.2 does this, yes. But it shouldn't make 
+</I>&gt;&gt;<i> a difference what it says. Maybe jabberd2 says 
+</I>&gt;&gt;<i> &lt;stream:error&gt;Replaced by another session: 
+</I>&gt;&gt;<i> disconnected&lt;/stream:error&gt;&lt;/stream:stream&gt;, it would make a lot 
+</I>&gt;&gt;<i> more sense to me but in your world this would mean all the clients 
+</I>&gt;&gt;<i> would be broken again? 
+</I>&gt;<i>
+</I>&gt;<i>Ah but hopefully we can get the stream error codes into jabberd2 
+</I>&gt;<i>before it goes final so they can be used to reliably determine the 
+</I>&gt;<i>reason for disconnection.
+</I>
+I hope so too.. there has been discussion on the XMPPWG but I haven't 
+read the outcome, if any (do the mailinglist archives have a search 
+function yet?) 
+
+&gt;<i>
+</I>&gt;&gt;<i> They only have this &quot;bug&quot; because the server doesn't let them know 
+</I>&gt;&gt;<i> why they are disconnected. If Exodus fixes this with a hack that 
+</I>&gt;&gt;<i> scans for &quot;Disconnected&quot; (wich I find hard to believe since it 
+</I>&gt;&gt;<i> really *is* such a big hack) or if it simply doesn't reconnect at 
+</I>&gt;&gt;<i> all on &lt;stream:error&gt; that probably work on jabberd 1.4.2 and maybe 
+</I>&gt;&gt;<i> some others too, but it is and will be a hack that no other client 
+</I>&gt;&gt;<i> has to have, *since it's a hack*. That's why the rest don't HAVE to 
+</I>&gt;&gt;<i> manage, or should IMHO. 
+</I>&gt;<i>
+</I>&gt;<i>Exodus seems to fix this by just detecting stream:error's and not then 
+</I>&gt;<i>trying to reconnect which I think is perfectly reasonable for other 
+</I>&gt;<i>clients to do until stream:error codes are widely spread in servers, 
+</I>&gt;<i>but as ive said to solve the problem we need to handle it for all the 
+</I>&gt;<i>thousands of jabberd servers that are already deployed, not just wait 
+</I>&gt;<i>for the protocol change since that doesn't help the already deployed 
+</I>&gt;<i>servers.
+</I>
+I really still don't think you should solve problems by introducing 
+hacks into the client. If we fix the protocol, and then upgrade the 
+clients *properly* this will only be a good stimulation for those 
+thousands of servers to upgrade. If we introduce a hack servers are 
+less likely to upgrade and clients less likely to implement a proper 
+fix because it already works &quot;properly&quot; in a large part of all cases. 
+This way the hack will become &quot;semi-offical&quot; and we all know what kind 
+of problems that brings along.. 
+
+&gt;<i>Ah well since there are not very many different servers available that 
+</I>&gt;<i>have a significant deployment I dont see this as a problem, 
+</I>
+This is exactly the kind of thinking I'm opposing here. Just because a 
+(very) large part of the servers supports your hack that's a reason to 
+go ahead with it? This is what incompatabilities are made of! It goes 
+directly agains the thinking behind open standards because it corrupts 
+them. 
+
+Example: 
+Let's say that jabberd1.4.2 for win32 and linux do not send a 
+&lt;stream:error&gt; when shutting down. According to you I'm not allowed to 
+reconnect if it sends a stream:error, but it doesn't so I reconnect. 
+Now I'm writing a new jabber server SuperExtraXMPPJabberD. When it 
+shuts down to restart it's very polite and sends a &lt;stream:error&gt;The 
+server is restarting&lt;/stream:error&gt; (or if you're still into matching 
+CDATA it sends &quot;Disconnected&quot; instead). However users start complaining 
+that their clients won't autoreconnect like with jabberd. I &quot;explain&quot; 
+to them this lenghty discussion, but some don't care and install a 
+different server. Now my marketshare is even smaller :( 
+
+I have some free time.. and there's a new standard with errorcodes. I 
+implement it.. however, the clients don't implement it as fast as they 
+could cause they already solved the problem. Well solved.. they used 
+some hack you suggested. But hey, it works on all the servers with a 
+significant deployment eh? 
+
+Anyway.. it's a very small issue.. if some client developers want to go 
+with it it won't keep me awake at night (if errorcodes become available 
+I hope they'll upgrade to is ASAP though). But argueing that other 
+client developers should stimulate this, or suggest they misbehave if 
+they don't... well ok it still won't keep me awake at night but it's 
+enough to pull me into this discussion we're having :) 
+
+&gt;<i>as since 
+</I>&gt;<i>most new servers will contain the stream:error codes being worked on 
+</I>&gt;<i>(i.e. the newer protocol specs) so it is really only the currently 
+</I>&gt;<i>deployed (legacy) servers we really need to worry about.
+</I>
+I don't think it's the client developers who should be worrying about 
+deployed legacy servers. Rather the developers of those servers 
+(keeping them updated) and the serveradmins (keeping them upgraded). 
+The role of the client developers in this should be keeping the clients 
+updated, this will stimulate serveradmins to upgrade, and server 
+developers to keep updating since client developers focus their energy 
+on implementing the new features they introduce. They do not instead 
+use their energy to worry about legacy servers and introducing hacks to 
+make it work on those with the largest deployment. 
+
+You can disagree with me on this if you want, but I doubt you'll ever 
+convince me of something else. 
+
+&gt;<i>So overall I think we should just not auto-reconnect upon the 
+</I>&gt;<i>reception of a stream:error followed by a stream end, but if we 
+</I>&gt;<i>receive an error code (currently being worked on) in the stream:error 
+</I>&gt;<i>which tells us the reason we can use that to do different things.
+</I>
+When the new stream:error codes are there and enough servers support 
+this I would definatly implement this behaviour (no more reconnect on a 
+stream:error without code), but not before. This by the way is then no 
+longer a hack or corrupting the standard, because servers that don't 
+support this are outdated now, and should be updated to the new 
+standard. Having my client no longer support it will have the same 
+positive effect on server-developers and server-admins who are behind 
+on updating and upgrading. 
+
+But consider your option, if we all drop reconnecting from our clients 
+today, the problem of &quot;fighting for resources&quot; will suddenly disappear 
+from the &quot;real world&quot;. Admins won't be bugged by it anymore since it 
+doesn't happen anymore, wich will mean server developers will put 
+fixing it a lower spot on their todo lists. Wich means client 
+developers and the users are stuck even longer without proper 
+reconnecting.. 
+
+&gt;<i>
+</I>&gt;&gt;<i> Proper error-codes and documented behaviour for closing a stream and
+</I>&gt;&gt;<i> rejecting login because of duplicate sessions is needed. A means of
+</I>&gt;&gt;<i> indicating that you don't want to &quot;hijack&quot; another session is nice 
+</I>&gt;&gt;<i> too, since it increases functionality for all clients that want to 
+</I>&gt;&gt;<i> implement it.
+</I>&gt;<i>
+</I>&gt;<i>Yes I think some way of a client specifying that it doesn't want to 
+</I>&gt;<i>hijack an existing session is the best way to go rather than 
+</I>&gt;<i>standardizing the hack Wes has done, since once the anti-hijack is 
+</I>&gt;<i>done the hack is unnecessary and bad for other clients.
+</I>
+I think stream:error codes are needed anyway (and I think you agree 
+with me on this). 
+
+That doesn't mean it's wrong to give the serveradmin choice. I 
+completly agree with Matthew M. on this. We might want to consider an 
+approach where there are 3 ways a client can authentice 
+
+1. specifying it doesn't want to hijack the session if it exists (in 
+wich case it should always get a 409 if the session exists) 
+
+2. not specifying anything (legacy and clients that don't (want to) 
+support this. It's up to the admin to decide wether to allow them to 
+hijack sessions or not. On a public jabber server I'd allow this, 
+unless many what-are-by-then-&quot;old&quot; clients that don't support 
+stream:error codes yet cause too many problems) 
+
+3. specifying that it wants to hijack the session if it exists (on 
+*any* public jabber server I would allow this, since only the clients 
+that properly support stream:error codes should use this option so 
+there will be no fighting for resources. In the &quot;paranoia&quot; case of 
+Matthew M. or the usefull case of Wes you could still 409 this) 
+
+This would also allow a nice extra, a client could first login with 
+method 1. If it gets back a 409 it could prompt the user if it wants to 
+hijack (we might need a better term here.. I think JDEV has drawn 
+enough Echelon attention by now) the session or not and then (if the 
+users wants this) try method 3 
+
+Such a proposal would have the best chance of getting accepted if it's 
+backed by an implementation though probably (who knows.. I might have 
+to write a custom mod_auth in the not too distant future). 
+
+
+-- 
+Tijl Houtbeckers
+Software Engineer @ Splendo
+The Netherlands
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="045231.html">[JDEV] public server list
+</A></li>
+	<LI>Next message: <A HREF="045240.html">[JDEV] jabberd patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45234">[ date ]</a>
+              <a href="thread.html#45234">[ thread ]</a>
+              <a href="subject.html#45234">[ subject ]</a>
+              <a href="author.html#45234">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

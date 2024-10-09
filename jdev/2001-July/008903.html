@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Sparse considerations about server status
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Sparse%20considerations%20about%20server%20status&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="008902.html">
+   <LINK REL="Next"  HREF="008904.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Sparse considerations about server status</H1>
+    <B>Gian Filippo Pinzari</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Sparse%20considerations%20about%20server%20status&In-Reply-To="
+       TITLE="[JDEV] Sparse considerations about server status">pinzari at medialogic.it
+       </A><BR>
+    <I>Sun Jul 29 16:19:30 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="008902.html">[JDEV] Jabber server Hardware specification
+</A></li>
+        <LI>Next message: <A HREF="008904.html">[JDEV] Sparse considerations about server status
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8903">[ date ]</a>
+              <a href="thread.html#8903">[ thread ]</a>
+              <a href="subject.html#8903">[ subject ]</a>
+              <a href="author.html#8903">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Sorry if I begin with something off-topic. I've just read this 
+message on the list:
+
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber at msg.net</A>&quot; wrote:
+&gt;<i> 
+</I>&gt;<i> I wouldn't worry too much about the hardware specification- with the
+</I>&gt;<i> current Open Source server, you'll hit the hard socket limit (1024 in
+</I>&gt;<i> many Unix-like OSes) on your primary jabber server process long before
+</I>&gt;<i> you run into any memory or CPU speed limitations.
+</I>&gt;<i> 
+</I>&gt;<i> The Jabber Commercial Server gets around these limitations by using
+</I>&gt;<i> true 'pthreads' instead of pth, and polished implementations of code for
+</I>&gt;<i> polling, and server farming.
+</I>
+And then again:
+
+&gt;<i> Running the Open Source server, you'll hit other limitations and bottlenecks
+</I>&gt;<i> in the server source, such as pth, the flat directory structure of xdb_file,
+</I>&gt;<i> blocking issues, etc.
+</I>
+I was a little bit shocked. Reading these considerations anyone
+would argue that 'serious' guys should buy the commercial server...
+This is unfortunate as it was like reading on Apache mailing list 
+someone implying that you should buy a Netscape Enterprise Server 
+license to get rid of Apache's flaws. I thought this mailing list 
+was to deal with the OpenSource server. Removing bottlenecks and 
+blocking issues or improving speed of xdb_files access is just a 
+matter of rewriting some code. I'd rather expect someone respond
+&quot;please, take your breath, we are working hard to solve these 
+problems&quot;. Or, that's the same if not better, &quot;the problem is 
+maybe in concurrent locking of xyz. Stop complaining and go in 
+file xyz.c to see if you can do anything&quot;. 
+
+A few days ago there was a post by Dustin Puryear about messages 
+being dropped by server. He made benchmarks and found something 
+interesting:
+
+&gt;<i> Notice that at &gt;= 120 user pairs (240 connected users), which equates to 
+</I>&gt;<i> 120 msg/sec in this test, my message loss rate varies from 3% to 13%. 
+</I>&gt;<i> The average delivery also climbs to .14 seconds, but I don't consider 
+</I>&gt;<i> that a problem. (However, the worst case delivery times are bad: &gt; 6 
+</I>&gt;<i> seconds for 150 and 160 user pairs.)
+</I>
+We've just developed a project (client+server) for one of the 
+biggest ISP in Italy. We found since the beginning that each 
+Jabber server was not able to handle more than a couple hundreds 
+client, so we implemented an architecture that load balances the 
+traffic among many concurrent servers running on the same or 
+different hosts. We also encountered message losses, but we didn't 
+care much :-). As Dustin, we thought this was due to client 
+problems.
+
+Though I've been keeping on this mailing list since some time, 
+I still haven't figured directions taken in development of the 
+next generation server, the one that's supposed to solve some
+of the issues listed above. I've read sparse notes but I was not 
+able to find any design document and any time plan.
+
+It seems to me that most effort is thrown in having a fully
+multithreaded Jabber server. I think multithreading is only 
+one aspect of the whole problem, and something I wouldn't wait 
+one year to have. If the design is correct, all scalability 
+problems of such an application can be solved by load balancing 
+and server farming. Multi-thread pertains more to performance 
+problem space (the time needed to carry out a request) than to 
+scalability (the number of users that can access a service). 
+The most perfect multi-threaded implementation will serve as 
+many users as can be handled by the most powerful server you 
+can buy today. This limitation doesn't fit well in the Internet 
+Age.
+
+I'd like to know if anybody has already proposed complete 
+separation between implementation of application logic and 
+implementation of client-server and server-server networking, 
+so that different groups of developers could try different 
+implementations. We are trying to build a - single user Jabber 
+server - that is a server that just handle 1 connection and 
+is able to forward messages to other processeses/clients on 
+local or remote hosts. This doesn't appear straightforward. 
+Any help?
+
+You could wonder why someone is doing something so stupid.
+Well, we are developing an Apache-based Jabber server. Apache 
+2.0 is built not just to provide HTTP, but any network protocol, 
+connected and not-connected. This is not like the mod_jabber 
+many people have been talking about.
+
+This is from Jeremie, 1999:
+
+&gt;<i> What we *really* need is a mod_jabber for apache, so that apache can
+</I>&gt;<i> handle all of the needed HTTP functionality and mod_jabber would connect
+</I>&gt;<i> to a jabber server and convert the fragements back and forth.  This would
+</I>&gt;<i> be useful not only for XML-RPC, but for HTML based clients, dynamic
+</I>&gt;<i> pages showing a user's status, showing page visitors live in a jabber
+</I>&gt;<i> client, querying administrative apache variables, php integration, file
+</I>&gt;<i> transfers, and on and on...
+</I>
+The mod_jabber we have in mind would not be an adapter, but a real 
+Jabber server. To me, this idea looks so obvious that I'm sure 
+someone has already proposed it before. Here are some pros:
+
+- Multithreaded networking already implemented
+  in Apache 2.0.
+- Performances. For an off-the-shelf Apache 1.3 
+  server, 200 dynamic requests per-second (to cite 
+  an apparent Jabber server limit) are nothing.
+- Ready made ports for your CPU and OS.
+- Added security by massive peer review of Apache
+  code.
+- HTTP transport, SSL, extended logging at no cost.
+- Plenty of bindings to different languages.
+- Backends to every database system under the sun.
+- Java integration.
+- Peer-to-peer, messaging and presence management
+  easily built in existing portal infrastructures.
+- The wealth of nice programmers already behind
+  the Apache Project.
+
+
+Gian Filippo Pinzari
+Medialogic - Italy
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="008902.html">[JDEV] Jabber server Hardware specification
+</A></li>
+	<LI>Next message: <A HREF="008904.html">[JDEV] Sparse considerations about server status
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8903">[ date ]</a>
+              <a href="thread.html#8903">[ thread ]</a>
+              <a href="subject.html#8903">[ subject ]</a>
+              <a href="author.html#8903">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber - Scripting Language
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20-%20Scripting%20Language&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="008349.html">
+   <LINK REL="Next"  HREF="008355.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber - Scripting Language</H1>
+    <B>Emswiler, Mike</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20-%20Scripting%20Language&In-Reply-To="
+       TITLE="[JDEV] Jabber - Scripting Language">MEmswiler at protrader.com
+       </A><BR>
+    <I>Thu Jun  7 17:46:31 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="008349.html">[JDEV] Jabber - Scripting Language
+</A></li>
+        <LI>Next message: <A HREF="008355.html">[JDEV] Jabber - Scripting Language
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8350">[ date ]</a>
+              <a href="thread.html#8350">[ thread ]</a>
+              <a href="subject.html#8350">[ subject ]</a>
+              <a href="author.html#8350">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Here are the useful scenarios I've imagined off the top of my head (let's
+ignore the security implications for now...:-)  For sake of discussion, when
+I say Message Type, I'm referring to a generic type of message, not the
+actual Message Type in Jabber's XML ... :
+
+Server Side Scripting:
+
+1. Rules Processing - Rules may need to be executed when a client is
+offline.
+
+Say a message of type text arrives on the jabber server for
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at jabber.com</A>/resource .  Before delivering the message to client or
+client queue, the server checks for any scripts to be executed.  Scripts to
+be executed could be based on message type (text, file transfer, voice,
+etc.), from user, to user (if there's a difference in a user vs. group
+address), date/time, etc.  These server scripts might then take one or more
+of the following actions:
+a. redirect the message to another (one or more) jabber address (a different
+user, a different resource on the same user, etc.) or even out a transport
+(transports might exist for things other than IMs, say, for example, a
+controller for a robotic arm or camera :-).
+b. Forward the message to another (one or more) jabber address (different
+than redirecting)
+c. Auto-delete the message
+d. Update a database based on the content of the message
+e. Log information
+f. (egads) Execute an aribtrary cgi like process on the server
+g. Execute another script
+
+Client Scripting
+
+1. Rules Processing - Rules Processing on a client requires the client to be
+running ... this is not useful for offline scenarios.  Otherwise, see
+Scenario above
+2. Client Message Extensions - Given Client X supporting Text, File Transfer
+and Chat messages, I should be able to extend that client to accept any
+future message type, say Voice, through a Client Message Extension
+registered with the client.  When the client receives a message type which
+it doesn't recognize, it searches the Client Message Extension registry for
+that message type.  If it's found, it runs the extension and passes the
+message to it for processing.  Additionally, the client would call this
+extension for any action the user wishes to take on the item. Once the
+extension has the message and an action, it can then display a form (if the
+user has indicated the &quot;open&quot; action.)  Extensions should be able to be
+written in any language also.
+3.  General Client Scripting - Most applications (such as code editors)
+provide a generic set of scripting support allowing scripted applets to add
+additional User Interface and execute client actions.  This facilitates the
+integration of third-party products.  An example of this is the ICQ
+extension in Outlook or Add-Ins in Visual Studio.  This may also allow a
+scripted applet to add any arbitrary menu item or toolbar button to take
+some scripted action.  This provides enhanced functionality and flexible for
+clients.
+
+IMHO, these features are incredibly important.
+
+I would hazard to guess that whichever client comes out with these types of
+extensions first would &quot;win the game.&quot;  I think many people will still want
+to write their own clients, but I think far fewer just want to focus on
+their business logic, and not the underlying client technology.
+
+For example, I am working on a voice client (cb style.)  To do so, I have to
+run it as a separate application from WinJab (I don't use Delphi.)  This
+means I have to provide all the features of WinJab to get users to use my
+client, or force them to run 2 clients completely independent of each other
+(and on different jabber address by means of a different resource.)
+
+It would have been far quicker (and it would be out there already) if I
+could have just written a small DLL to handle a message of type VOICE (or
+MYVOICE if we didn't have a central message type.  Then I could have
+instructed my clients to download and install WinJab, then my Voice
+Extension.
+
+And Peter would much the happier with all those extra tech-support emails!
+&lt;evil grin&gt;
+
+Thanks,
+MikeE
+
+-----Original Message-----
+From: stpeter [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at jabber.org</A>]
+Sent: Thursday, June 07, 2001 4:54 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] Jabber - Scripting Language
+
+I find the idea of scripting within Jabber to be intriguing, but I'm not
+clear on what people want to do with this. Can you provide some scenarios?
+
+On Thu, 7 Jun 2001, John Alex Hebert wrote:
+
+&gt;<i> On Thu, Jun 07, 2001 at 09:36:38PM +0100, Al Sutton wrote:
+</I>&gt;<i> &gt; My watcher system is built on top of my jabber engine in a way that all
+</I>of
+&gt;<i> &gt; the watcher logic is separate from the code. Building upon it I could
+</I>make
+&gt;<i> &gt; an engine that could act like the rules system in Outlook Express if
+</I>people
+&gt;<i> &gt; feel it would be useful.
+</I>&gt;<i> ...
+</I>&gt;<i> &gt; P.S. It would be written in Java.
+</I>&gt;<i> &gt; ----- Original Message -----
+</I>&gt;<i> &gt; From: &quot;Todd Bradley&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">TBradley at jabber.com</A>&gt;
+</I>&gt;<i> &gt; To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> &gt; Sent: Thursday, June 07, 2001 8:26 PM
+</I>&gt;<i> &gt; Subject: RE: [JDEV] Jabber - Scripting Language
+</I>&gt;<i> &gt; &gt; &gt; Has there ever been any discussion of a client side scripting
+</I>&gt;<i> &gt; &gt; &gt; language for
+</I>&gt;<i> &gt; &gt; &gt; Jabber?  I'm thinking of something along the lines of mIRC's
+</I>scripting
+&gt;<i> &gt; &gt; &gt; language for the IRC protocol.
+</I>&gt;<i> &gt; &gt; That was the source of my original interest in the
+</I>&gt;<i> &gt; &gt; Tcl client (zABBER).  My goal was to have a client
+</I>&gt;<i> &gt; &gt; that had a scripting language interpreter so you
+</I>&gt;<i> &gt; &gt; could write scripts to do special handling of events.
+</I>&gt;<i> &gt; &gt; But, alas, it's not that advanced.
+</I>&gt;<i> &gt; &gt; To answer your question, I don't think there's been
+</I>&gt;<i> &gt; &gt; serious discussion in the past year about a single
+</I>&gt;<i> &gt; &gt; &quot;official&quot; Jabber client scripting language.  It
+</I>&gt;<i> &gt; &gt; would probably be impossible to get everyone to
+</I>&gt;<i> &gt; &gt; agree what that language should be.
+</I>&gt;<i>
+</I>&gt;<i> Agreed.
+</I>&gt;<i> As much as I would like to see Python used more in the Jabber effort, I
+</I>think
+&gt;<i> making or choosing any particular language to be the &quot;official&quot; scripting
+</I>&gt;<i> language would detract from the whole Jabber effort. I say we would
+</I>benefit
+&gt;<i> more from having a few different working prototypes of scriptable jabber
+</I>&gt;<i> clients first before we begin to mention the word &quot;official&quot;.
+</I>&gt;<i>
+</I>&gt;<i> We would miss out on some potential good ideas, like Al's above, by
+</I>&gt;<i> influencing developers to use an
+</I>&gt;<i> &quot;official&quot; scripting language (Javascript anyone?) rather than approaching
+</I>&gt;<i> the problem with a beginner's mind.
+</I>&gt;<i>
+</I>&gt;<i> Code first, then bureaucracy. :)
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> John Hebert
+</I>&gt;<i> System Engineer
+</I>&gt;<i> <A HREF="http://www.vedalabs.com">http://www.vedalabs.com</A> - changing your state of mind through sound
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="008349.html">[JDEV] Jabber - Scripting Language
+</A></li>
+	<LI>Next message: <A HREF="008355.html">[JDEV] Jabber - Scripting Language
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8350">[ date ]</a>
+              <a href="thread.html#8350">[ thread ]</a>
+              <a href="subject.html#8350">[ subject ]</a>
+              <a href="author.html#8350">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

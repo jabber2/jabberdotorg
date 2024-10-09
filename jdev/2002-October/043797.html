@@ -1,0 +1,275 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] SSL with Jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20SSL%20with%20Jabber&In-Reply-To=%3CF113E67qa4jfshizhyG0000b048%40hotmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="043795.html">
+   <LINK REL="Next"  HREF="043798.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] SSL with Jabber</H1>
+    <B>John Goalby</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20SSL%20with%20Jabber&In-Reply-To=%3CF113E67qa4jfshizhyG0000b048%40hotmail.com%3E"
+       TITLE="[JDEV] SSL with Jabber">jgoalby at hotmail.com
+       </A><BR>
+    <I>Mon Oct 14 12:45:56 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="043795.html">[JDEV] Sending to jabber server equiv of /dev/null
+</A></li>
+        <LI>Next message: <A HREF="043798.html">[JDEV] jabber.xml config file
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43797">[ date ]</a>
+              <a href="thread.html#43797">[ thread ]</a>
+              <a href="subject.html#43797">[ subject ]</a>
+              <a href="author.html#43797">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I also found the Javaworld tip, but it does not do the check in the trust 
+manager.  Very helpful!
+
+Thanks!
+
+John.
+
+&gt;<i>John,
+</I>&gt;<i>
+</I>&gt;<i>Here's some code you can use that bypasses all certificate validation.
+</I>&gt;:<i>)
+</I>&gt;<i>
+</I>&gt;<i>SSLSocketFactory sslFactory = new DummySSLSocketFactory();
+</I>&gt;<i>Socket socket = (SSLSocket)sslFactory.createSocket(host, port);
+</I>&gt;<i>
+</I>&gt;<i>The implementation of DummySSLSocketFactory is below. It's pretty easy
+</I>&gt;<i>to modify the classes so that they don't require a root CA, but still
+</I>&gt;<i>require a non-expired certificate.
+</I>&gt;<i>
+</I>&gt;<i>Regards,
+</I>&gt;<i>Matt
+</I>&gt;<i>-------------------------------
+</I>&gt;<i>
+</I>&gt;<i>     private static class DummySSLSocketFactory extends SSLSocketFactory
+</I>&gt;<i>{
+</I>&gt;<i>
+</I>&gt;<i>         private SSLSocketFactory factory;
+</I>&gt;<i>
+</I>&gt;<i>         public DummySSLSocketFactory() {
+</I>&gt;<i>
+</I>&gt;<i>             try {
+</I>&gt;<i>                 SSLContext sslcontent = SSLContext.getInstance(&quot;TLS&quot;);
+</I>&gt;<i>                 sslcontent.init(null, // KeyManager not required
+</I>&gt;<i>                                 new TrustManager[] { new
+</I>&gt;<i>DummyTrustManager() },
+</I>&gt;<i>                                 new java.security.SecureRandom());
+</I>&gt;<i>                 factory = sslcontent.getSocketFactory();
+</I>&gt;<i>             }
+</I>&gt;<i>             catch (NoSuchAlgorithmException e) {
+</I>&gt;<i>                 e.printStackTrace();
+</I>&gt;<i>             }
+</I>&gt;<i>             catch (KeyManagementException e) {
+</I>&gt;<i>                 e.printStackTrace();
+</I>&gt;<i>             }
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i>         public static SocketFactory getDefault() {
+</I>&gt;<i>             return new DummySSLSocketFactory();
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i>         public Socket createSocket(Socket socket, String s, int i,
+</I>&gt;<i>boolean flag)
+</I>&gt;<i>                 throws IOException
+</I>&gt;<i>         {
+</I>&gt;<i>             return factory.createSocket(socket, s, i, flag);
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i>         public Socket createSocket(InetAddress inaddr, int i,
+</I>&gt;<i>InetAddress inaddr2, int j)
+</I>&gt;<i>                 throws IOException
+</I>&gt;<i>         {
+</I>&gt;<i>             return factory.createSocket(inaddr, i, inaddr2, j);
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i>         public Socket createSocket(InetAddress inaddr, int i)
+</I>&gt;<i>                 throws IOException
+</I>&gt;<i>         {
+</I>&gt;<i>             return factory.createSocket(inaddr, i);
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i>         public Socket createSocket(String s, int i, InetAddress inaddr,
+</I>&gt;<i>int j)
+</I>&gt;<i>                 throws IOException
+</I>&gt;<i>         {
+</I>&gt;<i>             return factory.createSocket(s, i, inaddr, j);
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i>         public Socket createSocket(String s, int i)
+</I>&gt;<i>                 throws IOException
+</I>&gt;<i>         {
+</I>&gt;<i>             return factory.createSocket(s, i);
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i>         public String[] getDefaultCipherSuites() {
+</I>&gt;<i>             return factory.getSupportedCipherSuites();
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i>         public String[] getSupportedCipherSuites() {
+</I>&gt;<i>             return factory.getSupportedCipherSuites();
+</I>&gt;<i>         }
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     /**
+</I>&gt;<i>      * Trust manager which accepts certificates without any validation
+</I>&gt;<i>      * except date validation.
+</I>&gt;<i>      */
+</I>&gt;<i>     private static class DummyTrustManager implements X509TrustManager {
+</I>&gt;<i>
+</I>&gt;<i>         public void checkClientTrusted(X509Certificate[] chain, String
+</I>&gt;<i>authType) {
+</I>&gt;<i>
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i>         public void checkServerTrusted(X509Certificate[] chain, String
+</I>&gt;<i>authType)  {
+</I>&gt;<i>              try {
+</I>&gt;<i>                 chain[0].checkValidity();
+</I>&gt;<i>             }
+</I>&gt;<i>             catch (CertificateExpiredException e) {
+</I>&gt;<i>             }
+</I>&gt;<i>             catch (CertificateNotYetValidException e) {
+</I>&gt;<i>             }
+</I>&gt;<i>         }
+</I>&gt;<i>
+</I>&gt;<i>         public X509Certificate[] getAcceptedIssuers() {
+</I>&gt;<i>             return new X509Certificate[0];
+</I>&gt;<i>         }
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>] On
+</I>&gt;<i> &gt; Behalf Of John Goalby
+</I>&gt;<i> &gt; Sent: Saturday, October 12, 2002 7:22 PM
+</I>&gt;<i> &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; Subject: Re: [JDEV] SSL with Jabber
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks!  I am trying to use the native Java SSL support in
+</I>&gt;<i> &gt; 1.4.1 and having
+</I>&gt;<i> &gt; a problem.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I am trying to connect to the jabber.org server on port 5223.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I get a certificate_unknown error.  I haven't imported the
+</I>&gt;<i> &gt; certificate from
+</I>&gt;<i> &gt; jabber.org as I cannot find it.  Should I be able to download
+</I>&gt;<i> &gt; this and
+</I>&gt;<i> &gt; import it by hand?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Or should there be someway to import it automatically?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I assume I am having problems due to the jabber.org cert not
+</I>&gt;<i> &gt; being trusted
+</I>&gt;<i> &gt; by a CA.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Any help would be appreciated.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks!
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; John.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt;There is nothing special about it.
+</I>&gt;<i> &gt; &gt;5223 is the standard ssl port. It is plain SSL/TLS on server
+</I>&gt;<i> &gt; side based
+</I>&gt;<i> &gt; &gt;on i.e. OpenSSL. Java's native SSL or PureTLS will work fine.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;I can't remember if jabber.org supports SSL, but jabber.com propably
+</I>&gt;<i> &gt; &gt;will.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;ulrich
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;John Goalby wrote:
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; I am looking to write a Jabber client in Java and would like to
+</I>&gt;<i> &gt; &gt; &gt; support
+</I>&gt;<i> &gt; &gt;the
+</I>&gt;<i> &gt; &gt; &gt; SSL connection.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Is there somewhere I can look for more information on how to do
+</I>&gt;<i> &gt; &gt; &gt; this?
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Is there anything specific to Jabber, or is it some kind
+</I>&gt;<i> &gt; of standard
+</I>&gt;<i> &gt; &gt; &gt; SSL connection.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Can anyone point to some sample code for this?
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Any help appreciated.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Thanks in advance!
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; John.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; _________________________________________________________________
+</I>&gt;<i> &gt; &gt; &gt; Chat with friends online, try MSN Messenger:
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://messenger.msn.com">http://messenger.msn.com</A>
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt;_______________________________________________
+</I>&gt;<i> &gt; &gt;jdev mailing list
+</I>&gt;<i> &gt; &gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt;<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _________________________________________________________________
+</I>&gt;<i> &gt; Chat with friends online, try MSN Messenger: <A HREF="http://messenger.msn.com">http://messenger.msn.com</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+
+_________________________________________________________________
+Send and receive Hotmail on your mobile device: <A HREF="http://mobile.msn.com">http://mobile.msn.com</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="043795.html">[JDEV] Sending to jabber server equiv of /dev/null
+</A></li>
+	<LI>Next message: <A HREF="043798.html">[JDEV] jabber.xml config file
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43797">[ date ]</a>
+              <a href="thread.html#43797">[ thread ]</a>
+              <a href="subject.html#43797">[ subject ]</a>
+              <a href="author.html#43797">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

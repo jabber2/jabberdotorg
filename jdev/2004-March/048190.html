@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] voicechat again
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20voicechat%20again&In-Reply-To=%3C4045BB3A.3090501%40die-horde.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="048213.html">
+   <LINK REL="Next"  HREF="048191.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] voicechat again</H1>
+    <B>Ulrich Staudinger</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20voicechat%20again&In-Reply-To=%3C4045BB3A.3090501%40die-horde.de%3E"
+       TITLE="[jdev] voicechat again">us at die-horde.de
+       </A><BR>
+    <I>Wed Mar  3 05:02:18 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="048213.html">[jdev] voicechat again
+</A></li>
+        <LI>Next message: <A HREF="048191.html">[jdev] voicechat again
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48190">[ date ]</a>
+              <a href="thread.html#48190">[ thread ]</a>
+              <a href="subject.html#48190">[ subject ]</a>
+              <a href="author.html#48190">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Streamhost negotiation does solve this p2p/server dilemma for 1-to-1 
+chats. Multi partner conferences can not be covered through a simple 
+server routing. Jep-65 is always worth a reading.
+
+The control channel approach was omitted for simplicity's reason. i sure 
+do see the need, in more complex situations, for ways to adjust the bit 
+rate, video size, quality of audio, etc.
+
+But in this particular 1-to-1 voice chat context a control channel seems 
+to be overkill - once the session is initiated, the session is running 
+and there is no need to switch anything. reestablishment seems ok to me, 
+keep in mind that switching a running session is a) propably causing a 
+short gap anyway [as will session reestablishment do] and b) is more 
+complex in terms of implementation.
+
+ulrich
+
+
+
+Ido Rosen wrote:
+
+&gt;<i>-----BEGIN PGP SIGNED MESSAGE-----
+</I>&gt;<i>Hash: SHA1
+</I>&gt;<i>
+</I>&gt;<i>I'm new to this list, and have no knowledge of the previous argument.  Let me try to post some advantages and disadvantages of peer to peer versus client server approaches to voice communication...
+</I>&gt;<i>
+</I>&gt;<i>Although I refer to &quot;voice chat&quot; below, I wish to note that I do this out of convenience to you.  We should really be calling it &quot;audible communication&quot;, as some would stream music rather than voice, or use Jabber as a radio station, if the implementation is scalable.  Furthermore, I may in the future call video chat &quot;visual communication&quot;.
+</I>&gt;<i>
+</I>&gt;<i>Goals:
+</I>&gt;<i> (*) Scalability
+</I>&gt;<i> (*) Functionality
+</I>&gt;<i> (*) Extensibility
+</I>&gt;<i> (*) Compatibility
+</I>&gt;<i>
+</I>&gt;<i>First, let us define what the options are.  Two types of channels need to reach all parties involved in voice chat:  Control and data.  Data in this case consists of the actual encoded voice stream (let's assume this is codec-independent, for now, though my arguments should work regardless of codec dependency decisions).  Control is, initially, parameters required to initiate the connection (quality [khz?], maximum throughput desired [kbits/sec?], codec used).  Then, during the stream, control should prob
+</I>&gt;<i>ably be used for performance monitoring (packets lost, kbits/sec, etc.)  
+</I>&gt;<i>
+</I>&gt;<i>Let's acknowledge two things: (1) Control throughput will generally be much lower than data throughput.  (2) Control throughput must initially (at least at some level) be through server, such as when connecting the two peers by providing eachother a direct link (giving each the other's IP address, for example).  I know that some protocols will already handle this for us, but let's assume that at some point the server has to route this data between the clients.
+</I>&gt;<i>
+</I>&gt;<i>So, given those assumptions, there are several possibilities:
+</I>&gt;<i>
+</I>&gt;<i>(1) Server forwards all control + data messages between clients, as it does with IMs.
+</I>&gt;<i>(2) Server forwards all control messages (throughput, voice establishment, codec selection, etc.), but data is handled in a peer to peer fashion. (Directly from one user to another, optionally to many others in emulation of a multicast voice reflector, if we're talking about voice conferencing.)
+</I>&gt;<i>(3) All control + data messages are handled in a peer to peer fashion.  All server does is give each peer the other's IP address, and no more than that.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>(1) presents none (or few?) of the classic peer to peer problems, such as NAT traversal, service discovery, etc. since there is already established communication at the layer that the data will be transferred on well before the voice chat session starts.  Both clients initiate a connection to the jabber server at the TCP layer, so no port forwarding issues should arise.
+</I>&gt;<i>
+</I>&gt;<i>(1) is not scalable -- a server without multicast could easily waste its entire pipe with three or four high-quality voice connections.  There is significant overhead to using the standard jabber XML-based transport mechanisms for each data packet, if data packets must be sent within milliseconds.  Assuming we want lagless and lossless audio, there must be slack between the throughput and the maximum desired throughput, so minimizing overhead is a priority.  Internal networks, or networks with high-speed 
+</I>&gt;<i>VPNs, may find this advantageous though, as the maximum desired throughput is well beyond any overhead, and the server is very likely to support multicast in such tightly knit networks.  
+</I>&gt;<i>
+</I>&gt;<i>(2) still presents NAT traversal and port forwarding, though since a link is already established, alternatives can be sought, and possibly a port sweep can be attempted to find an open/forwarding port, or to try several permutations of client1--&gt;client2, client2--&gt;client1 connections until one works.  This is just for the data channel.  The control channel can coordinate such sweeps/tests.  Some protocols may already do this.  
+</I>&gt;<i>
+</I>&gt;<i>(2) is scalable, and an accepted method by services such as MSN, iChat, etc.  (Also Yahoo Super Webcam mode, I think).  (2) can fall back to (1) for internal addresses / by some algorithm that determines if the server's link can handle the throughput.   (2) allows server to collect data on connection statistics, and possibly even a conversation log for clients with speech-to-text engines (or at least I think this'd be a cool feature to implement).
+</I>&gt;<i>
+</I>&gt;<i>(3) means that jabber clients just execute an external voice chat program with the parameter as IP of remote client, or some other connection data, and means that the server does not get any knowledge about how the chat went, etc.  (3) seems to be overlooked or unacceptable to some users of this mailing list.
+</I>&gt;<i>
+</I>&gt;<i>I believe that we do not necessarily have to decide between the two -- client-server and peer-peer -- types of data transfer modes.  I think we can define client-server as a fallback in case peer-peer fails, under certain conditions, such as:  client-server voice chats do not take up too much bandwidth -- possibly limit the audio bitrate?  All attempts at initiating peer-peer voice chat fail.  Server can give lower priority (QoS?) to transmitting voice data versus IM and other data.  Server can still func
+</I>&gt;<i>tion with the additional bandwidth and resource strain of multiple (hundreds?  thousands?) of voice chats crossing its bus.
+</I>&gt;<i>
+</I>&gt;<i>You probably already knew most of this, but I just thought I'd suggest that paragraph above, that you do not need to chose one over the other necessarily, and that we can use their advantages and disadvantages to produce some algorithm by which we choose one over the other.
+</I>&gt;<i>
+</I>&gt;<i>Ido
+</I>&gt;<i>
+</I>&gt;<i>On Wed, 3 Mar 2004 10:00:41 -0000
+</I>&gt;<i>&quot;Richard Dobson&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">richard at dobson-i.net</A>&gt; wrote:
+</I>&gt;<i>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;&gt;<i>then here is the simple way for this &#167;!&amp;%&#167;$% p2p case:
+</I>&gt;&gt;&gt;<i>      
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i>If as I suspect the symbols above represent a swearword I suggest you calm
+</I>&gt;&gt;<i>down and rethink your posts or risk severly denting your credibility, such
+</I>&gt;&gt;<i>comments are not very professional and IMO are not appropriate here. If you
+</I>&gt;&gt;<i>do not want to make useful posts then I suggest you dont post, these rants
+</I>&gt;&gt;<i>are just a waste of bandwidth and peoples time.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>1) use JEP 95 to negotiate the voice session parameters
+</I>&gt;&gt;&gt;<i>    * includes voice codec ID
+</I>&gt;&gt;&gt;<i>    * includes frame size (i.e. 2600byte)
+</I>&gt;&gt;&gt;<i>    * includes crunched size if applicable
+</I>&gt;&gt;&gt;<i>    * includes channels (mono/stereo)
+</I>&gt;&gt;&gt;<i>    * includes sample size (8bit/16bit/24bit/32bit)
+</I>&gt;&gt;&gt;<i>    * includes sample rate (i.e. 8000hz/16000hz)
+</I>&gt;&gt;&gt;<i>2) do JEP65 stream negotation.
+</I>&gt;&gt;&gt;<i>go, implement it.
+</I>&gt;&gt;&gt;<i>      
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i>Seems a reasonable starting point.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>i really give favor to server based approaches.
+</I>&gt;&gt;&gt;<i>      
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i>As you have indicated previously, but just because you dont think it useful
+</I>&gt;&gt;<i>or a good idea doesnt mean it isnt and other people dont want it. Im not
+</I>&gt;&gt;<i>against server based approaches (infact its a very good idea) but there is
+</I>&gt;&gt;<i>plenty of room and requirement for both options, you really shouldnt be
+</I>&gt;&gt;<i>required to go via a server for a quick couple of minute two person chat.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Richard
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>_______________________________________________
+</I>&gt;&gt;<i>jdev mailing list
+</I>&gt;&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i><A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>-----BEGIN PGP SIGNATURE-----
+</I>&gt;<i>Version: GnuPG v1.2.4 (GNU/Linux)
+</I>&gt;<i>
+</I>&gt;<i>iD8DBQFARbcTmhQsAkXAJP0RApomAJ9c74BSNE6Uj1XuQDhkFzwIg5if0QCeMgnF
+</I>&gt;<i>vkikBCqftEUtYuCBQf3vZR0=
+</I>&gt;<i>=5dtJ
+</I>&gt;<i>-----END PGP SIGNATURE-----
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="048213.html">[jdev] voicechat again
+</A></li>
+	<LI>Next message: <A HREF="048191.html">[jdev] voicechat again
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48190">[ date ]</a>
+              <a href="thread.html#48190">[ thread ]</a>
+              <a href="subject.html#48190">[ subject ]</a>
+              <a href="author.html#48190">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

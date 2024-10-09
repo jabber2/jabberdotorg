@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] sending custom messages from one client to another
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sending%20custom%20messages%20from%20one%20client%20to%20another&In-Reply-To=%3C200404301628.06058.justin-keyword-jabber.093179%40affinix.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] sending custom messages from one client to another</H1>
+    <B>Justin Karneges</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sending%20custom%20messages%20from%20one%20client%20to%20another&In-Reply-To=%3C200404301628.06058.justin-keyword-jabber.093179%40affinix.com%3E"
+       TITLE="[jdev] sending custom messages from one client to another">justin-keyword-jabber.093179 at affinix.com
+       </A><BR>
+    <I>Fri Apr 30 18:28:06 CDT 2004</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48620">[ date ]</a>
+              <a href="thread.html#48620">[ thread ]</a>
+              <a href="subject.html#48620">[ subject ]</a>
+              <a href="author.html#48620">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>This reminds me of an issue I've had regarding &lt;message&gt; stanzas.  Since you 
+can have multiple top-level children with different namespaces, this leads to 
+a lot of different possibilities for processing a message, particularly uses 
+that are non-IM.  For instance, what if you get an RPC call like in your 
+example that contains a &lt;body&gt;.  Does the client perform the function, 
+display the body, or both?  I don't think this is defined anywhere.
+
+I think we should have some sort of guideline that developers should follow.  
+Here is what I came up with:
+
+1) If there are any 'attribute' elements like x:delay, &lt;amp&gt;, etc, then these 
+can be accounted for as they apply to any kind of message.
+
+2) If there are elements recognized by the client as non-IM (such as IBB data 
+or a chat state change), then the client should process the stanza in this 
+way.  If there are multiple such elements, then only one kind of processing 
+should be performed.  Which one to choose would be implementation specific, 
+but probably picking the first one recognized would be fine.  End.
+
+3) If there are elements recognized by the client as text, such as &lt;body&gt; or 
+&lt;html&gt;, then the message should be considered an IM.
+
+4) However, if there are elements recognized by the client as 
+psuedo-attachments, such as contact items, groupchat invites, x:oob urls, 
+then these can be processed as either an IM (with empty body if &lt;body&gt; is not 
+present), or in a special way.
+
+What do others think?
+
+-Justin
+
+On Friday 30 April 2004 11:06 am, Julian Missig wrote:
+&gt;<i> &lt;message to=&quot;otherclient&quot;&gt;&lt;body&gt;message with an extension&lt;/body&gt;&lt;x
+</I>&gt;<i> xmlns=&quot;<A HREF="http://myclient.web.site/protocol&quot;">http://myclient.web.site/protocol&quot;</A>&gt;&lt;myxml&gt;&lt;function
+</I>&gt;<i> attr=&quot;value&quot;/&gt;&lt;/myxml&gt;&lt;/x&gt;&lt;/message&gt;
+</I>&gt;<i>
+</I>&gt;<i> or use a custom IQ, depending on whether what you're doing is an
+</I>&gt;<i> extension of a message and you want it to be stored and forwarded, or
+</I>&gt;<i> (in IQ's case), you just want to call a function if the other one is
+</I>&gt;<i> online.
+</I>&gt;<i>
+</I>&gt;<i> Julian
+</I>&gt;<i>
+</I>&gt;<i> On 30 Apr, 2004, at 13:55, Julian Dolce wrote:
+</I>&gt;<i> &gt; Hey everyone,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I am pretty new to jabber and have been doing some reading and
+</I>&gt;<i> &gt; searching
+</I>&gt;<i> &gt; the archives on how to do this. But haven't seen a solution.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; What is the best way to send custom messages from one client to
+</I>&gt;<i> &gt; another.
+</I>&gt;<i> &gt; Basically what I want to do is be able to call a function on another
+</I>&gt;<i> &gt; client.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Any help or resources would be greatly appreciated.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Julian Dolce
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Creative Technologist
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Fuel Industries Inc
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Ottawa, ON
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; www.fuelindustries.com
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; 613.224.6738 x241
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>
+</PRE>
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48620">[ date ]</a>
+              <a href="thread.html#48620">[ thread ]</a>
+              <a href="subject.html#48620">[ subject ]</a>
+              <a href="author.html#48620">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

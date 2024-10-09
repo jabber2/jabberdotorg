@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Sending message  in xml tags
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Sending%20message%20%20in%20xml%20tags&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="016274.html">
+   <LINK REL="Next"  HREF="016276.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Sending message  in xml tags</H1>
+    <B>Heiner Wolf</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Sending%20message%20%20in%20xml%20tags&In-Reply-To="
+       TITLE="[JDEV] Sending message  in xml tags">wolf at bluehands.de
+       </A><BR>
+    <I>Wed Apr 23 08:51:29 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="016274.html">[JDEV] Sending message  in xml tags
+</A></li>
+        <LI>Next message: <A HREF="016276.html">[JDEV] Foreign Characters
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#16275">[ date ]</a>
+              <a href="thread.html#16275">[ thread ]</a>
+              <a href="subject.html#16275">[ subject ]</a>
+              <a href="author.html#16275">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Of course, I forgot, 
+Since it is always good practice to promote the own library :-)
+
+For a project I wrote a class to create XML. It goes like:
+
+  XMLNode message(&quot;message&quot;);
+  XMLNode* x= message.AddChild(&quot;x&quot;);
+  x-&gt;AddAttribute(&quot;xmlns&quot;, &quot;<A HREF="http://abc/jabber&quot;">http://abc/jabber&quot;</A>);
+  x-&gt;AddChild(&quot;forward &quot;);
+etc.
+  char *data = message.OuterXml();
+
+The class is included in the publicly available source of the LLuna client: <A HREF="http://www.lluna.de">http://www.lluna.de</A>
+
+--
+Dr. Klaus H. Wolf
+bluehands GmbH &amp; Co.mmunication KG
+<A HREF="http://www.bluehands.de/people/hw">http://www.bluehands.de/people/hw</A>
++49 (0721) 16108 75
+ 
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Matt Tucker [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">matt at jivesoftware.com</A>]
+</I>&gt;<i> Sent: Wednesday, April 23, 2003 2:59 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] Sending message in xml tags
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Satish,
+</I>&gt;<i> 
+</I>&gt;<i> You can always add and remove XML elements on the fly and 
+</I>&gt;<i> then use XML 
+</I>&gt;<i> parsing routines to figure out incoming packets. However, it 
+</I>&gt;<i> sounds like 
+</I>&gt;<i> you're just looking for a very simple way to to programatically pass 
+</I>&gt;<i> info back and forth between two XMPP nodes? If so, I'd recommend 
+</I>&gt;<i> checking out our Open Source client library Smack -- 
+</I>&gt;<i> <A HREF="http://www.jivesoftware.com/xmpp/smack">http://www.jivesoftware.com/xmpp/smack</A>
+</I>&gt;<i> 
+</I>&gt;<i> The feature that may help you most is the ability to attach 
+</I>&gt;<i> an arbitrary 
+</I>&gt;<i> map of data (including Java objects) to each packet. As an example:
+</I>&gt;<i> 
+</I>&gt;<i> Setting Properties:
+</I>&gt;<i> 
+</I>&gt;<i> Message message = chat.createMessage();
+</I>&gt;<i> // Add a Color object as a property.
+</I>&gt;<i> message.setProperty(&quot;favoriteColor&quot;, new Color(0, 0, 255));
+</I>&gt;<i> // Add an int as a property.
+</I>&gt;<i> message.setProperty(&quot;favoriteNumber&quot;, 4);
+</I>&gt;<i> chat.sendMessage(message);
+</I>&gt;<i> 
+</I>&gt;<i> Getting those same properties would use the following code:
+</I>&gt;<i> 
+</I>&gt;<i> Message message = chat.nextMessage();
+</I>&gt;<i> // Get a Color object property.
+</I>&gt;<i> Color favoriteColor = (Color)message.getProperty(&quot;favoriteColor&quot;);
+</I>&gt;<i> // Get an int property. Note that properties are always returned as
+</I>&gt;<i> // Objects, so we must cast the value to an Integer, then convert
+</I>&gt;<i> // it to an int.
+</I>&gt;<i> int favoriteNumber = 
+</I>&gt;<i> ((Integer)message.getProperty(&quot;favoriteNumber&quot;)).intValue();
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> This is a different solution than what you were asking for, 
+</I>&gt;<i> but it could 
+</I>&gt;<i> be much simpler if I understand the problem you're trying to solve.
+</I>&gt;<i> 
+</I>&gt;<i> Regards,
+</I>&gt;<i> Matt
+</I>&gt;<i> 
+</I>&gt;<i> Satish Plakote wrote:
+</I>&gt;<i> &gt; hi 
+</I>&gt;<i> &gt; i am using muse api from <A HREF="http://www.echomine.org/projects/muse/">http://www.echomine.org/projects/muse/</A>
+</I>&gt;<i> &gt; Trying to develope a java client.
+</I>&gt;<i> &gt;  
+</I>&gt;<i> &gt; Let me put it through an example
+</I>&gt;<i> &gt; I want to send a XML info of this type to a user ' xyz '.
+</I>&gt;<i> &gt;  
+</I>&gt;<i> &gt;  &lt;message to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">icm at jabber</A>&quot;&gt;
+</I>&gt;<i> &gt;  &lt;x xtype=&quot;forward&quot; xmlns=&quot;<A HREF="http://abc/jabber&quot;">http://abc/jabber&quot;</A>&gt;
+</I>&gt;<i> &gt;    &lt;forward call=&quot;callid&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">xyz at jabber</A>&quot; /&gt;
+</I>&gt;<i> &gt;    &lt;/x&gt;
+</I>&gt;<i> &gt;  &lt;/message&gt;
+</I>&gt;<i> &gt;  
+</I>&gt;<i> &gt;  I will be adding /deleting nodes on the fly.
+</I>&gt;<i> &gt;  I have not been able to come across classes/Api's that allow 
+</I>&gt;<i> &gt;  me to do it.
+</I>&gt;<i> &gt;  I can send plain mesages to any user,but not in XML format.
+</I>&gt;<i> &gt;  I hope i have been clear abt my problem.
+</I>&gt;<i> &gt;  I would appreciate links that give me some good code sample 
+</I>&gt;<i> &gt;  rather than
+</I>&gt;<i> &gt;  theory.
+</I>&gt;<i> &gt;  
+</I>&gt;<i> &gt;  
+</I>&gt;<i> &gt;  Rgds
+</I>&gt;<i> &gt; Satish
+</I>&gt;<i> &gt;  
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="016274.html">[JDEV] Sending message  in xml tags
+</A></li>
+	<LI>Next message: <A HREF="016276.html">[JDEV] Foreign Characters
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#16275">[ date ]</a>
+              <a href="thread.html#16275">[ thread ]</a>
+              <a href="subject.html#16275">[ subject ]</a>
+              <a href="author.html#16275">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

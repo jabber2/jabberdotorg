@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Using Net::Jabber to authenticate to Google Talk
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Using%20Net%3A%3AJabber%20to%20authenticate%20to%20Google%20Talk&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="026415.html">
+   <LINK REL="Next"  HREF="026423.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Using Net::Jabber to authenticate to Google Talk</H1>
+    <B>David Eisner</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Using%20Net%3A%3AJabber%20to%20authenticate%20to%20Google%20Talk&In-Reply-To="
+       TITLE="[jdev] Using Net::Jabber to authenticate to Google Talk">deisner at gmail.com
+       </A><BR>
+    <I>Fri Jun 29 11:31:16 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="026415.html">[jdev] Escaping JID using XEP-0106
+</A></li>
+        <LI>Next message: <A HREF="026423.html">[jdev] Using Net::Jabber to authenticate to Google Talk
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26422">[ date ]</a>
+              <a href="thread.html#26422">[ thread ]</a>
+              <a href="subject.html#26422">[ subject ]</a>
+              <a href="author.html#26422">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm trying to use Net::Jabber in a perl script to authenticate to a
+Google Talk account.  I've run into a few problems and solved them,
+but now I'm stuck.  Here's the issue:
+
+I'm able to connect to the server and successfully negotiate the TLS
+connection. However, the authentication is failing with an
+&lt;invalid-authzid/&gt; failure:
+
+    XML::Stream: Read: buff(&lt;failure
+    xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;&lt;invalid-authzid/&gt;&lt;/failure&gt;)
+
+After examining Pidgin's successful authentication, it looks like I
+need to add an additional attribute to the auth element.  Currently,
+Net::XMPP::Protocol.pm is sending this in SASLSendAuth():
+
+    XML::Stream: Send: (&lt;auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl'
+    mechanism='PLAIN'&gt;ZG[ snip ]bjI1&lt;/auth&gt;)
+
+According to Google (and this is what Pidgen does), I need to set the
+&quot;client-uses-full-bind-result attribute&quot; to &quot;true&quot; [1]:
+
+     &lt;auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl'
+          mechanism='PLAIN'
+          xmlns:ga='<A HREF="http://www.google.com/talk/protocol/auth'">http://www.google.com/talk/protocol/auth'</A>
+          ga:client-uses-full-bind-result='true'&gt;
+               ... name and password information
+      &lt;/auth&gt;
+
+Looking at SASLSendAuth(), it's not clear I can add the attribute.
+Does the Net::XMPP::Namespaces documentation have a prayer of helping
+me in this case?
+
+Thanks.
+
+-David
+
+[1] <A HREF="http://code.google.com/apis/talk/jep_extensions/jid_domain_change.html">http://code.google.com/apis/talk/jep_extensions/jid_domain_change.html</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="026415.html">[jdev] Escaping JID using XEP-0106
+</A></li>
+	<LI>Next message: <A HREF="026423.html">[jdev] Using Net::Jabber to authenticate to Google Talk
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26422">[ date ]</a>
+              <a href="thread.html#26422">[ thread ]</a>
+              <a href="subject.html#26422">[ subject ]</a>
+              <a href="author.html#26422">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

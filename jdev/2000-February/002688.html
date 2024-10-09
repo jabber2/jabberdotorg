@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] scaling a single server?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20scaling%20a%20single%20server%3F&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002685.html">
+   <LINK REL="Next"  HREF="002691.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] scaling a single server?</H1>
+    <B>Donn Cave</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20scaling%20a%20single%20server%3F&In-Reply-To="
+       TITLE="[JDEV] scaling a single server?">donn at u.washington.edu
+       </A><BR>
+    <I>Fri Feb  4 17:30:48 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002685.html">[JDEV] Announcing the Jabber Extensible Client Interface for Java
+</A></li>
+        <LI>Next message: <A HREF="002691.html">[JDEV] scaling a single server?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2688">[ date ]</a>
+              <a href="thread.html#2688">[ thread ]</a>
+              <a href="subject.html#2688">[ subject ]</a>
+              <a href="author.html#2688">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Quoth &quot;Dave Smith&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dsmith at ai.uwf.edu</A>&gt;:
+|&gt;<i> I don't know what the limitation of Linux for the sockets are, but the
+</I>|&gt;<i> absolute limitation is 64k since the port value is 2 bytes wide. So, with
+</I>|&gt;<i> TCP/IP you cannot have more then 64k connections (this is a theoretical
+</I>|&gt;<i> maximum, in reality more limitations apply) even if you have a
+</I>|&gt;<i> server-machine that can handle the load.
+</I>|<i>
+</I>|<i> Err..this isn't true (to the best of my knowledge). There are only 65536
+</I>|<i> ports available for *listening* on most BSD socket impls. When a TCP
+</I>|<i> connection arrives it doesn't stay on the port it initally connects on.
+</I>|<i> Instead, the IP stack does some magic and the connection is diverted to a
+</I>|<i> &quot;pseudo-port&quot; (if you will) that handles the connection from then on. Thus,
+</I>|<i> you can have many more actualy socket connections than port numbers
+</I>|<i> (assuming your kernel is setup to handle it). At least, this is my
+</I>|<i> understanding of the matter... :)
+</I>
+Does this mean that if two separate clients used getsockname() to look
+at their connections, they could turn out to be on the same port (from
+struct sockaddr_in sin_port)?  That would be pretty surprising to me!
+If not ... sin_port is typically 16 bits.
+
+|<i> &gt; any messages. You may end up with a server that processes nearly no data,
+</I>|<i> &gt; but all its resources are exhausted because of the users connected.
+</I>|<i> &gt;
+</I>|<i> &gt; I strongly recommend connectionless protocols and UDP!
+</I>|<i>
+</I>|<i> Point taken. However, I would remind you again that the point of jabber is
+</I>|<i> simple clients. :) Right now it's fairly trivial to write a jabber client.
+</I>|<i> If every author had to add in flow-control and reliable delivery, client
+</I>|<i> complexity would be significantly increased.
+</I>
+I don't know, it might not be all that bad, assuming some common code.
+But if the issue is whether the system architecture allows 64K
+connections, I think we're probably kidding ourselves, the practical
+limit of a TCP service host is less than 64K.  This is a function
+of the implementation, though, mbufs and that sort of thing, and
+I have no idea but it would surprise me if it's not at least one
+order of magnitude less for the average UNIX platform.
+
+This doesn't stop protocols from being implemented in TCP when it's
+appropriate.  There are good things about it, such as an immediate
+notification on loss of connection tells you that the client has
+gone away.  I would be more worried about inconveniently persistent
+connections, either aborted connections in CLOSE_WAIT or other
+unfortunate state, or just lack of a reasonable idle connection
+timeout policy.  Put it in the documentation: client software
+MUST be able to cope with a server disconnect!
+
+	Donn Cave, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">donn at u.washington.edu</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002685.html">[JDEV] Announcing the Jabber Extensible Client Interface for Java
+</A></li>
+	<LI>Next message: <A HREF="002691.html">[JDEV] scaling a single server?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2688">[ date ]</a>
+              <a href="thread.html#2688">[ thread ]</a>
+              <a href="subject.html#2688">[ subject ]</a>
+              <a href="author.html#2688">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,637 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Yahoo Transport Patch: Yahoo Avatars
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Yahoo%20Transport%20Patch%3A%20Yahoo%20Avatars&In-Reply-To=%3C41210926.6030107%40eloan.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="049217.html">
+   <LINK REL="Next"  HREF="049219.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Yahoo Transport Patch: Yahoo Avatars</H1>
+    <B>sabat</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Yahoo%20Transport%20Patch%3A%20Yahoo%20Avatars&In-Reply-To=%3C41210926.6030107%40eloan.com%3E"
+       TITLE="[jdev] Yahoo Transport Patch: Yahoo Avatars">sabat at eloan.com
+       </A><BR>
+    <I>Mon Aug 16 14:21:10 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="049217.html">[jdev] Re: Driving/Routing directions via XMPP
+</A></li>
+        <LI>Next message: <A HREF="049219.html">[jdev] another concept of ICQ transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#49210">[ date ]</a>
+              <a href="thread.html#49210">[ thread ]</a>
+              <a href="subject.html#49210">[ subject ]</a>
+              <a href="author.html#49210">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I've hacked up the Yahoo Transport so that it automatically downloads 
+Yahoo avatars. This would only be useful for you if you're using a 
+jabber chat client that supports JEP-008. (Yes, I know, that JEP was 
+retracted, but it's still the only standard out there, and there are 
+clients that support it.)
+
+The patch below is against version 2.3.2 of the transport. In order to 
+use it, you first need to download and install the http_fetcher library 
+at <A HREF="http://http-fetcher.sourceforge.net/.">http://http-fetcher.sourceforge.net/.</A> It should compile normally 
+(albeit with some ignorable warnings).
+
+To patch your Yahoo Transport, cd into it and run
+
+patch -p1 &lt; /path/to/the/patch/file
+
+and then run 'make'.
+
+When you run it and connect with a client that a) is registered with the 
+Yahoo transport, b) has Yahoo buddies who have avatars, and c) supports 
+jabber avatars via JEP-008, you should see Yahoo avatars in place of 
+whatever generic placeholder normally appears.
+
+I have only run this on linux, and cannot guarantee it will work, or 
+that it won't hose up your server or something. Meaning: I wouldn't use 
+this in production, just to fool around. Good luck, and may the Force be 
+with you.
+
+(I hereby release this hack into the public domain.)
+
+
+&lt;&gt;diff -burN --exclude=CVS --exclude='*.o' --exclude='*.so' 
+--exclude='*.gz' --exclude='*.xml' yahoo-transport-orig/Makefile 
+yahoo-transport/Makefile
+--- yahoo-transport-orig/Makefile 2004-06-25 11:33:56.000000000 -0700
++++ yahoo-transport/Makefile 2004-08-16 11:05:43.048965928 -0700
+@@ -4,11 +4,11 @@
+include ../platform-settings
+
+CFLAGS:=$(CFLAGS) -I../jabberd `glib-config --cflags`
+-LIBS:=$(LIBS) `glib-config --libs glib`
++LIBS:=$(LIBS) `glib-config --libs glib` -lhttp_fetcher
+
+YAHOO_OBJECTS=yahoo-transport.o yahoo-session.o yahoo-phandler.o yahoo.o \
+crypt.o gaim-sha.o yahoo-presence.o yahoo-server.o md5.o yahoo-message.o \
+- yahoo-stats.o yahoo-composing.o yahoo-mail.o yahoo-auth.o
++ yahoo-stats.o yahoo-composing.o yahoo-mail.o yahoo-auth.o sha.o 
+yahoo-avatar.o
+
+all: yahoo-transport
+
+@@ -38,3 +38,4 @@
+yahoo-stats.o: yahoo-stats.c yahoo-transport.h
+yahoo.o: yahoo.c yahoo-transport.h
+yahoo-auth.o: yahoo-auth.c yahoo-auth.h
++yahoo-avatar.o: yahoo-avatar.c
+diff -burN --exclude=CVS --exclude='*.o' --exclude='*.so' 
+--exclude='*.gz' --exclude='*.xml' yahoo-transport-orig/sha.c 
+yahoo-transport/sha.c
+--- yahoo-transport-orig/sha.c 1969-12-31 16:00:00.000000000 -0800
++++ yahoo-transport/sha.c 2004-08-04 18:14:45.000000000 -0700
+@@ -0,0 +1,101 @@
++/*
++ Implements the Secure Hash Algorithm (1)
++
++ Copyright (C) 1999 Scott G. Miller
++
++ Released under the terms of the GNU General Public License v2
++ see file COPYING for details
++*/
++
++#define Ai 0x67452301
++#define Bi 0xefcdab89
++#define Ci 0x98badcfe
++#define Di 0x10325476
++#define Ei 0xc3d2e1f0
++
++#define A 0
++#define B 1
++#define C 2
++#define D 3
++#define E 4
++
++#define K1 0x5a827999
++#define K2 0x6ed9eba1
++#define K3 0x8f1bbcdc
++#define K4 0xca62c1d6
++
++#define f1(X,Y,Z) (X &amp; Y) | ((!X) ^ Z)
++#define f2(X,Y,Z) (X ^ Y ^ Z)
++#define f3(X,Y,Z) (X &amp; Y) | (X &amp; Z) | (Y &amp; Z)
++
++#define rol1(x) (x&lt;&lt;1) | ((x&gt;&gt;31) &amp; 1)
++#define rol5(x) (x&lt;&lt;5) | ((x&gt;&gt;27) &amp; 0x1f)
++#define rol30(x) (x&lt;&lt;30) | ((x&gt;&gt;2) &amp; 0x3fffffff)
++
++int sha_hash(int *data, int *hash) {
++ int W[80];
++ int a=hash[A], b=hash[B], c=hash[C], d=hash[D], e=hash[E], t, x, TEMP;
++
++ /** Data expansion from 16 to 80 blocks **/
++ for (t=0; t&lt;16; t++) {
++ W[t]=data[t];
++ }
++ for (t=16; t&lt;80; t++) {
++ x=W[t-3] ^ W[t-8] ^ W[t-16];
++ W[t]=rol1(x);
++ }
++
++ /** Main loops **/
++ for (t=0; t&lt;20; t++) {
++ TEMP=rol5(a) + f1(b,c,d) + e + W[t] + K1;
++ e=d;
++ d=c;
++ c=rol30(b);
++ b=a;
++ a=TEMP;
++ }
++ for (; t&lt;40; t++) {
++ TEMP=rol5(a) + f2(b,c,d) + e + W[t] + K2;
++ e=d;
++ d=c;
++ c=rol30(b);
++ b=a;
++ a=TEMP;
++ }
++ for (; t&lt;60; t++) {
++ TEMP=rol5(a) + f3(b,c,d) + e + W[t] + K3;
++ e=d;
++ d=c;
++ c=rol30(b);
++ b=a;
++ a=TEMP;
++ }
++ for (; t&lt;80; t++) {
++ TEMP=rol5(a) + f2(b,c,d) + e + W[t] + K4;
++ e=d;
++ d=c;
++ c=rol30(b);
++ b=a;
++ a=TEMP;
++ }
++ hash[A]+=a;
++ hash[B]+=b;
++ hash[C]+=c;
++ hash[D]+=d;
++ hash[E]+=e;
++}
++
++int sha_init(int *hash) {
++ hash[A]=Ai;
++ hash[B]=Bi;
++ hash[C]=Ci;
++ hash[D]=Di;
++ hash[E]=Ei;
++}
++
++
++
++
++
++
++
+diff -burN --exclude=CVS --exclude='*.o' --exclude='*.so' 
+--exclude='*.gz' --exclude='*.xml' yahoo-transport-orig/sha.h 
+yahoo-transport/sha.h
+--- yahoo-transport-orig/sha.h 1969-12-31 16:00:00.000000000 -0800
++++ yahoo-transport/sha.h 2004-08-04 18:14:47.000000000 -0700
+@@ -0,0 +1,2 @@
++int sha_hash(int *data, int *hash);
++int sha_init(int *hash);
+diff -burN --exclude=CVS --exclude='*.o' --exclude='*.so' 
+--exclude='*.gz' --exclude='*.xml' yahoo-transport-orig/yahoo-avatar.c 
+yahoo-transport/yahoo-avatar.c
+--- yahoo-transport-orig/yahoo-avatar.c 1969-12-31 16:00:00.000000000 -0800
++++ yahoo-transport/yahoo-avatar.c 2004-08-16 10:22:34.635706632 -0700
+@@ -0,0 +1,206 @@
++#include &quot;yahoo-transport.h&quot;
++
++#include &lt;sys/types.h&gt;
++#include &lt;sys/stat.h&gt;
++#include &lt;fcntl.h&gt;
++
++/* This is taken from Sylpheed by Hiroyuki Yamamoto. We have our own 
+tobase64 function
++ * in util.c, but it has a bug I don't feel like finding right now ;) */
++
++/* Note: had to put this here and modify it because it didn't seem to 
+output base64
++ * that is standard. The code had the final 2 chars in base64digits as 
+._ instead of
++ * the apparent standard of +/ */
++
++void get_avatar64(unsigned char *out, const unsigned char *in, int inlen) {
++ char base64digits[] = 
+&quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/&quot;;
++ /* raw bytes in quasi-big-endian order to base 64 string 
+(NUL-terminated) */
++
++ for (; inlen &gt;= 3; inlen -= 3) {
++ *out++ = base64digits[in[0] &gt;&gt; 2];
++ *out++ = base64digits[((in[0] &lt;&lt; 4) &amp; 0x30) | (in[1] &gt;&gt; 4)];
++ *out++ = base64digits[((in[1] &lt;&lt; 2) &amp; 0x3c) | (in[2] &gt;&gt; 6)];
++ *out++ = base64digits[in[2] &amp; 0x3f];
++ in += 3;
++ }
++ if (inlen &gt; 0) {
++ unsigned char fragment;
++
++ *out++ = base64digits[in[0] &gt;&gt; 2];
++ fragment = (in[0] &lt;&lt; 4) &amp; 0x30;
++ if (inlen &gt; 1)
++ fragment |= in[1] &gt;&gt; 4;
++ *out++ = base64digits[fragment];
++ *out++ = (inlen &lt; 2) ? '-' : base64digits[(in[1] &lt;&lt; 2) &amp; 0x3c];
++ *out++ = '-';
++ }
++ *out = '\0';
++}
++
++void hex_sha_hash(int *hashval, char *buffer) {
++ int x;
++ char tmp[9];
++
++ // I presume that buffer is already memsetted to 0s
++
++ for (x=0; x&lt;5; x++) {
++ sprintf(tmp, &quot;%08x&quot;, hashval[x]);
++ strcat(buffer, tmp);
++ }
++
++ return;
++}
++
++void av_sha_hash(char *filebuf, int length, char *av_hex_hash) {
++ int c=0;
++ int i;
++ int hashlength=0;
++ char buffer[64];
++ int av_bin_hash[Y_AVATAR_HASH_SIZE];
++
++ sha_init(av_bin_hash);
++
++ do {
++
++ if (c+64&gt;length) {
++ memcpy(buffer, filebuf+c, length-c);
++// printf(&quot;memcpying the last %i bytes of filebuf into buffer\n&quot;, 
+length-c);
++ hashlength+=(length-c);
++// printf(&quot;length is %i\n&quot;, hashlength);
++ for (i=length-c; i&lt;61; i++) {
++ if (i==length-c)
++ buffer[i]=0x10;
++ else if (i==60)
++ ((int*)buffer)[15]=hashlength*8;
++ else
++ buffer[i]=0;
++ }
++ c+=i;
++ } else {
++// printf(&quot;doing byte %i to %i -- length is %i\n&quot;, c, c+64, length);
++ memcpy(buffer, filebuf+c, 64);
++ c+=64;
++ hashlength+=64;
++ }
++
++// for(q=0; q&lt;64; q++) { printf(&quot;%i &quot;, buffer[q]); }; printf(&quot;\n\n&quot;);
++ sha_hash((int*)buffer, av_bin_hash);
++ } while (c &lt;= length);
++
++ memset(av_hex_hash, 0, 42);
++ hex_sha_hash(av_bin_hash, av_hex_hash);
++}
++
++int get_avatar_img(char *hash_string, char* filebuf) {
++ int pngsize;
++ char url[ sizeof(YAHOO_URL_PRE) + 65 + sizeof(YAHOO_URL_POST) ];
++
++ strcpy(url, YAHOO_URL_PRE);
++ strcat(url, hash_string);
++ strcat(url, YAHOO_URL_POST);
++
++ pngsize = http_fetch(url, (char **)filebuf);
++log_debug(ZONE, &quot;[YAHOO]: addr of filebuf is %x&quot;, filebuf);
++
++ return(pngsize);
++}
++
++void get_avatar_sha_hash(char* filebuf, int pngsize, char* 
+avatar_sha_string) {
++ /* ok, we have a string and we want to store it.
++
++ Do a web hit to yahoo and get the png img.
++
++ Get the SHA-1 hex hash of the img.
++
++ Base64-encode the img.
++
++ Send it to the jabber server's public storage.
++
++ Inject the SHA-1 hex hash of the img into the
++ current presence packet so the client knows
++ that there's an avatar available.
++
++ */
++
++ memset(avatar_sha_string, 0, 42);
++ av_sha_hash(filebuf, pngsize, avatar_sha_string);
++}
++
++void set_avatar_tag_info(xmlnode x, char* sha_hash) {
++ xmlnode query = xmlnode_insert_tag(x, &quot;x&quot;);
++ xmlnode hashtag = xmlnode_insert_tag(query, &quot;hash&quot;);
++
++ xmlnode_put_attrib(query, &quot;xmlns&quot;, &quot;jabber:x:avatar&quot;);
++ xmlnode_insert_cdata(hashtag, sha_hash, strlen(sha_hash));
++ // log_debug(ZONE, &quot;[YAHOO]: inserted sha-1 avatar hash into presence 
+packet at host %s, me = %s, server = %s&quot;, yd-&gt;yi-&gt;i-&gt;id, 
+jid_full(yd-&gt;me), yd-&gt;me-&gt;server);
++ log_debug(ZONE, &quot;[YAHOO]: j avatar hash is %s&quot;, sha_hash);
++}
++
++void store_avatar(struct yahoo_data *yd, char *contact_name, char* 
+base64, char* sha_hash, char* y_hash) {
++
++ log_debug(ZONE, &quot;[YAHOO]: store_avatar received y_hash of %s&quot;, y_hash);
++
++ xmlnode avatag_b64 = xmlnode_new_tag(&quot;yahoo_avatar&quot;);
++ xmlnode avatag_sha_hash = xmlnode_new_tag(&quot;yahoo_avatar_sha_hash&quot;);
++ xmlnode avatag_y_hash = xmlnode_new_tag(&quot;yahoo_avatar_y_hash&quot;);
++ pool p = pool_new();
++
++ jid j = jid_new(p, spools(p, contact_name, &quot;@&quot;, &quot;yahoo.com&quot;, p));
++
++ xmlnode_put_attrib(avatag_b64, &quot;xmlns&quot;, &quot;yahootrans:base64&quot;);
++ xmlnode_put_attrib(avatag_sha_hash, &quot;xmlns&quot;, &quot;yahootrans:sha_hash&quot;);
++ xmlnode_put_attrib(avatag_y_hash, &quot;xmlns&quot;, &quot;yahootrans:y_hash&quot;);
++
++ xmlnode_insert_cdata(avatag_b64, base64, strlen(base64));
++ xmlnode_insert_cdata(avatag_sha_hash, sha_hash, strlen(sha_hash));
++ xmlnode_insert_cdata(avatag_y_hash, y_hash, strlen(y_hash));
++
++ log_debug(ZONE, &quot;[YAHOO]: doing an xdb set with owner %s&quot;, jid_full(j));
++
++ xdb_set(yd-&gt;yi-&gt;xc, j, &quot;yahootrans:base64&quot;, avatag_b64);
++ xdb_set(yd-&gt;yi-&gt;xc, j, &quot;yahootrans:sha_hash&quot;, avatag_sha_hash);
++ xdb_set(yd-&gt;yi-&gt;xc, j, &quot;yahootrans:y_hash&quot;, avatag_y_hash);
++
++ xmlnode_free(avatag_b64);
++ xmlnode_free(avatag_sha_hash);
++ xmlnode_free(avatag_y_hash);
++}
++
++void retrieve_avatar_sha_hash(char* sha_hash, xdbcache xc, char* jid_str) {
++ pool p = pool_new();
++ jid j = jid_new(p, jid_str);
++
++ log_notice(ZONE, &quot;[YAHOO]: trying to get db entry for %s&quot;, jid_full(j));
++
++ xmlnode sha_hash_xml = xdb_get(xc, j, &quot;yahootrans:sha_hash&quot;);
++
++ if (sha_hash_xml != NULL)
++ strcpy(sha_hash, xmlnode_get_data(sha_hash_xml));
++ else
++ log_notice(ZONE, &quot;[YAHOO]: no avatar retrieved!!&quot;);
++
++ xmlnode_free(sha_hash_xml);
++ pool_free(p);
++}
++
++int have_avatar_img_already(char* name, char* y_hash, xdbcache xc) {
++ int ret = 0;
++ pool p = pool_new();
++ jid j = jid_new(p, spools(p, name, &quot;@&quot;, &quot;yahoo.com&quot;, p));
++
++ log_notice(ZONE, &quot;[YAHOO]: have_avatar_img_already is trying to get db 
+entry for %s&quot;, jid_full(j));
++
++ xmlnode y_hash_xml = xdb_get(xc, j, &quot;yahootrans:y_hash&quot;);
++ if (y_hash_xml != NULL)
++ if (strcmp(xmlnode_get_data(y_hash_xml), y_hash) == 0)
++ ret = 1;
++
++ log_notice(ZONE, &quot;[YAHOO]: do we already have avatar for '%s' ? = * %i 
+*&quot;, jid_full(j), ret);
++log_notice(ZONE, &quot;[YAHOO]: y_hash received from yahoo is %s&quot;, y_hash);
++log_notice(ZONE, &quot;[YAHOO]: y_hash stored is %s&quot;, xmlnode2str(y_hash_xml));
++
++ xmlnode_free(y_hash_xml);
++ pool_free(p);
++
++ return(ret);
++}
++
+diff -burN --exclude=CVS --exclude='*.o' --exclude='*.so' 
+--exclude='*.gz' --exclude='*.xml' yahoo-transport-orig/yahoo.c 
+yahoo-transport/yahoo.c
+--- yahoo-transport-orig/yahoo.c 2004-07-01 12:13:29.000000000 -0700
++++ yahoo-transport/yahoo.c 2004-08-16 10:51:21.132747351 -0700
+@@ -480,6 +489,41 @@
+case 16: /* Custom error message */
+log_debug(ZONE, &quot;[YAHOO]: Error Message: %s\n&quot;, pair-&gt;value);
+break;
++ case 197: /* avatar hash */
++
++ log_debug(ZONE, &quot;[YAHOO]: received y_avatar hash of %s\n&quot;, pair-&gt;value);
++ char avatar_y_hash[Y_AVATAR_HASH_SIZE];
++ strncpy(avatar_y_hash, pair-&gt;value, Y_AVATAR_HASH_SIZE);
++
++ log_debug(ZONE, &quot;[YAHOO]: buddy name is %s&quot;, name);
++
++ if (!have_avatar_img_already(name, avatar_y_hash, yd-&gt;yi-&gt;xc)) {
++
++ log_debug(ZONE, &quot;[YAHOO]: the 'already' routine sez we don't have it 
+for %s (hash %s), loading&quot;, name, avatar_y_hash);
++
++ char avatar_sha_hash[Y_AVATAR_HASH_SIZE];
++ char hash64[Y_AVATAR_B64_SIZE]; // 16k is probably overkill but just 
+in case ...
++ char *filebuf;
++ int pngsize;
++
++ pngsize = get_avatar_img(avatar_y_hash, &amp;filebuf);
++
++ get_avatar_sha_hash(filebuf, pngsize, avatar_sha_hash);
++ log_debug(ZONE, &quot;[YAHOO]: got sha-1 avatar hash %s\n&quot;, avatar_sha_hash);
++
++ get_avatar64(hash64, filebuf, pngsize);
++ store_avatar(yd, name, hash64, avatar_sha_hash, avatar_y_hash);
++ }
++
++ /*
++ set the presence for the sole purpose of announcing we have an avatar
++ for this user. That means there's no message (e.g. &lt;show&gt;away&lt;/show&gt;)
++ so the 'state' variable can be 0 (normally meaning Available) because
++ it has no effect with a NULL message.
++ */
++ yahoo_set_jabber_presence(yd, name, 0, NULL);
++
++ break;
+default:
+log_debug(ZONE, &quot;[YAHOO]: unknown status key %d\n&quot;, pair-&gt;key);
+break;
+diff -burN --exclude=CVS --exclude='*.o' --exclude='*.so' 
+--exclude='*.gz' --exclude='*.xml' yahoo-transport-orig/yahoo-presence.c 
+yahoo-transport/yahoo-presence.c
+--- yahoo-transport-orig/yahoo-presence.c 2004-01-16 16:07:12.000000000 
+-0800
++++ yahoo-transport/yahoo-presence.c 2004-08-16 10:29:53.517937073 -0700
+@@ -27,6 +27,7 @@
+
+void yahoo_set_jabber_presence(struct yahoo_data *yd, char 
+*contact_name, int state, char *msg) {
+xmlnode x = NULL;
++ char avatar_hash[Y_AVATAR_HASH_SIZE] = &quot;&quot;;
+pool p;
+
+p = pool_new();
+@@ -36,14 +37,23 @@
+case 0: // Available
+x = jutil_presnew(JPACKET__AVAILABLE, jid_full(yd-&gt;me), msg);
+xmlnode_put_attrib(x, &quot;from&quot;, spools(p, contact_name, &quot;@&quot;, 
+yd-&gt;yi-&gt;i-&gt;id, p));
++
++ retrieve_avatar_sha_hash(avatar_hash, yd-&gt;yi-&gt;xc, spools(p, 
+contact_name, &quot;@&quot;, YAHOO_AVATAR_DOMAIN, p));
++ if (*avatar_hash != 0)
++ set_avatar_tag_info(x, avatar_hash);
++
+log_debug(ZONE, &quot;[YAHOO]: Presence for '%s' = available&quot;, xmlnode2str(x));
+break;
+
+-
+case 1: // Away
+x = jutil_presnew(JPACKET__AVAILABLE, jid_full(yd-&gt;me), msg);
+xmlnode_put_attrib(x, &quot;from&quot;, spools(p, contact_name, &quot;@&quot;, 
+yd-&gt;yi-&gt;i-&gt;id, p));
+xmlnode_insert_cdata(xmlnode_insert_tag(x,&quot;show&quot;), &quot;away&quot;, -1);
++
++ retrieve_avatar_sha_hash(avatar_hash, yd-&gt;yi-&gt;xc, spools(p, 
+contact_name, &quot;@&quot;, YAHOO_AVATAR_DOMAIN, p));
++ if (*avatar_hash != 0)
++ set_avatar_tag_info(x, avatar_hash);
++
+log_debug(ZONE, &quot;[YAHOO]: Presence for '%s' = away&quot;, xmlnode2str(x));
+break;
+
+diff -burN --exclude=CVS --exclude='*.o' --exclude='*.so' 
+--exclude='*.gz' --exclude='*.xml' yahoo-transport-orig/yahoo-server.c 
+yahoo-transport/yahoo-server.c
+--- yahoo-transport-orig/yahoo-server.c 2004-07-01 12:13:29.000000000 -0700
++++ yahoo-transport/yahoo-server.c 2004-08-16 10:50:49.185937205 -0700
+@@ -238,6 +239,47 @@
+version, time, etc.
+*/
+
++ if (NSCHECK(jp-&gt;iq, NS_IQ_AVATAR)) {
++
++ /*
++ If we get a jabber:iq:avatar packet, it means someone in jabber-land
++ is asking if the jabber public storage has a particular avatar img
++ stored as base64. I have not bothered to put in a check to see if
++ the result is an empty packet, but I think that's ok. It would be
++ like answering: &quot;yes, I have no avatar.&quot;
++ */
++
++ log_notice(ZONE, &quot;[YAHOO]: I just saw a jabber:iq:avatar packet&quot;);
++ log_notice(ZONE, &quot;[YAHOO]: to user = %s, from server = %s, to server = 
+%s&quot;, jp-&gt;to-&gt;user, jp-&gt;from-&gt;server, jp-&gt;to-&gt;server);
++
++ // grab the base64-encoded image from the public storage
++ pool p = pool_new();
++ jid j = jid_new(p, spools(p, jp-&gt;to-&gt;user, &quot;@&quot;, YAHOO_AVATAR_DOMAIN, p));
++
++ log_notice(ZONE, &quot;[YAHOO]: trying to get db entry for %s&quot;, jid_full(j));
++
++ xmlnode avatar64 = xdb_get(yi-&gt;xc, j, &quot;yahootrans:base64&quot;);
++
++ log_notice(ZONE, &quot;[YAHOO]: picked up this xdb name: %s&quot;, 
+xmlnode_get_name(avatar64));
++
++log_notice(ZONE, &quot;[YAHOO]: picked up this avatar:\n%s\n&quot;, 
+xmlnode_get_data(avatar64));
++
++ jutil_iqresult(jp-&gt;x);
++ jpacket_reset(jp);
++ query = xmlnode_insert_tag(jp-&gt;x, &quot;query&quot;);
++ xmlnode_put_attrib(query, &quot;xmlns&quot;, NS_IQ_AVATAR);
++ xmlnode adata = xmlnode_insert_tag(query, &quot;data&quot;);
++ xmlnode_put_attrib(adata, &quot;mimetype&quot;, &quot;image/png&quot;); // yahoo avatar 
+imgs are PNGs
++ xmlnode_insert_cdata(adata, xmlnode_get_data(avatar64), -1);
++
++ yahoo_deliver(NULL,jp-&gt;x);
++
++ xmlnode_free(avatar64);
++ pool_free(p);
++
++ return;
++ }
++
+if (NSCHECK(jp-&gt;iq, NS_STATS)) {
+yahoo_stats(jp);
+return;
+diff -burN --exclude=CVS --exclude='*.o' --exclude='*.so' 
+--exclude='*.gz' --exclude='*.xml' 
+yahoo-transport-orig/yahoo-transport.h yahoo-transport/yahoo-transport.h
+--- yahoo-transport-orig/yahoo-transport.h 2004-07-01 09:06:34.000000000 
+-0700
++++ yahoo-transport/yahoo-transport.h 2004-08-16 10:31:24.796937932 -0700
+@@ -37,6 +37,28 @@
+#include &lt;glib.h&gt;
+#include &quot;md5.h&quot;
+
++
++// Avatar stuff
++
++// this is the domain used for the jabber server public storage
++#define YAHOO_AVATAR_DOMAIN &quot;yahoo.com&quot;
++
++#define Y_AVATAR_HASH_SIZE 64
++#define Y_AVATAR_B64_SIZE 16*1024
++#define NS_IQ_AVATAR &quot;jabber:iq:avatar&quot;
++#define NS_X_AVATAR &quot;jabber:x:avatar&quot;
++#define YAHOO_URL_PRE &quot;img1.avatar.vip.dcn.yahoo.com/users/&quot;
++#define YAHOO_URL_POST &quot;.medium.png&quot;
++
++// hex sha library
++#include &quot;sha.h&quot;
++
++// http library to fetch avatars from yahoo
++#include &lt;http_fetcher.h&gt;
++
++//
++
++
+#ifdef _JCOMP
+#define YAHOO_VERSION &quot;2.3.2-JCR&quot;
+
+#else
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="049217.html">[jdev] Re: Driving/Routing directions via XMPP
+</A></li>
+	<LI>Next message: <A HREF="049219.html">[jdev] another concept of ICQ transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#49210">[ date ]</a>
+              <a href="thread.html#49210">[ thread ]</a>
+              <a href="subject.html#49210">[ subject ]</a>
+              <a href="author.html#49210">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

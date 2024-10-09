@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Packets not sent from server
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Packets%20not%20sent%20from%20server&In-Reply-To=%3C3B149C8F.28816714%40ago.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="037436.html">
+   <LINK REL="Next"  HREF="037413.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Packets not sent from server</H1>
+    <B>Gerard BUNEL</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Packets%20not%20sent%20from%20server&In-Reply-To=%3C3B149C8F.28816714%40ago.fr%3E"
+       TITLE="[JDEV] Packets not sent from server">gerard.bunel at ago.fr
+       </A><BR>
+    <I>Wed May 30 02:09:03 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="037436.html">[JDEV] Packets not sent from server
+</A></li>
+        <LI>Next message: <A HREF="037413.html">[JDEV] Dynamic Forms???
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37458">[ date ]</a>
+              <a href="thread.html#37458">[ thread ]</a>
+              <a href="subject.html#37458">[ subject ]</a>
+              <a href="author.html#37458">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I've no access to the CVS server
+
+Could you send me the corrected files ?
+
+Schuyler Heath a &#233;crit :
+
+&gt;<i> Hello,
+</I>&gt;<i>
+</I>&gt;<i> Yes, your analysis is correct.  The xdb_get() blocks the thread
+</I>&gt;<i> which the packet was delivered from, in this case the main MIO
+</I>&gt;<i> thread used by pthsock.  Since base_accept also uses MIO, the packet
+</I>&gt;<i> delivered to it is never written until the request expires and the
+</I>&gt;<i> thread is unblocked.  I'll get a fix into CVS in a few hours.
+</I>&gt;<i>
+</I>&gt;<i> Because auth is done by another component, JSM never &quot;learns&quot; anything
+</I>&gt;<i> about the user prior to the session start after auth.  It doesn't even
+</I>&gt;<i> know the user name actually exists.
+</I>&gt;<i>
+</I>&gt;<i> The jabber:iq:auth xdb_get() is done to make sure the user exists, since
+</I>&gt;<i> all valid users should have jabber:iq:auth set.  JSM doesn't actually
+</I>&gt;<i> check the
+</I>&gt;<i> result, just that there was indeed data returned.  It will do this
+</I>&gt;<i> xdb_get()
+</I>&gt;<i> when ever it receives a packet to a user without a session or a
+</I>&gt;<i> previously
+</I>&gt;<i> cached result(before storing offline messages, for example).
+</I>&gt;<i>
+</I>&gt;<i> When auth is handled by JSM, it still does the jabber:iq:auth request,
+</I>&gt;<i> just in another
+</I>&gt;<i> thread.  The result is cached, so the xdb_get() which is blocking MIO
+</I>&gt;<i> when the session
+</I>&gt;<i> starts is rarely called.
+</I>&gt;<i>
+</I>&gt;<i> Schuyler
+</I>&gt;<i>
+</I>&gt;<i> On Tue, May 29, 2001 at 04:43:36PM +0200, Gerard BUNEL wrote:
+</I>&gt;<i> &gt; After a few analyze of what happens:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; It seems that the thread handling the XDB requests is locked, as it
+</I>&gt;<i> can be seen in the logs, there are 3 attempts to deliver to
+</I>&gt;<i> &gt; the instance, and so 3calls to mio_write. But this calls are not
+</I>&gt;<i> followed by the _mio_write_dump
+</I>&gt;<i> &gt; These one occurs after a probable timeout.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Does anyone ever encountered this problem ?
+</I>&gt;<i> &gt; Is there a solution ?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Mon May 28 15:54:16 2001  deliver.c:649 delivering to instance
+</I>&gt;<i> &gt; 'xdb_test'
+</I>&gt;<i> &gt; Mon May 28 15:54:16 2001  mio.c:908 mio_write called on x: 8377CD0
+</I>&gt;<i> &gt; buffer: (null)
+</I>&gt;<i> &gt; Mon May 28 15:54:16 2001  xdb.c:201 xdb_get() waiting for
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gbunel at cezon.ago.fr</A> jabber:iq:auth
+</I>&gt;<i> &gt; Mon May 28 15:54:27 2001  deliver.c:460 DELIVER 2:cezon.ago.fr &lt;xdb
+</I>&gt;<i> &gt; type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gbunel at cezon.ago.fr</A>' from='sessions'
+</I>&gt;<i> ns='jabber:iq:auth'
+</I>&gt;<i> &gt; id='1'/&gt;
+</I>&gt;<i> &gt; Mon May 28 15:54:27 2001  deliver.c:649 delivering to instance
+</I>&gt;<i> &gt; 'xdb_test'
+</I>&gt;<i> &gt; Mon May 28 15:54:27 2001  mio.c:908 mio_write called on x: 83731F0
+</I>&gt;<i> &gt; buffer: (null)
+</I>&gt;<i> &gt; Mon May 28 15:54:38 2001  deliver.c:460 DELIVER 2:cezon.ago.fr &lt;xdb
+</I>&gt;<i> &gt; type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gbunel at cezon.ago.fr</A>' from='sessions'
+</I>&gt;<i> ns='jabber:iq:auth'
+</I>&gt;<i> &gt; id='1'/&gt;
+</I>&gt;<i> &gt; Mon May 28 15:54:38 2001  deliver.c:649 delivering to instance
+</I>&gt;<i> &gt; 'xdb_test'
+</I>&gt;<i> &gt; Mon May 28 15:54:38 2001  mio.c:908 mio_write called on x: 8373A48
+</I>&gt;<i> &gt; buffer: (null)
+</I>&gt;<i> &gt; Mon May 28 15:54:49 2001  xdb.c:206 xdb_get() done waiting for
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gbunel at cezon.ago.fr</A> jabber:iq:auth
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; --
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gerard.bunel at ago.fr</A> - Atlantide - <A HREF="http://www.ago.fr/atlantide/">http://www.ago.fr/atlantide/</A>
+</I>&gt;<i> &gt; Technopole Brest Iroise BP 80802 - Site du Vernis - 29608 Brest cedex
+</I>&gt;<i> - France
+</I>&gt;<i> &gt; Tel. : +33 2 98 05 43 21 - Fax. : +33 2 98 05 20 34
+</I>&gt;<i> &gt; e-mail: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">atlantide-brest at ago.fr</A>
+</I>&gt;<i> &gt; Centre Affaires Oberthur - 74D, rue de Paris -  35700 Rennes - France
+</I>&gt;<i> &gt; Tel. : +33 2 99 84 15 84 - Fax : +33 2 99 84 15 85
+</I>&gt;<i> &gt; e-mail: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">atlantide-rennes at ago.fr</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>
+--
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gerard.bunel at ago.fr</A> - Atlantide - <A HREF="http://www.ago.fr/atlantide/">http://www.ago.fr/atlantide/</A>
+Technopole Brest Iroise BP 80802 - Site du Vernis - 29608 Brest cedex -
+France
+Tel. : +33 2 98 05 43 21 - Fax. : +33 2 98 05 20 34
+e-mail: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">atlantide-brest at ago.fr</A>
+Centre Affaires Oberthur - 74D, rue de Paris -  35700 Rennes - France
+Tel. : +33 2 99 84 15 84 - Fax : +33 2 99 84 15 85
+e-mail: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">atlantide-rennes at ago.fr</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="037436.html">[JDEV] Packets not sent from server
+</A></li>
+	<LI>Next message: <A HREF="037413.html">[JDEV] Dynamic Forms???
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37458">[ date ]</a>
+              <a href="thread.html#37458">[ thread ]</a>
+              <a href="subject.html#37458">[ subject ]</a>
+              <a href="author.html#37458">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

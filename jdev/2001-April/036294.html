@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Buddy icons &amp; File Transfer
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Buddy%20icons%20%26%20File%20Transfer&In-Reply-To=%3CFF2AF4D762A0D3119E86009027C39A06078AF2CF%40sea-ex0.starwave.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="036288.html">
+   <LINK REL="Next"  HREF="036296.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Buddy icons &amp; File Transfer</H1>
+    <B>Robert Temple</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Buddy%20icons%20%26%20File%20Transfer&In-Reply-To=%3CFF2AF4D762A0D3119E86009027C39A06078AF2CF%40sea-ex0.starwave.com%3E"
+       TITLE="[JDEV] Buddy icons &amp; File Transfer">robert.temple at dig.com
+       </A><BR>
+    <I>Sat Apr  7 00:21:28 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="036288.html">[JDEV] Jabber Open Source Project Survey
+</A></li>
+        <LI>Next message: <A HREF="036296.html">[JDEV] Buddy icons &amp; File Transfer
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36294">[ date ]</a>
+              <a href="thread.html#36294">[ thread ]</a>
+              <a href="subject.html#36294">[ subject ]</a>
+              <a href="author.html#36294">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I think the iq:oob is the right place for this.  I've devised a fairly
+simple way to ensure that the person making the connection is the 
+appropriate person.  I've explained it a few times on this mailing list,
+I can explain it again if necessary.
+
+About the firewall issue.  I haven't spent any time on this issue yet, 
+if there is a firewall between the sending and the recipient, then I 
+just show an error message. I know that some people and some other IM
+clients use temporary disk web server to store stuff.  Something about
+WebDav.  When I do get around to solving this, I don't think this is
+how I'll solve the firewall problem.  I'm thinking that managing the
+lifetime of others files and making sure their secure will be too
+difficult.
+
+Instead, I think I'll just build another mini-web server or maybe an
+NSAPI or ISAPI DLL that both senders and recipients will connect to
+simultaneously to send a file.  When the sender decides to send a file,
+the client will first connect to this server and do a post that tells
+this web server that it wants to send a file.  This web server will 
+respond with a unique URL that the client will use to give to the
+recipient.   The client will remain connected to this web server, and
+then send a iq:oob to the recipient, with the corresponding URL.  The
+recipient client will then connect to that web server and do a GET
+on that URI.  Once the recipient is connected, then he will send an
+iq:oob result back to the sending client.  When the sending client gets
+this, it will start pushing the file to the web server.  Once its done,
+it will close up the connection.   The web server will pipe the data
+it gets from the post back to the recipient's connection.  The recipient
+will GET the file and everyone is happy.
+
+How does this sound?
+
+-Robert
+
+-----Original Message-----
+From: Jens Alfke [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jens at mooseyard.com</A>]
+Sent: Monday, March 26, 2001 11:00 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] Q: Buddy icons?
+
+
+Thomas Muldowney &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">temas at box5.net</A>&gt; wrote:
+
+&gt;<i> This seems as if it could be implemented with a iq:oob style namespace.
+</I>
+Maybe, but since a typical buddy icon will be a 32x32 pixel image, which
+will be ~2k bytes in size as a GIF/JPEG/PNG, I don't really think it's worth
+the overhead of opening up a separate oob connection for it.
+
+(Also, I'm not convinced based on what I've read that oob is ready for prime
+time. Direct client-client communication won't work through firewalls or
+NAT, which means I personally can't use it either at work or at home. It
+also implies giving out your IP address, which some people are loath to do
+for security reasons. I'm also unclear on how you manage access control: how
+do you know that the person making an HTTP connection to you is the person
+you sent the IM to?)
+
+Eliot Landrum wrote:
+
+&gt;<i> vCard supports this type of stuff.. would that be an appropriate place
+</I>&gt;<i> to put it?
+</I>
+You're right, I hadn't thought of that. I think the vCard element is called
+PHOTO. So a standard &lt;iq&gt; request with a &lt;vcard&gt; element would work to get
+this.
+
+The drawback is that this kind of assumes the picture is fixed forever;
+otherwise some kind of polling (even if only once per login) is necessary,
+since there's no notification if it ever changes. Why might it change? To
+daydream, let's say I want my client to allow my icon to change when my
+status does: my &quot;do not disturb&quot; icon might be a picture of me with an open
+copy of &quot;BSD For Dummies&quot; held in front of my face. :) Or the picture for
+the canonical online coffee maker might be an icon of a coffee pot with the
+current degree of fullness.
+
+One possibility to enable this is to send the icon [or just an indication
+that it's changed] as part of a state change, i.e. some new sub-element of
+&lt;presence&gt;. This allows the icon to change dynamically for any reason,
+without requiring watchers to poll. The sub-element could be
+&lt;photo&gt;...&lt;/photo&gt; with ~2k of raw CDATA in between, or a simple
+&lt;photo-changed/&gt; with no content.
+
+The drawback of this is that I'm guessing it requires server modifications
+to store the image, unless the server just slurps up the entire &lt;presence&gt;
+element and will relay any kind of sub-elements to watchers without
+interpreting them?
+
+--Jens
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="036288.html">[JDEV] Jabber Open Source Project Survey
+</A></li>
+	<LI>Next message: <A HREF="036296.html">[JDEV] Buddy icons &amp; File Transfer
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36294">[ date ]</a>
+              <a href="thread.html#36294">[ thread ]</a>
+              <a href="subject.html#36294">[ subject ]</a>
+              <a href="author.html#36294">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

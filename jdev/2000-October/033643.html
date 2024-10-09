@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] ambiguous libxode/j_strcat()
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20ambiguous%20libxode/j_strcat%28%29&In-Reply-To=%3C39F55413.7EE8112%40idealx.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="033635.html">
+   <LINK REL="Next"  HREF="033636.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] ambiguous libxode/j_strcat()</H1>
+    <B>David Le Corfec</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20ambiguous%20libxode/j_strcat%28%29&In-Reply-To=%3C39F55413.7EE8112%40idealx.com%3E"
+       TITLE="[JDEV] ambiguous libxode/j_strcat()">david.le-corfec at idealx.com
+       </A><BR>
+    <I>Tue Oct 24 04:19:15 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="033635.html">[JDEV] ambiguous libxode/j_strcat()
+</A></li>
+        <LI>Next message: <A HREF="033636.html">[JDEV] Looking for Darin Ferraro from KunaniIM (KIM): How can he be reached?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33643">[ date ]</a>
+              <a href="thread.html#33643">[ thread ]</a>
+              <a href="subject.html#33643">[ subject ]</a>
+              <a href="author.html#33643">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Gurer Ozen wrote:
+
+&gt;<i> if(j_strcmp(xmlnode_get_attrib(x, &quot;type&quot;), &quot;groupchat&quot;) == 0) ...
+</I>&gt;<i> 
+</I>&gt;<i> NULL safe functions make it possible to chain those small functions.
+</I>&gt;<i> So even if there is no &quot;type&quot; attribute, if() check works correctly.
+</I>
+Ah ! I see ! I was confused by the name, j_strcmp().
+It's not used as a comparator (lt, eq, gt) like strcmp,
+but return whether strings are equal or not.
+Yes, j_strcmp() is very handy when dealing with xml, but
+adding specialized check functions would be cleaner and safer.
+
+What about :
+if (xmlnode_check_attrib_value(x, &quot;type&quot;, &quot;groupchat&quot;)) ...
+
+(with NULL check on every parameter)
+
+
+Another one :
+if (j_strcmp(xmlnode_get_name(cur), &quot;settype&quot;)==0) ...
+
+=&gt; if (xmlnode_check_name_value(cur, &quot;settype&quot;)) ...
+
+Isn't it a bit more human-readable ?
+
+
+However, you could say that it tends to be less efficient:
+
+type = xmlnode_get_tag_data(cur, &quot;type&quot;);
+if (j_strcmp(type, &quot;session&quot;) == 0) ...
+else if (j_strcmp(type, &quot;packet&quot;) == 0) ...
+
+=&gt; if (xmlnode_check_tag_data(cur, &quot;type&quot;, &quot;session&quot;)) ...
+   else if (xmlnode_check_tag_data(cur, &quot;type&quot;, &quot;packet&quot;)) ...
+
+Here you would do two xmlnode_get_tag_data(cur, &quot;type&quot;) instead
+of one, but IMHO such optimization is not worth the clarity
+(give me a T3 first :)
+
+
+I just hope that j_strcmp() isn't used where a real comparator
+is expected. Or when one of the string is NULL where it *really*
+shouldn't.
+
+-- 
+David Le Corfec
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="033635.html">[JDEV] ambiguous libxode/j_strcat()
+</A></li>
+	<LI>Next message: <A HREF="033636.html">[JDEV] Looking for Darin Ferraro from KunaniIM (KIM): How can he be reached?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33643">[ date ]</a>
+              <a href="thread.html#33643">[ thread ]</a>
+              <a href="subject.html#33643">[ subject ]</a>
+              <a href="author.html#33643">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

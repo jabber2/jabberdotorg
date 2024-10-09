@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber in a kiosk environment
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20in%20a%20kiosk%20environment&In-Reply-To=%3C5.1.0.14.2.20011126082128.00a85b30%40pop.ne.mediaone.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039513.html">
+   <LINK REL="Next"  HREF="039562.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber in a kiosk environment</H1>
+    <B>Oliver Jones</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20in%20a%20kiosk%20environment&In-Reply-To=%3C5.1.0.14.2.20011126082128.00a85b30%40pop.ne.mediaone.net%3E"
+       TITLE="[JDEV] Jabber in a kiosk environment">oj at world.std.com
+       </A><BR>
+    <I>Mon Nov 26 07:32:00 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039513.html">[JDEV] Jabber in a kiosk environment
+</A></li>
+        <LI>Next message: <A HREF="039562.html">[JDEV] Jabber in a kiosk environment
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39530">[ date ]</a>
+              <a href="thread.html#39530">[ thread ]</a>
+              <a href="subject.html#39530">[ subject ]</a>
+              <a href="author.html#39530">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>At 02:15 PM 11/22/01 +0100, Jan Peter Hecking wrote:
+
+
+&gt;<i>I therefore need to
+</I>&gt;<i>implement a solution that removes unused accounts after a certain amount
+</I>&gt;<i>of time (like a few days initially).
+</I>
+We do this.  We use the file-system scheme for storing user.xml 
+files.  There's a cron script on the jabberd server that removes user.xml 
+files that have gone unmodified for more than 20 days:
+
+     /usr/bin/find /var/...jspool/jabber.dmn.com -type f  -mtime +20  -exec 
+rm -f {} \;
+
+Our jabberd is configured to refrain from caching these files internally, 
+with a stanza in the configuration file like so.  This is important because 
+otherwise removing the files from the file system will baffle the cache 
+subsystem.  It doesn't seem to hurt performance measurably to disable caching.
+
+   &lt;!-- This component handles all data storage, using the filesystem. --&gt;
+   &lt;xdb id=&quot;xdb&quot;&gt;
+     &lt;host/&gt;
+     &lt;load&gt;&lt;xdb_file&gt;/usr/local/jabber/bin/xdb_file.so&lt;/xdb_file&gt;&lt;/load&gt;
+     &lt;xdb_file xmlns=&quot;jabber:config:xdb_file&quot;&gt;
+       &lt;spool&gt;&lt;jabberd:cmdline 
+flag=&quot;s&quot;&gt;/var/...jspool&lt;/jabberd:cmdline&gt;&lt;/spool&gt;
+       &lt;timeout&gt;0&lt;/timeout&gt;
+     &lt;/xdb_file&gt;
+   &lt;/xdb&gt;
+
+
+This seems to work flawlessly -- we've had this up and running for six months.
+
+&gt;<i>1) Is it possible for a jabber server component (implemented using
+</I>&gt;<i>    Net::Jabber) to delete an existing user account? How to do this?
+</I>
+Removing the user.xml file seems to do the trick, if you have access to the 
+jabber server's file system.
+
+&gt;<i>2) Can this module determine when a user account was used the last time?
+</I>
+File system modification time on the file is accurate as to when the 
+account either most-recently logged in or out, or when another user sent 
+the account a message when the account was not logged in.
+
+Ollie Jones
+Digital Music Network
+<A HREF="http://www.dmn.com">http://www.dmn.com</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039513.html">[JDEV] Jabber in a kiosk environment
+</A></li>
+	<LI>Next message: <A HREF="039562.html">[JDEV] Jabber in a kiosk environment
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39530">[ date ]</a>
+              <a href="thread.html#39530">[ thread ]</a>
+              <a href="subject.html#39530">[ subject ]</a>
+              <a href="author.html#39530">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

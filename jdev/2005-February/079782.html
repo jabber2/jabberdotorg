@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] SOCKS5 Bytestream File Transfer problem
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SOCKS5%20Bytestream%20File%20Transfer%20problem&In-Reply-To=%3Cd55e29bf05022504456605eaea%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="079783.html">
+   <LINK REL="Next"  HREF="079784.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] SOCKS5 Bytestream File Transfer problem</H1>
+    <B>Anthony Ortiz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SOCKS5%20Bytestream%20File%20Transfer%20problem&In-Reply-To=%3Cd55e29bf05022504456605eaea%40mail.gmail.com%3E"
+       TITLE="[jdev] SOCKS5 Bytestream File Transfer problem">anthonypaulo at gmail.com
+       </A><BR>
+    <I>Fri Feb 25 06:45:14 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="079783.html">[jdev] ByteStream Out-Band SOCKS5 problem... SHA1 Host not found
+</A></li>
+        <LI>Next message: <A HREF="079784.html">[jdev] Re: SOCKS5 Bytestream File Transfer problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79782">[ date ]</a>
+              <a href="thread.html#79782">[ thread ]</a>
+              <a href="subject.html#79782">[ subject ]</a>
+              <a href="author.html#79782">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Good morning everyone,
+
+Last week I decided to sit down and write a Jabber client in a Java
+applet, and I've implemented the basics so far (am able to
+digest/plain-text log in, check roster, send/process presence, and
+chat.) Now I would like to add File Transfer capabilities,
+specifically SOCKS5 Bytestreams
+(<A HREF="http://www.jabber.org/jeps/jep-0065.html">http://www.jabber.org/jeps/jep-0065.html</A>). I think I am doing
+everything right, but for some reason it keeps telling me that it is
+unable to find the (SHA1 hashed) host.
+
+I am doing all my testing on my local machine, which is running the
+JabberD server as well as acting as a web server.
+I am using a PSI client to send the file and my java applet is
+receiving. * note : props to the PSI people... good job on the client.
+*
+I am also aware that an applet can only open a socket connection to
+the webserver hosting the applets' webpage, which is why I plan on
+implementing the proxy &quot;middleman&quot; protocol later on but for now I
+just want to do a direct transfer, so I've temporarily enabled all
+socket access in my .java.policy file.
+
+This is basically what I have going on in pseudo java :
+
+* XML STREAM INFO SENT FROM PSI INITIATOR *
+&lt;iq xmlns='jabber:client' type='set' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aortiz at 68.101.84.233</A>/JClient'
+id='ab33a' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">venkata at 68.101.84.233</A>/Psi'&gt;
+   &lt;query xmlns='<A HREF="http://jabber.org/protocol/bytestreams'">http://jabber.org/protocol/bytestreams'</A> mode='tcp'
+sid='s5b_8e463861b5e6bc04'&gt;
+      &lt;streamhost xmlns='<A HREF="http://jabber.org/protocol/bytestreams'">http://jabber.org/protocol/bytestreams'</A>
+port='8010' host='192.168.1.100' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">venkata at 68.101.84.233</A>/Psi'/&gt;
+      &lt;fast xmlns='<A HREF="http://affinix.com/jabber/stream'/">http://affinix.com/jabber/stream'/</A>&gt;
+   &lt;/query&gt;
+&lt;/iq&gt;
+* END OF STREAM INFO *
+
+* CODE START*
+sid = s5b_8e463861b5e6bc04
+from = <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">venkata at 68.101.84.233</A>/Psi
+to = <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aortiz at 68.101.84.233</A>/JClient
+
+// using libidn/java/gnu/inet/encoding/Stringprep.java -- too boring
+to implement, thk god I found this!
+String SocksHost = SHA1(sid + Stringprep.nameprep(from + to)); // HASH
+OUTPUT=9134A1B74EB358B866C604B1E1B0DDEE0D664967
+
+host = 192.168.1.100 
+port = 8010 
+// using <A HREF="http://lightning.prohosting.com/~kirillka/SOCKS/SOCKSLib.html">http://lightning.prohosting.com/~kirillka/SOCKS/SOCKSLib.html</A>
+SOCKS5 library. thk god for this too!
+Proxy.setDefaultProxy(host, port);
+Socket ss = new SocksSocket(SocksHost, 0);  // &lt;-- Unknown Host Exception
+
+* CODE END *
+
+I'm sure my SHA1 algorithm works since I use it for digest
+authentication and I log in fine. Can anyone spot the problem here?
+Can someone confirm that my hash of the provided [sid + from + to] is
+correct? Can anyone provide some insight or some example code?
+
+Also, the jep--0065 is sort of vague on what should be going on here,
+especially where they say that the target MAY have to authenticate
+with the proxy. I don't understand what they mean by MAY... either you
+do or you don't is what I figure. Are there any documents out there
+that can explain this whole process in absolute detail?
+
+Thanks everyone!!
+
+Anthony
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="079783.html">[jdev] ByteStream Out-Band SOCKS5 problem... SHA1 Host not found
+</A></li>
+	<LI>Next message: <A HREF="079784.html">[jdev] Re: SOCKS5 Bytestream File Transfer problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79782">[ date ]</a>
+              <a href="thread.html#79782">[ thread ]</a>
+              <a href="subject.html#79782">[ subject ]</a>
+              <a href="author.html#79782">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

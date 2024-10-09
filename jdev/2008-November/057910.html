@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Properly filtering broadcast events
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Properly%20filtering%20broadcast%20events&In-Reply-To=%3Cecb85ef70811261052y1f9b3d01qc421e6d1114fed33%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="057909.html">
+   <LINK REL="Next"  HREF="057911.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Properly filtering broadcast events</H1>
+    <B>Bryan Morgan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Properly%20filtering%20broadcast%20events&In-Reply-To=%3Cecb85ef70811261052y1f9b3d01qc421e6d1114fed33%40mail.gmail.com%3E"
+       TITLE="[jdev] Properly filtering broadcast events">bdmorgan at gmail.com
+       </A><BR>
+    <I>Wed Nov 26 12:52:59 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="057909.html">[jdev] Owner query room
+</A></li>
+        <LI>Next message: <A HREF="057911.html">[jdev] Properly filtering broadcast events
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57910">[ date ]</a>
+              <a href="thread.html#57910">[ thread ]</a>
+              <a href="subject.html#57910">[ subject ]</a>
+              <a href="author.html#57910">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm new to XMPP but am very excited about the possibilities.  We are
+designing an application based on XMPP and want to be sure we are leveraging
+the appropriate technologies and standards in the correct places, in order
+to ensure scalability as well as future-proof the app, as much as is
+possible.  My question, at its most basic is what is the recommended
+approach for handling the following scenario:
+
+(1) Users starts session
+(2) Users submits message (via HTTP or XMTP - doesn't really matter)
+(3) Server picks up message (via asynchronous MQ or via XMPP component -
+doesn't really matter....I think)
+(4) Server needs to flexibly broadcast message out to a large number of
+users but (and this is key) this list of users needs to be dynamically
+filtered
+
+I originally was hoping PubSub would work but that seems to rely on a fixed
+node with a fixed set of subscribers.  In my scenario, I may have fixed
+nodes but I don't want to push a message out to all subscribers - just a
+dynamically chosen subset of those (based on some filter parameters).  Some
+options I've considered include:
+
+* Pushing out the messages to all members of the node and letting a custom
+XMPP client filter them.  This makes the server simple but results in
+possibly many messages being sent to many &quot;receiving&quot; clients when a subset
+would have worked.  Considering there may also be a large volume of
+user-submitted messages coming in to trigger this, minimizing the number of
+outbound messages is critical from a scalability standpoint.
+
+* Not sure if this is possible but in the routing chain could we build a
+component that would intercept the pubsub messages and apply the filtering
+there?  Not sure if it's possible to do this generally for &quot;all broadcast
+recipients&quot; or if the code would have to be called once for every message
+recipient which would then again kill performance/scalability as the load
+grows.
+
+* The inbound item picked up off the queue could also be used to determine
+the list of valid recipients, and then.....I assume....loop through them one
+at a time and send them individiual messages??  Again, seems to work at a
+small scale but maybe not at a large scale?  Is there a way to build a
+dynamic list of users and have XMPP send messages to that list?  Are there
+practical limitations on handling the size of this list or are there
+&quot;sharding&quot; approaches for big XMPP broadcasts like this?
+
+Any advice or lessons learned by XMPP veterans would be greatly
+appreciated.  I apologize in advance for the lengthy message.
+
+Thanks!
+
+Bryan Morgan
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20081126/00a06c35/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20081126/00a06c35/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="057909.html">[jdev] Owner query room
+</A></li>
+	<LI>Next message: <A HREF="057911.html">[jdev] Properly filtering broadcast events
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57910">[ date ]</a>
+              <a href="thread.html#57910">[ thread ]</a>
+              <a href="subject.html#57910">[ subject ]</a>
+              <a href="author.html#57910">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

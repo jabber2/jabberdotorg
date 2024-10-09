@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Financial messaging via XMPP
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Financial%20messaging%20via%20XMPP&In-Reply-To=%3C19909.1201278006.364465%40peirce.dave.cridland.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="056278.html">
+   <LINK REL="Next"  HREF="056281.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Financial messaging via XMPP</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Financial%20messaging%20via%20XMPP&In-Reply-To=%3C19909.1201278006.364465%40peirce.dave.cridland.net%3E"
+       TITLE="[jdev] Financial messaging via XMPP">dave at cridland.net
+       </A><BR>
+    <I>Fri Jan 25 10:20:06 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="056278.html">[jdev] Financial messaging via XMPP
+</A></li>
+        <LI>Next message: <A HREF="056281.html">[jdev] Financial messaging via XMPP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#56280">[ date ]</a>
+              <a href="thread.html#56280">[ thread ]</a>
+              <a href="subject.html#56280">[ subject ]</a>
+              <a href="author.html#56280">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I was going to wade in on this one sooner, but I wanted to read the  
+AMQP specification first. It strikes me that the bulk of the  
+specification actually maps onto XML (and, by inference, XMPP) quite  
+well, so I'm a little surprised by the conclusion you draw.
+
+I apologise for answering points that are already answered by other  
+people - I've seen Maciek's reply but left my similar comments in -  
+and I apologise if I've got bits of AMQP wrong - I've spent not much  
+more than an hour learning it.
+
+On Fri Jan 25 15:02:32 2008, Martin Sustrik wrote:
+&gt;<i> 1. XMPP can be used for sending opaque messages, however, there are  
+</I>&gt;<i> several limitations:
+</I>&gt;<i> 2. Binary content has to be translated into Base64, adding 1/3 of  
+</I>&gt;<i> overhead to message size
+</I>
+Not really - assuming the binary message is incompressible to begin  
+with, the base64 encoding is recovered through compression - XMPP  
+gives you this both by XEP-0138 and by TLS. On the assumption that  
+you care about bandwidth, you'll have compression on, and your  
+messages will be compressed anyway. Equally, they'll potentially be  
+end-to-end encrypted, too.
+
+Rather oddly, AMQP contains nothing about either compression nor  
+encryption. I'd have thought the latter would be important in  
+financials. (Oh, and that SASL profile is incomplete - SASL can  
+negotiate encryption too, but there's no indication of where this  
+might kick in, nor any MTI mechanisms).
+
+
+&gt;<i> 3. There's no way to do zero-copy as the message has to be  
+</I>&gt;<i> translated on both ends of the connection
+</I>
+Sure. But then again, a lot of the data in AMQP needs to be copied  
+anyway to circumvent alignment issues, handle buffering, queuing,  
+etc. Unless you're sending really big chunks of longstr data about,  
+the impact is likely to be low - and even if you are, it's just one  
+more codec.
+
+For servers, where this would be the highest impact, it seems very  
+unlikely that any data is going to be examined anyway - servers look  
+at routing keys and topics, and more or less leave everything else  
+untouched, so it'd seem reasonable to stick topics and routing keys  
+in XML, and then leave the message payload as a blob.
+
+All this assumes that the messages can't be formatted as XML, of  
+course.
+
+
+&gt;<i> 4. All the messages have to be acknowledged. No no-acknowledge mode  
+</I>&gt;<i> exists.
+</I>
+&lt;message/&gt; is unacknowledged, &lt;iq/&gt; is acknowledged.
+
+(To put it another way, &lt;iq/&gt; are like your Request/Response frames.)
+
+
+&gt;<i> 5. There's no batch acknowledge functionality (acknowledging  
+</I>&gt;<i> sequence of messages using single acknowledge).
+</I>
+Depends what you mean by this. If you use &lt;iq/&gt;, then no, but then  
+again, these can be acknowledged end-to-end out of order, just as  
+Request/Response frames do in AMQP.
+
+If you mean across a connection, then look at XEP-0198, which  
+provides precisely this, as well as several other useful features for  
+reliability. (And much better than AMQP's heartbeat frames, too, IMO).
+
+
+&gt;<i> 6. Pipelining of acknowledges is allowed, but discouraged. (&quot;The  
+</I>&gt;<i> sender need not wait for these acknowledgements before sending  
+</I>&gt;<i> further stanzas. However, it is RECOMMENDED that the sender does  
+</I>&gt;<i> wait in order to minimize possible rate-limiting penalties.&quot;)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>That's a RECOMMENDED - a SHOULD not a MUST - and only for  
+bytestreams. If you're sending &lt;message/&gt; stanzas with binary  
+content, there's no need to concern yourself with whether the  
+endpoint is acknowledging, since it won't be. Worth noting that  
+bytestreams are for arbitrary length data - while AMQP does in  
+principle allow frames of several G (assuming they're made up of  
+multiple longstrs, for example), I'm under the impression that  
+individual frames tend to be relatively small, and would map to a  
+single XMPP stanza.
+
+I'd suggest sitting down and examining RFC3920bis, and familiarizing  
+yourself with the general concepts. XMPP will not be as efficient as  
+AMQP, but the difference need not be huge. On the other hand, the  
+potential gains coming from using XMPP are very great indeed, giving  
+you improvements in security and multiple sites to name but two.
+
+I hope this helps.
+
+Dave.
+-- 
+Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at jabber.org</A>
+  - <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+  - <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="056278.html">[jdev] Financial messaging via XMPP
+</A></li>
+	<LI>Next message: <A HREF="056281.html">[jdev] Financial messaging via XMPP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#56280">[ date ]</a>
+              <a href="thread.html#56280">[ thread ]</a>
+              <a href="subject.html#56280">[ subject ]</a>
+              <a href="author.html#56280">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

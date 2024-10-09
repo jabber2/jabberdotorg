@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] libjabber, libxode, Jabber standards, etc.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20libjabber%2C%20libxode%2C%20Jabber%20standards%2C%20etc.&In-Reply-To=20020627133325.4DF4C4320%40jimsun.LinxNet.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="013225.html">
+   <LINK REL="Next"  HREF="013227.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] libjabber, libxode, Jabber standards, etc.</H1>
+    <B>Robert Norris</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20libjabber%2C%20libxode%2C%20Jabber%20standards%2C%20etc.&In-Reply-To=20020627133325.4DF4C4320%40jimsun.LinxNet.com"
+       TITLE="[JDEV] libjabber, libxode, Jabber standards, etc.">rob at cataclysm.cx
+       </A><BR>
+    <I>Thu Jun 27 19:08:57 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="013225.html">[JDEV] libjabber, libxode, Jabber standards, etc.
+</A></li>
+        <LI>Next message: <A HREF="013227.html">[JDEV] libjabber, libxode, Jabber standards, etc.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13242">[ date ]</a>
+              <a href="thread.html#13242">[ thread ]</a>
+              <a href="subject.html#13242">[ subject ]</a>
+              <a href="author.html#13242">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> In an earlier post to this mailing list (Subject: [JDEV] libjabber
+</I>&gt;<i> maintainers?) I asked whom is responsible for libjabber maintenance
+</I>&gt;<i> and development, that I might request a slight change.  No answer.
+</I>&gt;<i> Looking about (Google, etc.) I find &quot;libjabber&quot; stashed in
+</I>&gt;<i> directories named things like &quot;archive(s),&quot; &quot;old,&quot; etc.  Is libjabber
+</I>&gt;<i> dead?  I suppose that would explain why I received no answer.  (The
+</I>&gt;<i> folks listed in AUTHORS.libjabber didn't reply to my query, either.)
+</I>
+As far as I understand it, libjabber is effectively the contents of
+jabberd/lib in the jabberd server distribution. libjabber as a seperate
+project has not been maintained for a long time, but jabberd/lib is
+looked after as part of the normal 1.4 maintenance.
+
+(Whether or not that means it has changed substantially, I don't know).
+
+&gt;<i> Next it came to our attention that somebody has split-out the libxode
+</I>&gt;<i> bits and created an independent libxode (Ref:
+</I>&gt;<i> <A HREF="http://libxode.sourceforge.net/">http://libxode.sourceforge.net/</A>).  Assuming that libjabber lives, do
+</I>&gt;<i> its maintainers plan to re-do it to use the new, independent libxode?
+</I>&gt;<i> Or will there continue to be two of these?  Duplicated effort?
+</I>
+Looking at this, it seems it hasn't been touched in a long time. To my
+knowledge, libxode won't be merged into the jabberd 1.4 codebase because
+xmlnode's aren't being used anymore in the 1.5 development. We felt that
+they are too heavy for the kind of work we need them for.
+
+Jer has implemented a lightweight DOM-like interface for 1.5 called
+&quot;nad&quot; (Not a DOM) which, based on testing, appears to operate at least
+ten times faster that xmlnodes. Based on my experience with it, its very
+light XML editing features are more than enough - you may like to check
+it out:
+
+  <A HREF="http://jabberstudio.org/cgi-bin/viewcvs.cgi/jabberd/jadc2s/util/nad.c">http://jabberstudio.org/cgi-bin/viewcvs.cgi/jabberd/jadc2s/util/nad.c</A>
+
+And some uses (constructing fragments both programatically and from
+expat callbacks):
+
+  <A HREF="http://jabberstudio.org/cgi-bin/viewcvs.cgi/jabberd/jadc2s/authreg.c">http://jabberstudio.org/cgi-bin/viewcvs.cgi/jabberd/jadc2s/authreg.c</A>
+  <A HREF="http://jabberstudio.org/cgi-bin/viewcvs.cgi/jabberd/jadc2s/util/config.c">http://jabberstudio.org/cgi-bin/viewcvs.cgi/jabberd/jadc2s/util/config.c</A>
+
+&gt;<i> The above issues become important for many reasons, not the least of
+</I>&gt;<i> which is the Gaim project is looking to re-doing config files, etc.
+</I>&gt;<i> in XML.  So we're looking to move the XML bits of libjabber from the
+</I>&gt;<i> Jabber plugin part of the source tree into the main-line code parts.
+</I>
+xmlnodes (and thus libxode) are quite capable and do perform well - the
+1.4 server is based on them, after all! Moving it into your main code
+and using it more extensively should not cause problems.
+
+&gt;<i> Then I discovered there's a disparity between jid.c:jid_safe() and
+</I>&gt;<i> the Jabber IETF specs.  jid_safe() limits the &quot;username&quot; part of a
+</I>&gt;<i> JID to alpha-num, &quot;.&quot;, &quot;-&quot; and &quot;_&quot;, whereas the IETF Draft document
+</I>&gt;<i> says that &quot;node identifiers&quot; can consist of anything *but*
+</I>&gt;<i> double-quote, &quot;&amp;&quot;, single-quote, &quot;:&quot;, &quot;&lt;&quot;, &quot;&gt;&quot; and &quot;@&quot;.  (Ref:
+</I>&gt;<i> <A HREF="http://www.jabber.org/ietf/draft-miller-jabber-00.html#entity-node">http://www.jabber.org/ietf/draft-miller-jabber-00.html#entity-node</A>)
+</I>
+The IETF spec is authorative. jid_* is on the todo list for reworking in
+1.5 anyway, so I expect this sort of thing will be addressed there.
+
+Rob.
+
+-- 
+Robert Norris                                       GPG: 1024D/FC18E6C2
+Email+Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rob at cataclysm.cx</A>                Web: <A HREF="http://cataclysm.cx/">http://cataclysm.cx/</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20020628/96b6e77c/attachment.pgp">https://www.jabber.org/jdev/attachments/20020628/96b6e77c/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="013225.html">[JDEV] libjabber, libxode, Jabber standards, etc.
+</A></li>
+	<LI>Next message: <A HREF="013227.html">[JDEV] libjabber, libxode, Jabber standards, etc.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13242">[ date ]</a>
+              <a href="thread.html#13242">[ thread ]</a>
+              <a href="subject.html#13242">[ subject ]</a>
+              <a href="author.html#13242">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

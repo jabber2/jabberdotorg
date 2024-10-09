@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] How to evolve a namespace or protocol?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20How%20to%20evolve%20a%20namespace%20or%20protocol%3F&In-Reply-To=%3C200303180822.18538.sjb%40instruction.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="074611.html">
+   <LINK REL="Next"  HREF="074612.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] How to evolve a namespace or protocol?</H1>
+    <B>Scott J Brickner</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20How%20to%20evolve%20a%20namespace%20or%20protocol%3F&In-Reply-To=%3C200303180822.18538.sjb%40instruction.com%3E"
+       TITLE="[JDEV] How to evolve a namespace or protocol?">sjb at instruction.com
+       </A><BR>
+    <I>Tue Mar 18 07:22:10 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="074611.html">[JDEV] How to evolve a namespace or protocol?
+</A></li>
+        <LI>Next message: <A HREF="074612.html">[JDEV] Autentication in Java
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74614">[ date ]</a>
+              <a href="thread.html#74614">[ thread ]</a>
+              <a href="subject.html#74614">[ subject ]</a>
+              <a href="author.html#74614">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+This is a general issue you have to deal with for any XML-based protocol.
+
+Basically, when you define your original protocol, you have to build 
+upgradeability into it by specifying how senders and receivers should deal 
+with XML they don't recognize.
+
+Typically, the rule is &quot;if you don't know what it means, ignore it&quot;, which is 
+the rule that Jabber includes - tags in a namespace you don't recognize 
+should be ignored. If you recognize the namespace, but not the tag, it 
+becomes a bit namespace dependent, and you really should be clear about the 
+right behavior in your original protocol definition, but it's usually safe to 
+just ignore it.
+
+There are scenarios where this isn't quite enough - where you want to define a 
+new tag that must *not* be ignored. The most widely used convention for this 
+is to define a boolean attribute in the original protocol definition, 
+&quot;mustUnderstand&quot;. A receiver that sees a tag it doesn't recognize, but which 
+carries the mustUnderstand='true' attribute should take some kind of error 
+action (again, this should be clarified in the original protocol definition). 
+This is taken from SOAP (<A HREF="http://www.w3.org/TR/SOAP">http://www.w3.org/TR/SOAP</A> section 4.2.3) as a 
+real-world example.
+
+In Jabber, clients are expected to ignore tags in namespaces they don't 
+recognize. If you use the above rules for namespaces you define, then you can 
+make a lot (maybe most) changes to your protocol in an upward compatible way.
+
+It's also sometimes useful for communicating peers to know what version of the 
+(upward-compatible) protocol the other side supports. This is commonly done 
+by defining a &quot;protocolVersion&quot; attribute that can be attached to the 
+top-level tags in your namespace.
+
+Finally, you may come across a scenario where you just can't fit your protocol 
+changes into this framework. In that case, the only safe way to communicate 
+this is to change the namespace URI, which effectively means you're defining 
+an entirely new protocol. Old code won't work with the new code at all.
+
+On Monday 17 March 2003 01:23 pm, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chelck at ebs.com</A> wrote:
+&gt;<i> A general question. Suppose I define a new message protocol and a new name
+</I>&gt;<i> space. I modify my Jabber server and clients to handle this protocol. I
+</I>&gt;<i> distribute the new client to all my customers. Later on I decide to change
+</I>&gt;<i> my protocol, how do I do this without breaking the existing clients in the
+</I>&gt;<i> field?
+</I>&gt;<i>
+</I>&gt;<i> I assume I use version numbers of some sort, but I'm not sure where or how.
+</I>&gt;<i> Will my message have to contain multiple versions of the same data?
+</I>&gt;<i>
+</I>&gt;<i> A real world example would be helpful.
+</I>-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.7 (GNU/Linux)
+
+iD8DBQE+dx2IJX83ImdnXzwRAgr7AKDjyXpRLYf5Vr/Jw7hvbl7MRDgtLwCdEgA3
+1WdLmeSoi0DZJzytlyawJcA=
+=hcZg
+-----END PGP SIGNATURE-----
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="074611.html">[JDEV] How to evolve a namespace or protocol?
+</A></li>
+	<LI>Next message: <A HREF="074612.html">[JDEV] Autentication in Java
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74614">[ date ]</a>
+              <a href="thread.html#74614">[ thread ]</a>
+              <a href="subject.html#74614">[ subject ]</a>
+              <a href="author.html#74614">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Implementing db:result with JSO
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Implementing%20db%3Aresult%20with%20JSO&In-Reply-To=%3C40684119.6080402%40outer-planes.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="048373.html">
+   <LINK REL="Next"  HREF="048351.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Implementing db:result with JSO</H1>
+    <B>Matthew A. Miller</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Implementing%20db%3Aresult%20with%20JSO&In-Reply-To=%3C40684119.6080402%40outer-planes.net%3E"
+       TITLE="[jdev] Implementing db:result with JSO">linuxwolf at outer-planes.net
+       </A><BR>
+    <I>Mon Mar 29 09:30:33 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="048373.html">[jdev] Implementing db:result with JSO
+</A></li>
+        <LI>Next message: <A HREF="048351.html">[jdev] Jabber Sources and Sinks
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48374">[ date ]</a>
+              <a href="thread.html#48374">[ thread ]</a>
+              <a href="subject.html#48374">[ subject ]</a>
+              <a href="author.html#48374">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>First, the caveat:  My efforts are focused on client- and 
+component-level development, not server-level.  The furthest I've gone 
+with accepting connections is for components that accept the connection 
+from the server (rather than initiating the connections to the server), 
+and for special-purpose c2s environments (e.g. no other servers involved).
+
+However, I have not experienced anything like this for client- or 
+component-level connections.  Which StreamSource are you using?  If it's 
+the ChannelStreamSource, the underlying cannel should automatically 
+flush its output as soon as its written (see the Sun's docs on &quot;new I/O&quot; 
+for more details).  If it's the SocketStreamSource (which i admittedly 
+do not use much at all), I've noticed an explicit flush was missing, but 
+this should have impacted all connections (which, surprisingly, it hasn't).
+
+At this point, I would first ensure that JSO is really writing out.  
+This is most-easily done via nc (aka netcat).  Right now, it sounds to 
+me like it's more an issue with jabberd2 than JSO.
+
+
+-  LW
+
+PS:  There is a dedicated mailing list for JSO.  You can find out more 
+about it from <A HREF="http://jabberstudio.org/cgi-bin/mailman/listinfo/jso-devel.">http://jabberstudio.org/cgi-bin/mailman/listinfo/jso-devel.</A>
+
+PPS:  The &quot;not really flushed&quot; IOStreamSource is now updated in CVS.
+
+Daniel Tietze wrote:
+
+&gt;<i> Hi.
+</I>&gt;<i>
+</I>&gt;<i> The problem indeed seems to be fixed in the current version.
+</I>&gt;<i> But I'm encountering another strange problem. I implemented
+</I>&gt;<i> a &quot;db:result&quot; packet, following the docs. The thing appears
+</I>&gt;<i> to send itself OK, at least that's what my Logger tells me:
+</I>&gt;<i>
+</I>&gt;<i> [LOGGER]  sent: &lt;db:result xmlns='jabber:server' 
+</I>&gt;<i> from='athen.go4teams.com'
+</I>&gt;<i> to='belfast.go4teams.com'&gt;danielduesentrieb&lt;/db:result&gt;
+</I>&gt;<i>
+</I>&gt;<i> On the Jabber server (jabberd2), this package is not
+</I>&gt;<i> received/processed until I kill my server. I get the &quot;sent&quot;
+</I>&gt;<i> output on my own server right away, but only after I kill my
+</I>&gt;<i> server with CTRL-C (closing all connections) the &quot;jabberd -D&quot;
+</I>&gt;<i> output shows that it has received this packet (debug from io.c:189).
+</I>&gt;<i>
+</I>&gt;<i> I have found no way to flush the underlying JSO stream implementation
+</I>&gt;<i> to ensure that my packet is being sent out.
+</I>&gt;<i>
+</I>&gt;<i> I'm attaching my JSO extension class to the bottom of this message.
+</I>&gt;<i>
+</I>&gt;<i> Here's how I'm sending it:
+</I>&gt;<i> ---------------------------
+</I>&gt;<i> try
+</I>&gt;<i> {
+</I>&gt;<i>     DialbackResultPacket dbr = new
+</I>&gt;<i> DialbackResultPacket(JSOImplementation.getInstance().getDataFactory());
+</I>&gt;<i>     dbr.setDialbackText(&quot;danielduesentrieb&quot;);
+</I>&gt;<i>     dbr.setTo(new JID(&quot;belfast.go4teams.com&quot;));
+</I>&gt;<i>     dbr.setFrom(new JID(&quot;athen.go4teams.com&quot;));
+</I>&gt;<i>     // Send the Dialback result packet
+</I>&gt;<i>     connection.send(dbr);
+</I>&gt;<i> }
+</I>&gt;<i> catch (Exception ex)
+</I>&gt;<i> {
+</I>&gt;<i>     ex.printStackTrace();
+</I>&gt;<i> }
+</I>&gt;<i> ---------------------------
+</I>&gt;<i>
+</I>&gt;<i> Any help greatly appreciated, as usual.
+</I>&gt;<i>
+</I>&gt;<i>   Daniel
+</I>&gt;<i>
+</I>&gt;<i> --[ 8&lt; SNIP for Dialback Packet implementation ] -------
+</I>&gt;<i>
+</I>&gt;<i> public interface DialbackResult
+</I>&gt;<i> {
+</I>&gt;<i>     public static final NSI NAME = new NSI(&quot;db:result&quot;, &quot;jabber:server&quot;);
+</I>&gt;<i>
+</I>&gt;<i>     void setDialbackText(String text);
+</I>&gt;<i>
+</I>&gt;<i>     String getDialbackText();
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> }
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> public class DialbackResultPacket
+</I>&gt;<i>         extends BasicPacketNode
+</I>&gt;<i>         implements DialbackResult
+</I>&gt;<i> {
+</I>&gt;<i>     StreamDataFactory fact;
+</I>&gt;<i>
+</I>&gt;<i>     public DialbackResultPacket(StreamDataFactory sdf)
+</I>&gt;<i>     {
+</I>&gt;<i>         super(sdf, NAME);
+</I>&gt;<i>         fact = sdf;
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     public DialbackResultPacket(org.jabberstudio.jso.StreamElement
+</I>&gt;<i> streamElement, BasicPacketNode basicPacketNode)
+</I>&gt;<i>     {
+</I>&gt;<i>         super(streamElement, basicPacketNode);
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>     public org.jabberstudio.jso.StreamObject
+</I>&gt;<i> copy(org.jabberstudio.jso.StreamElement streamElement)
+</I>&gt;<i>     {
+</I>&gt;<i>         return new DialbackResultPacket(streamElement, this);
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     public String getDialbackText()
+</I>&gt;<i>     {
+</I>&gt;<i>         return null;
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     public void setDialbackText(String text)
+</I>&gt;<i>     {
+</I>&gt;<i>         this.add(new TextNode(fact, text));
+</I>&gt;<i>     }
+</I>&gt;<i> }
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="048373.html">[jdev] Implementing db:result with JSO
+</A></li>
+	<LI>Next message: <A HREF="048351.html">[jdev] Jabber Sources and Sinks
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48374">[ date ]</a>
+              <a href="thread.html#48374">[ thread ]</a>
+              <a href="subject.html#48374">[ subject ]</a>
+              <a href="author.html#48374">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

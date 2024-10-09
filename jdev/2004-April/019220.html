@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Flash Proxy (was: Jabberd2, Flash Client...)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Flash%20Proxy%20%28was%3A%20Jabberd2%2C%20Flash%20Client...%29&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="019219.html">
+   <LINK REL="Next"  HREF="019221.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Flash Proxy (was: Jabberd2, Flash Client...)</H1>
+    <B>Richard Dobson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Flash%20Proxy%20%28was%3A%20Jabberd2%2C%20Flash%20Client...%29&In-Reply-To="
+       TITLE="[jdev] Flash Proxy (was: Jabberd2, Flash Client...)">richard at dobson-i.net
+       </A><BR>
+    <I>Tue Apr 13 19:02:22 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="019219.html">[jdev] Flash Proxy (was: Jabberd2, Flash Client...)
+</A></li>
+        <LI>Next message: <A HREF="019221.html">[jdev] Flash Proxy (was: Jabberd2, Flash Client...)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19220">[ date ]</a>
+              <a href="thread.html#19220">[ thread ]</a>
+              <a href="subject.html#19220">[ subject ]</a>
+              <a href="author.html#19220">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> &gt; Kind of, although I think a flash proxy would be far more useful than a
+</I>CCM
+&gt;<i> &gt; component, otherwise flash components are forced to use only the jabber
+</I>&gt;<i> &gt; server hosted at the same ip address / domain that the flash app came
+</I>from.
+&gt;<i>
+</I>&gt;<i> I agree with Richard that a proxy is a good solution, and it lets anyone
+</I>&gt;<i> deploying a Flash/XMPP application get around the security sandbox issue
+</I>&gt;<i> with relative ease. It still doesn't help anyone who wants to deploy
+</I>&gt;<i> without installing anything on their server (say, users of shared hosting
+</I>&gt;<i> services) but not much can be done about that other than crossdomain.xml
+</I>&gt;<i> negotiations.
+</I>&gt;<i>
+</I>&gt;<i> &gt; IMO it is far better to develop the proxy first then possibly the CCM
+</I>&gt;<i> &gt; component second if people really see a need for it, IMO the proxy maybe
+</I>all
+&gt;<i> &gt; thats required to get things working.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; So I'm guessing that JECL would be an appropriate
+</I>&gt;<i> &gt; &gt; framework for developing these ?
+</I>&gt;<i>
+</I>&gt;<i> I'm not a C++ developer and I don't know anything about JECL really.
+</I>&gt;<i>
+</I>&gt;<i> Richard: Can you outline your vision as to how the proxy itself would
+</I>&gt;<i> work? ie - negotiations, communications from various parties? Maybe it's a
+</I>&gt;<i> straightforward matter, but I admit I'm completely ignorant about such
+</I>&gt;<i> things.
+</I>
+Well it should be a pretty simple matter, the proxy would sit on the
+server/domain that is serving the flash app.
+
+1) the flash app would connect to the proxy using flash a XMLSocket
+
+2) the flash app would send a command to the proxy to connect to the jabber
+server it wants to log into e.g.
+
+&lt;streamcmd&gt;
+    &lt;connect&gt;jabber.org&lt;/connect&gt;
+&lt;/streamcmd&gt;
+
+3) the proxy would then connect to the jabber server in question and send
+back to the user xml indicating it has sucessfully connected e.g.
+
+&lt;streamcmd&gt;
+    &lt;connected/&gt;
+&lt;/streamcmd&gt;
+
+or if it failed
+
+&lt;streamcmd&gt;
+    &lt;connect-failed/&gt;
+&lt;/streamcmd&gt;
+
+4) the flash app would then send login info to the proxy, which the proxy
+would then use to log into the jabber server using the appropriate
+authentication protocol, jabber:iq:auth or SASL e.g.
+
+&lt;streamcmd&gt;
+    &lt;login&gt;
+        &lt;username&gt;user&lt;/username&gt;
+        &lt;password&gt;letmein&lt;/password&gt;
+        &lt;resource&gt;flashapp&lt;/resource&gt;
+    &lt;/login&gt;
+&lt;/streamcmd&gt;
+
+5) when login is complete the proxy would then tell the flash app login was
+ok e.g.
+
+&lt;streamcmd&gt;
+    &lt;login-ok/&gt;
+&lt;/streamcmd&gt;
+
+or if failed
+
+&lt;streamcmd&gt;
+    &lt;login-failed/&gt;
+&lt;streamcmd&gt;
+
+6) the client would then revert to using standard jabber/xmpp protocol over
+the socket to the proxy and the proxy will relay this along to the jabber
+server.
+
+7) if the client wants to end the jabber connection it simply closes its
+socket to the proxy (the proxy would then when it detects this socket close
+terminate its connection with the remote jabber server)
+
+
+Well this is how I see it working, using a simple control protocol along the
+lines of what is above to control the proxy from the flash app, also
+documenting a protocol like this for the flash interop as a JEP would IMO be
+a very good idea as it would &quot;set in stone&quot; as it were the interface to the
+proxy allowing the development of lots of different implementations that
+will interop properly (if people follow the spec :) ).
+
+Comments??
+
+Richard
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="019219.html">[jdev] Flash Proxy (was: Jabberd2, Flash Client...)
+</A></li>
+	<LI>Next message: <A HREF="019221.html">[jdev] Flash Proxy (was: Jabberd2, Flash Client...)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19220">[ date ]</a>
+              <a href="thread.html#19220">[ thread ]</a>
+              <a href="subject.html#19220">[ subject ]</a>
+              <a href="author.html#19220">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

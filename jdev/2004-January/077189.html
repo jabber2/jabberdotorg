@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Differences in SASL realisation in jabberd2 and ejabberd
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Differences%20in%20SASL%20realisation%20in%20jabberd2%20and%20ejabberd&In-Reply-To=%3C20040113194842.GF25476%40jabber.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="077181.html">
+   <LINK REL="Next"  HREF="077190.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Differences in SASL realisation in jabberd2 and ejabberd</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Differences%20in%20SASL%20realisation%20in%20jabberd2%20and%20ejabberd&In-Reply-To=%3C20040113194842.GF25476%40jabber.org%3E"
+       TITLE="[JDEV] Differences in SASL realisation in jabberd2 and ejabberd">stpeter at jabber.org
+       </A><BR>
+    <I>Tue Jan 13 13:48:42 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="077181.html">[JDEV] Differences in SASL realisation in jabberd2 and ejabberd
+</A></li>
+        <LI>Next message: <A HREF="077190.html">[JDEV] Differences in SASL realisation in jabberd2 and ejabberd
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77189">[ date ]</a>
+              <a href="thread.html#77189">[ thread ]</a>
+              <a href="subject.html#77189">[ subject ]</a>
+              <a href="author.html#77189">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Mon, Jan 12, 2004 at 10:07:18AM +0300, Alexey Nezhdanov wrote:
+&gt;<i> Hello. Recently tryed to use SASL against ejabberd.
+</I>&gt;<i> Found several differences:
+</I>&gt;<i> 1) challenge responces.
+</I>&gt;<i> jabberd2 response: 
+</I>&gt;<i> realm=&quot;jabber.penza-gsm.ru&quot;,nonce=&quot;baca3d3c76bab6edb7d7f2736733cf63300f9595&quot;,qop=auth,charset=utf-8,algorithm=md5-sess
+</I>&gt;<i> ejabbed response:
+</I>&gt;<i> nonce=&quot;1303694217&quot;,qop=&quot;auth&quot;,charset=utf-8,algorithm=md5-sess
+</I>&gt;<i> 
+</I>&gt;<i> The main problem is that double quotes appears in one case and disappears in 
+</I>&gt;<i> the another. The worst problem that I can't find out which case is proper.
+</I>&gt;<i> RFC2831 extract:
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">snake at sarge</A>:/mnt/hda2/var/lib/cvs/jabberpy2/ietf-docs$ grep qop rfc2831.txt,v
+</I>&gt;<i>         qop-options       = &quot;qop&quot; &quot;=&quot; &lt;&quot;&gt; qop-list &lt;&quot;&gt;
+</I>&gt;<i>         qop-list          = 1#qop-value
+</I>&gt;<i>         qop-value         = &quot;auth&quot; | &quot;auth-int&quot; | &quot;auth-conf&quot; |
+</I>&gt;<i>        qop              = &quot;qop&quot; &quot;=&quot; qop-value
+</I>&gt;<i> On the other hand here is example challenge from the same RFC:
+</I>&gt;<i>     S: realm=&quot;elwood.innosoft.com&quot;,nonce=&quot;OA6MG9tEQGm2hh&quot;,qop=&quot;auth&quot;,
+</I>&gt;<i>        response=d388dad90d4bbd760a152321f2143af7,qop=auth
+</I>
+OK, I received clarification about this from one of my SASL guru
+friends.
+
+There are two different instances of &quot;qop&quot;: the one sent from the server
+to the client (or, in s2s, the other server) and the one sent from the 
+client to the server.
+
+The &quot;qop&quot; sent from the server to the client is a comma-separated list
+of qops and must be quoted (even if the list of qops contains only one
+qop).
+
+The &quot;qop&quot; sent from the client to the server is a single qop and
+therefore is not quoted.
+
+Thus jabberd2 has a bug because it is not quoting the qop list it sends
+out.
+
+Peter
+
+-- 
+Peter Saint-Andre
+Jabber Software Foundation
+<A HREF="http://www.jabber.org/people/stpeter.php">http://www.jabber.org/people/stpeter.php</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="077181.html">[JDEV] Differences in SASL realisation in jabberd2 and ejabberd
+</A></li>
+	<LI>Next message: <A HREF="077190.html">[JDEV] Differences in SASL realisation in jabberd2 and ejabberd
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77189">[ date ]</a>
+              <a href="thread.html#77189">[ thread ]</a>
+              <a href="subject.html#77189">[ subject ]</a>
+              <a href="author.html#77189">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

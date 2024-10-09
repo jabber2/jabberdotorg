@@ -1,0 +1,225 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: [Juser] 'lightweighting' Jabber chat for sllloooooow l	inks...&amp; UDP?!
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Re%3A%20%5BJuser%5D%20%27lightweighting%27%20Jabber%20chat%20for%20sllloooooow%20l%0A%09inks...%26%20UDP%3F%21&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="024681.html">
+   <LINK REL="Next"  HREF="024630.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: [Juser] 'lightweighting' Jabber chat for sllloooooow l	inks...&amp; UDP?!</H1>
+    <B>Lines, David</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Re%3A%20%5BJuser%5D%20%27lightweighting%27%20Jabber%20chat%20for%20sllloooooow%20l%0A%09inks...%26%20UDP%3F%21&In-Reply-To="
+       TITLE="[jdev] Re: [Juser] 'lightweighting' Jabber chat for sllloooooow l	inks...&amp; UDP?!">David.Lines at uk.thalesgroup.com
+       </A><BR>
+    <I>Fri May 19 06:28:57 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="024681.html">[jdev] PHP Jabber Class
+</A></li>
+        <LI>Next message: <A HREF="024630.html">[jdev] s2s connections and presence
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24629">[ date ]</a>
+              <a href="thread.html#24629">[ thread ]</a>
+              <a href="subject.html#24629">[ subject ]</a>
+              <a href="author.html#24629">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi. Thanks for the replies. Must say I'm pleased at the high level and
+promptness of replies in the Jabber community. This post is on the jdev post
+at Peter's insistence but I'm not a xmpp programmer and my expertise is in
+the lower OSI levels - ie using applications over IP over RF layers. So
+excuse some of my *silly* questions. But I am willing to 'tweak'...a little
+knowledge is dangerous?!
+
+First of all I cant see this message on the Gname list - only the JSF. NNTP
+isn't enabled on the corporate network. Through JSF I cant simply reply to a
+post like on other mail lists - I have to cut and paste from the website and
+send an email to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at .</A> Not sure if I'm doing something wrong.
+
+Handshaking is the negotiation process of a protocol eg TCP 3-way handshake,
+SYN, SYN ACK, ACK. Maybe not the correct term for xmpp but I meant the
+process of negotiation with xml stanzas. Basically the to-ing and fro-ing of
+commands is the major time delay for a high latency network. A 60 byte OK to
+a command takes as long as several pipelined commands and the message. Text
+chat will not consume a lot of bandwidth so the latency is the issue and
+reducing the 'chattiness' or 'verboseness' is a priority (for me).
+
+The JEPs I'm happy with and understand what they are stating. What I don't
+know is how do I get a client and server to support these JEPs? Do I have to
+wait for a newer client/server version that supports this, or add a
+'plug-in', or do I have to edit existing clients/servers to handle the
+additional JEP requests.
+
+*	You can send multiple XMPP stanzas at once -- it's asynchronous.
+
+How do I do this. Is this a matter of editing C/S source code?
+
+As a note I have to say that whatever is used will have to comply with
+standards so developing a solution for Group A can only be done to a level
+complying with standards. So when new Subgroup B decide to join the existing
+Group A chat all they need to do is get JabberClient version x.y.z which
+JEP-xxxx and JEP-yyyy. It has to be interoperable.
+
+Ennova2005 - is there an open source app/protocol for the (possible) server
+side assist and/or the wire protocol given the interoperable considerations
+above? And if it is to be used over a wireless mobile network?
+
+*	There is no UDP binding for XMPP, but there is an HTTP binding:
+
+I will look into this but since HTTP will still need to run over TCP it wont
+get over the initial TCP handshaking latency. Since looking at the packets
+in detail (or the xml window) it does not appear to be so much of an issue.
+With client 'keep-alive' turned off the connection is silent until a message
+is sent. There are other areas I want to look at like the presence updates
+and concatenating the XMPP stanzas. 
+
+Many thanks to all again - bit of reading up to do now! Cheers David
+
+
+ ennova2005-jabber at yahoo.com
+&lt;mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Re%3A%20%5BJuser%5D%20%27ligh
+tweighting%27%20Jabber%20chat%20for%20sllloooooow%0A%09links...%26%20UDP%3F%
+21&amp;In-Reply-To=446C95DF.1000507%40jabber.org&gt; ennova2005-jabber at yahoo.com
+
+
+One level of indirection may solve many of your problems.
+
+You probably want to run this client with some server side assist using a
+proxy server. The proxy server will sit on the higher bandwidth/remote end
+of your slow speed connection and mediate the communication with the XMPP
+server.
+
+Given the constraints on the bandwidth and latency, you may also be better
+served by a simpler wire protocol between your device and the proxy instead
+of the more verbose XMPP protocol. Your proxy will still use XMPP over TCP
+to talk to the XMPP server but you could implement more of a 'state transfer
+approach' between your client and the proxy with the proxy doing most of the
+heavy lifting and data set reduction.
+
+On the datarate issue - Many moons ago we developed an IM client for Mobitex
+( the original blackberry network) that used a paging protocol. As I recall,
+more than messaging, what caused the most traffic was presence updates from
+every one on the contact list- which a server side proxy can help manage by
+filtering.   
+
+Peter Saint-Andre &lt;stpeter at jabber.org
+&lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>&gt; &gt; wrote: -----BEGIN PGP
+SIGNED MESSAGE-----
+Hash: SHA1
+
+This list is for end users of Jabber clients. You probably meant to post
+it to the developers list (which I'm cc'ing):
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+&lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>&gt; 
+
+Lines, David wrote:
+&gt;<i> hi. i am looking to set up Jabber chat over a HF radio link at a speed of
+</I>&gt;<i> 4.8kbps and with high latency (ping ~ 7secs)!! i would love any assistance
+</I>&gt;<i> in where i can start to tweak for this situation. while the data rate will
+</I>&gt;<i> not be high for text chat, the high latency means i need to reduce any
+</I>&gt;<i> handshaking as much as possible. with a sniffer i notice there is a large
+</I>&gt;<i> amount of handshaking taking place even after the connection is
+</I>established.
+&gt;<i> i havent yet looked into detail what these packets are doing but i guess
+</I>i'm
+&gt;<i> in for a crash course in xmpp/xml/impp?! 
+</I>
+What do you mean by &quot;handshaking&quot;?
+
+You don't need a packet sniffer to see the XMPP traffic, just run the
+right kind of client in debug mode and watch the XML fly by.
+
+&gt;<i> My initial high level thoughts are to 'turn off' negotiation for voice and
+</I>&gt;<i> video. 
+</I>
+That's a client thing, not a server thing.
+
+&gt;<i> I notice 'Keep_Alives' is a client option that could be turned off. i
+</I>&gt;<i> know there are proprietry lightweight LAN chat apps but I want to keep to
+</I>&gt;<i> open source standards, ie Jabber. 
+</I>
+See below.
+
+&gt;<i> Is there provision for 'pipe-lining'
+</I>&gt;<i> multiple xmpp commands (ie similar to what is proposed for SMTP with
+</I>&gt;<i> Pipelining (RFC-2197) - basically sending several commands at once and
+</I>&gt;<i> waiting for the respective ACKs to return in 1 packet).
+</I>
+You can send multiple XMPP stanzas at once -- it's asynchronous.
+
+&gt;<i> Also can Jabber be set for a UDP connection instead of TCP? The standard
+</I>&gt;<i> (RFC-3920) implies TCP but doesn't explicitly rule out UDP, but this forum
+</I>&gt;<i> reply does!
+</I>
+There is no UDP binding for XMPP, but there is an HTTP binding:
+
+<A HREF="http://www.jabber.org/jeps/jep-0124.html">http://www.jabber.org/jeps/jep-0124.html</A>
+&lt;<A HREF="http://www.jabber.org/jeps/jep-0124.html">http://www.jabber.org/jeps/jep-0124.html</A>&gt; 
+
+It's possible that we might define a UDP binding at some point, but it's
+not a high priority for me.
+
+&gt;<i> I see Jingle is looking at RTP over UDP. 
+</I>
+Jingle is transport-agnostic. Another transport for Jingle is IAX2
+(Asterisk), and more transports may be on the way.
+
+&gt;<i> I'm new to all of this but I see
+</I>&gt;<i> there are  commands. I'm currently evaluating Wildfire-2.6.2 and
+</I>&gt;<i> they aren't any configuration options for UDP. IANA reserves xmpp port
+</I>5222
+&gt;<i> for TCP and UDP. Could this be possible with access to the client and/or
+</I>&gt;<i> server source codes?
+</I>
+You could hack the source code from your server of choice to support a
+UDP binding, but we'd prefer to define the protocol first (or concurrently).
+
+&gt;<i> And one more qu... can Jabber talk client to client, or client to client
+</I>&gt;<i> after the server goes down. Initial testing shows that once the server is
+</I>&gt;<i> gone so does any client to client chat (basically it is relayed through
+</I>the
+&gt;<i> server)
+</I>
+Yes, it can: <A HREF="http://www.jabber.org/jeps/jep-0174.html">http://www.jabber.org/jeps/jep-0174.html</A>
+&lt;<A HREF="http://www.jabber.org/jeps/jep-0174.html">http://www.jabber.org/jeps/jep-0174.html</A>&gt; 
+
+Peter
+
+- --
+Peter Saint-Andre
+Jabber Software Foundation
+<A HREF="http://www.jabber.org/people/stpeter.shtml">http://www.jabber.org/people/stpeter.shtml</A>
+&lt;<A HREF="http://www.jabber.org/people/stpeter.shtml">http://www.jabber.org/people/stpeter.shtml</A>&gt; 
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="024681.html">[jdev] PHP Jabber Class
+</A></li>
+	<LI>Next message: <A HREF="024630.html">[jdev] s2s connections and presence
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24629">[ date ]</a>
+              <a href="thread.html#24629">[ thread ]</a>
+              <a href="subject.html#24629">[ subject ]</a>
+              <a href="author.html#24629">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

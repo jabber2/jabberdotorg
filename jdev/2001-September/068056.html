@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] MSN Transport problem with &lt;x&gt; tags
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20MSN%20Transport%20problem%20with%20%3Cx%3E%20tags&In-Reply-To=%3C200109182325320107.101BDE23%40mail.beta4.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="068052.html">
+   <LINK REL="Next"  HREF="068062.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] MSN Transport problem with &lt;x&gt; tags</H1>
+    <B>Julian Fitzell</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20MSN%20Transport%20problem%20with%20%3Cx%3E%20tags&In-Reply-To=%3C200109182325320107.101BDE23%40mail.beta4.com%3E"
+       TITLE="[JDEV] MSN Transport problem with &lt;x&gt; tags">julian-ml at beta4.com
+       </A><BR>
+    <I>Wed Sep 19 01:25:32 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="068052.html">[JDEV] MSN Transport problem with &lt;x&gt; tags
+</A></li>
+        <LI>Next message: <A HREF="068062.html">[JDEV] MSN Transport problem with &lt;x&gt; tags
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68056">[ date ]</a>
+              <a href="thread.html#68056">[ thread ]</a>
+              <a href="subject.html#68056">[ subject ]</a>
+              <a href="author.html#68056">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>So looking in message.c it's quite clear that the code is written assuming that &lt;x&gt; and &lt;body&gt; do not appear together in one message... is this a rule?  The protocol spec is unclear on this but if it is then JabberIM is breaking it.
+
+Julian
+
+On 18/09/2001 at 9:01 PM Julian Fitzell wrote:
+
+&gt;<i>So my girlfriend is using JabberIM whereas I am using WinJab... for some
+</I>&gt;<i>reason, she is unable to send messages to people through the MSN
+</I>&gt;<i>transport.  She can receive them and send and receive presence.
+</I>&gt;<i>
+</I>&gt;<i>So I started looking at the log files for the transport and noticed that
+</I>&gt;<i>her messages included &lt;x&gt; tags indicating that she was replying but mine
+</I>&gt;<i>didn't.
+</I>&gt;<i>
+</I>&gt;<i>So her messages look like:
+</I>&gt;<i>&lt;message id='jim_id_49' to='jfitzell79%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hotmail.com at msn.beta4.com</A>'
+</I>&gt;<i>type='chat'&gt;&lt;x
+</I>&gt;<i>xmlns='jabber:x:event'&gt;&lt;composing/&gt;&lt;/x&gt;&lt;thread&gt;105AEB7D1248ED7BD3A69A0F42551BDF&lt;/thread&gt;&lt;body&gt;test message&lt;/body&gt;&lt;/message&gt;
+</I>&gt;<i>
+</I>&gt;<i>I tried sending this with the Raw XML tool of WinJab and it didn't work,
+</I>&gt;<i>but if I remove the &lt;x&gt; tag, it works just fine.
+</I>&gt;<i>
+</I>&gt;<i>This is with the MSN Transport from CVS... Has anyone else seen this
+</I>&gt;<i>problem or know how to fix it?
+</I>&gt;<i>
+</I>&gt;<i>The relevant section from the log file is as follows:
+</I>&gt;<i>
+</I>&gt;<i>Tue Sep 18 20:38:35 2001  mio.c:613 mio while loop, working
+</I>&gt;<i>Tue Sep 18 20:38:35 2001  mio.c:750 MIO read from socket 7: &lt;message
+</I>&gt;<i>id='jim_id_49' to='jfitzell79%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hotmail.com at msn.beta4.com</A>' type='chat'
+</I>&gt;<i>from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sarah at jabber.beta4.com</A>/Home'&gt;&lt;x
+</I>&gt;<i>xmlns='jabber:x:event'&gt;&lt;composing/&gt;&lt;/x&gt;&lt;thread&gt;105AEB7D1248ED7BD3A69A0F42551BDF&lt;/thread&gt;&lt;body&gt;l&lt;/body&gt;&lt;/message&gt;
+</I>&gt;<i>Tue Sep 18 20:38:35 2001  base_connect.c:118 process XML: m:8170E88
+</I>&gt;<i>state:3, arg:80CE0B0, x:817D028
+</I>&gt;<i>Tue Sep 18 20:38:35 2001  deliver.c:460 DELIVER 1:msn.beta4.com &lt;message
+</I>&gt;<i>id='jim_id_49' to='jfitzell79%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hotmail.com at msn.beta4.com</A>' type='chat'
+</I>&gt;<i>from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sarah at jabber.beta4.com</A>/Home'&gt;&lt;x
+</I>&gt;<i>xmlns='jabber:x:event'&gt;&lt;composing/&gt;&lt;/x&gt;&lt;thread&gt;105AEB7D1248ED7BD3A69A0F42551BDF&lt;/thread&gt;&lt;body&gt;l&lt;/body&gt;&lt;/message&gt;
+</I>&gt;<i>Tue Sep 18 20:38:35 2001  deliver.c:651 delivering to instance
+</I>&gt;<i>'msn.beta4.com'
+</I>&gt;<i>Tue Sep 18 20:38:35 2001  mio.c:1032 mio_write called on x: 0 buffer: MSG
+</I>&gt;<i>5 U 96
+</I>&gt;<i>MIME-Version: 1.0
+</I>&gt;<i>Content-Type: text/x-msmsgscontrol
+</I>&gt;<i>TypeingUser: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sarahyoung79 at hotmail.com</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>Tue Sep 18 20:38:35 2001  mio.c:600 mio while loop top
+</I>&gt;<i>Tue Sep 18 20:38:35 2001  mio.c:613 mio while loop, working
+</I>&gt;<i>Tue Sep 18 20:38:35 2001  mio.c:275 write_dump writing data: MSG 5 U 96
+</I>&gt;<i>MIME-Version: 1.0
+</I>&gt;<i>Content-Type: text/x-msmsgscontrol
+</I>&gt;<i>TypeingUser: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sarahyoung79 at hotmail.com</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>Tue Sep 18 20:38:35 2001  mio.c:600 mio while loop top
+</I>&gt;<i>Tue Sep 18 20:38:35 2001  mio.c:613 mio while loop, working
+</I>&gt;<i>Tue Sep 18 20:38:35 2001  mio.c:750 MIO read from socket 12: MSG
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sarahyoung79 at hotmail.com</A> Sarah 96
+</I>&gt;<i>MIME-Version: 1.0
+</I>&gt;<i>Content-Type: text/x-msmsgscontrol
+</I>&gt;<i>TypeingUser: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sarahyoung79 at hotmail.com</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>Tue Sep 18 20:38:35 2001  mio.c:600 mio while loop top
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>------------------------------------------------------
+</I>&gt;<i>
+</I>&gt;<i>a successful message results in something like:
+</I>&gt;<i>
+</I>&gt;<i>Tue Sep 18 20:37:32 2001  mio.c:275 write_dump writing data: MSG 7 U 127
+</I>&gt;<i>MIME-Version: 1.0
+</I>&gt;<i>Content-Type: text/plain; charset=UTF-8
+</I>&gt;<i>X-MMS-IM-Format: FN=MS%20Sans%20Serif; EF=; CO=0; CS=0; PF=0
+</I>&gt;<i>
+</I>&gt;<i>you
+</I>&gt;<i>------------------------------------------------------
+</I>&gt;<i>
+</I>&gt;<i>Thanks,
+</I>&gt;<i>
+</I>&gt;<i>Julian
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+t
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="068052.html">[JDEV] MSN Transport problem with &lt;x&gt; tags
+</A></li>
+	<LI>Next message: <A HREF="068062.html">[JDEV] MSN Transport problem with &lt;x&gt; tags
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68056">[ date ]</a>
+              <a href="thread.html#68056">[ thread ]</a>
+              <a href="subject.html#68056">[ subject ]</a>
+              <a href="author.html#68056">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

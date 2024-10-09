@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Routing
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Routing&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE61353AD4B0C2%40zamail01.k2workflow.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="086501.html">
+   <LINK REL="Next"  HREF="086503.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Routing</H1>
+    <B>Jonathan Dickinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Routing&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE61353AD4B0C2%40zamail01.k2workflow.com%3E"
+       TITLE="[jdev] Routing">jonathanD at k2.com
+       </A><BR>
+    <I>Mon Jun 23 06:42:31 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="086501.html">[jdev] [OTR-dev] ConnContext.username in XMPP
+</A></li>
+        <LI>Next message: <A HREF="086503.html">[jdev] Routing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86502">[ date ]</a>
+              <a href="thread.html#86502">[ thread ]</a>
+              <a href="subject.html#86502">[ subject ]</a>
+              <a href="author.html#86502">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey All,
+
+You will need a monospace font for this one :).
+
+Can anyone give me some advice on this problem? From what I can tell, currently routers are a congestion point for all components. E.g.
+
++--------+
+|<i> ROUTER +-S2S
+</I>+---+----+
+    |
+   C2S
+
+As you can see the performance of the whole server depends on the router, and the router can't be scaled horizontally by clustering it (as far as I can tell). Like as follows:
+
++--------+   +--------+
+|<i> ROUTER +---+ ROUTER +-C2S
+</I>+--------+   +--------+
+|<i>        |   |        |
+</I>C2S     C2S  C2S      S2S
+
+Can anyone correct me on this?
+
+I came up with the following solution to the problem:
+
+              C2S      S2S
+               |        |
+               +--------+
+               | ROUTER |
+               +----+---+
+              /     |    \
+C2S-+--------+ +----+---+ +--------+-C2S
+    | ROUTER +-+ FAILURE+-+ ROUTER |
+C2S-+--------+ +----+---+ +--------+-C2S
+              \     |    /
+               +----+---+
+               | ROUTER |
+               +--------+
+               |        |
+              S2S      S2S
+
+The router network works like a token ring network, only that there is no token. Each router can send the packet along to the next as it wishes (in one direction only). The following flow would apply:
+
+&lt;!-- Router1 --&gt;
+&lt;route from=&quot;c2s1.50&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">joe at joe.com</A>&quot;&gt;
+  ...
+&lt;/route&gt;
+
+&lt;!-- Router2 --&gt;
+&lt;route from=&quot;r1&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">joe at joe.com</A>&quot;&gt;
+  &lt;visit name=&quot;r1&quot;/&gt;
+  ...
+&lt;/route&gt;
+
+&lt;!-- Router3 --&gt;
+&lt;route from=&quot;r2&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">joe at joe.com</A>&quot;&gt;
+  &lt;visit name=&quot;r1&quot;/&gt;
+  &lt;visit name=&quot;r2&quot;/&gt;
+  ...
+&lt;/route&gt;
+
+If at any point one of the routers handles the packet successfully it simply stops passing the route node around. If the route node visits the same router twice it:
+
+a. If the node is from 'this' domain send it to the failure node.
+b. If the node is not from 'this' domain:
+   1. If I have a S2S component attached send it to that.
+   2. If I don't have a S2S component attached send it on.
+
+Components would send failures if no connected client is found: thus making the router continue routing the packet.
+
+The sexy thing about this is that you should be able to remove and connect routers to the network without bringing the whole thing down.
+
+Great so far, this would work well with single-sign-in capable systems (i.e. no resources/priorities like MSN). Now, I can't for the life of me figure out a way to handle resources and priorities. One way would be to (but it's ugly):
+
+Component gets route packet:
+
+&lt;route from=&quot;r4&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">joe at joe.com</A>&quot;&gt;
+  &lt;visit name=&quot;r3&quot;/&gt;
+  &lt;visit name=&quot;r4&quot;/&gt;
+  &lt;priority name=&quot;c2s4.1&quot; resource=&quot;home&quot; value=&quot;0&quot;/&gt;
+  &lt;priority name=&quot;c2s3.50&quot; resource=&quot;mobile&quot; value=&quot;50&quot;/&gt;
+  ...
+&lt;/route&gt;
+
+Thus each stanza would make a complete trip round the network (2 at worst) before it could be sent. Does anyone have any clever ideas how to get around this?
+
+Thanks!
+
+Jonathan
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="086501.html">[jdev] [OTR-dev] ConnContext.username in XMPP
+</A></li>
+	<LI>Next message: <A HREF="086503.html">[jdev] Routing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86502">[ date ]</a>
+              <a href="thread.html#86502">[ thread ]</a>
+              <a href="subject.html#86502">[ subject ]</a>
+              <a href="author.html#86502">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

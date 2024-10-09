@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] how to generate vcard using Net::Jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20how%20to%20generate%20vcard%20using%20Net%3A%3AJabber&In-Reply-To=%3C43D0ACA4.4010001%40uaznia.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="053101.html">
+   <LINK REL="Next"  HREF="053107.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] how to generate vcard using Net::Jabber</H1>
+    <B>koniczynek</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20how%20to%20generate%20vcard%20using%20Net%3A%3AJabber&In-Reply-To=%3C43D0ACA4.4010001%40uaznia.net%3E"
+       TITLE="[jdev] how to generate vcard using Net::Jabber">koniczynek at uaznia.net
+       </A><BR>
+    <I>Fri Jan 20 03:25:56 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="053101.html">[jdev] how to generate vcard using Net::Jabber
+</A></li>
+        <LI>Next message: <A HREF="053107.html">[jdev] JEP-33: Reply Handling inconsistency
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53105">[ date ]</a>
+              <a href="thread.html#53105">[ thread ]</a>
+              <a href="subject.html#53105">[ subject ]</a>
+              <a href="author.html#53105">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Randall W, dnia 2006-01-20 00:51 napisal:
+&gt;<i> Hi/
+</I>&gt;<i>    I'm working on a jabber service (written in perl
+</I>&gt;<i> using the Net::Jabber modules) and have come to the
+</I>&gt;<i> point of needing to respond to vCard requests.  
+</I>&gt;<i> Google is not helping me out here: The only possibles:
+</I>(..)
+&gt;<i> Can give me a clue or point me to a working example?   
+</I>I am doing this the simplest way: put you vCard XML into a file (this is 
+actually exact copy of vCard sent by Livedelu a Jobble automated 
+assistant (bot) ;) ):
+
+&lt;vCard xmlns='vcard-temp' prodid=&quot;-//HandGen//NONSGML vGen v1.0//EN&quot; 
+version=&quot;2.0&quot; &gt;
+&lt;FN&gt;Livedelu&lt;/FN&gt;
+&lt;N&gt;
+&lt;GIVEN/&gt;
+&lt;MIDDLE/&gt;
+&lt;FAMILY/&gt;
+&lt;/N&gt;
+&lt;NICKNAME&gt;&lt;/NICKNAME&gt;
+&lt;BDAY&gt;2005-08-08&lt;/BDAY&gt;
+&lt;GENDER&gt;Female&lt;/GENDER&gt;
+&lt;EMAIL&gt;
+&lt;USERID/&gt;
+&lt;INTERNET/&gt;
+&lt;/EMAIL&gt;
+&lt;ADR&gt;
+&lt;HOME/&gt;
+&lt;STREET/&gt;
+&lt;EXTADR/&gt;
+&lt;EXTADD/&gt;
+&lt;LOCALITY&gt;Skawina&lt;/LOCALITY&gt;
+&lt;REGION&gt;malopolska&lt;/REGION&gt;
+&lt;PCODE&gt;32-050&lt;/PCODE&gt;
+&lt;CTRY&gt;Poland&lt;/CTRY&gt;
+&lt;COUNTRY&gt;Poland&lt;/COUNTRY&gt;
+&lt;/ADR&gt;
+&lt;ADR&gt;
+&lt;WORK/&gt;
+&lt;STREET/&gt;
+&lt;EXTADR/&gt;
+&lt;EXTADD/&gt;
+&lt;LOCALITY/&gt;
+&lt;REGION/&gt;
+&lt;PCODE/&gt;
+&lt;CTRY/&gt;
+&lt;COUNTRY/&gt;
+&lt;/ADR&gt;
+&lt;ORG&gt;
+&lt;ORGNAME&gt;KrwawA UazniA TEAM&lt;/ORGNAME&gt;
+&lt;ORGUNIT&gt;Jobble Division&lt;/ORGUNIT&gt;
+&lt;/ORG&gt;
+&lt;TITLE&gt;Advisor&lt;/TITLE&gt;
+&lt;ROLE&gt;Public Relations&lt;/ROLE&gt;
+&lt;URL&gt;<A HREF="http://jobble.uaznia.net&lt;/URL">http://jobble.uaznia.net&lt;/URL</A>&gt;
+&lt;DESC/&gt;
+&lt;PHOTO&gt;
+&lt;TYPE&gt;image/png&lt;/TYPE&gt;
+&lt;BINVAL&gt;(base64 encoded png image here)&lt;/BINVAL&gt;
+&lt;/PHOTO&gt;
+&lt;/vCard&gt;
+
+add proper event handling:
+$Connection-&gt;SetXPathCallBacks(
+(.. many other if needed ..)
+'/iq[@type=&quot;get&quot;]/*[@xmlns=&quot;vcard-temp&quot;]'           =&gt; \&amp;InvCardSend,
+(.. many other if needed ..)
+);
+
+and write a sub sendind your raw XML from file:
+
+sub InvCardSend {
+   my $sid = shift;
+   my $iq = shift;
+
+   my $from = $iq-&gt;GetFrom();
+   my $to = $iq-&gt;GetTo();
+   my $id = $iq-&gt;GetID();
+   my $type = $iq-&gt;GetType();
+   my $query = $iq-&gt;GetQuery();
+
+   log3(&quot;vCard request recived.&quot;);
+
+   open(FILEREAD, &quot;&lt; ./vcard.xml&quot;);
+   my $IQ = new Net::Jabber::IQ();
+   $IQ-&gt;SetIQ( to =&gt; $from,
+         from =&gt; 'livedelu[ at ]jobble[ dot ]uaznia[ dot ]net',
+         id =&gt; $id,
+         type =&gt; 'result');
+   $IQ-&gt;InsertRawXML(&lt;FILEREAD&gt;);
+   $Connection-&gt;Send($IQ);
+
+}
+(JID antyspammed ;) )
+
+and it works fine, if you want to try just request a vCard from Livedelu :)
+
+-- 
+koniczynek
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="053101.html">[jdev] how to generate vcard using Net::Jabber
+</A></li>
+	<LI>Next message: <A HREF="053107.html">[jdev] JEP-33: Reply Handling inconsistency
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53105">[ date ]</a>
+              <a href="thread.html#53105">[ thread ]</a>
+              <a href="subject.html#53105">[ subject ]</a>
+              <a href="author.html#53105">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

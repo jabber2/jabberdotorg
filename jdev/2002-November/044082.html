@@ -1,0 +1,744 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] icqv5-t - sessions are dropped periodicaly, how to make them reconnect?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20icqv5-t%20-%20sessions%20are%20dropped%20periodicaly%2C%20how%20to%20make%20them%20reconnect%3F&In-Reply-To=%3C017901c28737%2473defda0%24013ba8c0%40av%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="044096.html">
+   <LINK REL="Next"  HREF="044083.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] icqv5-t - sessions are dropped periodicaly, how to make them reconnect?</H1>
+    <B>av</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20icqv5-t%20-%20sessions%20are%20dropped%20periodicaly%2C%20how%20to%20make%20them%20reconnect%3F&In-Reply-To=%3C017901c28737%2473defda0%24013ba8c0%40av%3E"
+       TITLE="[JDEV] icqv5-t - sessions are dropped periodicaly, how to make them reconnect?">_av at imail.ru
+       </A><BR>
+    <I>Fri Nov  8 08:59:34 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="044096.html">[JDEV] Karma and connection redirection
+</A></li>
+        <LI>Next message: <A HREF="044083.html">[JDEV] Jabber.org eating messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#44082">[ date ]</a>
+              <a href="thread.html#44082">[ thread ]</a>
+              <a href="subject.html#44082">[ subject ]</a>
+              <a href="author.html#44082">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello everyone!
+
+I'm running a jabberd-1.4.2 on my Win2000, and have meet the problem:
+There is an old and bugus third-party ICQ Server, supporting icqv5 and icqv3
+only (that's why I cannot use icqv7-t or aim). It is periodically ignoring
+ACK packets (in my case those ones were acknowledging SRV_USER_META) going
+from transport and killing the session (sending SRV_GO_AWAY). After that
+transport also kills connection and reports a error.
+
+Is there any possible method to make transport reconnect after such error is
+received? I tried to modify `session.c' such way (posted below). Now
+connection is restored after described failure, but after reconnect
+transport is totally ignoring all incoming ICQ packets, and does not send
+any ICQ packets at all. Debug log from server is attached (transport is
+running in separate process).
+
+-------- Here is modified
+session.c ----------------------------------------------
+
+void it_session_error(session s, terror e)
+{
+    jpq jq;
+
+    if (s-&gt;exit_flag == 1)
+        return;
+
+    if (s-&gt;server)
+    {
+        if (s-&gt;connected)
+            it_packet_text_code(s,&quot;B_USER_DISCONNECTED&quot;);
+        s-&gt;server-&gt;cb_arg = NULL;
+        mio_close(s-&gt;server);
+    }
+
+    if (s-&gt;peer_accept)
+       mio_close(s-&gt;peer_accept);
+
+    s-&gt;rsend = -1;
+    s-&gt;type = stype_normal;
+    s-&gt;addr.sin_family = AF_INET;
+    s-&gt;addr.sin_addr.s_addr = 0x0100007FUL;
+
+    s-&gt;sid = (unsigned long) random();
+    s-&gt;seq1 = (unsigned short)(random() &amp; 0x7FFF);
+    s-&gt;seq2 = 1;
+
+    log_debug (ZONE, &quot;_av: Dropping all undelivered packets&quot;);
+    while (s-&gt;pq_head != NULL)
+        it_server_acked_packet (s, s-&gt;pq_head-&gt;seq1);
+
+    if (!it_server_connect (s) &amp;&amp; (s-&gt;ti-&gt;tcp == TCP_FLAG_NOTCP ||
+!it_peer_listen (s)))
+    {
+        it_packet_login (s);
+        log_debug(ZONE, &quot;_av: reinitializing session&quot;);
+        return;
+    }
+
+    log_debug(ZONE,&quot;Killing session[%s], '%s'&quot;,jid_full(s-&gt;id),e.msg);
+
+    s-&gt;exit_flag = 1;
+
+    if (s-&gt;type != stype_normal)
+        it_session_regerr(s,e);
+    else
+        it_session_unavail(s,e.msg);
+
+    mtq_send(s-&gt;q,s-&gt;p,it_session_exit,(void *) s);
+}
+
+-------- Here is jabberd log ----------------------------------------------
+
+Fri Nov  8 14:50:26 2002  mio.c:977 MIO read from socket 7: &lt;iq type='get'
+id='ad22a' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1674 at icq.av.icn.bmstu.ru</A>' from
+='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>/Psi'&gt;
+&lt;vCard prodid='-//HandGen//NONSGML vGen v1.0//EN' xmlns='vcard-temp'
+version='2.0'/&gt;&lt;/iq&gt;
+Fri Nov  8 14:50:26 2002  base_connect.c:129 process XML: m:A0F06D8 state:3,
+arg:A014B40, x:A0F51F0
+Fri Nov  8 14:50:26 2002  deliver.c:474 DELIVER 1:icq.av.icn.bmstu.ru &lt;iq
+type='get' id='ad22a' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1674 at icq.av.icn.bmst</A>
+u.ru' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>/Psi'&gt;
+&lt;vCard prodid='-//HandGen//NONSGML vGen v1.0//EN' xmlns='vcard-temp'
+version='2.0'/&gt;&lt;/iq&gt;
+Fri Nov  8 14:50:26 2002  deliver.c:678 delivering to instance
+'icq.av.icn.bmstu.ru'
+Fri Nov  8 14:50:26 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:26 2002  mtq A04DBB0 entering from pth
+Fri Nov  8 14:50:26 2002  mtq A04DBB0 queue call A0F5910
+Fri Nov  8 14:50:26 2002  udp_packet.c:33 New UDP packet 6
+Fri Nov  8 14:50:26 2002  udp_packet.c:54 Sending packet 064A
+Fri Nov  8 14:50:26 2002  server.c:361 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+write 1FCF
+Fri Nov  8 14:50:26 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:26 2002  mtq A04DBB0 leaving to pth
+Fri Nov  8 14:50:26 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:26 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:26 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:26 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:26 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:26 2002  server.c:376 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+acked 1FCF
+Fri Nov  8 14:50:26 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:26 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:26 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:26 2002  server.c:234 _av: Received non-ACK package
+Fri Nov  8 14:50:26 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0004
+Fri Nov  8 14:50:26 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:26 2002  udp_process.c:42 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>]
+received ICQ packet
+Fri Nov  8 14:50:26 2002  udp_process.c:99 SRV_META_USER
+Fri Nov  8 14:50:26 2002  meta.c:39 META_USER_INFO
+Fri Nov  8 14:50:26 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:26 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:26 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:26 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:26 2002  server.c:234 _av: Received non-ACK package
+Fri Nov  8 14:50:26 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0005
+Fri Nov  8 14:50:26 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:26 2002  udp_process.c:42 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>]
+received ICQ packet
+Fri Nov  8 14:50:26 2002  udp_process.c:99 SRV_META_USER
+Fri Nov  8 14:50:26 2002  meta.c:69 META_USER_INFO_MORE
+Fri Nov  8 14:50:26 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:26 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:26 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:26 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:26 2002  server.c:234 _av: Received non-ACK package
+Fri Nov  8 14:50:26 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0006
+Fri Nov  8 14:50:26 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:26 2002  udp_process.c:42 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>]
+received ICQ packet
+Fri Nov  8 14:50:26 2002  udp_process.c:99 SRV_META_USER
+Fri Nov  8 14:50:26 2002  meta.c:226 Unhandled META type: 010E
+Fri Nov  8 14:50:26 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:26 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:26 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:26 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:26 2002  server.c:234 _av: Received non-ACK package
+Fri Nov  8 14:50:26 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0007
+Fri Nov  8 14:50:26 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:26 2002  udp_process.c:42 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>]
+received ICQ packet
+Fri Nov  8 14:50:26 2002  udp_process.c:99 SRV_META_USER
+Fri Nov  8 14:50:26 2002  meta.c:92 META_USER_WORK
+Fri Nov  8 14:50:26 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:26 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:26 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:26 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:26 2002  server.c:234 _av: Received non-ACK package
+Fri Nov  8 14:50:26 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0008
+Fri Nov  8 14:50:26 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:26 2002  udp_process.c:42 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>]
+received ICQ packet
+Fri Nov  8 14:50:26 2002  udp_process.c:99 SRV_META_USER
+Fri Nov  8 14:50:26 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:26 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:26 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:26 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:26 2002  server.c:234 _av: Received non-ACK package
+Fri Nov  8 14:50:26 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0009
+Fri Nov  8 14:50:26 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:26 2002  udp_process.c:42 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>]
+received ICQ packet
+Fri Nov  8 14:50:26 2002  udp_process.c:99 SRV_META_USER
+Fri Nov  8 14:50:26 2002  meta.c:226 Unhandled META type: 00F0
+Fri Nov  8 14:50:26 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:26 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:26 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:26 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:26 2002  server.c:234 _av: Received non-ACK package
+Fri Nov  8 14:50:26 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 000A
+Fri Nov  8 14:50:26 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:26 2002  udp_process.c:42 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>]
+received ICQ packet
+Fri Nov  8 14:50:26 2002  udp_process.c:99 SRV_META_USER
+Fri Nov  8 14:50:26 2002  deliver.c:474 DELIVER 1:av.icn.bmstu.ru &lt;iq
+type='result' id='ad22a' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>/Ps
+i' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1674 at icq.av.icn.bmstu.ru</A>'&gt;&lt;vCard xmlns='vcard-temp' version='3.0'
+prodid='-//HandGen//NONSGML vGen v1.0//EN'&gt;&lt;F
+N&gt;Dmitry&lt;/FN&gt;&lt;N&gt;&lt;GIVEN&gt;Dmitry&lt;/GIVEN&gt;&lt;/N&gt;&lt;NICKNAME&gt;av&lt;/NICKNAME&gt;&lt;EMAIL&gt;&lt;USER
+ID&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av_13 at mail.ru</A>&lt;/USERID&gt;&lt;/EMAIL&gt;&lt;EMAIL&gt;&lt;USE
+RID&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av_13 at mail.ru</A>&lt;/USERID&gt;&lt;/EMAIL&gt;&lt;ADR&gt;&lt;HOME/&gt;&lt;EXTADD/&gt;&lt;LOCALITY&gt;Moscow&lt;/LOC
+ALITY&gt;&lt;PCODE&gt;4294967295&lt;/PCODE&gt;&lt;COUNTRY&gt;Russ
+ia&lt;/COUNTRY&gt;&lt;/ADR&gt;&lt;BDAY&gt;1984-03-24&lt;/BDAY&gt;&lt;ORG&gt;&lt;ORGNAME&gt;??.??.?'.&lt;/ORGNAME&gt;&lt;/
+ORG&gt;&lt;ADR&gt;&lt;WORK/&gt;&lt;EXTADD/&gt;&lt;STREET&gt;???R?+?????
+ &lt;/STREET&gt;&lt;LOCALITY&gt;???R?+?????
+&lt;/LOCALITY&gt;&lt;PCODE&gt;4294967295&lt;/PCODE&gt;&lt;COUNTRY&gt;Russia&lt;/COUNTRY&gt;&lt;/ADR&gt;&lt;DESC&gt;&lt;/D
+ESC&gt;&lt;/vCard&gt;
+&lt;/iq&gt;
+Fri Nov  8 14:50:26 2002  deliver.c:678 delivering to instance 'icqlinker'
+Fri Nov  8 14:50:26 2002  mio.c:1271 mio_write called on x: A0F51F0 buffer:
+(null)
+Fri Nov  8 14:50:26 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:26 2002  mio.c:418 write_dump writing data: &lt;iq
+type='result' id='ad22a' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>/Psi' fr
+om='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1674 at icq.av.icn.bmstu.ru</A>'&gt;&lt;vCard xmlns='vcard-temp' version='3.0'
+prodid='-//HandGen//NONSGML vGen v1.0//EN'&gt;&lt;FN&gt;Dmi
+try&lt;/FN&gt;&lt;N&gt;&lt;GIVEN&gt;Dmitry&lt;/GIVEN&gt;&lt;/N&gt;&lt;NICKNAME&gt;av&lt;/NICKNAME&gt;&lt;EMAIL&gt;&lt;USERID&gt;av
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">_13 at mail.ru</A>&lt;/USERID&gt;&lt;/EMAIL&gt;&lt;EMAIL&gt;&lt;USERID&gt;a
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">v_13 at mail.ru</A>&lt;/USERID&gt;&lt;/EMAIL&gt;&lt;ADR&gt;&lt;HOME/&gt;&lt;EXTADD/&gt;&lt;LOCALITY&gt;Moscow&lt;/LOCALITY
+&gt;<i>&lt;PCODE&gt;4294967295&lt;/PCODE&gt;&lt;COUNTRY&gt;Russia&lt;/C
+</I>OUNTRY&gt;&lt;/ADR&gt;&lt;BDAY&gt;1984-03-24&lt;/BDAY&gt;&lt;ORG&gt;&lt;ORGNAME&gt;??.??.?'.&lt;/ORGNAME&gt;&lt;/ORG&gt;&lt;
+ADR&gt;&lt;WORK/&gt;&lt;EXTADD/&gt;&lt;STREET&gt;???R?+????? &lt;/ST
+REET&gt;&lt;LOCALITY&gt;???R?+?????
+&lt;/LOCALITY&gt;&lt;PCODE&gt;4294967295&lt;/PCODE&gt;&lt;COUNTRY&gt;Russia&lt;/COUNTRY&gt;&lt;/ADR&gt;&lt;DESC&gt;&lt;/D
+ESC&gt;&lt;/vCard&gt;&lt;/iq&gt;
+
+Fri Nov  8 14:50:26 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:26 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:26 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:36 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:36 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:36 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0009
+Fri Nov  8 14:50:36 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0009
+Fri Nov  8 14:50:36 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:36 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:36 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:36 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:36 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:36 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0008
+Fri Nov  8 14:50:36 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0008
+Fri Nov  8 14:50:36 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:36 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:36 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:36 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:36 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:36 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0007
+Fri Nov  8 14:50:36 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0007
+Fri Nov  8 14:50:36 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:36 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:36 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:36 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:36 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:36 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0006
+Fri Nov  8 14:50:36 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0006
+Fri Nov  8 14:50:36 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:36 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:36 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:36 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:36 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:36 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0005
+Fri Nov  8 14:50:36 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0005
+Fri Nov  8 14:50:36 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:36 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:36 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:36 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:36 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:36 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0004
+Fri Nov  8 14:50:36 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0004
+Fri Nov  8 14:50:36 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:36 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:36 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:36 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:36 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:46 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:46 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:46 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0009
+Fri Nov  8 14:50:46 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0009
+Fri Nov  8 14:50:46 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:46 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:46 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:46 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:46 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:46 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0008
+Fri Nov  8 14:50:46 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0008
+Fri Nov  8 14:50:46 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:46 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:46 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:46 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:46 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:46 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0007
+Fri Nov  8 14:50:46 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0007
+Fri Nov  8 14:50:46 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:46 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:46 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:46 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:46 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:46 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0006
+Fri Nov  8 14:50:46 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0006
+Fri Nov  8 14:50:46 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:46 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:46 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:46 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:46 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:46 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0005
+Fri Nov  8 14:50:46 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0005
+Fri Nov  8 14:50:46 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:46 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:46 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:46 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:46 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:46 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0004
+Fri Nov  8 14:50:46 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0004
+Fri Nov  8 14:50:46 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:46 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:46 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:46 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:46 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:53 2002  server.c:73 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], keepalive
+Fri Nov  8 14:50:53 2002  udp_packet.c:33 New UDP packet 4
+Fri Nov  8 14:50:53 2002  udp_packet.c:54 Sending packet 042E
+Fri Nov  8 14:50:53 2002  server.c:361 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+write 1FD0
+Fri Nov  8 14:50:53 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:53 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:53 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:53 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:53 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:53 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:53 2002  server.c:376 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+acked 1FD0
+Fri Nov  8 14:50:53 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:56 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:56 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0009
+Fri Nov  8 14:50:56 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0009
+Fri Nov  8 14:50:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:56 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:56 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0008
+Fri Nov  8 14:50:56 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0008
+Fri Nov  8 14:50:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:56 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:56 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0007
+Fri Nov  8 14:50:56 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0007
+Fri Nov  8 14:50:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:56 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:56 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0006
+Fri Nov  8 14:50:56 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0006
+Fri Nov  8 14:50:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:56 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:56 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0005
+Fri Nov  8 14:50:56 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0005
+Fri Nov  8 14:50:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:56 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:50:56 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0004
+Fri Nov  8 14:50:56 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0004
+Fri Nov  8 14:50:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:50:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:50:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:50:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:50:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:06 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:06 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:06 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0009
+Fri Nov  8 14:51:06 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0009
+Fri Nov  8 14:51:06 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:06 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:06 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:06 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:06 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:06 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0008
+Fri Nov  8 14:51:06 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0008
+Fri Nov  8 14:51:06 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:06 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:06 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:06 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:06 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:06 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0007
+Fri Nov  8 14:51:06 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0007
+Fri Nov  8 14:51:06 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:06 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:06 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:06 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:06 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:06 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0006
+Fri Nov  8 14:51:06 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0006
+Fri Nov  8 14:51:06 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:06 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:06 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:06 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:06 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:06 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0005
+Fri Nov  8 14:51:06 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0005
+Fri Nov  8 14:51:06 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:06 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:06 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:06 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:06 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:06 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0004
+Fri Nov  8 14:51:06 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0004
+Fri Nov  8 14:51:06 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:06 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:06 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:06 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:06 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:16 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:16 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:16 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0009
+Fri Nov  8 14:51:16 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0009
+Fri Nov  8 14:51:16 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:16 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:16 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:16 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:16 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:16 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0008
+Fri Nov  8 14:51:16 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0008
+Fri Nov  8 14:51:16 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:16 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:16 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:16 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:16 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:16 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0007
+Fri Nov  8 14:51:16 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0007
+Fri Nov  8 14:51:16 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:16 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:16 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:16 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:16 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:16 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0006
+Fri Nov  8 14:51:16 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0006
+Fri Nov  8 14:51:16 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:16 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:16 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:16 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:16 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:16 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0005
+Fri Nov  8 14:51:16 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0005
+Fri Nov  8 14:51:16 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:16 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:16 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:16 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:16 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:16 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0004
+Fri Nov  8 14:51:16 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0004
+Fri Nov  8 14:51:16 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:16 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:16 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:16 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:16 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:24 2002  server.c:73 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], keepalive
+Fri Nov  8 14:51:24 2002  udp_packet.c:33 New UDP packet 4
+Fri Nov  8 14:51:24 2002  udp_packet.c:54 Sending packet 042E
+Fri Nov  8 14:51:24 2002  server.c:361 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+write 1FD1
+Fri Nov  8 14:51:24 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:24 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:24 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:24 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:24 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:24 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:24 2002  server.c:376 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+acked 1FD1
+Fri Nov  8 14:51:24 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:25 2002  jabberd.c:255 main load check of 1.00 with 13
+total threads
+Fri Nov  8 14:51:56 2002  server.c:73 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], keepalive
+Fri Nov  8 14:51:56 2002  udp_packet.c:33 New UDP packet 4
+Fri Nov  8 14:51:56 2002  udp_packet.c:54 Sending packet 042E
+Fri Nov  8 14:51:56 2002  server.c:361 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+write 1FD2
+Fri Nov  8 14:51:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:977 MIO read from socket 8: ?
+Fri Nov  8 14:51:56 2002  server.c:234 _av: Received non-ACK package
+Fri Nov  8 14:51:56 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0000
+Fri Nov  8 14:51:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:56 2002  udp_process.c:42 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>]
+received ICQ packet
+Fri Nov  8 14:51:56 2002  udp_process.c:110 SRV_GO_AWAY
+Fri Nov  8 14:51:56 2002  session.c:377 _av: Dropping all undelivered
+packets
+Fri Nov  8 14:51:56 2002  server.c:376 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+acked 1FD2
+Fri Nov  8 14:51:56 2002  server.c:116 Connecting to ICQ server
+195.19.37.134
+Fri Nov  8 14:51:56 2002  peer.c:273 Port range = [2000,3000], start at 2001
+Fri Nov  8 14:51:56 2002  mio.c:1425 io_select to listen on 2001
+[192.168.58.10]
+Fri Nov  8 14:51:56 2002  mio.c:1449 io_select starting to listen on 2001
+[192.168.58.10]
+Fri Nov  8 14:51:56 2002  udp_packet.c:33 New UDP packet 56
+Fri Nov  8 14:51:56 2002  udp_packet.c:54 Sending packet 03E8
+Fri Nov  8 14:51:56 2002  server.c:361 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+write 530E
+Fri Nov  8 14:51:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:56 2002  session.c:386 _av: reinitializing session
+Fri Nov  8 14:51:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:56 2002  mio.c:505 freed MIO socket
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:895 socket 11 has been intialized with
+starting karma 5
+Fri Nov  8 14:51:56 2002  mio.c:895 socket 10 has been intialized with
+starting karma 5
+Fri Nov  8 14:51:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:56 2002  mio.c:505 freed MIO socket
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:977 MIO read from socket 10: ?
+Fri Nov  8 14:51:56 2002  server.c:376 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+acked 530E
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:977 MIO read from socket 10: ?
+Fri Nov  8 14:51:56 2002  server.c:234 _av: Received non-ACK package
+Fri Nov  8 14:51:56 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0000
+Fri Nov  8 14:51:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:56 2002  udp_process.c:42 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>]
+received ICQ packet
+Fri Nov  8 14:51:56 2002  udp_process.c:54 SRV_LOGIN_REPLY
+Fri Nov  8 14:51:56 2002  udp_process.c:178 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>],
+sending login reply
+Fri Nov  8 14:51:56 2002  udp_packet.c:33 New UDP packet 4
+Fri Nov  8 14:51:56 2002  udp_packet.c:54 Sending packet 044C
+Fri Nov  8 14:51:56 2002  server.c:361 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+write 530F
+Fri Nov  8 14:51:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:56 2002  udp_packet.c:176 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>],
+sending contact list
+Fri Nov  8 14:51:56 2002  udp_packet.c:33 New UDP packet 5
+Fri Nov  8 14:51:56 2002  udp_packet.c:54 Sending packet 0406
+Fri Nov  8 14:51:56 2002  server.c:361 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+write 5310
+Fri Nov  8 14:51:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:56 2002  udp_packet.c:33 New UDP packet 4
+Fri Nov  8 14:51:56 2002  udp_packet.c:54 Sending packet 04D8
+Fri Nov  8 14:51:56 2002  server.c:361 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+write 5311
+Fri Nov  8 14:51:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:977 MIO read from socket 10: ?
+Fri Nov  8 14:51:56 2002  server.c:376 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+acked 5310
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:977 MIO read from socket 10: ?
+Fri Nov  8 14:51:56 2002  server.c:376 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+acked 5311
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:977 MIO read from socket 10: ?
+Fri Nov  8 14:51:56 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0001
+Fri Nov  8 14:51:56 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0001
+Fri Nov  8 14:51:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:977 MIO read from socket 10: ?
+Fri Nov  8 14:51:56 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0002
+Fri Nov  8 14:51:56 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0002
+Fri Nov  8 14:51:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:977 MIO read from socket 10: ?
+Fri Nov  8 14:51:56 2002  server.c:158 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] Repeated
+packet: 0003
+Fri Nov  8 14:51:56 2002  server.c:171 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>] ACKing
+packet: 0003
+Fri Nov  8 14:51:56 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:51:56 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:51:56 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:51:56 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:52:08 2002  server.c:435 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>],
+retransmit 530F, attempt 1
+Fri Nov  8 14:52:08 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:52:08 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:52:08 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:52:08 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:52:20 2002  server.c:435 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>],
+retransmit 530F, attempt 2
+Fri Nov  8 14:52:20 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:52:20 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:52:20 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:52:20 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:52:25 2002  jabberd.c:255 main load check of 1.00 with 13
+total threads
+Fri Nov  8 14:52:32 2002  server.c:435 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>],
+retransmit 530F, attempt 3
+Fri Nov  8 14:52:32 2002  mio.c:1271 mio_write called on x: 0 buffer: ?
+Fri Nov  8 14:52:32 2002  mio.c:829 mio while loop, working
+Fri Nov  8 14:52:32 2002  mio.c:418 write_dump writing data: ?
+Fri Nov  8 14:52:32 2002  mio.c:816 mio while loop top
+Fri Nov  8 14:52:44 2002  server.c:415 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>],
+Disgarded packet, cmd: 044C, seq: 530F
+Fri Nov  8 14:52:44 2002  server.c:420 We were ignored, dropping packet
+Fri Nov  8 14:52:44 2002  server.c:376 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">av at av.icn.bmstu.ru</A>], server
+acked 530F
+Fri Nov  8 14:53:25 2002  jabberd.c:255 main load check of 1.00 with 13
+total threads
+Fri Nov  8 14:54:25 2002  jabberd.c:255 main load check of 1.00 with 13
+total threads
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="044096.html">[JDEV] Karma and connection redirection
+</A></li>
+	<LI>Next message: <A HREF="044083.html">[JDEV] Jabber.org eating messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#44082">[ date ]</a>
+              <a href="thread.html#44082">[ thread ]</a>
+              <a href="subject.html#44082">[ subject ]</a>
+              <a href="author.html#44082">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

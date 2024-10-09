@@ -1,0 +1,219 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Implementation of JEP-0025 (Jabber HTTP Polling)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Implementation%20of%20JEP-0025%20%28Jabber%20HTTP%20Polling%29&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C148003CCEAD0%40ossex1.corp.webb.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042372.html">
+   <LINK REL="Next"  HREF="042343.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Implementation of JEP-0025 (Jabber HTTP Polling)</H1>
+    <B>Joe Hildebrand</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Implementation%20of%20JEP-0025%20%28Jabber%20HTTP%20Polling%29&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C148003CCEAD0%40ossex1.corp.webb.net%3E"
+       TITLE="[JDEV] Implementation of JEP-0025 (Jabber HTTP Polling)">JHildebrand at jabber.com
+       </A><BR>
+    <I>Fri Jun  7 02:38:29 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042372.html">[JDEV] CVS (was: Possible DoS in mio_ssl.c)
+</A></li>
+        <LI>Next message: <A HREF="042343.html">[JDEV] Implementation of JEP-0025 (Jabber HTTP Polling)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42334">[ date ]</a>
+              <a href="thread.html#42334">[ thread ]</a>
+              <a href="subject.html#42334">[ subject ]</a>
+              <a href="author.html#42334">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>OK, as one of the authors of the JEP in question, I do have the
+responsibility so say this at least one more time, I suppose.  I may not
+have done it on the jdev list, but I thought I'd gotten the gist across in
+foundation meetings.
+
+I realize that there are security holes in JEP-0025.  I'm not convinced that
+any of the solutions that have been proposed are the &quot;right&quot; solution.  I
+think we need to have a discussion about it.  I think the way to do that is
+to have a new, standards-track JEP.  Yes, it would be nice if I could get
+around to doing that, but I've been fairly swamped.  If someone else could
+take a crack at a strawman, it would be helpful.
+
+Next, there *is no way* for me to modify our current product in the
+timeframes involved, due to our existing release cycle.  Once we have a
+standards-track JEP approved, we'll see if we can support it in a future
+version.  Because of this, it makes no sense to modify JEP-0025 to add any
+security measures.
+
+So, the foundation needs to choose one of these:
+
+1) I can withdraw the JEP, in which case there will be no public
+documentation of the polling protocol.  That doesn't seem neighborly to me,
+but I'm willing to bow to overwhelming pressure.  Remember, it's
+INFORMATIONAL, which means that it documents an existing protocol.
+
+2) Leave it as is.  The council can decide whether or not to approve it.
+For informational JEPs, I think the criterion should be &quot;does this JEP
+accurately portray the existing protocol.&quot;  If the council decides that the
+criteria should include &quot;... and we like it,&quot; then the council should reject
+it.  If that happens, I don't know if it should stay on the JEP list or not.
+That's a process question. 
+
+3) Same as 2, but add some big bold letters that say &quot;THIS PROTOCOL IS
+INSECURE.  ITS USE IS DISCOURAGED.&quot;  Frankly, I'm fine with that.  
+
+I'd like to see more people document protocols that they are using as
+informational, to at least seed the discussion of what ought to be a
+standard.  I'm concerned about the potential precedent of discouraging that
+behavior.
+
+
+&lt;rant direction=&quot;aside&quot;&gt;
+As I've said to a couple of people, I think that HTTP polling is a security
+nightmare, no matter how it's implemented.  I've basically enabled people to
+thwart their firewall administrators.  Yes, it's useful for those situations
+where the firewall is administrated by people that don't believe that the
+Internet can be used for legitimate business purposes, so we have to have it
+in our product mix.  But its use should be discouraged where possible.
+&lt;/rant&gt;
+
+&lt;note relevance=&quot;low&quot;&gt;
+I believe that if you do your polling over HTTPS, none of the stated attacks
+are possible, as far as I know.  There are still some cool traffic analysis
+attacks, but no more so that with any Jabber session.  If you have enough
+hardware to do HTTPS polling for a large number of users, well... wow.
+That's impressive, I'm sure. 
+&lt;/note&gt;
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Michael F Lin [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">MFLIN at us.ibm.com</A>]
+</I>&gt;<i> Sent: Thursday, June 06, 2002 12:52 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] Implementation of JEP-0025 (Jabber HTTP Polling)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> I agree, unfortunately, we now have a new implementation based on this
+</I>&gt;<i> &quot;informational&quot; JEP which is vulnerable to the same security problems. So
+</I>&gt;<i> I
+</I>&gt;<i> propose that the informational vs. standards track distinction is pretty
+</I>&gt;<i> meaningless. Look at Matthias' comments - he used it for lack of anything
+</I>&gt;<i> better.
+</I>&gt;<i> 
+</I>&gt;<i> The authors of this JEP, in my opinion, have the responsibility of fixing
+</I>&gt;<i> it. We have handed them several ways to do so. Jabber, Inc., in my
+</I>&gt;<i> opinion,
+</I>&gt;<i> has the responsibility of fixing its web client before its users using it
+</I>&gt;<i> for &quot;financial applications&quot; get burned.
+</I>&gt;<i> 
+</I>&gt;<i> -Mike
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> |---------+----------------------------&gt;
+</I>&gt;<i> |         |           &quot;Peter Millard&quot;  |
+</I>&gt;<i> |         |           &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">me at pgmillard.com</A>|
+</I>&gt;<i> |         |           &gt;                |
+</I>&gt;<i> |         |           Sent by:         |
+</I>&gt;<i> |         |           <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber</A>|
+</I>&gt;<i> |         |           .org             |
+</I>&gt;<i> |         |                            |
+</I>&gt;<i> |         |                            |
+</I>&gt;<i> |         |           06/06/2002 01:05 |
+</I>&gt;<i> |         |           PM               |
+</I>&gt;<i> |         |           Please respond to|
+</I>&gt;<i> |         |           jdev             |
+</I>&gt;<i> |         |                            |
+</I>&gt;<i> |---------+----------------------------&gt;
+</I>&gt;<i>   &gt;-----------------------------------------------------------------------
+</I>&gt;<i> -------------------------------------------------------|
+</I>&gt;<i>   |
+</I>&gt;<i> |
+</I>&gt;<i>   |       To:       &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> |
+</I>&gt;<i>   |       cc:
+</I>&gt;<i> |
+</I>&gt;<i>   |       Subject:  Re: [JDEV] Implementation of JEP-0025 (Jabber HTTP
+</I>&gt;<i> Polling)                                                  |
+</I>&gt;<i>   |
+</I>&gt;<i> |
+</I>&gt;<i>   |
+</I>&gt;<i> |
+</I>&gt;<i>   &gt;-----------------------------------------------------------------------
+</I>&gt;<i> -------------------------------------------------------|
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Mike -
+</I>&gt;<i> 
+</I>&gt;<i> &gt; I agree, and I strongly recommend against the use of JEP-0025 as-is
+</I>&gt;<i> &gt; for any remotely sensitive purposes.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; We have been aware of the security problems for two months and have
+</I>&gt;<i> &gt; proposed multiple viable solutions, but nothing has been fixed. This
+</I>&gt;<i> &gt; JEP either needs to be fixed or withdrawn.
+</I>&gt;<i> 
+</I>&gt;<i> *disclaimer: I am employed by Jabber, Inc* :)
+</I>&gt;<i> 
+</I>&gt;<i> JEP-25 is INFORMATIONAL! It won't be withdrawn as it's not standards
+</I>&gt;<i> track.
+</I>&gt;<i> The whole idea behind informational JEPS is that they allow companies
+</I>&gt;<i> (like
+</I>&gt;<i> Jabber, Inc.) to document the protocol extensions that they build, so
+</I>&gt;<i> other
+</I>&gt;<i> people in the jabber community can use and build other products to them
+</I>&gt;<i> (if
+</I>&gt;<i> they so desire). It's unlikely that this JEP will change since it reflects
+</I>&gt;<i> a
+</I>&gt;<i> currently deployed product (good bad or ugly :).
+</I>&gt;<i> 
+</I>&gt;<i> Someone needs to take JEP-25 as a base, and create a new STANDARDS track
+</I>&gt;<i> JEP
+</I>&gt;<i> that fixes the security holes in the current implementation and submit it.
+</I>&gt;<i> Then client authors (like myself) can choose to implement either JEP-25,
+</I>&gt;<i> the
+</I>&gt;<i> new standards JEP, or both.
+</I>&gt;<i> 
+</I>&gt;<i> Hope this makes sense.
+</I>&gt;<i> 
+</I>&gt;<i> Peter M.
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042372.html">[JDEV] CVS (was: Possible DoS in mio_ssl.c)
+</A></li>
+	<LI>Next message: <A HREF="042343.html">[JDEV] Implementation of JEP-0025 (Jabber HTTP Polling)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42334">[ date ]</a>
+              <a href="thread.html#42334">[ thread ]</a>
+              <a href="subject.html#42334">[ subject ]</a>
+              <a href="author.html#42334">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Security in Jabber server protocols
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Security%20in%20Jabber%20server%20protocols&In-Reply-To=%3C20010702025729.82620.qmail%40msg.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="037952.html">
+   <LINK REL="Next"  HREF="037954.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Security in Jabber server protocols</H1>
+    <B>jabber at msg.net</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Security%20in%20Jabber%20server%20protocols&In-Reply-To=%3C20010702025729.82620.qmail%40msg.net%3E"
+       TITLE="[JDEV] Security in Jabber server protocols">jabber at msg.net
+       </A><BR>
+    <I>Sun Jul  1 21:57:29 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="037952.html">[JDEV] Security &amp; the Java Jabber server
+</A></li>
+        <LI>Next message: <A HREF="037954.html">[JDEV] Security &amp; the Java Jabber server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37953">[ date ]</a>
+              <a href="thread.html#37953">[ thread ]</a>
+              <a href="subject.html#37953">[ subject ]</a>
+              <a href="author.html#37953">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> On the security front, I've been looking at the use of digital signatures a
+</I>&gt;<i> asymetric crytpography to improve trust relationships. The areas that affect
+</I>&gt;<i> what you bring up are;
+</I>
+There is certainly a lot of unused potential benefit from the OpenSSL library,
+it should not take significant changes to the server code to improve the trust
+model of the Jabber c2s and s2s protocols.
+
+This is one area I plan to cover in my 'security' talk at JabberCon.
+ 
+
+&gt;<i> 1) Client -&gt; Server: The use of signed digital certificates which are signed
+</I>&gt;<i> by a known entity (possibly Jabber.com, and/or others), to verify the
+</I>&gt;<i> servers name, IP, and any other details in a similar was as TLS.
+</I>
+I'd like to see Jabber clients distributed with the jabber.org and jabber.com
+public keys, and the easy ability to add additional keys and re-distribute
+them. I operate a number of sets of private servers for which I have a need
+to distribute the key to my userbase- from a few dozen to a few thousand users
+who have a need for the key, using a variety of clients.
+
+Easiest is to look towards web browsers and the OpenSSL project for standards.
+ 
+
+&gt;<i> 2) Server -&gt; Server: The establishment to a key bank (possibly distributed)
+</I>&gt;<i> in which jabber servers store their public keys, data then sent from server
+</I>&gt;<i> A to server B can be encrypted by Server A using it's private key, send to
+</I>&gt;<i> B, B can fetch A's public key from the key store, and decrypt the data. This
+</I>&gt;<i> would give not only server to server message security, but also verification
+</I>&gt;<i> of server A's identity.
+</I>
+3) Server -&gt; client: The ability to have your jabber server sign and issue
+individual 'client certificates', used by the server as part of the initial
+SSL negotiation, to authenticate the end user, in addition to or in place
+of a password.
+
+ 
+&gt;<i> I'm also keen on developing the idea of using a Jabber server as a central
+</I>&gt;<i> authentication location so that 3rd party apps can make use of jabber for
+</I>&gt;<i> authenticating users.
+</I>
+Personally, I am strongly opposed to that idea, but don't let me stop you :-)
+
+I'm putting my effort in this area toward having my Jabber server authenticate
+new accounts and/or logins against an existing authentication service.  There
+are so many other more mature strong authentication models, I do not see the
+value in using Jabber instead of a 'standard' such as LDAP, Kerberos, etc.
+
+ 
+&gt;<i> &gt; One of my primary explorations focus on the area of security with Jabber
+</I>&gt;<i> &gt; (my current impression being that things are Not Good(tm)).  For example,
+</I>&gt;<i> &gt; there seems to be a built-in assumption that client's must trust their
+</I>&gt;<i> &gt; server (a situation that seems obviously ripe for exploitation) and that
+</I>&gt;<i> &gt; server's trust each other (a possibly worse assumption).  Pretty much
+</I>&gt;<i> &gt; every man-in-the-middle and packet spoofing attack seems to be effective
+</I>&gt;<i> &gt; against a Jabber server...  I noticed you're signed up for the security
+</I>&gt;<i> &gt; JIG so I'd love to hear your thoughts on this topic and if you've been
+</I>&gt;<i> &gt; thinking/looking at these issues.
+</I>
+It's not as bad as all that. The SSL implemenation in the Jabber server
+has the ability to prevent one type of MITM attack- where a fake server
+intercepts the client's connection. The missing piece is for clients to add
+code to validate the certificate presented by the server against a pre-shared
+certificate store (just like a web browser).  Trivial to implement in a
+client which already makes use of the OpenSSL library.
+
+IIRC, a client cannot spoof another user's identity on a packet to the server,
+so the ability to perform packet-spoofing attacks depends on having a s2s
+connection.  If you deploy a standalone server without s2s, and/or only permit
+connections on 5269 with hosts you _truly_ trust, this risk is reduced.
+
+
+Kevin Kadow
+MSG.Net, Inc.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="037952.html">[JDEV] Security &amp; the Java Jabber server
+</A></li>
+	<LI>Next message: <A HREF="037954.html">[JDEV] Security &amp; the Java Jabber server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37953">[ date ]</a>
+              <a href="thread.html#37953">[ thread ]</a>
+              <a href="subject.html#37953">[ subject ]</a>
+              <a href="author.html#37953">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

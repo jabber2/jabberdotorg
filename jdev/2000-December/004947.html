@@ -1,0 +1,242 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Building Jabber 1.2 and the AIM Transport
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Building%20Jabber%201.2%20and%20the%20AIM%20Transport&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004959.html">
+   <LINK REL="Next"  HREF="004948.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Building Jabber 1.2 and the AIM Transport</H1>
+    <B>Michael F Lin</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Building%20Jabber%201.2%20and%20the%20AIM%20Transport&In-Reply-To="
+       TITLE="[JDEV] Building Jabber 1.2 and the AIM Transport">mflin at us.ibm.com
+       </A><BR>
+    <I>Fri Dec  1 05:15:01 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004959.html">[JDEV] Jabber and Enhydra
+</A></li>
+        <LI>Next message: <A HREF="004948.html">[JDEV] [patch] jabber 1.2 and 1.3 : fix to avoid ignoring new connections
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4947">[ date ]</a>
+              <a href="thread.html#4947">[ thread ]</a>
+              <a href="subject.html#4947">[ subject ]</a>
+              <a href="author.html#4947">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I am reposting Jay Chalfant's guide to installing aim-t, posted a couple
+weeks ago, which explains the pool_label problem. It might be a good idea
+to try the list archives in the future.
+
+-Mike Lin
+IBM Extreme Blue Software Intern
+
+---------------------- Forwarded by Michael F Lin/Cambridge/IBM on
+12/01/2000 06:12 AM ---------------------------
+
+Jay Chalfant &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at outbackinc.com</A>&gt;@jabber.org on 11/21/2000 01:28:45 PM
+
+Please respond to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+
+Sent by:  <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>
+
+
+To:   &quot;'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+cc:
+Subject:  [JDEV] Building Jabber 1.2 and the AIM Transport
+
+
+
+Hello All,
+
+Sorry for the delay in getting this out. We wanted to make sure that it was
+as accurate as possible so we QA'ed internally by running a clean room
+install on RedHat 6.2. Thanks to Gary Baker for his help.
+
+There are a couple of open issues that I want to highlight:
+
+a) Contrary to my previous post, aimtrans does not build flawlessly with
+the
+1.2 libraries available at download.jabber.org. There is a minor change to
+be made to libxode. I made this change and then forgot about it so my
+builds
+worked! See below for details.
+
+b) Even though Dennis Noordsij was able to provide DNS resolution of
+jabberd
+for the aimtrans by editing /etc/hosts, my adns does not read from
+/etc/hosts. I suspect that there is a configuration issue overlooked on my
+end. Anyone who knows how to make this work, please post the explanation.
+
+What follows is a description of the steps we took to make the AIM
+Transport
+run with Jabber 1.2. Undoubtedly, there are some redundancies and
+inefficiencies in our approach. We will look forward to corrections and
+improvements provided by you, the happy reader. :-)
+
+Thanks again to all who contributed to these efforts.
+
+-J
+
+----------------------
+Jay Chalfant
+OutBack Resource Group
+www.outbackinc.com
+
+
+~~
+
+1.  Building Jabber 1.2 and the AIM Transport
+
+This document describes the steps taken to build, deploy and run jabberd
+1.2
+and aimtrans.
+
+1.1. Files
+
+Retrieve each of the following and, for convenience, put all of them into
+sibling directories.
+
+1.1.1. jabberd
+
+Retrieve the following from <A HREF="http://download.jabber.org/dists/1.2/:">http://download.jabber.org/dists/1.2/:</A>
+jabber-1.2.tar.gz             31-Oct-2000 15:20   121k
+libjabber-1.2.tar.gz          31-Oct-2000 15:20   130k
+libxode-1.2.tar.gz       31-Oct-2000 15:20   186k
+
+Retrieve the following from <A HREF="http://www.gnu.org/software/pth">http://www.gnu.org/software/pth</A>
+pth-1.3.7.tar.gz              29-July-2000 15:20  424k
+
+1.1.2. aimtrans
+
+Retrieve the following from
+<A HREF="http://download.jabber.org/dists/transports/aim-transport/:">http://download.jabber.org/dists/transports/aim-transport/:</A>
+aim-transport-0.8.0.tar.gz    16-Nov-2000 15:10   130k
+libetherx-1.2.tar.gz     16-Nov-2000 15:18   135k
+libfaim-snap.tar.gz      16-Nov-2000 14:59   138k
+
+Retrieve the following from
+<A HREF="ftp://ftp.chiark.greenend.org.uk/users/ian/adns/">ftp://ftp.chiark.greenend.org.uk/users/ian/adns/</A>
+adns-1.0.tar.gz               17-Sept-2000 15:20  203k
+
+1.2. Install jabberd
+
+For jabberd, you will need to build pth, libxode, libjabber, and jabber in
+that order. For each of these, cd to the project root and run ./configure,
+make, make install, and then ldconfig. Since the default install path for
+all of the jabberd and aimtrans libraries is /usr/local/lib, you must add
+this path to /etc/ld.so.conf to tell ldconfig to search there as well. Do
+not forget to run ldconfig after each project is installed!
+
+jabberd is now installed but you must configure it. Configuration is read
+from the file jabber.xml in the project root. Edit that file and change the
+&lt;host&gt; field value from localhost to the hostname of the server on which it
+will run.
+
+At this point, you should be able to run jabberd. From the jabberd project
+root, execute:
+./jabberd/jabberd -D
+
+1.3. Install aimtrans
+
+For aimtrans, you will need to build adns (1.0 required), libxode,
+libetherx, libfaim, and aimtrans in that order. You have already built
+libxode for jabberd. However, libetherx 1.2 is actually dependent upon an
+earlier libxode which contained the function pool_label. This function does
+not appear in libxode 1.2 so you will get an error when you try to link
+aimtrans. To circumvent this, add a no-op function with the correct
+prototype to ~/libxode/src/pool.c:
+
+void pool_label(pool p, char *label, int debug)
+{
+}
+
+For libetherx cd to the project root and run ./configure, make, make
+install, and then ldconfig. For libfaim simply run make, make install and
+then ldconfig.
+
+For aimtrans, you need to run ./congifure with the switch &quot;--with-jabber2&quot;.
+Then make &amp;&amp; make install.
+You now need to configure jabber.xml for the AIM transport. Add the
+following sections.
+Add a top level service under the &lt;jabber&gt; element:
+
+&lt;service id='aimtrans.my_domain'&gt;
+    &lt;accept&gt;
+      &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+      &lt;port&gt;7009&lt;/port&gt;
+      &lt;secret&gt;test&lt;/secret&gt;
+    &lt;/accept&gt;
+&lt;/service&gt;
+
+Under the &lt;agents&gt; element uncomment the aim transport and change the jid
+to
+match the service just created.
+
+&lt;agent jid=&quot;aimtrans.my_domain&quot;&gt;
+     &lt;name&gt;AIM Transport&lt;/name&gt;
+       &lt;description&gt;This is the AIM Transport&lt;/description&gt;
+        &lt;transport&gt;AIM/AOL ScreenName&lt;/transport&gt;
+        &lt;service&gt;aim&lt;/service&gt;
+        &lt;register/&gt;
+&lt;/agent&gt;
+
+You should first test that adns will be able to resolve the IP addr of
+aimtrans.mydomain. On my system, adns would not read from /etc/hosts so I
+added an A record to our DNS. In any case, you should get the following
+output from the adnshost command:
+
+[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at bar</A> foo]$ adnshost aimtrans.my_domain
+aimtrans.my_domain A INET 127.0.0.
+
+Assuming you've made it thus far, run the aimtrans as follows, providing
+the
+name, etherx hostname, port, and secret:
+/usr/local/bin/aimtrans -D -n aimtrans.mydomain -e aimtrans.mydomain -p
+7009
+-s test
+
+If you are watching the debug output, you will see aimtrans connect to
+jabberd, the latter verifying the hash from the secret, etc. At this point,
+you should be able to test the AIM Transport with a client like WinJab.
+
+Have fun!
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004959.html">[JDEV] Jabber and Enhydra
+</A></li>
+	<LI>Next message: <A HREF="004948.html">[JDEV] [patch] jabber 1.2 and 1.3 : fix to avoid ignoring new connections
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4947">[ date ]</a>
+              <a href="thread.html#4947">[ thread ]</a>
+              <a href="subject.html#4947">[ subject ]</a>
+              <a href="author.html#4947">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

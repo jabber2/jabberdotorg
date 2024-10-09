@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Lurker Steps Forward
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Lurker%20Steps%20Forward&In-Reply-To=Pine.LNX.4.04.9904280326180.29381-100000%40localhost.localdomain">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000539.html">
+   <LINK REL="Next"  HREF="000536.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Lurker Steps Forward</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Lurker%20Steps%20Forward&In-Reply-To=Pine.LNX.4.04.9904280326180.29381-100000%40localhost.localdomain"
+       TITLE="[JDEV] Lurker Steps Forward">jeremie at jabber.org
+       </A><BR>
+    <I>Wed Apr 28 10:49:10 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000539.html">[JDEV] Lurker Steps Forward
+</A></li>
+        <LI>Next message: <A HREF="000536.html">[JDEV] Sending files through server...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#538">[ date ]</a>
+              <a href="thread.html#538">[ thread ]</a>
+              <a href="subject.html#538">[ subject ]</a>
+              <a href="author.html#538">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+&gt;<i> Well I talked on this list for a while when it first started, and then I
+</I>&gt;<i> lurked for a long time mainly due to school and other projects. 
+</I>
+Yes, awesome, glad to see you back en-force! ;)
+
+&gt;<i> A long while back there was talk about the AIM transport.  I work a lot
+</I>&gt;<i> with aim and libfaim because I code on two aim clients (gtkfaim and the
+</I>&gt;<i> yet released bullseye). I was beginning to picture the transport in my
+</I>&gt;<i> head because I don't think it would be that hard to quickly put together
+</I>&gt;<i> but there is one problem.  AIM believes that each user has a single
+</I>&gt;<i> connection.  To connect to aim your first must connect to an authorizer
+</I>&gt;<i> type facility and login, then you get tossed over to a new IP that acts
+</I>&gt;<i> as your server.  Once all that is complete you are actually online. 
+</I>&gt;<i> This makes it slightly difficult for the transport to handle multiple
+</I>&gt;<i> users.  I have thought of a few solutions to this and thought I would
+</I>&gt;<i> throw them out here before I start coding because each requires a
+</I>&gt;<i> different implementation. 
+</I>&gt;<i> 
+</I>&gt;<i> 1)  Have the transport open a new connection for each users duration of
+</I>&gt;<i> activity.  This is possible with the library I use (libfaim) and I believe
+</I>&gt;<i> with the TOC protocol, but this is going to cause a lot of connections to
+</I>&gt;<i> open, especially on a large system.  I see this as a last ditch effort to
+</I>&gt;<i> get a working transport.
+</I>
+Why would this be last-ditch?  Seems like a logical way to go, and not all
+Jabber users will be using the AIM transport, and the AIM connections
+would drop when the Jabber user for that connection goes offline...
+doesn't sound like the outgoing connections would get TOO out of hand for
+most purposes :)
+
+&gt;<i> 2)  Have the transport open multiple connections to AIM but set a timeout
+</I>&gt;<i> on them so that they will die off and not just idle taking up sockets ont
+</I>&gt;<i> he server.  There are a few things that have to be watched in this
+</I>&gt;<i> scenario, the connection rate cannont be too fast or AIM get's mad and
+</I>&gt;<i> will not let you connect for a while. 
+</I>
+Does this connection-rate blocking thing act based on the the source IP
+and userid tried, source IP and &quot;failure&quot;, or just on source IP?  This
+could be a problem for a busy transport... I'm wondering, are there
+multiple auth servers(dns round robin or the like) and do you get rejected
+by one or all of them when this happens?
+
+&gt;<i> Also this would require some sort
+</I>&gt;<i> of password storing so that the user does not get angry and have to enter
+</I>&gt;<i> their password every time they wish to relogin to AIM to send a message
+</I>&gt;<i> (although some security nuts like myself really wouldn't mind).
+</I>
+Yes, that is an evil aspect of transports, if you store the password to
+make it convenient for the user, you end up having a large DB of passwords
+and become a target.  I wonder if some of the crypto stuff can't help out
+here... Also, a fairly simple solution could be using the query proposal
+from a few weeks ago, where the transport would query the client software
+for the credentials, so the passwords would be stored on the
+client(although I don't like making the two rely on each other).
+
+Based on the security and ecommerce products I've seen, they all seem to
+be happy with encrypting the data everywhere, and using a single private
+key to decrypt it in ram as it's needed.  Then all you have to keep safe
+is the private key which is a common thing anymore.
+
+&gt;<i> It's late and my mind is kind of warped, so this is the best I could come
+</I>&gt;<i> up with.  The only other problem that crossed my mind (I remember this in
+</I>&gt;<i> old mailing list conversation) is the problem of allowing jabber users to
+</I>&gt;<i> create a new aim user.  This is less of a problem than is with ICQ because
+</I>&gt;<i> AIM does not a have a direct facility to signup other than the web page,
+</I>&gt;<i> so it seems that the user would have to create a user on their own to be
+</I>&gt;<i> able to use this.  Anyway, these are my warped thoughts and I would really
+</I>&gt;<i> appreciate comments and especially new ideas for the connections to AIM.
+</I>&gt;<i> If I'm stepping on anyones toes or others would like to help me be sure to
+</I>&gt;<i> contact me.
+</I>
+Thanks for jumping back in here... an AIM transport, or even a prototype
+one that kind of works, would be a major bonus.  I had one working at one
+point but it was ridiculous :)
+
+I'd like to create some sort of &quot;specification&quot; for how a transport would
+work, what it needs to understand, how it can approach the translation and
+user interaction, etc... Actually building a transport while doing this
+would help tons.  Maybe I'll find a few minutes and get something started
+and we can go from there.
+
+Also, let me know if/when you want CVS access, I'd be happy provide space
+for the code ;)
+
+Jer
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000539.html">[JDEV] Lurker Steps Forward
+</A></li>
+	<LI>Next message: <A HREF="000536.html">[JDEV] Sending files through server...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#538">[ date ]</a>
+              <a href="thread.html#538">[ thread ]</a>
+              <a href="subject.html#538">[ subject ]</a>
+              <a href="author.html#538">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

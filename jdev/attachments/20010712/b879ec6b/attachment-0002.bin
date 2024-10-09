@@ -1,0 +1,53 @@
+I've been fine-tuning my client's file-transfer (jabber:x:oob)
+implementation, including the ability to send files/URLs in groupchat
+messages. Unfortunately I quickly discovered that the conference
+server often, but not always, removes the contents of the <<url>
+element, i.e. the URL itself, when relaying the message. The really
+weird thing is that this consistently happens on one of my machines
+but not the other, even though both are running the identical client
+binary, nor does it matter which of them sent the message or created
+the chat room.
+
+
+I've verified this by dumping the raw XML sent/received by the clients
+(though the sample XML below is just something I made up, since I'm
+writing this from home and don't have those logs handy right now.
+Don't flame me if there are syntax errors.)
+
+
+For example one client might send this:
+
+<fontfamily><param>Courier</param><smaller><<message type="groupchat"
+to="mychat@conf.domain.com">
+
+<<body>Everyone, check this out<</body>
+
+<<x xmlns="jabber:x:oob"><<url>http://www.foobar.com<</url><</x>
+
+<</message>
+
+</smaller></fontfamily>
+
+But the other client would receive from the conference server:
+
+<fontfamily><param>Courier</param><smaller><<message type="groupchat"
+from="mychat@conf.domain.com/5789578957239857">
+
+<<body>Everyone, check this out<</body>
+
+<<x xmlns="jabber:x:oob"><<url><</url><</x>
+
+<</message>
+
+</smaller></fontfamily>
+
+As a workaround I now have the sender add a duplicate copy of the URL
+as a 'url' attribute of the <<url> element, then the receiver tries to
+find this if the body of the <<url> is empty.
+
+
+Is this a known bug? I'm running the 1.4.1 conference server on
+Solaris.
+
+
+<bold>--Jens</bold>

@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] UIDs
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20UIDs&In-Reply-To=%3CPine.LNX.4.10.9909011007130.2282-100000%40lor.jeremie.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="030675.html">
+   <LINK REL="Next"  HREF="030688.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] UIDs</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20UIDs&In-Reply-To=%3CPine.LNX.4.10.9909011007130.2282-100000%40lor.jeremie.com%3E"
+       TITLE="[JDEV] UIDs">jeremie at jabber.org
+       </A><BR>
+    <I>Wed Sep  1 10:32:15 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="030675.html">[JDEV] UIDs
+</A></li>
+        <LI>Next message: <A HREF="030688.html">[JDEV] UIDs
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#30680">[ date ]</a>
+              <a href="thread.html#30680">[ thread ]</a>
+              <a href="subject.html#30680">[ subject ]</a>
+              <a href="author.html#30680">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> So I return your post with two more ideas. The first, an extension on your
+</I>&gt;<i> happy median. The second, a whole different idea from a programmer-friend
+</I>&gt;<i> IRL.
+</I>&gt;<i> 
+</I>&gt;<i> &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/transport&quot;? I'd like my transport to be able to encode a bit
+</I>&gt;<i> more information than just it's name. Reason? Because I see uses for
+</I>&gt;<i> transports such as &quot;guises&quot; and special forwarders/gateways. So I suggest an
+</I>&gt;<i> extension that looks like this: &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>[/transport[/transport encoded]]&quot;.
+</I>&gt;<i> It allows for our current UID system, extends for the transport, and
+</I>&gt;<i> optionally allows for more encoded information the transport needs.
+</I>
+Yes, I was thinking something along those lines also...
+
+&gt;<i> A programmer friend of mine working on an alternative IM system said, &quot;Scott,
+</I>&gt;<i> why are you screwing around with transports on the same machine? The DNS
+</I>&gt;<i> system is large and cheap for what 'real' servers use. Just make all the
+</I>&gt;<i> transports have a different DNS entry.&quot; To which grumbled something about
+</I>&gt;<i> not having a bunch of servers and wandered away to write this e-mail. The
+</I>&gt;<i> thing is, he's got a point. DNS is cheap and it's there, so why not use it?
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">scott at jabber.org</A>? If I want to send to ICQ, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">12341234 at icq.jabber.org.</A> If
+</I>&gt;<i> you're cheap, or can't figure out how to map servers out to the same port on
+</I>&gt;<i> different IPs, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">12341234 at icq.jabber.org</A>:5555. These can all be on the same
+</I>&gt;<i> machine talking the same jabber language. Heck, they could be the same
+</I>&gt;<i> &quot;etherx&quot; daemon (I'm introducing a new paradigm here. ;)) passing to the
+</I>&gt;<i> appropriate &quot;transport&quot; inside based off the address. Not the &quot;transport
+</I>&gt;<i> information&quot; encoded within a UID.
+</I>
+Hahaha :)
+
+Well, this is almost exactly the way Jabber currently is, it just wasn't
+explained very well and there wasn't a specific requirement that the names
+be in DNS, *g*.
+
+How it's implimented currently is via etherx: etherx loads the config file
+and listens on multiple IP's as specified and accepts incoming fragments.
+As local transports connect to the localhost:5269 they are allowed to
+become recipients of these fragments and must provide names/aliases for
+which domains they handle.  So the Jabber transport would connect and tell
+etherx that it is &quot;jabber.org&quot; and would then recieve all incoming
+fragments destined for jabber.org.  The sysadmin would need to map any
+names that any of the transports would use to the IPs that etherx is
+listening on, and then configure each transport to tell etherx which name
+it is.
+
+Etherx, when resolving a fragment recipient, first looks at the table of
+connected transports and delivers immediately there, so it doesn't *FORCE*
+any DNS requirements on the names the transports use. I think my
+mistake thus far has to been to use that &quot;backdoor&quot; to address the
+transports via special names outside of DNS.
+
+So, what you're saying is basically that in the docs/man
+pages/instructions/READMES, we specify that all transport names *MUST*
+have corresponding DNS names.  I don't want to try and enforce it, but
+this way if they botch it up it's not a design/architecture botch up :)  I
+think this works splendidly, and I should probably never had tried
+utilizing the backdoor anyway...
+
+So the end result of this: <A HREF="jabber://userid@foo.bar.com/special-data">jabber://userid@foo.bar.com/special-data</A>
+
+==&gt; The [<A HREF="jabber://]">jabber://]</A> is not used internally in Jabber, only in web/URI
+settings where appropriate.
+
+==&gt; The [userid] my be dropped for special public server-only queries.
+
+==&gt; The [foo.bar.com] is the address of any server/transport entity in
+Jabber.
+
+==&gt; The [/special-data] is passed to the transport to handle as it wishes
+for special purposes or internal routing data.
+
+Lovin it, if everyone is ok with this it works for me!  The only
+code/architecture changes required are to pass around that [/special-data]
+which I can add into etherx without too much difficulty for 0.7.
+
+Great, thanks!
+
+Jer
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="030675.html">[JDEV] UIDs
+</A></li>
+	<LI>Next message: <A HREF="030688.html">[JDEV] UIDs
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#30680">[ date ]</a>
+              <a href="thread.html#30680">[ thread ]</a>
+              <a href="subject.html#30680">[ subject ]</a>
+              <a href="author.html#30680">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

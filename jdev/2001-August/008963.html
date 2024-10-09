@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] XML::Stream bug under mod_perl
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20XML%3A%3AStream%20bug%20under%20mod_perl&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="008958.html">
+   <LINK REL="Next"  HREF="008965.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] XML::Stream bug under mod_perl</H1>
+    <B>Abraham Ingersoll</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20XML%3A%3AStream%20bug%20under%20mod_perl&In-Reply-To="
+       TITLE="[JDEV] XML::Stream bug under mod_perl">abe at dajoba.com
+       </A><BR>
+    <I>Tue Aug  7 20:15:44 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="008958.html">[JDEV] Transport Unregister Problem
+</A></li>
+        <LI>Next message: <A HREF="008965.html">[JDEV] XML::Stream bug under mod_perl
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8963">[ date ]</a>
+              <a href="thread.html#8963">[ thread ]</a>
+              <a href="subject.html#8963">[ subject ]</a>
+              <a href="author.html#8963">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+We're using Net::Jabber under mod_perl/Mason to send messages based on
+users web activity. When trying to use Net::Jabber in
+this environment (underneath mod_perl), we came up with the following
+error:
+
+[error] package 'IO::Select' not registered for warnings at
+/usr/lib/perl5/site_perl/5.6.0/XML/Stream.pm line 1276
+
+A little investigation shows that this error occurs when XML::Stream
+trys to call has_error against an IO::Select v1.14 object.
+IO::Select::has_error has been depreciated in favor of
+IO::Select::has_exception, at least in version &gt;= 1.14 --
+
+sub has_exception
+{
+ my $vec = shift;
+ my $timeout = shift;
+ my $e = $vec-&gt;[VEC_BITS];
+
+ defined($e) &amp;&amp; (select(undef,undef,$e,$timeout) &gt; 0)
+    ? handles($vec, $e)
+    : ();
+}
+
+sub has_error
+{
+ warnings::warn(&quot;Call to depreciated method 'has_error', use
+'has_exception'&quot;)
+        if warnings::enabled();
+ goto &amp;has_exception;
+}
+
+Our workaround is to simply make XML::Stream call has_exception anywhere
+it was calling has_error (3 lines). I imagine there's a way to
+tell IO::Socket not to dump out that (fairly useless) warning, but I
+couldn't figure it out. A smarter, backwards-compatible solution would be
+to test which version of IO::Select XML::Stream's dealing with, and then
+choose which (has_error/has_exception) method to use within XML::Stream
+based on that. If this is the perferred fix, I'd be more than happy to
+code this check into XML::Stream and submit patches if noone else
+steps up.
+
+Btw, many thanks to Mr. Eatmon for his work on Net::Jabber, along with
+everyone else involved!
+
+Abe
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="008958.html">[JDEV] Transport Unregister Problem
+</A></li>
+	<LI>Next message: <A HREF="008965.html">[JDEV] XML::Stream bug under mod_perl
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8963">[ date ]</a>
+              <a href="thread.html#8963">[ thread ]</a>
+              <a href="subject.html#8963">[ subject ]</a>
+              <a href="author.html#8963">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

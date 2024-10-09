@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Ramblings - feel free to join in :-)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Ramblings%20-%20feel%20free%20to%20join%20in%20%3A-%29&In-Reply-To=%3C00121412280801.03432%40dennis%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034471.html">
+   <LINK REL="Next"  HREF="034464.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Ramblings - feel free to join in :-)</H1>
+    <B>Dennis Noordsij</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Ramblings%20-%20feel%20free%20to%20join%20in%20%3A-%29&In-Reply-To=%3C00121412280801.03432%40dennis%3E"
+       TITLE="[JDEV] Ramblings - feel free to join in :-)">dennis.noordsij at wiral.com
+       </A><BR>
+    <I>Thu Dec 14 04:28:08 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034471.html">[JDEV] Interesting AIM-Transport problem.
+</A></li>
+        <LI>Next message: <A HREF="034464.html">[JDEV] jpolld configuration
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34463">[ date ]</a>
+              <a href="thread.html#34463">[ thread ]</a>
+              <a href="subject.html#34463">[ subject ]</a>
+              <a href="author.html#34463">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I have had 2 things on my mind for a while and would like to take the 
+opportunity to hear from other people what they think would work and wouldn't 
+work, or maybe come up with a better idea or implementation.
+
+The first one concerns bandwidth vs horsepower. I think we can pretty safely 
+assume that :
+- in our own jabber server farm bandwidth is plentily available, and the only 
+thing we are worried about is raw power of our servers. Any optimizations 
+would be ones that will get more messages routed in the same time, even if 
+that takes up a little more bandwidth inbetween jabber components (think of 
+the main JSM to transports to xdb databases - all on a small LAN).
+
+- with regard to the &quot;outside&quot;, ie users connecting via TCP/IP over the 
+internet we value bandwidth much more. It is alright if the client has to do 
+a little more work if it means it takes less bandwidth to get a message 
+across.
+
+How to do this, without affecting jabber server code at all, and clients 
+minorly?
+
+Why not bzip2 the xml stream? The client would simply stream through a bzip2 
+function before sending it out over the socket, this would be quite easily 
+implemented in clients. On the server side, since any serious setup will use 
+jpolld multiplexing machines only jpolld has to know about bzip2, when the 
+XML reaches the jabber server it is plain text XML again. Likewise, why not 
+stream through an SSL component (with compression), once again, on the client 
+side it would make no difference, on the server side the jpolld's could be 
+linked again an SSL library making use that hardware SSL acceleration board I 
+see in every issue of LinuxJournal :-) 
+
+Even without the SSL, bzip2ing a stream would help tremendously as XML is 
+basically text and compresses quite well. Only jpolld would have to be fitted 
+with a bzip2 component (similar to the xstream) and clients could even use a 
+local proxy that does it for them. Wouldn't the bandwidth savings be 
+substantial enough to warrant implementation of this? This way we can still 
+keep using the original protocol without resorting to small proprietary 
+binary tags as someone else suggested, thus keeping everything open.
+
+
+
+My second thought is about scalability of the core of the jabber server. We 
+can already farm out incoming connections to several jpolld multiplexers, 
+database lookups to a farm of xdb caching lookuppers (yeah that's really a 
+word! :), but the central JSM for a domain (assuming btw that I want all 
+users in the same domain, ie <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at mydomain.fi</A>) is still limited to how fast 
+that one machine can route packets, few hundred/second? Forgive me if there 
+already is a much more elegant solution than this :-) Here goes:
+
+Our domain is jabber.com
+
+Machine 1) internal name Apple
+ Connected to Jpolld1-A and Jpolld1-B
+
+Machine 2) internal name Orange
+ Connected to Jpolld2-A and Jpolld2-B
+
+User <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jabber.com</A> logs in, round robin DNS puts him on Jpolld1-B.
+My real JID is <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jabber.com</A>/work
+Internally Machine 1 also knows me as <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jpolld1-B</A>    (already done)
+Machine 1 now propagates to all other machines (each machine is connected to 
+every other machine) &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jabber.com</A>/work - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at apple</A>/work&quot;.
+
+Now every single machine in our farm has a hashtable entry that says 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jabber.com</A>/work - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at apple</A>/work&quot;, except for machine 1 which has 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jabber.com</A>/work - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jpolld1-B</A>&quot;
+
+However the amount of memory needed to store one entry would be so small that 
+this would still work, AND we can dedicate the storing of this entries to a 
+special machine with the server machine simply fetching it from the dedicated 
+machine and caching it for a while. Note that only this particular string is 
+stored, NOT the actual session data, that is only stored on the &quot;home&quot; 
+server, ie the one that you actually connected to.
+
+Now, harry connects, round robin puts him on Jpolld1-A
+
+Propagation takes place:
+Machine 1)
+ <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jabber.com</A>/work - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jpolld1-B</A>
+ <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">harry at jabber.com</A>/school - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">harry at jpolld1-A</A>
+
+Machine 2)
+ <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jabber.com</A>/work - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at apple</A>/work
+ <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">harry at jabber.com</A>/school - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">harry at apple</A>/school
+
+Harry sends a message to Dennis, Machine 1 looks in it's hashtable, sees the 
+message has to be delivered to jpolld1-B and does so.
+
+
+Now, susan connects, round robin puts her on Jpolld2-B
+
+Propagation:
+Machine 1)
+ <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jabber.com</A>/work - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jpolld1-B</A>
+ <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">harry at jabber.com</A>/school - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">harry at jpolld1-A</A>
+ <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">suzan at jabber.com</A>/home - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">suzan at orange</A>/home
+
+Machine 2)
+ <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jabber.com</A>/work - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at apple</A>/work
+ <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">harry at jabber.com</A>/school - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">harry at apple</A>/school
+ <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">suzan at jabber.com</A>/home - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">suzan at jpolld2-B</A>
+
+Now Suzan sends a message to Dennis, it goes from Suzan's client via 
+jpolld2-B to her machine, orange.
+
+Orange looks, sees that <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jabber.com</A> has one session, which is 
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at apple</A>/work. Machine 2 (orange) now sends the message to Machine 1 
+(apple), apple receives it, sees that this session is managed by jpolld1-B 
+and sends it to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at jpolld1-B</A>
+
+
+If this would work, how much traffic would it save? Btw if this already works 
+like that please tell me how :-) Would it hard to implement? Are there issues 
+I have totally missed that would make this impossible?
+
+By using this technique, a number of servers, each having for example 2 
+jpolld multiplexors, you can also implement load balancing. Although I don't 
+remember right now I believe there was a redirect stream error so a server 
+can redirect a client to a different IP? Based on statistics with regard to 
+load and message flow between components and sockets/bandwidth usage per 
+jpolld and cpu/memory consumption per server an intelligent redirecting 
+policy can be dynamically maintained.
+
+
+Then again, maybe I am just rambling :-))
+
+Hope to hear some ideas,
+cheers!
+Dennis
+
+PS On a sidenote, I managed to write what I initially started as a jabberd 
+component (see Transport different approach thread) by using jpolld as a 
+reference and using the libjabber and libxode libraries to write a standalone 
+executable. Doesn't depend on etherx for my connections, allows pthreading 
+and basically rocks :) libxode is a very nice library .. kudos guys.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034471.html">[JDEV] Interesting AIM-Transport problem.
+</A></li>
+	<LI>Next message: <A HREF="034464.html">[JDEV] jpolld configuration
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34463">[ date ]</a>
+              <a href="thread.html#34463">[ thread ]</a>
+              <a href="subject.html#34463">[ subject ]</a>
+              <a href="author.html#34463">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

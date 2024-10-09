@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Performance
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Performance&In-Reply-To=%3C20000424172024.B18037%40orientation.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="032302.html">
+   <LINK REL="Next"  HREF="032305.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Performance</H1>
+    <B>Kurt D. Starsinic</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Performance&In-Reply-To=%3C20000424172024.B18037%40orientation.com%3E"
+       TITLE="[JDEV] Performance">kstar at orientation.com
+       </A><BR>
+    <I>Mon Apr 24 16:20:24 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="032302.html">[JDEV] Performance
+</A></li>
+        <LI>Next message: <A HREF="032305.html">[JDEV] Performance
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#32303">[ date ]</a>
+              <a href="thread.html#32303">[ thread ]</a>
+              <a href="subject.html#32303">[ subject ]</a>
+              <a href="author.html#32303">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sun, Apr 23, 2000 at 10:43:17AM +1000, Bron Gondwana wrote:
+&gt;<i> &gt;     No limitation..  Feature..  ;-P
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;     Throwing a throttle on connections is meant to limit situations where an
+</I>&gt;<i> &gt; individual could attempt to bash the server (intentionally on other).
+</I>&gt;<i> 
+</I>&gt;<i> It may be worth giving an option to either disable this all together, or
+</I>&gt;<i> preferably on a per-user basis.  I'm thinking about something like a
+</I>&gt;<i> print server or syslog setup where you want high speed at _all_ times
+</I>&gt;<i> often from a single &quot;user&quot;.
+</I>&gt;<i> 
+</I>&gt;<i> Otherwise, sounds like a good idea!  Stop those id10t spammers.
+</I>
+    A better solution might be to (optionally) make the client do some
+hard work that the server can check easily, such as factoring a large
+number chosen by the server:
+
+    C:  &lt;jabber-request&gt;[content]&lt;/jabber-request&gt;
+    S:  &lt;jabber-response please-factor=&quot;21&quot;/&gt;
+    C:  &lt;jabber-request please-factor=&quot;21&quot; factor_a=&quot;3&quot; factor_b=&quot;7&quot;&gt;
+        [content]&lt;/jabber-request&gt;
+
+    Of course, substitute a suitable bignum in place of `21'.
+
+    Added work on the server side:  generating bignums (and their
+factorizations), managing a pool of same, checking factor_a and factor_b
+on every request, making sure the challenge is currently in the pool,
+issuing new challenges for failed responses.
+
+    Added work on the client side:  keeping the most recent request in a
+buffer in case it is challenged, factoring bignums, resending requests
+that have been challenged.
+
+    Very minimal bignum support (integer multiplication only) is required
+on client and server; one doesn't require a full-featured implementation
+like libgmp.
+
+    The advantages are that, under high load, throttling is handled by the
+client, instead of the server keeping per-client state; and throttling can
+be per-client (privileged clients are offered non-expiring challenges, but
+everybody else has to periodically respond to a new challenge; and/or
+second-tier clients are given bigger nums to factor).
+
+    Thoughts?  I wouldn't be averse to coding this up myself.  I'm going
+to be dealing with serious Jabber scaling issues soon . . . .
+
+    Peace,
+* Kurt Starsinic (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kstar at orientation.com</A>) ---------- Senior Network Engineer *
+|<i> `It is impossible to achieve the aim without suffering.' -- J. G. Bennett |
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="032302.html">[JDEV] Performance
+</A></li>
+	<LI>Next message: <A HREF="032305.html">[JDEV] Performance
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#32303">[ date ]</a>
+              <a href="thread.html#32303">[ thread ]</a>
+              <a href="subject.html#32303">[ subject ]</a>
+              <a href="author.html#32303">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

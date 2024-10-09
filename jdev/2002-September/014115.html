@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] BIG Roster in Jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20BIG%20Roster%20in%20Jabber&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="014112.html">
+   <LINK REL="Next"  HREF="014116.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] BIG Roster in Jabber</H1>
+    <B>Glenn MacGregor</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20BIG%20Roster%20in%20Jabber&In-Reply-To="
+       TITLE="[JDEV] BIG Roster in Jabber">gtm at almeric.com
+       </A><BR>
+    <I>Fri Sep  6 07:24:16 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="014112.html">[JDEV] BIG Roster in Jabber
+</A></li>
+        <LI>Next message: <A HREF="014116.html">[JDEV] Re: jdev digest, Vol 1 #1611 - 12 msgs
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14115">[ date ]</a>
+              <a href="thread.html#14115">[ thread ]</a>
+              <a href="subject.html#14115">[ subject ]</a>
+              <a href="author.html#14115">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>----- Original Message -----
+From: &quot;Murali P&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Murali_P at sifycorp.com</A>&gt;
+To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Sent: Friday, September 06, 2002 1:37 AM
+Subject: Re: [JDEV] BIG Roster in Jabber
+
+
+&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Hi All,
+</I>&gt;<i>      This being the order (900 items in roster), the way xdb_sql has been
+</I>&gt;<i> written is totally screwed.
+</I>&gt;<i>
+</I>&gt;<i> It first does a select from the rosterusers table to fetch the list of
+</I>jid's for
+&gt;<i> that username and then for each &amp; every jid, it selects from rostergroups
+</I>table
+&gt;<i> to get the group name.
+</I>&gt;<i>
+</I>&gt;<i> So for every client while logging in it does a jabber:iq:roster, there
+</I>would be
+&gt;<i> a minimum of 901 questions on the db :) &amp; subsequently, whenever this
+</I>client who
+&gt;<i> has now logged in wants to add/modify an existing buddy , jabber
+</I>internally
+&gt;<i> would do a jabber.Iq:roster &amp; fetch his current roster list , only to go
+</I>into an
+&gt;<i> eternal sleep mode :) (this is the case for just one user)
+</I>
+I have made some fixes to xdb_sql for this problem.  The first one is easily
+fixed by putting a join in that select statement so there is only one call
+to the db.  I have not see the second problem, but if you elaborate a bit I
+can test it and post a fix.
+
+&gt;<i>
+</I>&gt;<i> As regards the functionality of buddy add's in the offline mode, it is
+</I>better
+&gt;<i> not to comment as it does not work at all in xdb_sql (or atleast in mysql
+</I>as
+&gt;<i> db).
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Regards
+</I>&gt;<i> P.Murali
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>                                               Placed At :
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Peter Saint-Andre &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at jabber.org</A>&gt; on 09/06/2002 03:54:37 AM
+</I>&gt;<i>
+</I>&gt;<i> Please respond to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i> To:   &quot;Jdev (E-mail)&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> cc:    (bcc: Murali P/Satyam)
+</I>&gt;<i>
+</I>&gt;<i> Subject:  Re: [JDEV] BIG Roster in Jabber
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> I agree with temas -- large rosters cause a lot of packets to fly around
+</I>&gt;<i> in the server, so it's better to write this as a component. My roster (900
+</I>&gt;<i> items) probably hogs ridiculous amounts of memory. Maybe I need to be a
+</I>&gt;<i> component. :)
+</I>&gt;<i>
+</I>&gt;<i> Anyone have a good roster-cleaner? Maybe I need to write one...
+</I>&gt;<i>
+</I>&gt;<i> Peter
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Peter Saint-Andre
+</I>&gt;<i> Jabber Software Foundation
+</I>&gt;<i> <A HREF="http://www.jabber.org/people/stpeter.html">http://www.jabber.org/people/stpeter.html</A>
+</I>&gt;<i>
+</I>&gt;<i> On Tue, 3 Sep 2002, Agustin Sanchez wrote:
+</I>&gt;<i>
+</I>&gt;<i> &gt; Hi All:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I'd like to know if it's possible to store a really big user roster in a
+</I>&gt;<i> &gt; jabber server (could be as much as 5000/6000 users). This is meant to
+</I>have a
+&gt;<i> &gt; large distribution list send information to users who subscribe a news
+</I>&gt;<i> &gt; service implemented on jabber. How about the MSN transport? Does this
+</I>&gt;<i> &gt; imposes any limitation on the number of users?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks in advance
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Agustin Sanchez
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="014112.html">[JDEV] BIG Roster in Jabber
+</A></li>
+	<LI>Next message: <A HREF="014116.html">[JDEV] Re: jdev digest, Vol 1 #1611 - 12 msgs
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14115">[ date ]</a>
+              <a href="thread.html#14115">[ thread ]</a>
+              <a href="subject.html#14115">[ subject ]</a>
+              <a href="author.html#14115">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

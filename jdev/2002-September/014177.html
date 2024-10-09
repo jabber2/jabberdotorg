@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Question about xdb_auth_cpile
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Question%20about%20xdb_auth_cpile&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="014176.html">
+   <LINK REL="Next"  HREF="014179.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Question about xdb_auth_cpile</H1>
+    <B>Joe Breeden</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Question%20about%20xdb_auth_cpile&In-Reply-To="
+       TITLE="[JDEV] Question about xdb_auth_cpile">jbreeden at ena.com
+       </A><BR>
+    <I>Mon Sep 16 12:46:23 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="014176.html">[JDEV] Jabberd in a distributed environment.
+</A></li>
+        <LI>Next message: <A HREF="014179.html">[JDEV] Question about xdb_auth_cpile
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14177">[ date ]</a>
+              <a href="thread.html#14177">[ thread ]</a>
+              <a href="subject.html#14177">[ subject ]</a>
+              <a href="author.html#14177">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I am in the process of modifying xdb_auth_cpile.pl to work with some special in-house stuff we need and wanted to add support for jabber:iq:register name space to allow users to register with database. For some reason, my modified version of the code is not seeing the jabber:iq:register requests. 
+
+Here is the xdb tag from my jabber.xml:
+
+  &lt;xdb id=&quot;xdb_ena&quot;&gt;
+    &lt;host&gt;xdb_ena.shrieker.ena.com&lt;/host&gt;
+    &lt;ns&gt;jabber:iq:roster&lt;/ns&gt;
+    &lt;ns&gt;jabber:x:offline&lt;/ns&gt;
+    &lt;ns&gt;jabber:iq:filter&lt;/ns&gt;
+    &lt;ns&gt;jabber:iq:last&lt;/ns&gt;
+    &lt;ns&gt;jabber:iq:auth&lt;/ns&gt;
+    &lt;ns&gt;jabber:iq:auth:0k&lt;/ns&gt;
+    &lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+    &lt;accept&gt;
+      &lt;ip&gt;localhost&lt;/ip&gt;
+      &lt;port&gt;5999&lt;/port&gt;
+      &lt;secret&gt;g00g0ne&lt;/secret&gt;
+    &lt;/accept&gt;
+  &lt;/xdb&gt;
+
+Here is a snippet of my perl code that creates a Jabber::Connection object and registers a handler sub routine:
+
+###create jabber object
+my $j = new Jabber::Connection (
+	server =&gt; $jserver-&gt;{ip} . ':' . $jserver-&gt;{port},
+	localname =&gt; $jserver-&gt;{id},
+	ns =&gt; 'jabber:component:accept',
+	);
+
+###connect to the server
+log_msg ( MSG =&gt; 'Connecting to the server [' . $jserver-&gt;{ip} . ':' . $jserver-&gt;{port} . '] [' . $jserver-&gt;{id} . ']' ) if $debug;
+log_msg ( MSG =&gt; &quot;Failed to connect to the server - [&quot; . $j-&gt;lastError . &quot;]&quot;, DIE =&gt; 1) unless $j-&gt;connect();
+
+###register the handlers
+log_msg ( MSG =&gt; 'Registering handlers.') if $debug;
+$j-&gt;register_handler( 'xdb', \&amp;xdb_handler );
+
+Looking at the POD for Jabber::Connection and the example code in xdb_auth_cpile.pl is a little confusing. The POD for Jabber::Connection says that the first argument to register_handler should be a node type - 'message', 'presence', or 'iq' - but the example code has 'xdb'. Using 'xdb' as a node type seems to work for most of the namespaces in the &lt;xdb&gt; tag of my jabber.xml, for some reason or other I am not seeing jabber:iq:register requests. 
+
+Any help would be appreciated and if more information is needed, please let me know what and I'll pass it on. 
+
+Thanks in advance,
+
+--Joe Breeden
+
+&gt;<i>From Murphy's Laws of Computing:
+</I>9. A complex system that does not work is invariably found to have evolved from a simpler system that worked just fine.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="014176.html">[JDEV] Jabberd in a distributed environment.
+</A></li>
+	<LI>Next message: <A HREF="014179.html">[JDEV] Question about xdb_auth_cpile
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14177">[ date ]</a>
+              <a href="thread.html#14177">[ thread ]</a>
+              <a href="subject.html#14177">[ subject ]</a>
+              <a href="author.html#14177">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

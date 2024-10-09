@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Ad-Hoc Commands permissions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Ad-Hoc%20Commands%20permissions&In-Reply-To=%3C5b698f5a050828124643851f17%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="081178.html">
+   <LINK REL="Next"  HREF="081185.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Ad-Hoc Commands permissions</H1>
+    <B>Norman Rasmussen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Ad-Hoc%20Commands%20permissions&In-Reply-To=%3C5b698f5a050828124643851f17%40mail.gmail.com%3E"
+       TITLE="[jdev] Ad-Hoc Commands permissions">normanr at gmail.com
+       </A><BR>
+    <I>Sun Aug 28 14:46:51 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="081178.html">[jdev] Ad-Hoc Commands permissions
+</A></li>
+        <LI>Next message: <A HREF="081185.html">[jdev] PyMSNt 0.9.4 released, PyMSNt 0.10-rc1 available,	epoll-0.5 released!
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81235">[ date ]</a>
+              <a href="thread.html#81235">[ thread ]</a>
+              <a href="subject.html#81235">[ subject ]</a>
+              <a href="author.html#81235">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>re:
+  RFC 3920, Section 9.3.2, and
+  JEP-0050, Section 4.4
+
+I think the correct response should be:
+
+&lt;iq from=&quot;msn.delx.cjb.net&quot; type=&quot;error&quot; id=&quot;ac83a&quot;
+to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">james at delx.cjb.net</A>/Powerbook&quot;&gt;
+  &lt;command xmlns=&quot;<A HREF="http://jabber.org/protocol/commands&quot;">http://jabber.org/protocol/commands&quot;</A>
+    node=&quot;connectusers&quot; /&gt;
+  &lt;error type='cancel' code='403'&gt;
+    &lt;forbidden xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/&gt;
+    &lt;text xmlns=&quot;urn:ietf:params:xml:ns:xmpp-stanzas&quot;&gt;The requesting
+entity does not possess the required permissions to perform the
+action.&lt;/text&gt;
+  &lt;/error&gt;
+&lt;/iq&gt;
+
+I seem to think that type should be 'auth' and not 'cancel' (as the
+jep states). The rfc says auth means 'retry after providing
+credentials', which includes out-of-band.  The irc transport currently
+uses 'auth'.  The MSN transport is currently using 401, whereas the
+jep seems to think it should be 403.  Again 401/auth might be seen as
+something the user might be able to fix if they supply new credentials
+in-band, and 403/forbidden implies that the user will never be able to
+do it - requiring out-of-band changes to allow it.
+
+Psi doesn't currently report the error condition, it probably should. 
+In fact this will probably get fixed when Psi stops treating command
+stages as separate entities, and links them together coherently.  (you
+might notice atm, that each stage is a new window, which is wrong)
+
+On 27/08/05, James Bunton &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">james at delx.cjb.net</A>&gt; wrote:
+&gt;<i> Hi all.
+</I>&gt;<i> 
+</I>&gt;<i> I'm implementing a few ad-hoc commands in PyMSNt.
+</I>&gt;<i> 
+</I>&gt;<i> What should I send as a response if the requesting client doesn't have
+</I>&gt;<i> permission to execute the command?
+</I>&gt;<i> At the moment it goes like this
+</I>&gt;<i> 
+</I>&gt;<i> &lt;iq type=&quot;set&quot; to=&quot;msn.delx.cjb.net&quot; id=&quot;ac83a&quot; &gt;
+</I>&gt;<i> &lt;command xmlns=&quot;<A HREF="http://jabber.org/protocol/commands&quot;">http://jabber.org/protocol/commands&quot;</A>
+</I>&gt;<i> node=&quot;connectusers&quot; /&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> &lt;iq from=&quot;msn.delx.cjb.net&quot; type=&quot;error&quot; id=&quot;ac83a&quot;
+</I>&gt;<i> to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">james at delx.cjb.net</A>/Powerbook&quot; &gt;
+</I>&gt;<i> &lt;error type=&quot;cancel&quot; code=&quot;401&quot; &gt;
+</I>&gt;<i> &lt;not-authorized/&gt;
+</I>&gt;<i> &lt;/error&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Psi (with ad-hoc patches) doesn't display any error though, and
+</I>&gt;<i> JEP-0050 doesn't actually mention an error case for lack of
+</I>&gt;<i> permissions.
+</I>&gt;<i> 
+</I>&gt;<i> ---
+</I>&gt;<i> 
+</I>&gt;<i> James
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+-- 
+- Norman Rasmussen
+ - Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>
+ - Home page: <A HREF="http://norman.rasmussen.co.za/">http://norman.rasmussen.co.za/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="081178.html">[jdev] Ad-Hoc Commands permissions
+</A></li>
+	<LI>Next message: <A HREF="081185.html">[jdev] PyMSNt 0.9.4 released, PyMSNt 0.10-rc1 available,	epoll-0.5 released!
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81235">[ date ]</a>
+              <a href="thread.html#81235">[ thread ]</a>
+              <a href="subject.html#81235">[ subject ]</a>
+              <a href="author.html#81235">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

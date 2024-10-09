@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Question about XMPP authentication
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Question%20about%20XMPP%20authentication&In-Reply-To=%3C20060604175642.GA14206%40tarantula%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="054071.html">
+   <LINK REL="Next"  HREF="054075.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Question about XMPP authentication</H1>
+    <B>Michal vorner Vaner</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Question%20about%20XMPP%20authentication&In-Reply-To=%3C20060604175642.GA14206%40tarantula%3E"
+       TITLE="[jdev] Question about XMPP authentication">michal.vaner at kdemail.net
+       </A><BR>
+    <I>Sun Jun  4 12:56:42 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="054071.html">[jdev] Question about XMPP authentication
+</A></li>
+        <LI>Next message: <A HREF="054075.html">[jdev] Question about XMPP authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54072">[ date ]</a>
+              <a href="thread.html#54072">[ thread ]</a>
+              <a href="subject.html#54072">[ subject ]</a>
+              <a href="author.html#54072">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Mon, Jun 05, 2006 at 12:27:18AM +0700, Nguyen TV wrote:
+&gt;<i>    Hi all, I'm a XMPP newbie. I have been wondering about this question for
+</I>&gt;<i>    days and if you can help me find the solution, that would be so great
+</I>&gt;<i>    (^-^).
+</I>&gt;<i> 
+</I>&gt;<i>    I was trying to develope a simple web conference software which provide
+</I>&gt;<i>    chat and whiteboard service to users.
+</I>&gt;<i>    My client connects to my server via TCP/IP. I used XMPP for
+</I>&gt;<i>    authentication, register and sending messages. For the whiteboard feature,
+</I>&gt;<i>    I used my own protocol.
+</I>&gt;<i>    My goal is :
+</I>&gt;<i>    -   Everyone who has the right JID/Password can login then use the
+</I>&gt;<i>    services.
+</I>&gt;<i>    -   Users at my server can still send messages to other users at any XMPP
+</I>&gt;<i>    servers while taking part in the conference.
+</I>&gt;<i> 
+</I>&gt;<i>    MY AUTHENTICATION USE CASE
+</I>&gt;<i> 
+</I>&gt;<i>               JID/password                       JID/password
+</I>&gt;<i>    myClient    ----&gt;       [1]myserver.org        ---&gt;
+</I>&gt;<i>    [2]jabber.org
+</I>&gt;<i>                   &lt;----                                   &lt;---
+</I>&gt;<i>                 login result                          login result
+</I>&gt;<i> 
+</I>&gt;<i>    I was wondering if i can do this with my client:
+</I>&gt;<i> 
+</I>&gt;<i>    -  The user try to login by entering JID/Password.
+</I>&gt;<i> 
+</I>&gt;<i>    -  In case the JID belongs to my server, the authentication will be done
+</I>&gt;<i>    normally using SASL or Non-SASL.(2 ways to do XMPP authentication that I
+</I>&gt;<i>    know - If there's any else, pls give me some information. Thanks in
+</I>&gt;<i>    advance)
+</I>&gt;<i> 
+</I>&gt;<i>    -  In case the JID belongs to other server (ex: [3]jabber.org), my server
+</I>&gt;<i>    will act as a client with that JID/password to [4]jabber.org server. It
+</I>&gt;<i>    will try to do an authentication with [5]jabber.org on behalf of the user
+</I>&gt;<i>    (sending the JID/password to [6]jabber.org). In here, my server just want
+</I>&gt;<i>    to ask [7]jabber.org if that was the correct JID/Password set at
+</I>&gt;<i>    [8]jabber.org.
+</I>&gt;<i> 
+</I>&gt;<i>    -  [9]jabber.org will send the login result back.
+</I>&gt;<i> 
+</I>&gt;<i>    -  If that was the correct JID/Password set at [10]jabber.org. Yes, now my
+</I>&gt;<i>    server knows who the user is then let him in and use my services.
+</I>&gt;<i>       Else, sorry, you've not been authenticated. I can't let you in.
+</I>&gt;<i> 
+</I>&gt;<i>    Can I do that??
+</I>
+Yes, of course you can do that. You can either:
+* Use sasl-plain login to know the password
+* Just relay the chalengre from server and the response from user. Just
+act like a proxy, not server and client.
+
+&gt;<i>    SENDING MESSAGES SCENARIO
+</I>&gt;<i>    After the authentication has been done:
+</I>&gt;<i>    -  In case the JID belongs to my server, sending messages has no problems.
+</I>&gt;<i> 
+</I>&gt;<i>    -  In case the JID belongs to [11]jabber.org, my server now will act like
+</I>&gt;<i>    a forward server. It receives messages from myClient then sends to
+</I>&gt;<i>    [12]jabber.org on behalf of that user.
+</I>&gt;<i> 
+</I>&gt;<i>                  message                          message
+</I>&gt;<i>    myClient    ----&gt;       [13]myserver.org        ---&gt;
+</I>&gt;<i>    [14]jabber.org
+</I>&gt;<i>                    &lt;----                                  &lt;---
+</I>&gt;<i>                  message                          message
+</I>&gt;<i> 
+</I>&gt;<i>    Is that possible??
+</I>
+Yes, of course. If the server acts like a client to it, it can just take
+the &lt;message&gt; stanza and send it to the server. You have no work here,
+since the client is client to you and you are client to the server. So
+you have everything prepared.
+
+&gt;<i>    Thanks for being patient, reading this such long mail :&quot;&gt;. I'm looking
+</I>&gt;<i>    forward to any replies :)
+</I>&gt;<i> 
+</I>&gt;<i> References
+</I>&gt;<i> 
+</I>&gt;<i>    Visible links
+</I>&gt;<i>    1. <A HREF="http://myserver.org/">http://myserver.org/</A>
+</I>&gt;<i>    2. <A HREF="http://jabber.org/">http://jabber.org/</A>
+</I>&gt;<i>    3. <A HREF="http://jabber.org/">http://jabber.org/</A>
+</I>&gt;<i>    4. <A HREF="http://jabber.org/">http://jabber.org/</A>
+</I>&gt;<i>    5. <A HREF="http://jabber.org/">http://jabber.org/</A>
+</I>&gt;<i>    6. <A HREF="http://jabber.org/">http://jabber.org/</A>
+</I>&gt;<i>    7. <A HREF="http://jabber.org/">http://jabber.org/</A>
+</I>&gt;<i>    8. <A HREF="http://jabber.org/">http://jabber.org/</A>
+</I>&gt;<i>    9. <A HREF="http://jabber.org/">http://jabber.org/</A>
+</I>&gt;<i>   10. <A HREF="http://jabber.org/">http://jabber.org/</A>
+</I>&gt;<i>   11. <A HREF="http://jabber.org/">http://jabber.org/</A>
+</I>&gt;<i>   12. <A HREF="http://jabber.org/">http://jabber.org/</A>
+</I>&gt;<i>   13. <A HREF="http://myserver.org/">http://myserver.org/</A>
+</I>&gt;<i>   14. <A HREF="http://jabber.org/">http://jabber.org/</A>
+</I>
+-- 
+
+There are two types of optimizations. The ones which make the program 
+slower and the ones which make the user red by missing features.
+
+Michal &quot;vorner&quot; Vaner
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20060604/c520faec/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20060604/c520faec/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="054071.html">[jdev] Question about XMPP authentication
+</A></li>
+	<LI>Next message: <A HREF="054075.html">[jdev] Question about XMPP authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54072">[ date ]</a>
+              <a href="thread.html#54072">[ thread ]</a>
+              <a href="subject.html#54072">[ subject ]</a>
+              <a href="author.html#54072">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

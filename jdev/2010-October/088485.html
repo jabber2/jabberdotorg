@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Alternate MUC Authentication Mechanisms
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3CB5A43133-C9DA-4B87-BDDC-3540330546AD%40Isode.COM%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088484.html">
+   <LINK REL="Next"  HREF="088486.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Alternate MUC Authentication Mechanisms</H1>
+    <B>Kurt Zeilenga</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3CB5A43133-C9DA-4B87-BDDC-3540330546AD%40Isode.COM%3E"
+       TITLE="[jdev] Alternate MUC Authentication Mechanisms">Kurt.Zeilenga at Isode.COM
+       </A><BR>
+    <I>Thu Oct 21 17:20:59 CST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088484.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+        <LI>Next message: <A HREF="088486.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88485">[ date ]</a>
+              <a href="thread.html#88485">[ thread ]</a>
+              <a href="subject.html#88485">[ subject ]</a>
+              <a href="author.html#88485">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+On Oct 21, 2010, at 3:58 PM, Alex Milowski wrote:
+
+&gt;<i> On Thu, Oct 21, 2010 at 3:53 PM, Kurt Zeilenga &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Kurt.Zeilenga at isode.com</A>&gt; wrote:
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> I have number of concerns.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> I am concerned that a client or the user would not know why SASL authentication was being offered, what id to use, etc..   Aside from user confusion, I fear attackers will actually highjack the S2S connections between the S2S server and the MUC server, offer SASL/PLAIN (or terribly weak mechanism) to the clients in hopes users will enter the password they use to authenticate to their server.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> I rather not open such attack doors.
+</I>&gt;<i> 
+</I>&gt;<i> I'm not sure we are talking about the same thing.  I want to use
+</I>&gt;<i> something like DIGEST
+</I>&gt;<i> authentication to send the *room* credentials and not the user's credentials.
+</I>
+The suggestion was to use SASL.  SASL is designed to authenticate users to services (and services to users).  Users are easily confused as to which service they are authenticating to, and this leads to various attacks well mounted.  If you offer SASL authentication to the MUC service, there will be demands that it support only 'room password' authentication, but user to MUC service authentication.
+
+Now, if we talk about use of something that is only 'something like' a SASL mechanism, such as SCRAM, I think we need to consider what the threats are, and whether or not any particular solution adequately mitigates those threats.
+
+My view is that the key threat to use plain passwords is the threat that an eavesdropper can subscribe to the room at will.   My solution, I believe, adequately addresses this threat by use of a simple hash of the password and other data to ensure it not readily usable by eavesdroppers.  The inclusion of subscribers jid and room jid in the hash means the eavesdropper has to highjack the subscriber's server (or its sessions) to use the hash.  And inclusion of the time-stamp (and muc service checks of that the time-stamp is within some configurable window), limits the window of such attacks. This, I feel, is more than than adequate mitigation of this key threat.
+
+&gt;<i> 
+</I>&gt;<i> I don't see how having a non-cleartext authentication mechanism for
+</I>&gt;<i> MUC rooms changes any security issues that might already be present
+</I>&gt;<i> via a MUC room service.
+</I>
+Certainly non-cleartext authentication doesn't actually mitigate any of the more severe (than the eavesdropper threat discussed above) threats to the MUC service.
+
+However, introduction of a second authentication approach will actually introduce some threats which are not present today.  For instance, such introduction will introduce a downgrade attack (though if we worry about active attacks, we got lots of things to worry about).
+
+Now, given that I've suggested a non-cleartext authentication mechanism, it should be obvious that I'm not opposed to the introduction of such in principle.  However, I think we need to take care not to overly complicate the solution, for instance, by the introduction of SASL-based MUC authentication, as doing will lead to introduction of even more threats.
+
+&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> As previously noted in this thread, one can mitigate replay attacks by including a timestamp in the hash (as well as subscriber and room jids)... and the replay can only be mounted by someone who takes control of the subscriber's server or S2S sessions or C2S sessions.  If an attacker has comprised the system to the point of being able to replay, they generally would have the ability to mount a wide range of attacks which SASL authentication by itself will do little to protect against.
+</I>&gt;<i> 
+</I>&gt;<i> That's the point of using a nonce and other aspects of various
+</I>&gt;<i> challenge base authentication mechanism.  I don't see why we would
+</I>&gt;<i> develop a new method.
+</I>
+Well, it's the &quot;just use SASL&quot; suggestion I am objecting to.  I less mind something simply based on existing authentication method.
+
+However, I prefer a mechanism that doesn't have a significant additional round-trip burden.   Round-trips are very expensive in some systems.
+
+One of the nice things about the approach I suggest is that it introduces zero additional round-trips.
+
+&gt;<i> 
+</I>&gt;<i> -- 
+</I>&gt;<i> --Alex Milowski
+</I>&gt;<i> &quot;The excellence of grammar as a guide is proportional to the paucity of the
+</I>&gt;<i> inflexions, i.e. to the degree of analysis effected by the language
+</I>&gt;<i> considered.&quot;
+</I>&gt;<i> 
+</I>&gt;<i> Bertrand Russell in a footnote of Principles of Mathematics
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088484.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+	<LI>Next message: <A HREF="088486.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88485">[ date ]</a>
+              <a href="thread.html#88485">[ thread ]</a>
+              <a href="subject.html#88485">[ subject ]</a>
+              <a href="author.html#88485">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

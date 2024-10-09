@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Single Sign-on and stuff
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Single%20Sign-on%20and%20stuff&In-Reply-To=%3C000d01c14f34%2402a75920%249cfdfea9%40mercury%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039076.html">
+   <LINK REL="Next"  HREF="039078.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Single Sign-on and stuff</H1>
+    <B>Michael Hearn</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Single%20Sign-on%20and%20stuff&In-Reply-To=%3C000d01c14f34%2402a75920%249cfdfea9%40mercury%3E"
+       TITLE="[JDEV] Single Sign-on and stuff">mhearn at mailandnews.com
+       </A><BR>
+    <I>Sun Oct  7 08:28:51 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039076.html">[JDEV] Instant Messaging Markup Language
+</A></li>
+        <LI>Next message: <A HREF="039078.html">[JDEV] Single Sign-on and stuff
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39077">[ date ]</a>
+              <a href="thread.html#39077">[ thread ]</a>
+              <a href="subject.html#39077">[ subject ]</a>
+              <a href="author.html#39077">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>OK, to address a few criticisms of the proposals:
+
+&gt;<i> I have huge problems using cookies for authentication purposes of any
+</I>&gt;<i> kind. Why couldn't I capture your cookie and be you? If I got into your
+</I>&gt;<i> machine, what would stop me from using your cookies?
+</I>
+Then don't use them. Cookies are entirely optional if you look carefully -
+all they are used for is speeding up the login process by allowing sites to
+remember your network address, and for the authentication site, the
+credentials (which would be encrypted so only the authentication site could
+read them btw). If you don't wish to have your credentials stored, then
+simply uncheck the &quot;Remember Me&quot; options on the relevant sites: tada, no
+cookies. You have to re-enter your credentials each time which is a bit of a
+pain, but you do get the increased security.
+
+But if say users were to use cookies in ignorance let's take the second case
+first, as it is more likely. If for instance I sat down at somebodies
+computer while they were signed in, what would I realistically be able to
+achieve? If we assume that the user has visited a negligent site that has
+not encrypted its cookies, I would be able to determine the persons username
+by reading the cookie list in Mozilla/IE or whatever. I would not be able to
+determine the users password, because it's encrypted. I could copy the
+cookie from one computer to another manually, in which case the machine
+would have been &quot;ghosted&quot;. Here's one way the amount of damage this could do
+could be limited:
+
+The first time you visit the sign-in page, a counter is initialised to some
+random number (maybe taken from the time), and hashed with the credentials
+and stored. The counter is saved in the users account. Next time you visit
+the sign in page (which will happen even if all your credentials are stored:
+bear in mind that visiting xyz.com will always redirect you to the sign in
+page once you've signed in once with xyz.com) , the credentials are read
+from the cookie and checked against the counter. If they match, the counter
+is incremented, and the credentials are rehashed, and the cookie reset. Now
+let's assume that somebody steals a sign-in cookie. As soon as that cookie
+is used to sign in to a site, it's invalidated. So if the real user attempts
+to sign in again, they'll receive a message saying that the cookies have
+become desynchronized or whatever, and the user is automatically logged out.
+The only way forward is to represent your credentials over an SSL link, and
+sign in all over again. Of course, if the real user is the first to visit
+another page that supports SSI, then the stolen cookie is invalidated and
+the thief gets nowhere.
+
+This is not a perfect system of course, and if the thief is first then they
+can sign in using somebody elses cookie. But these weaknesses could apply to
+any sign in system on the net today. In fact, we've already got an imperfect
+SSI implementation in place today: on most sites, if you forget your
+password you can have it emailed to you. So really the only password that
+truly matters is your email password, which is often transmitted in the
+clear anyway. Where are all the evil hackers stealing email passwords and
+using that to sign in to Amazon under other peoples names?
+
+&gt;<i> &gt; _Arbitrary services_
+</I>&gt;<i> &gt; We will use the example of a jabber aware FTP server and client for this
+</I>&gt;<i> section.
+</I>&gt;<i> &gt; 1. User connects to jabber-aware FTP server using jabber aware client
+</I>&gt;<i> 2. User gives client username and credentials (password, certificate,
+</I>&gt;<i> whatever)
+</I>
+&gt;<i> I capture the credentials.
+</I>
+Using what, a keyboard sniffer? Fine - any security system is vunerable to
+this sort of attack. I don't see your point.
+
+&gt;<i> I was going to type in RFC1510 here. Here is a link
+</I>&gt;<i> <A HREF="http://www.ietf.org/rfc/rfc1510.txt">http://www.ietf.org/rfc/rfc1510.txt</A> .
+</I>
+&gt;<i> The big concept I want to drive home here is that no passwords or other
+</I>&gt;<i> relevant pieces of information that could be stolen to impersonate
+</I>&gt;<i> someone are sent over the wire.  We really should consider that when
+</I>&gt;<i> creating an authentication protocol. Tell me why I am wrong.
+</I>
+Not having credentials sent over the wire significantly increases complexity
+and reduces usability. If we did this, we'd end up with Kerberos. Show me
+where the millions of people using Kerberos are. They aren't there, and they
+aren't there for good reasons: it doesn't work on the web. It also requires
+clients to be especially written, special servers to be set up, and is not
+properly supported on Windows (it doesn't exist in Win9x, it exists in a
+broken and MS specific form on Windows 2000).
+
+OK, this has turned into a rant, for which I apologise, but a rant it will
+be. I see this all the time: developers sacrificing usability for security,
+in the mistaken belief that black hats will tear people to pieces unless
+it's 100% impenetrable. Not true. At the end of the day, SSI is about
+convenience. I'd like to use one password to sign in to all my websites and
+yes in the future FTP servers and other things too. I'd like to type in my
+username and password once, and then for the network to remember all this
+and not prompt me again. This opens the system up to abuse of course, even
+if it's just my little brother sitting down at the keyboard while I'm out of
+the room and looking at my eGroups preferences. But I'm willing to accept
+less security for more convenience, and many other people are too. It's a
+compromise at the end of the day between the ultra-tight security of
+Kerberos and a real world implementation that's easy to use and develop for.
+I stick by it.
+
+thanks -mike
+_______________________
+Michael Hearn
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mhearn at neuk.net</A>
+Jabber (jabber.org) <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tweedledee at jabber.org</A>
+ICQ# 34800568
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039076.html">[JDEV] Instant Messaging Markup Language
+</A></li>
+	<LI>Next message: <A HREF="039078.html">[JDEV] Single Sign-on and stuff
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39077">[ date ]</a>
+              <a href="thread.html#39077">[ thread ]</a>
+              <a href="subject.html#39077">[ subject ]</a>
+              <a href="author.html#39077">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

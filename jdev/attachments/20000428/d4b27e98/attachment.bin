@@ -1,0 +1,307 @@
+<jserver>
+
+This is the Jabber Server XML configuration file.  Each section has it's own instructions.
+
+
+Replace the default name with your primary server hostname, include any alternates seperately:
+
+  <names>
+    <default>170.1.36.175</default>
+    <!-- <alt>virtual.host</alt> --> 
+  </names>
+
+
+If you want to listen on multiple or specific IP's:
+
+<!--
+  <listen>
+    <ip>12.34.56.78</ip>
+    <ip>12.34.56.79</ip>
+  </listen>
+-->
+
+
+The session log, make sure the folder exists!
+
+  <log>
+    <session>/usr/local/var/log/jserver.log</session>
+    This will log some basic tracking information about every packet of data (TONS!)
+      <packet>/usr/local/var/log/jserver_packet.log</packet>
+  </log>
+
+
+Data is stored on the filesystem for each user, make sure the folder exists!
+
+  <spool>/usr/local/var/jspool</spool>
+
+Registration instructions and fields, remove to disallow registration:
+
+  <register>
+    <instructions>Choose a username and password to register with this server.</instructions>
+    <username/><password/><name/><email/>
+  </register>
+
+
+Server info:
+
+  <info>
+    <name>Jabber Server</name>
+    <description>A Jabber Server!</description>
+    <url>http://foo.bar/</url>
+  </info>
+
+
+A place to list the available agents for the users of this server:
+
+  <agents>
+
+    <!-- this is the default agent for the (temporary) master jabber user directory -->
+<!--
+    <agent jid="users.jabber.org">
+      <name>Jabber User Directory</name>
+      <description>You may register and create a public searchable profile, and search for other registered Jabber users.</description>
+      <service>jud</service>
+      <register/>
+      <search/>
+    </agent>
+-->
+    <!-- these are just examples, you will receive instructions on what to place here when you install a real agent
+    <agent jid="aim.jabber.org">
+      <name>AIM Transport</name>
+      <description>This is the AIM Transport</description>
+      <transport>AIM/AOL ScreenName</transport>
+      <service>aim</service>
+      <register/>
+    </agent>
+    <agent jid="icq.jabber.org">
+      <name>ICQ Transport</name>
+      <description>This is the ICQ Transport</description>
+      <transport>ICQ#</transport>
+      <service>icq</service>
+      <register/>
+    </agent>
+    <agent jid="groups.jabber.org">
+      <name>GroupChat</name>
+      <description>You can create and participate in private chatrooms.</description>
+      <service>groupchat</service>
+      <register/>
+    </agent>
+    -->
+  </agents>
+
+
+List of the default DSO loaded modules:
+
+  <dso>
+    <mod_time>/usr/local/lib/jabber/mod_time.so</mod_time>
+    <mod_version>/usr/local/lib/jabber/mod_version.so</mod_version>
+    <mod_echo>/usr/local/lib/jabber/mod_echo.so</mod_echo>
+    <svc_http>/usr/local/lib/jabber/svc_http.so</svc_http>
+    <svc_irc>/usr/local/lib/jabber/svc_irc.so</svc_irc>
+  </dso>
+
+
+This is how the server connects to etherx:
+
+  <etherx>
+    <secret>test</secret>
+    <host>127.0.0.1</host>
+  </etherx>
+
+  <mysql>
+    <!-- Configure information about the MySQL connection -->
+    <connection>
+      <host>localhost</host>
+      <db>jabber</db>
+      <user>jabberuser</user>
+      <pass>secret</pass>
+    </connection>
+
+    <!-- This section defines the queries we make into the database.  The -->
+    <!-- querydef mechanism allows us to change the underlying database layout -->
+    <!--  without recompiling the source. -->
+    <queries>
+
+      <!-- Authentication get query (all queries have standard names) -->
+      <querydef name="auth-get">
+	<text>
+	  SELECT password FROM users WHERE username = '$$u$$'
+	</text>
+	<!-- A variable binding - name attribute is defined by code, -->
+	<!-- CDATA is variable in text -->
+	<bindvar name="user">$$u$$</bindvar>
+	<!-- This is a column binding - name is predefined, offset is ofs. -->
+	<!-- of field in query result -->
+	<bindcol name="password" offset="0"/>
+      </querydef>
+
+      <!-- Authentication set query -->
+      <querydef name="auth-set">
+        <text>
+	  UPDATE users SET PASSWORD = '$$p$$' WHERE username = '$$u$$'
+        </text>
+	<bindvar name="user">$$u$$</bindvar>
+	<bindvar name="password">$$p$$</bindvar>
+      </querydef>
+
+      <!-- Authentication removal query -->
+      <querydef name="auth-remove">
+	<text>
+	  DELETE FROM users WHERE username = '$$u$$'
+	</text>
+	<bindvar name="user">$$u$$</bindvar>
+      </querydef>
+
+      <!-- Check user existence query -->
+      <querydef name="checkuser">
+        <text>SELECT * FROM users WHERE username = '$$u$$'</text>
+	<bindvar name="user">$$u$$</bindvar>
+      </querydef>
+
+      <!-- Authentication set query for new user -->
+      <querydef name="auth-set-new">
+        <text>
+	  INSERT INTO users (username, password) VALUES ('$$u$$', '$$p$$')
+        </text>
+	<bindvar name="user">$$u$$</bindvar>
+	<bindvar name="password">$$p$$</bindvar>
+      </querydef>
+
+      <!-- loads individual users from the roster -->
+      <querydef name="roster-load-1">
+        <text>
+	  SELECT jid, nick, subscription, ask, server FROM rosterusers
+	  WHERE username = '$$user$$'
+	</text>
+	<bindvar name="user">$$user$$</bindvar>
+	<bindcol name="jid" offset="0"/>
+	<bindcol name="nickname" offset="1"/>
+	<bindcol name="subscription" offset="2"/>
+	<bindcol name="ask" offset="3"/>
+	<bindcol name="server" offset="4"/>
+      </querydef>
+
+      <!-- loads individual groups for each user -->
+      <querydef name="roster-load-2">
+        <text>
+	  SELECT group FROM rostergroups
+	  WHERE username = '$$user$$' AND jid = '$$jid$$'
+	</text>
+	<bindvar name="user">$$user$$</bindvar>
+	<bindvar name="jid">$$jid$$</bindvar>
+	<bindcol name="group" offset="0"/>
+      </querydef>
+
+      <!-- erases all roster user data -->
+      <querydef name="roster-purge-1">
+        <text>DELETE FROM rosterusers WHERE username = '$$user$$'</text>
+	<bindvar name="user">$$user$$</bindvar>
+      </querydef>
+
+      <!-- erases all roster group data -->
+      <querydef name="roster-purge-2">
+        <text>DELETE FROM rostergroups WHERE username = '$$user$$'</text>
+	<bindvar name="user">$$user$$</bindvar>
+      </querydef>
+
+      <!-- adds a new roster user item -->
+      <querydef name="roster-add-1">
+        <text>
+	  INSERT INTO rosterusers (username, jid, nick, subscription, ask, server)
+	  VALUES ('$$user$$','$$jid$$','$$nick$$','$$sub$$','$$ask$$','$$srv$$')
+	</text>
+	<bindvar name="user">$$user$$</bindvar>
+	<bindvar name="jid">$$jid$$</bindvar>
+	<bindvar name="nickname">$$nick$$</bindvar>
+	<!-- this illustrates the default attribute on a bind variable -->
+	<!-- escape attribute defaults to yes, indicating need for SQL escaping -->
+	<bindvar name="subscription" default="N" escape="no">$$sub$$</bindvar>
+	<bindvar name="ask" default="-" escape="no">$$ask$$</bindvar>
+	<bindvar name="server" default="Y" escape="no">$$srv$$</bindvar>
+      </querydef>
+
+      <!-- adds a new roster group item -->
+      <querydef name="roster-add-2">
+        <text>
+	  INSERT INTO rostergroups (username, jid, group)
+	  VALUES ('$$user$$','$$jid$$','$$group$$')
+	</text>
+	<bindvar name="user">$$user$$</bindvar>
+	<bindvar name="jid">$$jid$$</bindvar>
+	<bindvar name="group">$$group$$</bindvar>
+      </querydef>
+
+      <!-- gets resources for a given user -->
+      <querydef name="resource-get">
+	<text>
+	  SELECT resource FROM userres WHERE username = '$$u$$'
+	</text>
+	<bindvar name="user">$$u$$</bindvar>
+	<bindcol name="resource" offset="0"/>
+      </querydef>
+
+      <!-- removes resources for a given user -->
+      <querydef name="resource-remove">
+	<text>
+	  DELETE FROM userres WHERE username = '$$u$$'
+	</text>
+	<bindvar name="user">$$u$$</bindvar>
+      </querydef>
+
+      <!-- adds resources for a given user -->
+      <querydef name="resource-set">
+	<text>
+	  INSERT INTO userres (username, resource) VALUES ('$$u$$', '$$r$$')
+	</text>
+	<bindvar name="user">$$u$$</bindvar>
+	<bindvar name="resource">$$r$$</bindvar>
+      </querydef>
+
+      <!-- Message offline storage query -->
+      <querydef name="spool">
+	<text>
+	  INSERT INTO spool(username, receiver, sender, id, when, priority, type,
+			    thread, subject, message, extension)
+	      VALUES ('$$user$$', '$$to$$', '$$from$$', '$$id$$', NULL, $$pri$$,
+		      '$$type$$', '$$thr$$', '$$subj$$', '$$msg$$', '$$ext$$')
+	</text>
+	<bindvar name="user">$$user$$</bindvar>
+	<bindvar name="to">$$to$$</bindvar>
+	<bindvar name="from">$$from$$</bindvar>
+	<bindvar name="id">$$id$$</bindvar>
+	<bindvar name="priority" escape="no">$$pri$$</bindvar>
+	<bindvar name="type">$$type$$</bindvar>
+	<bindvar name="thread">$$thr$$</bindvar>
+	<bindvar name="subject">$$subj$$</bindvar>
+	<bindvar name="body">$$msg$$</bindvar>
+	<bindvar name="x">$$ext$$</bindvar>
+      </querydef>
+
+      <!-- Message offline retrieval query -->
+      <querydef name="despool">
+	<text>
+	  SELECT receiver, sender, id, priority, type, thread, subject,
+	         message, extension FROM spool WHERE username = '$$user$$'
+	</text>
+	<bindvar name="user">$$user$$</bindvar>
+	<bindcol name="to" offset="0"/>
+	<bindcol name="from" offset="1"/>
+	<bindcol name="id" offset="2"/>
+	<bindcol name="priority" offset="3"/>
+	<bindcol name="type" offset="4"/>
+	<bindcol name="thread" offset="5"/>
+	<bindcol name="subject" offset="6"/>
+	<bindcol name="body" offset="7"/>
+	<bindcol name="x" offset="8"/>
+      </querydef>
+
+      <querydef name="spool-remove">
+	<text>DELETE FROM spool WHERE username = '$$user$$'</text>
+	<bindvar name="user">$$user$$</bindvar>
+      </querydef>
+
+    </queries>
+
+  </mysql>
+
+</jserver>

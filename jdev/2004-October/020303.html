@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] PyMSNt &amp; Jabber2 &amp; Who knows what...
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20PyMSNt%20%26%20Jabber2%20%26%20Who%20knows%20what...&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="020305.html">
+   <LINK REL="Next"  HREF="020304.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] PyMSNt &amp; Jabber2 &amp; Who knows what...</H1>
+    <B>Javier Villavicencio</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20PyMSNt%20%26%20Jabber2%20%26%20Who%20knows%20what...&In-Reply-To="
+       TITLE="[jdev] PyMSNt &amp; Jabber2 &amp; Who knows what...">javierv at migraciones.gov.ar
+       </A><BR>
+    <I>Tue Oct  5 17:48:04 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="020305.html">[jdev] Charset conversion and Net::Jabber (perl)
+</A></li>
+        <LI>Next message: <A HREF="020304.html">[jdev] PyMSNt &amp; Jabber2 &amp; Who knows what...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20303">[ date ]</a>
+              <a href="thread.html#20303">[ thread ]</a>
+              <a href="subject.html#20303">[ subject ]</a>
+              <a href="author.html#20303">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all, I've recently upgraded our server to jabber2, we had a strange 
+&quot;authentification&quot; scheme that worked fine with old jabber1.4.x and 
+xdb_auth_cpile.pl perl module, since this wasn't compatible with jabber2 
+i did some (cut&amp;paste) perl work on the pipe-auth thing of jabberd2 and 
+everyone logged in fine to jabber.
+
+The problem (now) is: as far as I've readed, with PyMSNt I wouldn't need 
+anything else to add to the router configuration (other than same port, 
+same secret) to make it work, but after the upgrade, no one can connect 
+to MSN again (i mean &quot;the transport&quot;).
+
+This is the last &quot;message&quot; from jabber server to the debug window of 
+Exodus (we're using it only compiled with our default language, that's 
+the only modification to the sources, and it was working fine before the 
+upgrade :+P)
+
+SENT: &lt;iq id=&quot;jcl_15&quot; to=&quot;msn.migraciones.gov.ar&quot; type=&quot;get&quot;&gt;&lt;query 
+xmlns=&quot;<A HREF="http://jabber.org/protocol/disco#info&quot;/">http://jabber.org/protocol/disco#info&quot;/</A>&gt;&lt;/iq&gt;
+RECV: &lt;iq xmlns='jabber:client' from='msn.migraciones.gov.ar' 
+type='result' id='jcl_15' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">javierv at migraciones.gov.ar</A>/DNM'&gt;&lt;query 
+xmlns='<A HREF="http://jabber.org/protocol/disco#info'">http://jabber.org/protocol/disco#info'</A>&gt;&lt;identity 
+category='gateway' type='msn' name='MSN Transport'/&gt;&lt;identity 
+category='conference' type='text' name='MSN Transport 
+Chatrooms'/&gt;&lt;feature var='<A HREF="http://jabber.org/protocol/disco'/">http://jabber.org/protocol/disco'/</A>&gt;&lt;feature 
+var='jabber:iq:version'/&gt;&lt;feature var='jabber:iq:register'/&gt;&lt;feature 
+var='jabber:iq:gateway'/&gt;&lt;feature 
+var='<A HREF="http://jabber.org/protocol/muc'/">http://jabber.org/protocol/muc'/</A>&gt;&lt;/query&gt;&lt;/iq&gt;
+
+which seems fine, and in the debuglog of PyMSNt:
+
+10/05/04 - 19:29:38 - MSNConnection: &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">thepaya_ at hotmail.com</A>&quot; initialised
+10/05/04 - 19:30:35 - Sessions:
+10/05/04 - 19:30:35 -   <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">javierv at migraciones.gov.ar</A>
+10/05/04 - 19:30:48 - NotificationClient: &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">thepaya_ at hotmail.com</A>&quot; lost 
+connection with MSN servers
+10/05/04 - 19:31:04 - MSNConnection: &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">thepaya_ at hotmail.com</A>&quot; destroyed
+
+At this hours, being myself the only user logged in, these messages 
+repeat in an endless loop (from initialized to destroyed).
+
+Also an 'ngrep' to the port 1863 (MSN port) reveals the next things:
+(a bit stripped:)
+
+dnmmail src # ngrep port 1863
+interface: eth0 (200.55.54.64/255.255.255.248)
+filter: ip and ( port 1863 )
+T 200.55.54.70:57321 -&gt; 207.46.104.20:1863 [AP]
+  VER 1 MSNP8 CVR0..
+T 207.46.104.20:1863 -&gt; 200.55.54.70:57321 [AP]
+  VER 1 MSNP8 CVR0..
+T 200.55.54.70:57321 -&gt; 207.46.104.20:1863 [AP]
+  CVR 2 0x0409 win 4.10 i386 MSNMSGR 5.0.0544 MSMSGS <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">thepaya_ at hotmail.com..</A>
+T 207.46.104.20:1863 -&gt; 200.55.54.70:57321 [AP]
+  CVR 2 6.2.0137 6.2.0137 5.0.0527 
+<A HREF="http://download.microsoft.com/download/0/9/a/09a79e99-f2c8-493">http://download.microsoft.com/download/0/9/a/09a79e99-f2c8-493</A>
+  3-9797-77e88836bb52/Setup9X.EXE <A HREF="http://messenger.msn.com..">http://messenger.msn.com..</A>
+T 200.55.54.70:57321 -&gt; 207.46.104.20:1863 [AP]
+  USR 3 TWN I <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">thepaya_ at hotmail.com..</A>
+T 207.46.104.20:1863 -&gt; 200.55.54.70:57321 [AP]
+  XFR 3 NS 207.46.107.69:1863 0 207.46.104.20:1863..
+T 200.55.54.70:57322 -&gt; 207.46.107.69:1863 [AP]
+T 200.55.54.70:57322 -&gt; 207.46.107.69:1863 [AP]
+  VER 1 MSNP8 CVR0..
+T 207.46.107.69:1863 -&gt; 200.55.54.70:57322 [AP]
+  VER 1 MSNP8 CVR0..
+T 200.55.54.70:57322 -&gt; 207.46.107.69:1863 [AP]
+  CVR 2 0x0409 win 4.10 i386 MSNMSGR 5.0.0544 MSMSGS <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">thepaya_ at hotmail.com..</A>
+T 207.46.107.69:1863 -&gt; 200.55.54.70:57322 [AP]
+  CVR 2 6.2.0137 6.2.0137 5.0.0527 
+<A HREF="http://download.microsoft.com/download/0/9/a/09a79e99-f2c8-493">http://download.microsoft.com/download/0/9/a/09a79e99-f2c8-493</A>
+  3-9797-77e88836bb52/Setup9X.EXE <A HREF="http://messenger.msn.com..">http://messenger.msn.com..</A>
+T 200.55.54.70:57322 -&gt; 207.46.107.69:1863 [AP]
+  USR 3 TWN I <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">thepaya_ at hotmail.com..</A>
+T 207.46.107.69:1863 -&gt; 200.55.54.70:57322 [AP]
+  USR 3 TWN S 
+lc=1033,id=507,tw=40,fs=1,ru=http%3A%2F%2Fmessenger%2Emsn%2Ecom,ct=1097015751,kpp=1
+  ,kv=5,ver=2.1.6000.1,tpf=59b0a2cb3ee48d530290f5ba1849978b..
+
+What can I see here is that the first challenge to MSN (server 
+redirection) is done well, but when it turns to start the second 
+challenge (password authenthication??) PyMSNt doesn't reply anymore, and 
+then, after a timeout (?) the connection is closed.
+
+Searching and searching and searching about this, i've found that the 
+&quot;old&quot; msn-transport can just &quot;die&quot; here if there is a problem with the 
+'Curl' library (wich, ehem, was working well before jabber2) is this 
+really related to Curl? Does Twisted/PyMSNt makes use of the Curl 
+library? or there is another package (maybe in python) related to this 
+kind of &quot;transaction&quot; with the MSN servers?
+
+For more information my system is a Gentoo 2004.2 &quot;synced everyday 
+(tm)&quot;, I'm running:
+
+jabberd-2.0-r1    (jabberd2.0s3)
+curl-7.12.0-r2
+python-2.3.3-r1
+twisted-1.3.0-r2    (installed from portage with the patch from PyMSNt 
+applied by custom ebuild)
+
+I want to go home today :'( please any help is welcome :+)
+
+Salu2.
+
+Javier Villavicencio
+Direcci&#243;n Nacional de Migraciones
+Ministerio del Interior
+Gobierno de la Naci&#243;n - Rep&#250;blica Argentina.
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="020305.html">[jdev] Charset conversion and Net::Jabber (perl)
+</A></li>
+	<LI>Next message: <A HREF="020304.html">[jdev] PyMSNt &amp; Jabber2 &amp; Who knows what...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20303">[ date ]</a>
+              <a href="thread.html#20303">[ thread ]</a>
+              <a href="subject.html#20303">[ subject ]</a>
+              <a href="author.html#20303">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Ramblings - feel free to join in :-)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Ramblings%20-%20feel%20free%20to%20join%20in%20%3A-%29&In-Reply-To=%3C000f01c065d8%246fd5d580%24d5ac1618%40aurora1.co.home.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="063749.html">
+   <LINK REL="Next"  HREF="063780.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Ramblings - feel free to join in :-)</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Ramblings%20-%20feel%20free%20to%20join%20in%20%3A-%29&In-Reply-To=%3C000f01c065d8%246fd5d580%24d5ac1618%40aurora1.co.home.com%3E"
+       TITLE="[JDEV] Ramblings - feel free to join in :-)">mass at ufl.edu
+       </A><BR>
+    <I>Thu Dec 14 08:16:22 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="063749.html">[JDEV] jpolld configuration
+</A></li>
+        <LI>Next message: <A HREF="063780.html">[JDEV] NAT Issues
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63760">[ date ]</a>
+              <a href="thread.html#63760">[ thread ]</a>
+              <a href="subject.html#63760">[ subject ]</a>
+              <a href="author.html#63760">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>----- Original Message -----
+From: &quot;Dennis Noordsij&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis.noordsij at wiral.com</A>&gt;
+To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Sent: Thursday, December 14, 2000 5:28 AM
+Subject: [JDEV] Ramblings - feel free to join in :-)
+
+
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I have had 2 things on my mind for a while and would like to take the
+</I>&gt;<i> opportunity to hear from other people what they think would work and
+</I>wouldn't
+&gt;<i> work, or maybe come up with a better idea or implementation.
+</I>&gt;<i>
+</I>&gt;<i> The first one concerns bandwidth vs horsepower. I think we can pretty
+</I>safely
+&gt;<i> assume that :
+</I>&gt;<i> - in our own jabber server farm bandwidth is plentily available, and the
+</I>only
+&gt;<i> thing we are worried about is raw power of our servers. Any optimizations
+</I>&gt;<i> would be ones that will get more messages routed in the same time, even if
+</I>&gt;<i> that takes up a little more bandwidth inbetween jabber components (think
+</I>of
+&gt;<i> the main JSM to transports to xdb databases - all on a small LAN).
+</I>
+Sure - you can even put these machines on a separate network to increase
+performance - this is one-time hardware costs.
+
+&gt;<i>
+</I>&gt;<i> - with regard to the &quot;outside&quot;, ie users connecting via TCP/IP over the
+</I>&gt;<i> internet we value bandwidth much more. It is alright if the client has to
+</I>do
+&gt;<i> a little more work if it means it takes less bandwidth to get a message
+</I>&gt;<i> across.
+</I>&gt;<i>
+</I>&gt;<i> How to do this, without affecting jabber server code at all, and clients
+</I>&gt;<i> minorly?
+</I>&gt;<i>
+</I>&gt;<i> Why not bzip2 the xml stream? The client would simply stream through a
+</I>bzip2
+&gt;<i> function before sending it out over the socket, this would be quite easily
+</I>&gt;<i> implemented in clients. On the server side, since any serious setup will
+</I>use
+&gt;<i> jpolld multiplexing machines only jpolld has to know about bzip2, when the
+</I>&gt;<i> XML reaches the jabber server it is plain text XML again. Likewise, why
+</I>not
+&gt;<i> stream through an SSL component (with compression), once again, on the
+</I>client
+&gt;<i> side it would make no difference, on the server side the jpolld's could be
+</I>&gt;<i> linked again an SSL library making use that hardware SSL acceleration
+</I>board I
+&gt;<i> see in every issue of LinuxJournal :-)
+</I>
+The first issue that may/probably will come up with this is that the packets
+would have to be considered independant documents - otherwise you will have
+a hold on a sent packet until enough additional data is sent to complete a
+few more bytes of data.
+
+The second issue is the same as with SSL - increased power needed by the
+server. In the case of bzip2, a decompressing stream needs at least 1 MB of
+memory (usually when you run bzip2 it will use about 9 MB for working
+space). This would also be a requirement for working space while processing
+a document - it wouldn't just be a 1 MB requirement per working thread. So
+either you give a bit over a MB per working user (ouch), or restrict worker
+threads from changing tasks until a packet is complete, and recognizing that
+as a document (a major opening for DoS attacks).
+
+Compared to both of these, a binary-representation of the protocol would be
+a godsend :)
+
+&lt;snipped bit about server farming&gt;
+
+-David Waite
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="063749.html">[JDEV] jpolld configuration
+</A></li>
+	<LI>Next message: <A HREF="063780.html">[JDEV] NAT Issues
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63760">[ date ]</a>
+              <a href="thread.html#63760">[ thread ]</a>
+              <a href="subject.html#63760">[ subject ]</a>
+              <a href="author.html#63760">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

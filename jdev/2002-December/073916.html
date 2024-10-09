@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] pubsub (JEP-0060) implementation
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20pubsub%20%28JEP-0060%29%20implementation&In-Reply-To=%3C20021230025842.GB1482%40nsx.internal.hewgill.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="073915.html">
+   <LINK REL="Next"  HREF="073917.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] pubsub (JEP-0060) implementation</H1>
+    <B>Greg Hewgill</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20pubsub%20%28JEP-0060%29%20implementation&In-Reply-To=%3C20021230025842.GB1482%40nsx.internal.hewgill.net%3E"
+       TITLE="[JDEV] pubsub (JEP-0060) implementation">greg at hewgill.com
+       </A><BR>
+    <I>Sun Dec 29 20:58:43 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="073915.html">[JDEV] xdb_sql: queries
+</A></li>
+        <LI>Next message: <A HREF="073917.html">[JDEV] Building under cygwin, -lpth
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#73916">[ date ]</a>
+              <a href="thread.html#73916">[ thread ]</a>
+              <a href="subject.html#73916">[ subject ]</a>
+              <a href="author.html#73916">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I've been working on an implementation of Publish-Subscribe as proposed in
+JEP-0060. I posted over on the standards-jig list a number of questions and
+comments about the proposal itself. This post is just to let interested parties
+know what I'm working on.
+
+My implementation is written in Perl with Net::Jabber. The implementation is
+split into three parts:
+
+1. The front-end, which is the interaction with Net::Jabber - interpreting
+requests, constructing responses, and so on.
+
+2. The protocol implementation, which is called by the front-end and codifies
+the rules of pubsub. For example, this ensures that only publishers may
+publish, only owners may delete, and determines who may subscribe to a node.
+
+3. The back-end, which stores information about nodes, items, entities, and the
+relationships between them.
+
+This separation makes it easy to replace individual components as desired. For
+example, I have a back-end that uses the Perl DBI to talk to PostgreSQL (I
+suppose MySQL would work equally well, for those so inclined), and another
+back-end that uses native Perl data structures (but does not even attempt
+persistence if the component is stopped and restarted). Another back-end that
+would be useful would be a filesystem one, with a directory tree holding nodes
+and files holding subscription information and persistent items.
+
+It should also be straightforward to port this implementation to another
+interface library such as JabberBeans, as the Net::Jabber specific code is
+well-contained.
+
+Anyway, there is an instance of this component running at
+&quot;pubsub.jabber.hewgill.net&quot;. This is my development instance, so the usual
+caveats apply (ie. it may or may not be running at any given moment, and if it
+is, it may or may not work :). Anybody can create nodes and subscribe/
+unsubscribe, but some owner use case things are not yet implemented (ie.
+configuring a node). Experimentation is encouraged and feedback is welcome!
+
+Greg Hewgill
+<A HREF="http://www.hewgill.com">http://www.hewgill.com</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="073915.html">[JDEV] xdb_sql: queries
+</A></li>
+	<LI>Next message: <A HREF="073917.html">[JDEV] Building under cygwin, -lpth
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#73916">[ date ]</a>
+              <a href="thread.html#73916">[ thread ]</a>
+              <a href="subject.html#73916">[ subject ]</a>
+              <a href="author.html#73916">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Implementing db:result with JSO
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Implementing%20db%3Aresult%20with%20JSO&In-Reply-To=406308EC.3050101%40outer-planes.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="019058.html">
+   <LINK REL="Next"  HREF="019084.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Implementing db:result with JSO</H1>
+    <B>Daniel Tietze</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Implementing%20db%3Aresult%20with%20JSO&In-Reply-To=406308EC.3050101%40outer-planes.net"
+       TITLE="[jdev] Implementing db:result with JSO">daniel.tietze at go4teams.com
+       </A><BR>
+    <I>Mon Mar 29 08:43:51 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="019058.html">[jdev] Implementing db:result with JSO
+</A></li>
+        <LI>Next message: <A HREF="019084.html">[jdev] Implementing db:result with JSO
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19083">[ date ]</a>
+              <a href="thread.html#19083">[ thread ]</a>
+              <a href="subject.html#19083">[ subject ]</a>
+              <a href="author.html#19083">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi.
+
+The problem indeed seems to be fixed in the current version.
+But I'm encountering another strange problem. I implemented
+a &quot;db:result&quot; packet, following the docs. The thing appears
+to send itself OK, at least that's what my Logger tells me:
+
+[LOGGER]  sent: &lt;db:result xmlns='jabber:server' from='athen.go4teams.com'
+to='belfast.go4teams.com'&gt;danielduesentrieb&lt;/db:result&gt;
+
+On the Jabber server (jabberd2), this package is not
+received/processed until I kill my server. I get the &quot;sent&quot;
+output on my own server right away, but only after I kill my
+server with CTRL-C (closing all connections) the &quot;jabberd -D&quot;
+output shows that it has received this packet (debug from io.c:189).
+
+I have found no way to flush the underlying JSO stream implementation
+to ensure that my packet is being sent out.
+
+I'm attaching my JSO extension class to the bottom of this message.
+
+Here's how I'm sending it:
+---------------------------
+try
+{
+	DialbackResultPacket dbr = new
+DialbackResultPacket(JSOImplementation.getInstance().getDataFactory());
+	dbr.setDialbackText(&quot;danielduesentrieb&quot;);
+	dbr.setTo(new JID(&quot;belfast.go4teams.com&quot;));
+	dbr.setFrom(new JID(&quot;athen.go4teams.com&quot;));
+	// Send the Dialback result packet
+	connection.send(dbr);
+}
+catch (Exception ex)
+{
+	ex.printStackTrace();
+}
+---------------------------
+
+Any help greatly appreciated, as usual.
+
+   Daniel
+
+--[ 8&lt; SNIP for Dialback Packet implementation ] -------
+
+public interface DialbackResult
+{
+	public static final NSI NAME = new NSI(&quot;db:result&quot;, &quot;jabber:server&quot;);
+
+	void setDialbackText(String text);
+
+	String getDialbackText();
+
+
+
+}
+
+
+public class DialbackResultPacket
+		extends BasicPacketNode
+		implements DialbackResult
+{
+	StreamDataFactory fact;
+
+	public DialbackResultPacket(StreamDataFactory sdf)
+	{
+		super(sdf, NAME);
+		fact = sdf;
+	}
+
+	public DialbackResultPacket(org.jabberstudio.jso.StreamElement
+streamElement, BasicPacketNode basicPacketNode)
+	{
+		super(streamElement, basicPacketNode);
+	}
+
+
+	public org.jabberstudio.jso.StreamObject
+copy(org.jabberstudio.jso.StreamElement streamElement)
+	{
+		return new DialbackResultPacket(streamElement, this);
+	}
+
+	public String getDialbackText()
+	{
+		return null;
+	}
+
+	public void setDialbackText(String text)
+	{
+		this.add(new TextNode(fact, text));
+	}
+}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="019058.html">[jdev] Implementing db:result with JSO
+</A></li>
+	<LI>Next message: <A HREF="019084.html">[jdev] Implementing db:result with JSO
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19083">[ date ]</a>
+              <a href="thread.html#19083">[ thread ]</a>
+              <a href="subject.html#19083">[ subject ]</a>
+              <a href="author.html#19083">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

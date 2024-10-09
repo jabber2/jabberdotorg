@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber documentation question; XML parsing worries; and	ease of d evelopment
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20documentation%20question%3B%20XML%20parsing%20worries%3B%20and%0A%09ease%20of%20d%20evelopment&In-Reply-To=1BB78539184CD211AF2B00A0C9DECFA40D2A750E%40pasexc000.westernasset.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="012796.html">
+   <LINK REL="Next"  HREF="012794.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber documentation question; XML parsing worries; and	ease of d evelopment</H1>
+    <B>Justin Kirby</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20documentation%20question%3B%20XML%20parsing%20worries%3B%20and%0A%09ease%20of%20d%20evelopment&In-Reply-To=1BB78539184CD211AF2B00A0C9DECFA40D2A750E%40pasexc000.westernasset.com"
+       TITLE="[JDEV] Jabber documentation question; XML parsing worries; and	ease of d evelopment">justink at rochester.rr.com
+       </A><BR>
+    <I>Tue May 21 23:30:48 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="012796.html">[JDEV] Jabber documentation question; XML parsing worries; and ease of d evelopment
+</A></li>
+        <LI>Next message: <A HREF="012794.html">[JDEV] user.xml password encryption
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12804">[ date ]</a>
+              <a href="thread.html#12804">[ thread ]</a>
+              <a href="subject.html#12804">[ subject ]</a>
+              <a href="author.html#12804">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Replies in-line...
+
+On Mon, 2002-05-20 at 11:33, Gallo, Felix S. wrote:
+&gt;<i> Every so often, I buy an O'Reilly book on a lark, just to see if
+</I>&gt;<i> the subject matter is interesting/is going to win/is fun to use/is
+</I>&gt;<i> learnable in finite time.  This year's book has been the Jabber
+</I>&gt;<i> book.  I've read it cover to cover, and needless to say, I've been
+</I>&gt;<i> converted in a big way, and am now hacking together all manner
+</I>&gt;<i> of crazy jabberware (those of you who know me from p5p or
+</I>&gt;<i> from the Penguin module are now cowering in terror).  However,
+</I>&gt;<i> some issues:
+</I>&gt;<i>  
+</I>&gt;<i> 1.  There are a large number of states in the Jabber protocol --
+</I>&gt;<i> messages can arrive asynchronously etc etc, but against production
+</I>&gt;<i> jabber servers I can only find one moderately tortuous pathway to
+</I>&gt;<i> getting logged in.  Is there a master state chart which is the canonical
+</I>&gt;<i> gospel for how Jabber works, or should I try to reverse engineer it from
+</I>&gt;<i> jabberd, or is jabberd possibly out of compliance, or?
+</I>
+state chart!! cool...would love to see one :)
+
+&gt;<i>  
+</I>&gt;<i> 2.  Having hacked at the high levels for a bit with the fine Perl modules,
+</I>&gt;<i> I'm now looking into hacking at the socket-and-bits level.  However, I'm
+</I>&gt;<i> encountering two problems with all the SAX, SAX2 or SAX-like parsers I
+</I>&gt;<i> can find: first, because a packet that looks like
+</I>&gt;<i>  
+</I>&gt;<i> PACKET: &lt;this is=&quot;a&quot; tag=&quot;hello world&quot;&gt;packet&lt;/this&gt;
+</I>&gt;<i>  
+</I>&gt;<i> could be broken up in its travels across the net into
+</I>&gt;<i>  
+</I>&gt;<i> PACKET 1:&lt;thi
+</I>&gt;<i> PACKET 2:s is &quot;a&quot; tag=&quot;hello world&quot;&gt;pa
+</I>&gt;<i> PACKET 3:cket
+</I>&gt;<i> PACKET 4:&lt;/this&gt;
+</I>&gt;<i>  
+</I>&gt;<i> ...it's not at all clear when a good time to call parse() is.  It looks like
+</I>&gt;<i> in order
+</I>&gt;<i> to deal with XML streams, one would essentially have to pre-parse the XML
+</I>&gt;<i> stream to find the closing tag's last character, bundle that up into a
+</I>&gt;<i> buffer and
+</I>&gt;<i> parse that, and then start some more.  Is that accurate?  If not, where am I
+</I>&gt;<i> being
+</I>&gt;<i> dumb?  If so, isn't that annoyingly painful?
+</I>
+My solution to this problem was to hack a TCP/IP input stream for the
+XercesC parser. Use SAX and use the tokenized parsing functions. This
+essentially offloaded all those issues into XercesC so I didnt' have to
+worry about it :)
+
+
+
+&gt;<i>  
+</I>&gt;<i> 3.  This is more a plaintive bleat than a question: why are there about ten
+</I>&gt;<i> different 60% complete C/C++ libraries, dammit? :)
+</I>&gt;<i>  
+</I>
+My (probably way off-base) reason why there are a bazillion C++
+libraries none of which are complete:
+
+1. completeness is relative ;)
+2. one size does not fit all.
+
+yeah, re-use is nice... but a lot of the time its a myth propagated by
+academics. trade-offs are what the real issues are... and I think the
+major jabber C++ libraries do a good job filling their own trade-off
+niche.
+
+&gt;<i> F.
+</I>&gt;<i>  
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> **********************************************************************
+</I>&gt;<i> E-mail sent through the Internet is not secure.  Western Asset therefore
+</I>&gt;<i> recommends that you do not send any confidential or sensitive information to
+</I>&gt;<i> us via electronic mail, including social security numbers, account numbers,
+</I>&gt;<i> or personal identification numbers.  Delivery, and or timely delivery of
+</I>&gt;<i> Internet mail is not guaranteed.  Western Asset therefore recommends that
+</I>&gt;<i> you do not send time sensitive or action-oriented messages to us via
+</I>&gt;<i> electronic mail.
+</I>&gt;<i> **********************************************************************
+</I>&gt;<i> 
+</I>
+-- 
+JID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Zion at openaether.org</A>
+
+      ,/^^^^\,
+     /       \\.
+   /|
+  /|  /''\___/
+        /''\__/  |/
+     /''\__/    |/
+      \\      ./
+       `\..../
+
+<A HREF="http://www.openaether.org">http://www.openaether.org</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="012796.html">[JDEV] Jabber documentation question; XML parsing worries; and ease of d evelopment
+</A></li>
+	<LI>Next message: <A HREF="012794.html">[JDEV] user.xml password encryption
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12804">[ date ]</a>
+              <a href="thread.html#12804">[ thread ]</a>
+              <a href="subject.html#12804">[ subject ]</a>
+              <a href="author.html#12804">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

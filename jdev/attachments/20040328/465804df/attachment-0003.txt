@@ -1,0 +1,168 @@
+Return-Path: <jdev-bounces@jabber.org>
+Envelope-To: <aahsan@actiontec.com>
+X-Spam-Status: SpamAssassin Failed
+Received: from hades.jabber.org ([208.245.212.109] verified)
+  by actiontec.com (CommuniGate Pro SMTP 4.1.8)
+  with ESMTP id 5264263 for aahsan@actiontec.com; Sun, 28 Mar 2004 13:41:57 -0800
+Received: from [127.0.0.1] (hades [127.0.0.1])
+	by hades.jabber.org (Postfix) with ESMTP
+	id B5AE86415F; Sun, 28 Mar 2004 15:41:44 -0600 (CST)
+Delivered-To: jdev@jabber.org
+Received: from main.gmane.org (main.gmane.org [80.91.224.249])
+	by hades.jabber.org (Postfix) with ESMTP id 1B41164007
+	for <jdev@jabber.org>; Sun, 28 Mar 2004 15:41:42 -0600 (CST)
+Received: from root by main.gmane.org with local (Exim 3.35 #1 (Debian))
+	id 1B7i26-000852-00
+	for <jdev@jabber.org>; Sun, 28 Mar 2004 23:41:30 +0200
+Received: from amontsouris-108-2-6-202.w217-128.abo.wanadoo.fr
+	([217.128.219.202])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <jdev@jabber.org>; Sun, 28 Mar 2004 23:41:30 +0200
+Received: from ze.ml by amontsouris-108-2-6-202.w217-128.abo.wanadoo.fr with
+	local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <jdev@jabber.org>; Sun, 28 Mar 2004 23:41:30 +0200
+X-Injected-Via-Gmane: http://gmane.org/
+To: jdev@jabber.org
+From: ze <ze.ml@free.fr>
+Date: Sun, 28 Mar 2004 23:36:16 +0200
+Organization: 3rd
+Lines: 110
+Message-ID: <c47gg6$kus$1@sea.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: amontsouris-108-2-6-202.w217-128.abo.wanadoo.fr
+User-Agent: KNode/0.7.7
+Subject: [jdev] client multiplexing
+X-BeenThere: jdev@jabber.org
+X-Mailman-Version: 2.1.3
+Precedence: list
+Reply-To: Jabber software development list <jdev@jabber.org>
+List-Id: Jabber software development list <jdev.jabber.org>
+List-Unsubscribe: <https://jabberstudio.org/mailman/listinfo/jdev>,
+	<mailto:jdev-request@jabber.org?subject=unsubscribe>
+List-Archive: <http://jabberstudio.org/pipermail/jdev>
+List-Post: <mailto:jdev@jabber.org>
+List-Help: <mailto:jdev-request@jabber.org?subject=help>
+List-Subscribe: <https://jabberstudio.org/mailman/listinfo/jdev>,
+	<mailto:jdev-request@jabber.org?subject=subscribe>
+Sender: jdev-bounces@jabber.org
+Errors-To: jdev-bounces@jabber.org
+
+
+Hi, 
+
+I would like to do something with jabber that doesn't seem to be doable
+for now. I'm not sure how many people would see interest in the same
+requierement, as i am used to special and weird ideas. 
+
+Please, let me know what you think about my way of planning thing, and
+how much current protocol might or might not evolve to help support my
+needs.
+
+I'll most likely work on the development needed to do it, but i already
+know there will be monthes before i'll get anything usefull and running.
+
+------------------------------------------
+My need:
+
+I want to have a client connected 24/7 (or almost), getting all
+messages, being usable, most likely in a screen, so i can get to it
+anytime.
+
+Then, i might want to use a different client, like a client with an
+graphical interface, and take back everything where i were. History, 
+same chat in progress, and i want it to be a completly invisible change
+for people i talk with. To be completly transparent, I would also need
+to get "recent" both way activity back in my new launched client, to let
+it open the recent windows, with complete history about what we spoke
+off.
+
+------------------------------------------
+First idea:
+
+Get a daemon to run in background, keeping the connection, and the
+status.  When a client connect (and auth, if I use a network socket),
+send back "recent" stanzas, but i would need an "already seen"
+information.
+
+The daemon would also have to keep track of all outgoing information, to
+give back a full conversation state.
+
+------------------------------------------
+Second idea:
+
+Let the daemon keep track of more than one user at the same time, it is
+not that much more work anyway.
+It would need to authenticate user, so make it a server, with a special
+component doing the job. It will allow a single client, getting to the
+server to manage more than one jabber account.
+
+------------------------------------------
+Realistic way of doing it:
+
+* get the server to log all messages for a while, and let him give you
+  them back on demand. ("last 15 minutes communications" and/or "last
+  communications from/to jid")
+
+* get a jabber2jabber transport/component, letting a single client
+  connection to manage more than one jabber account (usefull to have a
+  "work" account, used in-company, and a "personal" account, for
+  personal use on a public server).
+
+------------------------------------------
+Realistic requierement:
+* a way to tell a server to keep the "online" presence, even after a
+  disconnect, and not send a new presence information on reconnect
+  within the periode (don't flood everyone with presences)
+
+  Note1: it would also be nice for web applications, letting them poll
+  every few minutes, to get informations, and keep the online status.
+
+  Note2: the component/transport could do the job, so a workaround is
+  easily possible.
+
+* possibility for two client different client to get the messages, to
+  prevent misrouting message.
+
+* a jabber2jabber transport/component, to manage an other account with a
+  single client
+
+* a way to have more than one client identity within a single client
+  tcp/ip connection to a server (would be usefull for the jabber2jabber
+  transport). Would also be a nice way to implement multi account on a
+  single server, for client supporting multi simultaneous account.
+
+* possibility for a client to ask his user's "recent" communication.
+  (letting it restore history in all windows)
+
+------------------------------------------
+All comments are welcome.
+
+If anyone already has documentation on already existing implementation
+of any part, please let me know.
+If anyone knows of good, easy to use tools to develop quickly, let me
+know.
+
+
+As for my language development, it will most likely be C or C++.
+I won't use anything like php, python, perl, sh, .net, as i need real
+stuffs, with speed and robustness, running on unix platform.
+
+I don't think i'll use java, but that's more because i don't know it
+well enough to do correct enough code with it using network heavy
+network without having tons of threads. If you can find something in
+java doing what poll/select does, i might think about it more. If there
+are people out there willing to develop a server in java, knowing
+something like poll/select, give me a ring, i might want to work on it
+too.
+
+-- 
+ze
+
+_______________________________________________
+jdev mailing list
+jdev@jabber.org
+https://jabberstudio.org/mailman/listinfo/jdev

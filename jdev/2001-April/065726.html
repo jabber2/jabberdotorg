@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Yahoo Transport Problem - FIX
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Yahoo%20Transport%20Problem%20-%20FIX&In-Reply-To=%3C001601c0c3bf%24cf0931b0%249865fea9%40zippy%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="065732.html">
+   <LINK REL="Next"  HREF="065728.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Yahoo Transport Problem - FIX</H1>
+    <B>Kevin Limperos</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Yahoo%20Transport%20Problem%20-%20FIX&In-Reply-To=%3C001601c0c3bf%24cf0931b0%249865fea9%40zippy%3E"
+       TITLE="[JDEV] Yahoo Transport Problem - FIX">klimperos at heuristicdesigns.com
+       </A><BR>
+    <I>Thu Apr 12 21:16:53 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="065732.html">[JDEV] install jabber server....
+</A></li>
+        <LI>Next message: <A HREF="065728.html">[JDEV] Help
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65726">[ date ]</a>
+              <a href="thread.html#65726">[ thread ]</a>
+              <a href="subject.html#65726">[ subject ]</a>
+              <a href="author.html#65726">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>    After detailed analysis of the Yahoo 0.8-1.4 source, I found the core dump problem can be resolved by altering line 49 of sessions.c inside yahoo_session_end() from:
+
+ghash_remove(s-&gt;yti-&gt;s, s-&gt;user);     
+
+to:
+
+ghash_remove(s-&gt;yti-&gt;s, jid_full(s-&gt;user));
+
+
+    Without the call to jid_full(...), ghash_remove() fails to remove the closed session from the hash table. My guess is that memory inside the session structure is released, so when the user logsback in and the ghash_get() finds the old session, it starts accessing garbage-collected data and suffers an untimely termination.
+    One suggestion is to alter ghash_remove() and xhash_zap() to return meaningful values - and then check said return values in the client code.
+
+-Kevin
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010412/e1386298/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20010412/e1386298/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="065732.html">[JDEV] install jabber server....
+</A></li>
+	<LI>Next message: <A HREF="065728.html">[JDEV] Help
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65726">[ date ]</a>
+              <a href="thread.html#65726">[ thread ]</a>
+              <a href="subject.html#65726">[ subject ]</a>
+              <a href="author.html#65726">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

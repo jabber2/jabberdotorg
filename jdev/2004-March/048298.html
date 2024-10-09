@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] nonblocking RPCCall() in Net::Jabber, can it work? 
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20nonblocking%20RPCCall%28%29%20in%20Net%3A%3AJabber%2C%20can%20it%20work%3F%20&In-Reply-To=%3C200403161303.i2GD327S094436%40crag.niss.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="048297.html">
+   <LINK REL="Next"  HREF="048299.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] nonblocking RPCCall() in Net::Jabber, can it work? </H1>
+    <B>Scott Bolte</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20nonblocking%20RPCCall%28%29%20in%20Net%3A%3AJabber%2C%20can%20it%20work%3F%20&In-Reply-To=%3C200403161303.i2GD327S094436%40crag.niss.com%3E"
+       TITLE="[jdev] nonblocking RPCCall() in Net::Jabber, can it work? ">listS+jabber-jdev at niss.com
+       </A><BR>
+    <I>Tue Mar 16 07:03:02 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="048297.html">[jdev] JEP for joining chat rooms while browsing web pages
+</A></li>
+        <LI>Next message: <A HREF="048299.html">[jdev] FW: Opportunity for client/server developers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48298">[ date ]</a>
+              <a href="thread.html#48298">[ thread ]</a>
+              <a href="subject.html#48298">[ subject ]</a>
+              <a href="author.html#48298">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Ido Rosen wrote:
+&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; 	This application is actually a free public DNS system. The
+</I>&gt;<i> &gt; &gt; 	original infrastructure was written years ago with tightly
+</I>&gt;<i> &gt; &gt; 	integrated hosts and modest growth in mind. The next
+</I>&gt;<i> &gt; &gt; 	generation infrastructure needs to support donated hosts
+</I>&gt;<i> &gt; &gt; 	with variable reliability and limited connectivity.
+</I>&gt;<i> 
+</I>&gt;<i> Could you possibly tell us more about this project?  I'm very curious,
+</I>&gt;<i> as it sounds like a really good implementation of Jabber.  I'm also
+</I>&gt;<i> curious though, if there's too much overhead from the Jabber protocol to
+</I>&gt;<i> make it feasible in inferior network conditions, like dialup...
+</I>
+	I can share more, but I doubt it is of general interest so
+	let's move this off the jdev list after this reply unless
+	other people speak up.
+
+	The system is called the Public DNS. (You can look at
+	<A HREF="http://soa.granitecanyon.com/">http://soa.granitecanyon.com/</A> to learn more.) It hosts DNS
+	records for free and provides a (very old) web interface
+	for people to create and update their zones.
+
+	The old system, still being used even though the number of
+	DNS records is huge, requires bulk copies of files on an
+	infrequent (on the order of hours) basis.
+
+	There are a number of obvious problems with that design,
+	but the biggest problem was recovery when a name server
+	goes offline for more than a day. We had a donated name
+	server for a while; donated but still located remotely.
+	When it was down for any length of time getting it in sync
+	again was a huge effort. Since this is entirely a volunteer
+	work, and those of us behind it all have real jobs, that
+	meant using donated systems made things harder for us, not
+	easier.
+
+	In my copious spare time I've been working on a replacement
+	infrastructure; creating it from scratch because I did not
+	see anything that met the following requirements:
+
+	1) Asynchronous and reliable delivery of a message even
+	   when the receiver is unavailable when the message is
+	   created.
+
+	2) No directly accessible network services. (I was initiating
+	   servers on remote hosts using ssh w/ forced commands to
+	   ensure authorized operation.)
+
+	3) Notification of success/failure sent to location other
+	   than sender.
+
+	4) Simple, secure, traceable, etc., etc., etc.
+
+	I created something that I now know resembled jabber in
+	surprising ways.  True, I called the router a courier, my
+	address tuple was (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">agent at room-</A>&gt;operation) instead of
+	(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">id at host</A>/resource),  I used custom HTTP packets instead of
+	xml, but many things are the same.
+
+	The final problem that caused me to find and switch to
+	Jabber was error handling. I had modified HTTP::Daemon and
+	LWP::UserAgent to run on a pair of unidirectional pipes
+	(STDIN/STDOUT) so I could use ssh. However, the HTTP code
+	kept wanting to close the connection after sending an error
+	response. I gave up trying to fit a square peg in a round
+	hole last week.
+
+	I'll need to change the architecture a bit, but jabber
+	should save a lot of time and effort to make it worth it.
+	The item that will remain, and should be possible once I
+	really understand jabber, is point #1.
+
+	Let me know what aspects pique your interest.
+
+		Scott
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="048297.html">[jdev] JEP for joining chat rooms while browsing web pages
+</A></li>
+	<LI>Next message: <A HREF="048299.html">[jdev] FW: Opportunity for client/server developers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48298">[ date ]</a>
+              <a href="thread.html#48298">[ thread ]</a>
+              <a href="subject.html#48298">[ subject ]</a>
+              <a href="author.html#48298">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

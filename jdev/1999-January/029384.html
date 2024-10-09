@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] How to handle multiple clients
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20How%20to%20handle%20multiple%20clients&In-Reply-To=%3CPine.LNX.3.96.990111223908.680A-100000%40trep.dyn.ml.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="029381.html">
+   <LINK REL="Next"  HREF="029385.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] How to handle multiple clients</H1>
+    <B>Jeff McBride</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20How%20to%20handle%20multiple%20clients&In-Reply-To=%3CPine.LNX.3.96.990111223908.680A-100000%40trep.dyn.ml.org%3E"
+       TITLE="[JDEV] How to handle multiple clients">trep at ctsi.net
+       </A><BR>
+    <I>Mon Jan 11 21:52:15 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="029381.html">[JDEV] How to handle multiple clients
+</A></li>
+        <LI>Next message: <A HREF="029385.html">[JDEV] How to handle multiple clients
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29384">[ date ]</a>
+              <a href="thread.html#29384">[ thread ]</a>
+              <a href="subject.html#29384">[ subject ]</a>
+              <a href="author.html#29384">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sun, 10 Jan 1999, Jeremie Miller wrote:
+
+&gt;<i> &gt; read. Obviously there are details in this scheme that need to be worked
+</I>&gt;<i> &gt; out, but I don't see a problem with it? Am I missing something obvious(or 
+</I>&gt;<i> &gt; not so obvious)? 
+</I>&gt;<i> 
+</I>&gt;<i> There's a few ways around this w/o creating some sort of fetching/waiting
+</I>&gt;<i> setup.  As it is, the majority of the messages being passwd around are
+</I>&gt;<i> going to be only a few hundred characters, just lines of chat.  
+</I>&gt;<i> 
+</I>&gt;<i> It would be pretty easy to just let the server copy an incoming message to
+</I>&gt;<i> each of the users session if each of those sessions had an equal or
+</I>&gt;<i> nonexistant priority.  It's also easy to allow a user to set &quot;Away&quot;
+</I>&gt;<i> status(or have a client automatically set it after idle time) so that it
+</I>&gt;<i> doesn't recieve messages.
+</I>&gt;<i> 
+</I>&gt;<i> I guess I just see this as something that the clients can have control
+</I>&gt;<i> over, and if it does become a problem when it starts getting heavy use,
+</I>&gt;<i> it's not too difficult to correct.
+</I>&gt;<i> 
+</I>&gt;<i>  &gt; 
+</I>&gt;<i> &gt; One more thing, I know there is talk about some kind of SMTP interface.
+</I>&gt;<i> &gt; What exactly is the idea behind this? What should it acclomplish? The
+</I>&gt;<i> &gt; ability to send an email to an address and have it delivered to the
+</I>&gt;<i> &gt; person's jabber client? If someone could please explain this it would be
+</I>&gt;<i> &gt; great. I may even try to get something working. 
+</I>&gt;<i> 
+</I>&gt;<i> First, it would be great for the server to be able to send messages on via
+</I>&gt;<i> SMTP if there was no other way of direct delivery, so that you could enter
+</I>&gt;<i> any Jabber or email address(since they are identically formatted
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host</A>) and it could be delivered normally either way.
+</I>&gt;<i> 
+</I>&gt;<i> Of course, if you can send an email via Jabber, you have to be able to
+</I>&gt;<i> recieve it.  Here is a quick rundown on how I would see it all working:
+</I>&gt;<i> 
+</I>&gt;<i>  - User enters <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">friend at host.com</A>
+</I>&gt;<i>  - Jabber transport can't deliver it since the friend isn't a Jabber user
+</I>&gt;<i>  - Jabber transport optionally automatically reformats the address to the
+</I>&gt;<i>    sendmail forwarding style: friend%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">host.com at EMAIL</A>
+</I>&gt;<i>  - The SMTP/EMAIL transport receives it and sends it via email
+</I>&gt;<i>  - The return address is <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at jabberserver.com</A>
+</I>&gt;<i>  - The SMTP transport can either listen directly for incoming email at
+</I>&gt;<i>    jabberserver.com, or accept email forwarded from sendmail on that host
+</I>&gt;<i>  - Incoming email is delivered to the Jabber transport on that host with a
+</I>&gt;<i>    from address formatted like earlier: emailuser%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">emailserver.com at EMAIL</A>
+</I>&gt;<i> 
+</I>&gt;<i> Hows that sound?  Please feel free to step up and start playing/coding
+</I>&gt;<i> this SMTP transport :)
+</I>&gt;<i> 
+</I>&gt;<i> Jer
+</I>&gt;<i> 
+</I>
+But when they reply to that address, what if it is actually an e-mail
+address that exists on that server? It wouldn't work unless the
+jabberserver.com doesn't also act as a real smtp server. For example:
+
+- I try to send a jabber message to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">non-existent at address.com</A>
+- the jabber transport can't send it to that of course, and offers to send
+  it as a real e-mail
+- It really IS an e-mail address so somebody gets it, and replys to
+  <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">trep at ctsi.net</A>(both my jabber and my e-mail address). 
+- Not the message is in my inbox, waiting for me to download it.
+Do you think that jabber should actually act as a mail client and connect
+to the POP server and download it? I don't think this is a very good idea. 
+
+An e-mail gateway would be cool, allowing people to send jabber users
+messages through an e-mail address, but the only addressing scheme I can
+think of is something along the lines of
+user%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabberhost.com at jabbermailgateway.com.</A> 
+
+Also, something so that messages not read after a certain amount of time
+will be forwarded to the users real e-mail. Like Tim MacKenzie suggested. 
+
+Jeff
+
+	_________________________________________
+	|            <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">trep at ctsi.net</A>              |
+	|         pgp mail is welcome           | 
+	|  pgpkey: <A HREF="finger://trep@spock.ctsi.net">finger://trep@spock.ctsi.net</A> |
+        |             ICQ: 7174612              |
+	|_______________________________________|
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="029381.html">[JDEV] How to handle multiple clients
+</A></li>
+	<LI>Next message: <A HREF="029385.html">[JDEV] How to handle multiple clients
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29384">[ date ]</a>
+              <a href="thread.html#29384">[ thread ]</a>
+              <a href="subject.html#29384">[ subject ]</a>
+              <a href="author.html#29384">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

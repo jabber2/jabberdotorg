@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Question about jabber:iq:auth packets and XDB
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Question%20about%20jabber%3Aiq%3Aauth%20packets%20and%20XDB&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="014595.html">
+   <LINK REL="Next"  HREF="014606.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Question about jabber:iq:auth packets and XDB</H1>
+    <B>Joe Breeden</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Question%20about%20jabber%3Aiq%3Aauth%20packets%20and%20XDB&In-Reply-To="
+       TITLE="[JDEV] Question about jabber:iq:auth packets and XDB">jbreeden at ena.com
+       </A><BR>
+    <I>Wed Oct 23 09:19:17 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="014595.html">[JDEV] (no subject)
+</A></li>
+        <LI>Next message: <A HREF="014606.html">[JDEV] Can jabber ask questions (i.e. polling)?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14603">[ date ]</a>
+              <a href="thread.html#14603">[ thread ]</a>
+              <a href="subject.html#14603">[ subject ]</a>
+              <a href="author.html#14603">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>All,
+ 
+I sent this message in the other day and have since spent some time on the problem and have narrowed down to one line of code in mod_auth_plain.c that could be changed to help me with my need and probably not break any other implementations. Line 70 (see below) is a call to the check routine and as you can see only the password tag from the original XML is passed on to the xdb subsystem. If this line could be modified in a way that the password and resource are passed to the xdb subsystem it shouldn't break anything else and should make things easier for losers like me who want to re-write xdb in some language other than C.
+ 
+I looked at the xmlnode_get_tag and could see how it can get tags in many ways, but I couldn't see how it could return multiple tags on the same level. A modification to that routine which in found in the source file xmlnode.c around line 331 would be nice. Maybe something allowing a | separated list of tags that would return a structure with all of the found requested tags.
+if(xdb_act(m-&gt;si-&gt;xc, m-&gt;user-&gt;id, NS_AUTH, &quot;check&quot;, NULL, xmlnode_get_tag(m-&gt;packet-&gt;iq,&quot;password&quot;)))
+
+ 
+
+Thanks,
+
+Joe Breeden
+Education Networks of America
+
+ 
+
+-----Original Message-----
+From: Joe Breeden 
+Sent: Friday, October 18, 2002 10:31 AM
+To: Jdev (E-mail)
+Subject: [JDEV] Question about jabber:iq:auth packets and XDB
+
+
+
+All, 
+
+I have noticed a quirk, if you will, in the way jabberd passes jabber:iq:auth packets to XDB. If you look at the output from my debug log (greatly edited for brevity) it looks like the client is sending a &lt;resource&gt; tag which is getting stripped from the stream when the packet is forwarded to my XDB service. 
+
+My guess is that deliver.c is responsible for rewriting the XML, but I can't figure out where as my C is so poor that I wouldn't begin to claim to understand what the program is doing. I want to be able to store the resources a user is sending like xdb_sql does and it seems to me the perfect time to do this would be when an iq:auth packet is received, except that this handy-dandy piece of information is not being passed to my component. Any help here would be appreciated. Thanks in advance.
+
+---------------------------------------------------------------BEGIN TRACE-----------------------------------------------------------------------------------------------------------
+
+Fri Oct 18 08:57:22 2002  mio.c:760 MIO read from socket 15: &lt;iq type='set' id='__AUTH__'&gt;&lt;query xmlns='jabber:iq:auth'&gt;&lt;username&gt;joehep&lt;/username&gt;&lt;resource&gt;GAIM&lt;/resource&gt;&lt;password&gt;password&lt;/password&gt;&lt;/query&gt;&lt;/iq&gt;
+
+Fri Oct 18 08:57:22 2002  deliver.c:474 DELIVER 4:shrieker.ena.com &lt;route type='auth' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">joehep at shrieker.ena.com</A>/GAIM' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">15 at c2s</A>/812F628'&gt;&lt;iq type='set' id='__AUTH__'&gt;&lt;query xmlns='jabber:iq:auth'&gt;&lt;username&gt;joehep&lt;/username&gt;&lt;resource&gt;GAIM&lt;/resource&gt;&lt;password&gt;password&lt;/password&gt;&lt;/query&gt;&lt;/iq&gt;&lt;/route&gt;
+
+Fri Oct 18 08:57:22 2002  deliver.c:94 (80D84A0)incoming packet &lt;route type='auth' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">joehep at shrieker.ena.com</A>/GAIM' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">15 at c2s</A>/812F628'&gt;&lt;iq type='set' id='__AUTH__'&gt;&lt;query xmlns='jabber:iq:auth'&gt;&lt;username&gt;joehep&lt;/username&gt;&lt;resource&gt;GAIM&lt;/resource&gt;&lt;password&gt;password&lt;/password&gt;&lt;/query&gt;&lt;/iq&gt;&lt;/route&gt;
+
+Fri Oct 18 08:57:22 2002  deliver.c:474 DELIVER 2:shrieker.ena.com &lt;xdb type='set' action='check' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">joehep at shrieker.ena.com</A>' from='sessions' ns='jabber:iq:auth' id='85'&gt;&lt;password&gt;password&lt;/password&gt;&lt;/xdb&gt;
+
+------------------------------------------------------------------END TRACE-----------------------------------------------------------------------------------------------------------
+
+Again, thanks for the help, 
+
+--Joe Breeden 
+
+&gt;<i>From Murphy's Laws of Computing: 
+</I>9. A complex system that does not work is invariably found to have evolved from a simpler system that worked just fine. 
+
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="http://mail.jabber.org/pipermail/jdev/attachments/20021023/bc2c0ae5/attachment.htm">http://mail.jabber.org/pipermail/jdev/attachments/20021023/bc2c0ae5/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="014595.html">[JDEV] (no subject)
+</A></li>
+	<LI>Next message: <A HREF="014606.html">[JDEV] Can jabber ask questions (i.e. polling)?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14603">[ date ]</a>
+              <a href="thread.html#14603">[ thread ]</a>
+              <a href="subject.html#14603">[ subject ]</a>
+              <a href="author.html#14603">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

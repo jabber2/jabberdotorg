@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Encrypted xml transfer, was servers specifying from fields
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Encrypted%20xml%20transfer%2C%20was%20servers%20specifying%20from%20fields&In-Reply-To=%3C0G9R007JGGEVYL%40mail.coserv.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="035729.html">
+   <LINK REL="Next"  HREF="035759.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Encrypted xml transfer, was servers specifying from fields</H1>
+    <B>mark at mjwilcox.com</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Encrypted%20xml%20transfer%2C%20was%20servers%20specifying%20from%20fields&In-Reply-To=%3C0G9R007JGGEVYL%40mail.coserv.net%3E"
+       TITLE="[JDEV] Encrypted xml transfer, was servers specifying from fields">mark at mjwilcox.com
+       </A><BR>
+    <I>Mon Mar  5 23:30:03 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="035729.html">[JDEV] Encrypted xml transfer, was servers specifying from fields
+</A></li>
+        <LI>Next message: <A HREF="035759.html">[JDEV] Encrypted xml transfer, was servers specifying from fields
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35742">[ date ]</a>
+              <a href="thread.html#35742">[ thread ]</a>
+              <a href="subject.html#35742">[ subject ]</a>
+              <a href="author.html#35742">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I've been reading this thread back and forth and boys, you need to 
+go do a lot of reading first. Don't reinvent the #%@! wheel. In 
+particular read Schneir's Applied Crypto and Secrets &amp; Lies, plus 
+the docs on the AES standard as well as the docs on SSL/TLS 
+(there's also a good book on it, don't have it inf front of me, but it's 
+the only one on Amazon :).
+
+You're down the right track. Symetric encryption (used by DES and 
+Rijndael) is much more effecient than Asymetric (used by Public 
+Key encryption such as PGP or X.509), but you do have a problem: 
+how to share the key. 
+
+SSL has the same situation. The way SSL solves it is to use PK 
+(through the use of X.509 certificates) to authenticate the session 
+(at least the server must authenticate itself, the client auth is 
+optional). Then the server sends a random key to be used 
+(normally this is 3DES or RC4, but Rijndael would be a better 
+choice). 
+
+Another way to negoitate the key is to use Diffie-Hellman protocol, 
+but that's almost as much overhead as using PK &amp; not nearly as 
+secure.
+
+If you were using a totally stream based system and could 
+negotiate a key, then Blowfish would be a better choice. 
+
+You could use SSL to negotiate a session between two parties but 
+there's no gurantee that you're on the same server (at least with 
+HTTP based XML-RPC you know the app is on the same server). 
+Thus if you want the speed of symetric with Jabber, you're probably 
+better off setting up a protocol that uses a secure timestamp to 
+note latency (ie. say the session is considered over if we don't hear 
+anything after x seconds) OR use presence to denote session 
+(session is over once either client denotes not-available). Use PGP 
+or X.509 cert to verify one another. Then exchange the key. then 
+use a symetric encryption to perform the application encryption.
+
+However, SSL or simple message based PK is going to be fine 
+99% of the time. Most people don't want hard-core encryption, they 
+just want to know that the majority of the world can't read their 
+messages without going through a lot of trouble. And a lot of 
+people would really just settle with knowing who they were talking 
+to ( alot of spam would simply stop if we required signed email), 
+and encryption can come or go.
+
+Plus Jabber (and other XML-RPC protocols) are just transport 
+layers. while they should have some type of encryption in them, 
+applications built on-top of them will require their own particular 
+security. That's the 1% standard SSL and PK won't contain. But 
+the good news there's plenty of $$ to be mined in them thar hills :).
+
+If you really want to see how encryption should really work in a 
+program, check out Groove (www.groove.net). It uses X.509 as the 
+default. You don't turn it on. You can't turn it off. It's seemless. 
+Groove is what the future should be. :). Oh, Groove was designed 
+by Ray Ozzie who created Lotus Notes and was fighting crypto 
+battles before most of this list was in grade school (or even born, 
+though that makes *me* feel old :).
+
+Mark
+
+
+
+
+Mark Wilcox
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A>
+Got LDAP?
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="035729.html">[JDEV] Encrypted xml transfer, was servers specifying from fields
+</A></li>
+	<LI>Next message: <A HREF="035759.html">[JDEV] Encrypted xml transfer, was servers specifying from fields
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35742">[ date ]</a>
+              <a href="thread.html#35742">[ thread ]</a>
+              <a href="subject.html#35742">[ subject ]</a>
+              <a href="author.html#35742">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

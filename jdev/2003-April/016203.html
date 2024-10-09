@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] What's the best way to build a custom Jabber server?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20What%27s%20the%20best%20way%20to%20build%20a%20custom%20Jabber%20server%3F&In-Reply-To=3E96C3DC.3000008%40mbox.com.au">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="016213.html">
+   <LINK REL="Next"  HREF="016199.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] What's the best way to build a custom Jabber server?</H1>
+    <B>Matthew A. Miller</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20What%27s%20the%20best%20way%20to%20build%20a%20custom%20Jabber%20server%3F&In-Reply-To=3E96C3DC.3000008%40mbox.com.au"
+       TITLE="[JDEV] What's the best way to build a custom Jabber server?">linuxwolf at outer-planes.no-ip.COM
+       </A><BR>
+    <I>Sat Apr 12 08:58:43 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="016213.html">[JDEV] Re: What's the best way to build a custom Jabber server?
+</A></li>
+        <LI>Next message: <A HREF="016199.html">[JDEV] SIP, VoIP, pp, revisited
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#16203">[ date ]</a>
+              <a href="thread.html#16203">[ thread ]</a>
+              <a href="subject.html#16203">[ subject ]</a>
+              <a href="author.html#16203">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>In your particular case, starting from jabberd or starting from scratch 
+will probably take the same amount of blood, sweat, tears, and time.  On 
+the one hand, most libraries expect to be connected to a running 
+jabberd/JCP/TIMP/&lt;insert favorite jabber server here&gt;.  On the other 
+hand, jabberd was developed with the general populace in mind, and its 
+myriad of components reflect that.
+
+&lt;plug type='shameless'&gt;
+However, if you're not afraid of using a Java library, I would suggest 
+you take a look at JSO.  It is quite capable of running as a socket 
+acceptor, and takes advantage of non-blocking I/O so that a number of 
+Jabber connections can be pooled into the same thread.
+
+While most of its dependencies are packaged within the jso-full.jar, the 
+one requirement left is J2SE 1.4 or above.  However, I've been seeing 
+this become less and less of an issue.
+&lt;/plug&gt;
+
+
+-  LW
+
+GuruJ wrote:
+&gt;<i> Hi everyone,
+</I>&gt;<i> 
+</I>&gt;<i> I've been tossing around the idea of building a new Jabber client/server 
+</I>&gt;<i>  application suite that is specifically targetted for use in internal 
+</I>&gt;<i> group environments.
+</I>&gt;<i> 
+</I>&gt;<i> The basic distinguishing ideas for this would be:
+</I>&gt;<i> (1) Everyone is visible to everyone else (ie. complete public directory 
+</I>&gt;<i> listing).
+</I>&gt;<i> (2) People are assigned to groups ('departments', 'project teams', 
+</I>&gt;<i> whatever descriptor seems appropriate).  Group membership is a primary 
+</I>&gt;<i> determinator of who sends 'presence' messages to who.
+</I>&gt;<i> (3) Each group can create 'tasks' or 'projects' that become the primary 
+</I>&gt;<i> focus for collaboration.  Whenever an IM conversation takes place, it 
+</I>&gt;<i> gets logged within the context of a selected task.
+</I>&gt;<i> (4) The application may include some facility for collaborative text 
+</I>&gt;<i> editing, or it may simply allow users to mark useful resources (via 
+</I>&gt;<i> hyperlinking or some other method).
+</I>&gt;<i> 
+</I>&gt;<i> Ideally I would like to use a logical combination of open architectures 
+</I>&gt;<i> to do this (ie. Jabber/XMPP for messaging, LDAP for directories, SQL or 
+</I>&gt;<i> just a vanilla filesystem for conversation logging)...
+</I>&gt;<i> 
+</I>&gt;<i> Now the big question: what's the best way to start this?
+</I>&gt;<i> 
+</I>&gt;<i> In the opinion of anyone out there, do you think my best shot is to:
+</I>&gt;<i> (1) Grab the jabberd code and hack at it directly;
+</I>&gt;<i> (2) Grab the jabberd code and look at extending it through .so components?
+</I>&gt;<i> (3) Start from scratch using a Jabber toolkit (don't know which one, all 
+</I>&gt;<i> toolkits I have discovered thus far all seem aimed at building Jabber 
+</I>&gt;<i> *clients*, not servers)?
+</I>&gt;<i> (4) Start from scratch and code the server from the ground up?
+</I>&gt;<i> 
+</I>&gt;<i> If I had to go with option (3) or (4), I'd prefer to code the server in 
+</I>&gt;<i> a high-level language such as Perl or Python.  I'm not necessarily 
+</I>&gt;<i> aiming to make this commercial-quality, highly-scalable code; I just 
+</I>&gt;<i> want to demonstrate a proof-of-concept Jabber server that uses IM in a 
+</I>&gt;<i> way which isn't attempting to clone ICQ or AIM.
+</I>&gt;<i> 
+</I>&gt;<i> (I know some of you will say that I am attempting to clone Groove 
+</I>&gt;<i> instead.  Well, yes and no.  While there are some similarities, I had 
+</I>&gt;<i> this idea before I ever *heard* of Groove; I'm actually trying to build 
+</I>&gt;<i> something that would have filled a niche in a company I worked for in a 
+</I>&gt;<i> past life.)
+</I>&gt;<i> 
+</I>&gt;<i> Sorry for my long-winded e-mail, but I'm really keen to get some 
+</I>&gt;<i> feedback from Jabber people about the best way to get started, and I 
+</I>&gt;<i> guess to know whether you think the idea is even worth pursuing.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for your patience,
+</I>&gt;<i> 
+</I>&gt;<i> Stephen.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+-- 
+Matt &quot;linuxwolf&quot; Miller
+JID:	<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">linuxwolf at outer-planes.net</A>
+E-MAIL:	<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">linuxwolf at outer-planes.net</A>
+
+- Got &quot;JABBER&quot;? (<A HREF="http://www.jabber.org/">http://www.jabber.org/</A>)
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="016213.html">[JDEV] Re: What's the best way to build a custom Jabber server?
+</A></li>
+	<LI>Next message: <A HREF="016199.html">[JDEV] SIP, VoIP, pp, revisited
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#16203">[ date ]</a>
+              <a href="thread.html#16203">[ thread ]</a>
+              <a href="subject.html#16203">[ subject ]</a>
+              <a href="author.html#16203">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

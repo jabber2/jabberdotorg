@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Crash in jabberd using mysql
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Crash%20in%20jabberd%20using%20mysql&In-Reply-To=%3C001101c37725%24aef5de70%241523dbcd%40BLR31W2K%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="046781.html">
+   <LINK REL="Next"  HREF="046791.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Crash in jabberd using mysql</H1>
+    <B>Bernard Littau</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Crash%20in%20jabberd%20using%20mysql&In-Reply-To=%3C001101c37725%24aef5de70%241523dbcd%40BLR31W2K%3E"
+       TITLE="[JDEV] Crash in jabberd using mysql">bernardl at acumenassociates.com
+       </A><BR>
+    <I>Tue Sep  9 17:57:02 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="046781.html">[JDEV] Crash in jabberd using mysql
+</A></li>
+        <LI>Next message: <A HREF="046791.html">[JDEV] Crash in jabberd using mysql
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46788">[ date ]</a>
+              <a href="thread.html#46788">[ thread ]</a>
+              <a href="subject.html#46788">[ subject ]</a>
+              <a href="author.html#46788">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I love talking to myself :-)
+
+A little more work with gdb shows that the offending value is in fact stack
+garbage from an uninitialized automatic.  I fixed the problem by
+initializing the automatics to null, although a better fix might be not to
+call the xdb_sql_querydef function with the uninitialzed values.  I didn't
+trace the querydef to see if not executing had some other side effect, and
+for the moment, passing null pointers seems to be ok.
+
+Now, this means that everyone else just has better stack garbage than I do,
+or I am running older code, or something else.
+
+I am running xdb_sql 1.3, which as near as I can tell is the latest tarball
+out on the net.  My source code is the same as what is on JabberStudio in
+the CVS viewer.
+
+I realize the focus of jdev is the jabberd 2 implementation.  I'll likely
+switch to that now that it is in beta, but I need to deploy this pronto, so
+I was trying to heed the warnings about real world use of jabberd 2.
+
+Is it pointless to post about this older stuff here in jdev?  Is there a
+better place?  Jadmin, perhaps?
+
+Thanks,
+
+Bernard Littau
+Acumen Associates
+
+&gt;<i> Bernard Littau
+</I>&gt;<i> Sent: Monday, September 08, 2003 6:10 PM
+</I>&gt;<i>
+</I>&gt;<i> Hi All,
+</I>&gt;<i> 
+</I>&gt;<i> So far I have not been able to get the xdb_sql package with mysql to run
+</I>&gt;<i> correctly with jabberd 1.4.2.  I figured out how to use enough of gdb to
+</I>&gt;<i> get
+</I>&gt;<i> the information pasted below.   Is this a known problem?
+</I>&gt;<i> 
+</I>&gt;<i> Program received signal SIGSEGV, Segmentation fault.
+</I>&gt;<i> 0x40052e10 in do_replace (qd=0x8206050, var=0x8206158, value=0x1 &lt;Address
+</I>&gt;<i> 0x1 out of bounds&gt;) at xdb_sql_querydef.c:172
+</I>&gt;<i> 172         if (ef_value &amp;&amp; strlen(ef_value) == 0 &amp;&amp; var-&gt;default_value)
+</I>&gt;<i> (gdb) l
+</I>&gt;<i> 167         next = strstr(qd-&gt;query_text,var-&gt;replace_text);
+</I>&gt;<i> 168         if (!next)
+</I>&gt;<i> 169             return;
+</I>&gt;<i> 170
+</I>&gt;<i> 171         ef_value = value;
+</I>&gt;<i> 172         if (ef_value &amp;&amp; strlen(ef_value) == 0 &amp;&amp; var-&gt;default_value)
+</I>&gt;<i> 173            ef_value = var-&gt;default_value;
+</I>&gt;<i> 174         if (ef_value)
+</I>&gt;<i> 175         { /* may need to escape the value */
+</I>&gt;<i> 176             int repl_len = strlen(ef_value);
+</I>&gt;<i> (gdb) bt
+</I>&gt;<i> #0  0x40052e10 in do_replace (qd=0x8206050, var=0x8206158, value=0x1
+</I>&gt;<i> &lt;Address 0x1 out of bounds&gt;) at xdb_sql_querydef.c:172
+</I>&gt;<i> #1  0x40053077 in xdbsql_querydef_setvar (qd=0x8206050, name=0x40058cb2
+</I>&gt;<i> &quot;token&quot;, value=0x1 &lt;Address 0x1 out of bounds&gt;)
+</I>&gt;<i>     at xdb_sql_querydef.c:247
+</I>&gt;<i> #2  0x4004ec84 in xdbsql_auth0k_set (self=0x8114368, user=0x820f640
+</I>&gt;<i> &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bl34 at plato.acumenassociates.com</A>&quot;, data=0x0)
+</I>&gt;<i>     at xdb_sql_auth0k.c:244
+</I>&gt;<i> #3  0x4004e292 in module_call (self=0x8114368, mod=0x813f4a0, p=0x820f328,
+</I>&gt;<i> user=0x820f640 &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bl34 at plato.acumenassociates.com</A>&quot;)
+</I>&gt;<i>     at xdb_sql.c:172
+</I>&gt;<i> #4  0x4004e13d in xdb_sql_phandler (i=0x8111ab8, p=0x820f328,
+</I>&gt;<i> args=0x8114368) at xdb_sql.c:131
+</I>&gt;<i> #5  0x08054698 in deliver_instance (i=0x8111ab8, p=0x820f328) at
+</I>&gt;<i> deliver.c:689
+</I>&gt;<i> #6  0x08053e35 in deliver (p=0x820f328, i=0x810a6d8) at deliver.c:482
+</I>&gt;<i> #7  0x08055de4 in xdb_deliver (i=0x810a6d8, xc=0x8184058) at xdb.c:107
+</I>&gt;<i> #8  0x08056300 in xdb_act (xc=0x810a8a8, owner=0x820eca8, ns=0x4002f95a
+</I>&gt;<i> &quot;jabber:iq:auth:0k&quot;, act=0x0, match=0x0, data=0x0)
+</I>&gt;<i>     at xdb.c:270
+</I>&gt;<i> #9  0x0805642b in xdb_set (xc=0x810a8a8, owner=0x820eca8, ns=0x4002f95a
+</I>&gt;<i> &quot;jabber:iq:auth:0k&quot;, data=0x0) at xdb.c:296
+</I>&gt;<i> #10 0x4002274d in mod_auth_0k_reg (m=0x8184198, arg=0x0) at
+</I>&gt;<i> mod_auth_0k.c:217
+</I>&gt;<i> #11 0x4001ccc6 in js_mapi_call (si=0x810a858, e=6, packet=0x820eb70,
+</I>&gt;<i> user=0x0, s=0x0) at modules.c:160
+</I>&gt;<i> #12 0x4001d38d in js_authreg (arg=0x820eb70) at authreg.c:101
+</I>&gt;<i> #13 0x080566f6 in mtq_main (arg=0x8152028) at mtq.c:151
+</I>&gt;<i> #14 0x0807d4ab in pth_spawn_trampoline ()
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Thanks,
+</I>&gt;<i> 
+</I>&gt;<i> Bernard Littau
+</I>&gt;<i> Acumen Associates
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="046781.html">[JDEV] Crash in jabberd using mysql
+</A></li>
+	<LI>Next message: <A HREF="046791.html">[JDEV] Crash in jabberd using mysql
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46788">[ date ]</a>
+              <a href="thread.html#46788">[ thread ]</a>
+              <a href="subject.html#46788">[ subject ]</a>
+              <a href="author.html#46788">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

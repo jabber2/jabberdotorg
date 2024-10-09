@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: [jadmin] NDS LDAP - unable to compile
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20%5Bjadmin%5D%20NDS%20LDAP%20-%20unable%20to%20compile&In-Reply-To=%3C20010917103431.A24523%40zero.nauseum.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="068000.html">
+   <LINK REL="Next"  HREF="068003.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: [jadmin] NDS LDAP - unable to compile</H1>
+    <B>Robert Norris</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20%5Bjadmin%5D%20NDS%20LDAP%20-%20unable%20to%20compile&In-Reply-To=%3C20010917103431.A24523%40zero.nauseum.org%3E"
+       TITLE="[JDEV] Re: [jadmin] NDS LDAP - unable to compile">rob at nauseum.org
+       </A><BR>
+    <I>Sun Sep 16 19:34:31 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="068000.html">[JDEV] Distributed Authentication (2nd attempt)
+</A></li>
+        <LI>Next message: <A HREF="068003.html">[JDEV] Jabber server on HPUX
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68002">[ date ]</a>
+              <a href="thread.html#68002">[ thread ]</a>
+              <a href="subject.html#68002">[ subject ]</a>
+              <a href="author.html#68002">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> I am administering a jabber server on RedHatLinux 7.0 on. I have users
+</I>&gt;<i> whose userid and passwd lies in a Netscape Directory Service (LDAP).
+</I>&gt;<i> The mod_auth_ldap module seems to work with OpenLdap but I am unable
+</I>&gt;<i> to compile the mod_auth_ldap using NDS libraries. NDS provides shared
+</I>&gt;<i> library files in .so format. However, when compiling, I get an error
+</I>&gt;<i> saying that the file format is invalid.
+</I>
+I assume this is my mod_auth_ldap module? If that's the case, you can
+compile it with OpenLDAP libraries and then have it talk to a Netscape
+Directory Server. This is, in fact, exactly what I use here.
+
+However, if you really want to compile against the Netscape SDK, I have
+made it work using the 4.1 SDK. You'll need to apply the following patch:
+
+---------- 8&lt; ----------
+--- mod_auth_ldap.c.orig        Mon Sep 17 10:28:31 2001
++++ mod_auth_ldap.c     Mon Sep 17 10:31:03 2001
+@@ -73,11 +73,7 @@
+ 
+ /* utility function to get ld_errno */
+ static int get_lderrno(LDAP *ld) {
+-       int ld_errno;
+-
+-       ldap_get_option(ld, LDAP_OPT_ERROR_NUMBER, &amp;ld_errno);
+-
+-       return ld_errno;
++       return ldap_get_lderrno(ld, NULL, NULL);
+ }
+ 
+/* the main authentication function */
+---------- 8&lt; ----------
+
+The reason I didn't include this as an option in the release for
+mod_auth_ldap is that the Netscape SDK seems to have some problems
+running inside PTH, and I didn't want to cause more problems than I had
+to.
+
+Regards,
+Rob.
+
+--
+Robert Norris                                          &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rob at nauseum.org</A>&gt;
+1024D/FC18E6C2        6FBF 098A A3F2 A728 490F  7743 59BD 7767 FC18 E6C2
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010917/ff92a23e/attachment-0002.pgp">https://www.jabber.org/jdev/attachments/20010917/ff92a23e/attachment-0002.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="068000.html">[JDEV] Distributed Authentication (2nd attempt)
+</A></li>
+	<LI>Next message: <A HREF="068003.html">[JDEV] Jabber server on HPUX
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68002">[ date ]</a>
+              <a href="thread.html#68002">[ thread ]</a>
+              <a href="subject.html#68002">[ subject ]</a>
+              <a href="author.html#68002">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

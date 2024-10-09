@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> Proposal (was: Re: [JDEV] Unreliable?)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Proposal%20%28was%3A%20Re%3A%20%5BJDEV%5D%20Unreliable%3F%29&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007460.html">
+   <LINK REL="Next"  HREF="007492.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>Proposal (was: Re: [JDEV] Unreliable?)</H1>
+    <B>Kerem HADIMLI</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Proposal%20%28was%3A%20Re%3A%20%5BJDEV%5D%20Unreliable%3F%29&In-Reply-To="
+       TITLE="Proposal (was: Re: [JDEV] Unreliable?)">waster at iname.com
+       </A><BR>
+    <I>Thu May  3 08:52:29 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007460.html">[JDEV] Unreliable?
+</A></li>
+        <LI>Next message: <A HREF="007492.html">[JDEV] Unreliable?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7483">[ date ]</a>
+              <a href="thread.html#7483">[ thread ]</a>
+              <a href="subject.html#7483">[ subject ]</a>
+              <a href="author.html#7483">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Well, i agree that this thing is bad in Jabber. Maybe something like;
+The client sends something like &lt;jabber:iq:embed/&gt;, or
+&lt;supports&gt;jabber:iq:embed&lt;/supports&gt; within the jabber:iq:auth data when it
+sends it.
+Then, if the server supports this (if it doesn't, then it'll just ignore the
+tag, XML-power :P), it would be able to send messages to the client embedded
+inside a jabber:iq:embed info/query, and if it doesn't receive a reply within
+30 seconds, will simply disconnect the client (will not 2nd message's iq,
+before it received iq-result for the first). Also, the client will accept
+normal messages.
+
+In this way, if the client doesn't support jabber:iq:embed stuff, then it can
+just connect as a regular basic client. If the client supports it, and the
+server too, then the client will receive messages in a guaranteed way, but
+will get disconnected if it doesn't reply within 30 seconds. Also, the server
+won't send the client a second jabber:iq:embed info/query if it haven't
+received reply to the first yet.
+
+Also, the server will not accept any jabber:iq:embed info/queries from other
+servers, nor other clients, and will reply itself with an error, to prevent
+fake messages. And also, the client will reply with &lt;iq type=&quot;error&quot;&gt;, if it
+receives a jabber:iq:embed info/query, whose from attribute isn't the server
+it's connected to (it can check from the values in stream:stream tag)
+
+I think this system will be pretty good, also we'll have a &quot;supports&quot; tag
+implemented in the authorization protocol, which will allow advanced
+server-client communications if both sides support.
+
+
+An example connection may be (af
+ter opening stream):
+
+SEND: &lt;iq type=&quot;get&quot; id=&quot;0001&quot;&gt;
+SEND:  &lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+SEND:   &lt;username&gt;username&lt;/username&gt;
+SEND:   &lt;password&gt;password&lt;/password&gt;
+SEND:   &lt;resource&gt;resource&lt;/resource&gt;
+SEND:   &lt;supports&gt;jabber:iq:embed&lt;/supports&gt;
+SEND:  &lt;/query&gt;
+SEND: &lt;/iq&gt;
+
+RECV: &lt;iq from=&quot;server.jabber.org&quot; type=&quot;result&quot; id=&quot;0001&quot;&gt;
+RECV:  &lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+RECV:   &lt;supports&gt;jabber:iq:embed&lt;/supports&gt;
+RECV:  &lt;/query&gt;
+RECV: &lt;/iq&gt;
+
+SEND: &lt;presence/&gt;
+
+RECV: &lt;iq from=&quot;server.jabber.org&quot; type=&quot;set&quot; id=&quot;AF0B&quot;&gt;
+RECV:  &lt;query xmlns=&quot;jabber:iq:embed&quot;&gt;
+RECV:   &lt;message from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at users.server.com</A>&quot;&gt;
+RECV:    &lt;body&gt;Jabber rocks!&lt;/body&gt;
+RECV:   &lt;/message&gt;
+RECV:  &lt;/query&gt;
+RECV: &lt;/iq&gt;
+
+SEND: &lt;iq to=&quot;server.jabber.org&quot; type=&quot;result&quot; id=&quot;AF0B&quot;&gt;
+SEND:  &lt;query xmlns=&quot;jabber:iq:embed&quot;/&gt;
+SEND: &lt;/iq&gt;
+
+All please reply with your toughts about this stuff, i think this will be
+best, and most Jabber-style way to do this.
+
+Regards,
+Kerem HADIMLI
+
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">travis at thinkvirtual.com</A> wrote:
+&gt;<i> 
+</I>&gt;<i> I think there should be some response from the client back to the server letting it know that it has received the message and can then delete.  If no response is returned, then it will retry, or wait until another presence from the client has been sent.  Something along those lines anyway.  It's impossible to get to trust something like this unless you know without a doubt that you are not going to miss any messages.
+</I>&gt;<i> 
+</I>&gt;<i> Travis
+</I>&gt;<i> 
+</I>&gt;<i> ---- Original Message ----
+</I>&gt;<i> From: &quot;Thomas Parslow (PatRat)&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">patrat at rat-software.com</A>&gt;
+</I>&gt;<i> Sent: 2001-05-02 10:44:38.0
+</I>&gt;<i> To: &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">travis at thinkvirtual.com</A>&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> Subject: Re: [JDEV] Unreliable?
+</I>&gt;<i> 
+</I>&gt;<i> &gt; My main concern with jabber is that you can't always be guaranteed to receive a message.  Now most of my list is icq buddies, but I miss a lot of messages.  I tell people to email me if they want
+</I>&gt;<i> &gt; to make sure I get it.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Now I'm not sure if this is the server or the client (i'm using jim mostly)?  Or is it just that it's mostly from icq users?
+</I>&gt;<i> &gt;
+</I>
+&gt;<i> &gt; Could someone give me some insight into this?  Thanks.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Travis Reeder
+</I>&gt;<i> &gt; Chief Software Architect
+</I>&gt;<i> &gt; ThinkVirtual
+</I>&gt;<i> 
+</I>&gt;<i> It's probably to do with the bug I pointed out a little while ago, for
+</I>&gt;<i> some people, if they go offline without first shutting down jabber then
+</I>&gt;<i> they appear to be online for up to 15 minutes, any messages sent to
+</I>&gt;<i> them in that time go to the big bit bucket in the sky...
+</I>&gt;<i> 
+</I>&gt;<i> Does anyone know if there are any plans to fix this?
+</I>&gt;<i> 
+</I>&gt;<i> Thomas Parslow (PatRat) ICQ #:26359483
+</I>&gt;<i> Rat Software
+</I>&gt;<i> <A HREF="http://www.rat-software.com/">http://www.rat-software.com/</A>
+</I>&gt;<i> Please leave quoted text in place when replying
+</I>&gt;<i> 
+</I>
+-- 
+If it happens once, it's a bug.
+If it happens twice, it's a feature.
+If it happens more than twice, it's a design philosophy.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007460.html">[JDEV] Unreliable?
+</A></li>
+	<LI>Next message: <A HREF="007492.html">[JDEV] Unreliable?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7483">[ date ]</a>
+              <a href="thread.html#7483">[ thread ]</a>
+              <a href="subject.html#7483">[ subject ]</a>
+              <a href="author.html#7483">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

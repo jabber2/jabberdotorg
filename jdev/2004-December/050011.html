@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Transfer File problem
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Transfer%20File%20problem&In-Reply-To=%3C425F7A14-4AE6-11D9-BB6C-000A958F753E%40ceruleanstudios.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="050007.html">
+   <LINK REL="Next"  HREF="050008.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Transfer File problem</H1>
+    <B>Rachel Blackman</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Transfer%20File%20problem&In-Reply-To=%3C425F7A14-4AE6-11D9-BB6C-000A958F753E%40ceruleanstudios.com%3E"
+       TITLE="[jdev] Transfer File problem">rcb at ceruleanstudios.com
+       </A><BR>
+    <I>Fri Dec 10 14:01:20 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="050007.html">[jdev] Transfer File problem
+</A></li>
+        <LI>Next message: <A HREF="050008.html">[jdev] RE: File Transfer
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50011">[ date ]</a>
+              <a href="thread.html#50011">[ thread ]</a>
+              <a href="subject.html#50011">[ subject ]</a>
+              <a href="author.html#50011">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> - I create the socket.
+</I>&gt;<i>
+</I>&gt;<i> - I do 'CONNECT' with Streamhost (other machine directly) using this 
+</I>&gt;<i> socket,
+</I>&gt;<i> on IP address and port which streamhost sends to me.
+</I>&gt;<i>
+</I>&gt;<i> - This connection completes successfully.
+</I>
+This is because you're doing a normal TCP connection.
+
+&gt;<i> - I do 'CONNECT' with SHA1(streamid+initiatorjid+targetjid) hostname 
+</I>&gt;<i> and
+</I>&gt;<i> port 0, with the same socket I use for connecting with Streamhost 
+</I>&gt;<i> before, it
+</I>&gt;<i> returns it can't connect.
+</I>
+You don't do the same thing here.  With the socket you now have open, 
+you need to use SOCKS5 (RFC1928, which can be found at 
+<A HREF="http://www.ietf.org/rfc/rfc1928.txt">http://www.ietf.org/rfc/rfc1928.txt</A> for reference) to request a 
+connection from the streamhost to that SHA1'd string, as if you were 
+connecting to a SOCKS5 proxy for general Internet use.
+
+A streamhost is basically pretending to be a SOCKS5 proxy server, so 
+once you've connected you need to do the SOCKS5 negotiation and then 
+issue the SOCKS5 'CONNECT' command -- the command in the SOCKS5 
+protocol which requests a connection to a destination site -- to the 
+streamhost.  /Not/ a normal TCP connect() call, a SOCKS5 command packet 
+with the SHA1'd host as the destination field.
+
+Does that help?
+
+-- 
+Rachel 'Sparks' Blackman -- sysadmin, developer, mad scientist
+&quot;If it is not broken, give me five minutes to redesign it!&quot;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: PGP.sig
+Type: application/pgp-signature
+Size: 186 bytes
+Desc: This is a digitally signed message part
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20041210/0ad2b831/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20041210/0ad2b831/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="050007.html">[jdev] Transfer File problem
+</A></li>
+	<LI>Next message: <A HREF="050008.html">[jdev] RE: File Transfer
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50011">[ date ]</a>
+              <a href="thread.html#50011">[ thread ]</a>
+              <a href="subject.html#50011">[ subject ]</a>
+              <a href="author.html#50011">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

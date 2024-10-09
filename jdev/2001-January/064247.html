@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] transports dev
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20transports%20dev&In-Reply-To=%3C20010121220751.A12010%40dizzyd.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="064246.html">
+   <LINK REL="Next"  HREF="064248.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] transports dev</H1>
+    <B>Dave Smith</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20transports%20dev&In-Reply-To=%3C20010121220751.A12010%40dizzyd.com%3E"
+       TITLE="[JDEV] transports dev">dizzyd at dizzyd.com
+       </A><BR>
+    <I>Sun Jan 21 23:07:51 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="064246.html">[JDEV] transports dev
+</A></li>
+        <LI>Next message: <A HREF="064248.html">[JDEV] ICQ transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64247">[ date ]</a>
+              <a href="thread.html#64247">[ thread ]</a>
+              <a href="subject.html#64247">[ subject ]</a>
+              <a href="author.html#64247">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey,
+
+On Sun, Jan 21, 2001 at 08:48:58PM -0500, dlb wrote:
+&gt;<i> so can I take your advice to mean that a transport module is overkill in this
+</I>&gt;<i> situation ?
+</I>
+Well, it's not really overkill -- it's just the wrong...application of a &quot;transport&quot;
+component. 
+
+With the new Jabber architecture (that is, anything post 1.0) the server is composed
+completely of &quot;component&quot;. Each component within the server provides a specific, yet
+independent piece of funcationality. These components are connected in a variety of
+ways:
+ -- via socket (base_connect, base_accept)
+ -- via child coprocesses (base_exec; redirected stdio)
+ -- via shared objects (base_load)
+
+All the components are connected to a central &quot;hub&quot; which we call jabberd. JabberD 
+provides the routing logic necessary to get a packet from one component to another.
+
+In the typical IM appliation of Jabber, a server is composed of four primary 
+components:
+ -- Client socket manager (&quot;Client Talker&quot;) : provides a way for clients to send
+    packets into the jabberd hub using a standard TCP connection and a single
+    document per session.
+ 
+ -- Server socket manager (&quot;Server Talker&quot;) : provides a way for servers to interact
+    by exchanging packets over a TCP connection
+
+ -- Session Manager (JSM) : keeps track of the state of individual Jabber sessions.
+    It knows nothing of sockets; it simply tracks state on behalf of the Client Talker.
+
+ -- XDB storage interface : provides a way to store XML nodes, keyed by namespace.
+
+
+Each of these components connect (in one way or another) to jabberd and are registered
+with distinct names in the hub. The hub sees to it that packets from one get to the other.
+
+So, the point of all this rambling is that your Flash5 component would fall into the
+&quot;Client Talker&quot; category. It would accept incoming connections, send auth requests into
+the hub and be notified when JSM has accepted the auth and has setup a session for
+that component. From that time forward, packets would simply be sent directly into
+jabberd for delivery -- JSM would see to it that packets get to the other sessions or
+servers.
+
+Hope that explains a bit. We definately need docs on this stuff. Keep asking questions
+and I'll try and explain.
+
+D.
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="064246.html">[JDEV] transports dev
+</A></li>
+	<LI>Next message: <A HREF="064248.html">[JDEV] ICQ transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64247">[ date ]</a>
+              <a href="thread.html#64247">[ thread ]</a>
+              <a href="subject.html#64247">[ subject ]</a>
+              <a href="author.html#64247">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] xdb_sql vcard problem with PSI
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20xdb_sql%20vcard%20problem%20with%20PSI&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="018420.html">
+   <LINK REL="Next"  HREF="018416.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] xdb_sql vcard problem with PSI</H1>
+    <B>Cesar Garcia</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20xdb_sql%20vcard%20problem%20with%20PSI&In-Reply-To="
+       TITLE="[JDEV] xdb_sql vcard problem with PSI">cesargarcia at cantv.net
+       </A><BR>
+    <I>Sat Dec 13 08:32:21 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="018420.html">[JDEV] Problems with binding
+</A></li>
+        <LI>Next message: <A HREF="018416.html">[JDEV] jabber client poll
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#18415">[ date ]</a>
+              <a href="thread.html#18415">[ thread ]</a>
+              <a href="subject.html#18415">[ subject ]</a>
+              <a href="author.html#18415">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I found a problem using PSI and my test jabber server using xdb_sql.
+
+I can't set the email and phone number in the vcard information.
+
+I make the following modifications and work find.
+
+&gt;<i> 176a177,178
+</I>&gt;<i> &gt;     /* Telphone information */
+</I>&gt;<i> &gt;     x = xmlnode_insert_tag(rc,&quot;TEL&quot;);
+</I>&gt;<i> 178,179c180,182
+</I>&gt;<i> &lt;     if (sptr &amp;&amp; *sptr)
+</I>&gt;<i> &lt;       xmlnode_insert_cdata(xmlnode_insert_tag(rc,&quot;TEL&quot; ),sptr,-1);
+</I>&gt;<i> ---
+</I>&gt;<i> &gt;     if (sptr &amp;&amp; *sptr) {
+</I>&gt;<i> &gt;       xmlnode_insert_cdata(xmlnode_insert_tag(x,&quot;NUMBER&quot; ),sptr,-1);
+</I>&gt;<i> &gt;     };
+</I>&gt;<i> 180a184,185
+</I>&gt;<i> &gt;     /* Email linformation */
+</I>&gt;<i> &gt;     x = xmlnode_insert_tag(rc,&quot;EMAIL&quot;);
+</I>&gt;<i> 183c188
+</I>&gt;<i> &lt;       xmlnode_insert_cdata(xmlnode_insert_tag(rc,&quot;EMAIL&quot;     ),sptr,-1);
+</I>&gt;<i> ---
+</I>&gt;<i> &gt;       xmlnode_insert_cdata(xmlnode_insert_tag(x,&quot;USERID&quot;     ),sptr,-1);
+</I>&gt;<i> 360,363c365,380
+</I>&gt;<i> &lt;       else if (j_strcmp(name,&quot;TEL&quot;)==0)
+</I>&gt;<i> &lt;     data_telephone  = GET_CHILD_DATA(x);
+</I>&gt;<i> &lt;       else if (j_strcmp(name,&quot;EMAIL&quot;)==0)
+</I>&gt;<i> &lt;     data_email      = GET_CHILD_DATA(x);
+</I>&gt;<i> ---
+</I>&gt;<i> &gt;       else if (j_strcmp(name,&quot;TEL&quot;)==0) {
+</I>&gt;<i> &gt;          //data_telephone  = GET_CHILD_DATA(x);
+</I>&gt;<i> &gt;         for 
+</I>&gt;<i> (x2=xmlnode_get_firstchild(x);x2;x2=xmlnode_get_nextsibling(x2)){
+</I>&gt;<i> &gt;               name = xmlnode_get_name(x2);
+</I>&gt;<i> &gt;           if (j_strcmp(name,&quot;NUMBER&quot;)==0)
+</I>&gt;<i> &gt;                 data_telephone    = GET_CHILD_DATA(x2);    
+</I>&gt;<i> &gt;         }          
+</I>&gt;<i> &gt;       }
+</I>&gt;<i> &gt;       else if (j_strcmp(name,&quot;EMAIL&quot;)==0) {
+</I>&gt;<i> &gt;             //data_email      = GET_CHILD_DATA(x);
+</I>&gt;<i> &gt;         for 
+</I>&gt;<i> (x2=xmlnode_get_firstchild(x);x2;x2=xmlnode_get_nextsibling(x2)){
+</I>&gt;<i> &gt;               name = xmlnode_get_name(x2);
+</I>&gt;<i> &gt;           if (j_strcmp(name,&quot;USERID&quot;)==0)
+</I>&gt;<i> &gt;                 data_email = GET_CHILD_DATA(x2);    
+</I>&gt;<i> &gt;         }
+</I>&gt;<i> &gt;       }
+</I>&gt;<i> 445d461
+</I>&gt;<i> &lt;
+</I>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="018420.html">[JDEV] Problems with binding
+</A></li>
+	<LI>Next message: <A HREF="018416.html">[JDEV] jabber client poll
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#18415">[ date ]</a>
+              <a href="thread.html#18415">[ thread ]</a>
+              <a href="subject.html#18415">[ subject ]</a>
+              <a href="author.html#18415">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

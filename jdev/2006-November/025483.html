@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] message events + chat state notifications
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20message%20events%20%2B%20chat%20state%20notifications&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="025464.html">
+   <LINK REL="Next"  HREF="025484.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] message events + chat state notifications</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20message%20events%20%2B%20chat%20state%20notifications&In-Reply-To="
+       TITLE="[jdev] message events + chat state notifications">stpeter at jabber.org
+       </A><BR>
+    <I>Fri Nov  3 11:36:55 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="025464.html">[jdev] Re: XMPP Ping method?
+</A></li>
+        <LI>Next message: <A HREF="025484.html">[jdev] Re: message events + chat state notifications
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#25483">[ date ]</a>
+              <a href="thread.html#25483">[ thread ]</a>
+              <a href="subject.html#25483">[ subject ]</a>
+              <a href="author.html#25483">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>IMHO it's about time to actively deprecate the old message events
+protocol (XEP-0022) in favor of chat state notifications (XEP-0085).
+However, that means many clients will support both for a while. In
+certain scenarios that can result in use of message events instead of
+chat state notifications. Consider the following example (where both
+clients support both protocols):
+
+1. Romeo sends an initial chat message to Juliet with 85 + 22 extensions.
+
+2. Juliet doesn't reply immediately.
+
+3. Romeo sends a second chat message to Juliet with 22 extenions only
+(since 22 is message-based but rule 2 in Section 5.1 of XEP-0085 says
+not to include 85 extensions after the first message).
+
+4. Now Juliet sends a reply. Her client looks at the last message
+received from Romeo and includes the 22 extension (but not the 85
+extension) in her first message to Romeo.
+
+As a result, the clients end up using 22 instead of 85, even though
+Romeo's client probably preferred to use 85.
+
+IMHO the solution is for Juliet's client to prefer the use of 85 and
+toggle a bit that says &quot;Romeo sent me 85 extensions, use those in this
+chat session&quot;. So the chat-session-level bit (85 support) takes
+precedence over the message-level bit (22 support).
+
+Thanks to Mikael Berthe of the mcabber project for pointing this out to me!
+
+BTW, Mikael and discovered that several existing clients act like
+Juliet's client in the above example, but I'm not naming names here. :)
+
+(And there are still clients that support only message events, but I'm
+poking the relevant developers directly...)
+
+Peter
+
+-- 
+Peter Saint-Andre
+Jabber Software Foundation
+<A HREF="http://www.jabber.org/people/stpeter.shtml">http://www.jabber.org/people/stpeter.shtml</A>
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 7358 bytes
+Desc: S/MIME Cryptographic Signature
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20061103/234dbdfc/attachment.bin">https://www.jabber.org/jdev/attachments/20061103/234dbdfc/attachment.bin</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="025464.html">[jdev] Re: XMPP Ping method?
+</A></li>
+	<LI>Next message: <A HREF="025484.html">[jdev] Re: message events + chat state notifications
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#25483">[ date ]</a>
+              <a href="thread.html#25483">[ thread ]</a>
+              <a href="subject.html#25483">[ subject ]</a>
+              <a href="author.html#25483">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

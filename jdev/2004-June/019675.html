@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] MUC: setting participant to visitor does not work
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20MUC%3A%20setting%20participant%20to%20visitor%20does%20not%20work&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="019674.html">
+   <LINK REL="Next"  HREF="019676.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] MUC: setting participant to visitor does not work</H1>
+    <B>Heiner Wolf</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20MUC%3A%20setting%20participant%20to%20visitor%20does%20not%20work&In-Reply-To="
+       TITLE="[jdev] MUC: setting participant to visitor does not work">wolf at bluehands.de
+       </A><BR>
+    <I>Wed Jun 23 13:23:17 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="019674.html">[jdev] MUC: setting participant to visitor does not work
+</A></li>
+        <LI>Next message: <A HREF="019676.html">[jdev] xmlnode_str
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19675">[ date ]</a>
+              <a href="thread.html#19675">[ thread ]</a>
+              <a href="subject.html#19675">[ subject ]</a>
+              <a href="author.html#19675">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I found the difference that makes things work: 
+There &lt;query/&gt; must not have CDATA.
+
+Works: 
+&lt;iq type=&quot;set&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">llunatest2 at atlas.jabber.org</A>&quot; id=&quot;t1&quot;&gt;
+  &lt;query xmlns=&quot;<A HREF="http://jabber.org/protocol/muc#admin&quot;">http://jabber.org/protocol/muc#admin&quot;</A>&gt;&lt;item nick=&quot;Susi&quot; role=&quot;visitor&quot;/&gt;&lt;/query&gt;
+&lt;/iq&gt;
+
+Doesn't:
+&lt;iq type=&quot;set&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">llunatest2 at atlas.jabber.org</A>&quot; id=&quot;t1&quot;&gt;
+  &lt;query xmlns=&quot;<A HREF="http://jabber.org/protocol/muc#admin&quot;">http://jabber.org/protocol/muc#admin&quot;</A>&gt;&lt;item nick=&quot;Susi&quot; role=&quot;visitor&quot;/&gt; &lt;/query&gt;
+&lt;/iq&gt;
+
+My examples had beautified XML with line feeds. The line feeds broke it.
+
+hw
+--
+Dr. Klaus H. Wolf
+bluehands GmbH &amp; Co.mmunication KG
+<A HREF="http://www.bluehands.de/people/hw">http://www.bluehands.de/people/hw</A>
++49 (0721) 16108 75
+--
+LLuna: Jabber enabled virtual presence on the web / <A HREF="http://www.lluna.de/">http://www.lluna.de/</A>
+Galactic developments: Open source future history / <A HREF="http://www.galactic-developments.com/">http://www.galactic-developments.com/</A>
+
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> 
+</I>&gt;<i> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>]On Behalf
+</I>&gt;<i> Of Heiner Wolf
+</I>&gt;<i> Sent: Wednesday, June 23, 2004 4:51 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Jdev at Jabber.</A> Org (E-Mail)
+</I>&gt;<i> Subject: [jdev] MUC: setting participant to visitor does not work
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> I am trying to silence a participant in a MUC sending and MUC 
+</I>&gt;<i> responds just plain &quot;error&quot;, no error code.
+</I>&gt;<i> 
+</I>&gt;<i> Request:
+</I>&gt;<i> &lt;iq type='set' 
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">de.c1696a54c481f0e3b374a331703a4f61c39c3289 at atlas.jabber.o</A>
+</I>&gt;<i> rg' id='t1'&gt;
+</I>&gt;<i>   &lt;query xmlns='<A HREF="http://jabber.org/protocol/muc#admin'">http://jabber.org/protocol/muc#admin'</A>&gt;
+</I>&gt;<i>     &lt;item nick='Susi' role='visitor'/&gt;
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> Response:
+</I>&gt;<i> &lt;iq 
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">de.c1696a54c481f0e3b374a331703a4f61c39c3289 at atlas.jabber</A>
+</I>&gt;<i> .org' id='t1' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">wolfspelz at jabber.bluehands.de</A>/ef11b3416f3d' 
+</I>&gt;<i> type='error'
+</I>&gt;<i>   &lt;query xmlns='<A HREF="http://jabber.org/protocol/muc#admin'">http://jabber.org/protocol/muc#admin'</A>&gt;
+</I>&gt;<i>     &lt;item nick='Susi' role='visitor'/&gt;
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> I am moderator:
+</I>&gt;<i> &lt;presence 
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">de.e5229ec136892e00fcb79f822c192e7a2067a296 at atlas.jabber</A>
+</I>&gt;<i> .org/WolfspelzLLuna' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">wolfspelz at jabber.bluehands.de</A>/ef11b3416f3d'&gt;
+</I>&gt;<i>   &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+</I>&gt;<i>     &lt;item affiliation='owner' 
+</I>&gt;<i> jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">wolfspelz at jabber.bluehands.de</A>/ef11b3416f3d' role='moderator'/&gt;
+</I>&gt;<i>   &lt;/x&gt;
+</I>&gt;<i> &lt;/presence&gt;
+</I>&gt;<i> 
+</I>&gt;<i> Susi is participant: 
+</I>&gt;<i> &lt;presence 
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">de.c1696a54c481f0e3b374a331703a4f61c39c3289 at atlas.jabber</A>
+</I>&gt;<i> .org/Susi' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">wolfspelz at jabber.bluehands.de</A>/ef11b3416f3d'&gt;
+</I>&gt;<i>   &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+</I>&gt;<i>     &lt;item affiliation='none' 
+</I>&gt;<i> jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">42f561fdbd1f at jabber.surfnet.nl</A>/b4ae2782223b' role='participant'/&gt;
+</I>&gt;<i>   &lt;/x&gt;
+</I>&gt;<i> &lt;/presence&gt;
+</I>&gt;<i> 
+</I>&gt;<i> Conf component: MU-Conference 0.6.1-20031116
+</I>&gt;<i> 
+</I>&gt;<i> Any ideas what it tries to tell me?
+</I>&gt;<i> 
+</I>&gt;<i> hw
+</I>&gt;<i> --
+</I>&gt;<i> Dr. Klaus H. Wolf
+</I>&gt;<i> bluehands GmbH &amp; Co.mmunication KG
+</I>&gt;<i> <A HREF="http://www.bluehands.de/people/hw">http://www.bluehands.de/people/hw</A>
+</I>&gt;<i> +49 (0721) 16108 75
+</I>&gt;<i> --
+</I>&gt;<i> LLuna: Jabber enabled virtual presence on the web / 
+</I><A HREF="http://www.lluna.de/">http://www.lluna.de/</A>
+Galactic developments: Open source future history / <A HREF="http://www.galactic-developments.com/">http://www.galactic-developments.com/</A>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="019674.html">[jdev] MUC: setting participant to visitor does not work
+</A></li>
+	<LI>Next message: <A HREF="019676.html">[jdev] xmlnode_str
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19675">[ date ]</a>
+              <a href="thread.html#19675">[ thread ]</a>
+              <a href="subject.html#19675">[ subject ]</a>
+              <a href="author.html#19675">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] bug in AIM Transport
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20bug%20in%20AIM%20Transport&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003271.html">
+   <LINK REL="Next"  HREF="003273.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] bug in AIM Transport</H1>
+    <B>stonewell</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20bug%20in%20AIM%20Transport&In-Reply-To="
+       TITLE="[JDEV] bug in AIM Transport">stonewell at 21cn.com
+       </A><BR>
+    <I>Thu Jun 15 19:49:09 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003271.html">[JDEV] smtp-transport
+</A></li>
+        <LI>Next message: <A HREF="003273.html">[JDEV] persistent connection
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3272">[ date ]</a>
+              <a href="thread.html#3272">[ thread ]</a>
+              <a href="subject.html#3272">[ subject ]</a>
+              <a href="author.html#3272">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+    in libfaim aim_snac.c function 
+
+int aim_cleansnacs(struct aim_session_t *sess,
+     int maxage)
+{
+  struct aim_snac_t *cur;
+  struct aim_snac_t *remed = NULL;
+  time_t curtime;
+ 
+  cur = sess-&gt;outstanding_snacs;
+  
+  curtime = time(&amp;curtime);
+ 
+  while (cur)
+    {
+      if ( (cur) &amp;&amp; (((cur-&gt;issuetime) + maxage) &lt; curtime))
+ {
+#if DEBUG &gt; 1
+   printf(&quot;aimsnac: WARNING purged obsolete snac %08lx\n&quot;, cur-&gt;id);
+#endif
+
+   remed = aim_remsnac(sess, cur-&gt;id);
+   if (remed)
+     {
+       if (remed-&gt;data)
+  free(remed-&gt;data);
+       free(remed);
+     }
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    after exec this statment,it cause a crash
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ }
+      cur = cur-&gt;next;
+    }
+  
+  return 0;
+}
+
+so maybe change function to this
+
+
+int aim_cleansnacs(struct aim_session_t *sess,
+     int maxage)
+{
+  struct aim_snac_t *cur;
+  struct aim_snac_t *curnext;
+  struct aim_snac_t *remed = NULL;
+  time_t curtime;
+ 
+  cur = sess-&gt;outstanding_snacs;
+  
+  curtime = time(&amp;curtime);
+ 
+  while (cur)
+    {
+        curnext = cur;
+      if ( (cur) &amp;&amp; (((cur-&gt;issuetime) + maxage) &lt; curtime))
+ {
+#if DEBUG &gt; 1
+   printf(&quot;aimsnac: WARNING purged obsolete snac %08lx\n&quot;, cur-&gt;id);
+#endif
+
+   remed = aim_remsnac(sess, cur-&gt;id);
+   if (remed)
+     {
+       if (remed-&gt;data)
+  free(remed-&gt;data);
+       free(remed);
+     }
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    after exec this statment,it cause a crash
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ }
+      cur = curnext;
+    }
+  
+  return 0;
+}
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20000616/cd7bf5d4/attachment.htm">https://www.jabber.org/jdev/attachments/20000616/cd7bf5d4/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003271.html">[JDEV] smtp-transport
+</A></li>
+	<LI>Next message: <A HREF="003273.html">[JDEV] persistent connection
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3272">[ date ]</a>
+              <a href="thread.html#3272">[ thread ]</a>
+              <a href="subject.html#3272">[ subject ]</a>
+              <a href="author.html#3272">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

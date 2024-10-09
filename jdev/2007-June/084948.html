@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] sm.xml configure
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sm.xml%20configure&In-Reply-To=%3C5b698f5a0706260412k2d804ef7kd677905b78b45f9b%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="084947.html">
+   <LINK REL="Next"  HREF="084953.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] sm.xml configure</H1>
+    <B>Norman Rasmussen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sm.xml%20configure&In-Reply-To=%3C5b698f5a0706260412k2d804ef7kd677905b78b45f9b%40mail.gmail.com%3E"
+       TITLE="[jdev] sm.xml configure">norman at rasmussen.co.za
+       </A><BR>
+    <I>Tue Jun 26 06:12:45 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="084947.html">[jdev] sm.xml configure
+</A></li>
+        <LI>Next message: <A HREF="084953.html">[jdev] sm.xml configure
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#84948">[ date ]</a>
+              <a href="thread.html#84948">[ thread ]</a>
+              <a href="subject.html#84948">[ subject ]</a>
+              <a href="author.html#84948">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>So I guess if Zhangmingjie is willing to do some compiling then the
+required changes would be:
+
+ - in storage.c : copy mysql as mysql1 in: init extern's,
+driver_array, driver_inits
+ - in storage_mysql.c : copy mysql_init as mysql1_init, and change
+storage.mysql to storage.mysql1.
+
+I doubt anything else needs altering to add a secondary store?
+
+What makes more sense code-wise (now that I read it), would be adding
+a 'config' attribute to the driver element, eg:
+
+&lt;driver config='mysql1'&gt;mysql&lt;/driver&gt;
+&lt;driver config='mysql2' type='vcard'&gt;mysql&lt;/driver&gt;
+
+&lt;mysql1&gt;
+ &lt;host/&gt;&lt;port/&gt;&lt;etc/&gt;
+&lt;/mysql1&gt;
+
+&lt;mysql2&gt;
+ &lt;host/&gt;&lt;port/&gt;&lt;etc/&gt;
+&lt;/mysql2&gt;
+
+The config variable could be passed to the {driver}_init function, (or
+if it's missing default it to NULL or the driver name).  Inside the
+{driver}_init function you could access &quot;storage.&quot; + config +
+&quot;.variable&quot;.
+
+On 6/26/07, Tomasz Sterna &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tomek at xiaoka.com</A>&gt; wrote:
+&gt;<i> Dnia 25-06-2007, pon o godzinie 23:45 +0200, Norman Rasmussen
+</I>&gt;<i> napisa&#322;(a):
+</I>&gt;<i> &gt; what about adding an attribute to the driver config section which sets
+</I>&gt;<i> &gt; the driver module name?
+</I>&gt;<i> &gt; This should be a fairly minor change surely?
+</I>&gt;<i>
+</I>&gt;<i> Nope.
+</I>&gt;<i> I checked this before answering before. First idea was to just copy
+</I>&gt;<i> storage_XXX.so under different name.
+</I>&gt;<i> Config paths are hardcoded in storage modules, so mysql module always
+</I>&gt;<i> looks for 'mysql' config section.
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Tomasz Sterna
+</I>&gt;<i> Xiaoka Grp.  <A HREF="http://www.xiaoka.com/">http://www.xiaoka.com/</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+-- 
+- Norman Rasmussen
+ - Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>
+ - Home page: <A HREF="http://norman.rasmussen.co.za/">http://norman.rasmussen.co.za/</A>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="084947.html">[jdev] sm.xml configure
+</A></li>
+	<LI>Next message: <A HREF="084953.html">[jdev] sm.xml configure
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#84948">[ date ]</a>
+              <a href="thread.html#84948">[ thread ]</a>
+              <a href="subject.html#84948">[ subject ]</a>
+              <a href="author.html#84948">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

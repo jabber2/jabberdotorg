@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] GZipping Jabber Messages
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20GZipping%20Jabber%20Messages&In-Reply-To=%3COF4C9CD124.37BAAB75-ON85256B38.005B7583%40pok.ibm.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039863.html">
+   <LINK REL="Next"  HREF="039872.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] GZipping Jabber Messages</H1>
+    <B>Michael F Lin</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20GZipping%20Jabber%20Messages&In-Reply-To=%3COF4C9CD124.37BAAB75-ON85256B38.005B7583%40pok.ibm.com%3E"
+       TITLE="[JDEV] GZipping Jabber Messages">MFLIN at us.ibm.com
+       </A><BR>
+    <I>Sat Jan  5 11:24:37 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039863.html">[JDEV] GZipping Jabber Messages
+</A></li>
+        <LI>Next message: <A HREF="039872.html">[JDEV] GZipping Jabber Messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39869">[ date ]</a>
+              <a href="thread.html#39869">[ thread ]</a>
+              <a href="subject.html#39869">[ subject ]</a>
+              <a href="author.html#39869">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Update. I am finding that you can get better compression ratios, up to
+around 57%, by maintaining the LZ dictionary between packets. Also this
+reduces the processor hit asymptotically (but still quite nonzero) with
+more packets sent along.
+
+This technique raises still other problems, though, most notably
+reliability. For this to work the gzip deflater on one end and the inflater
+on the other end must remain exactly in sync for the duration of the
+connection (hours, days, ...). An error in the compressed stream would be
+magnified many times over in the inflated stream. So for reliability you
+had better hash or at least checksum all the data going across. That means
+you have to have an envelope format.
+
+So for bandwidth and processor usage, this does a lot better than I
+expected compared to my original run, but now we are just a few steps away
+(credential verification, key exchange, and stream encryption) from
+re-doing SSL.
+
+-Mike
+
+----- Forwarded by Michael F Lin/Cambridge/IBM on 01/05/2002 11:38 AM -----
+                                                                                                                                      
+                      Michael F Lin                                                                                                   
+                                               To:      <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>                                                               
+                      01/04/2002 09:26         cc:                                                                                    
+                      PM                       From:    Michael F Lin/Cambridge/<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">IBM at IBMUS</A>                                             
+                                               Subject: Re: [JDEV] GZipping Jabber Messages(Document link: Michael Lin)               
+                                                                                                                                      
+                                                                                                                                      
+                                                                                                                                      
+                                                                                                                                      
+                                                                                                                                      
+                                                                                                                                      
+
+
+
+Hi Adam, I looked over some of the DotGNU mailing list archives at the
+discussion you are referring to.
+
+One person from DotGNU says
+---
+At the end of the day, it is easier to just gzip it and forget about
+the problem.  No data loss, and roughly the same level of
+compaction.  Highly redundant data like XML compresses
+very well.  For example, the 6 Mb All.xml file for the C#
+library specification compresses to ~630k using gzip: about
+10% of the original size.
+---
+I believe this is misleading in the context of realtime XML streams (e.g.
+Jabber; SOAP; presumably, whatever DotGNU will use) because you are not
+compressing 6Mb of data at once. Rather you are compressing small packets,
+a few hundred bytes in length in the case of Jabber, and then transmitting
+them individually. I ran some tests to see how gzip performs under these
+conditions.
+
+I wrote a program which generates random Jabber &lt;message/&gt; packets. The
+body of each message is formed by randomly selecting between 1 and 25 words
+from a 10,000-word English language dictionary file. For each test vector,
+the program runs zlib compress, level 9, on it (equivalent [I think] to
+gzip with maximum compression), then records the compressed size and the
+original size. It repeats this until at least 1 million bytes of
+uncompressed data has been processed.
+
+The results from about a dozen runs of this program are very consistent: a
+compression ratio of 17% in 7 seconds of runtime. A typical result is
+1,000,011 total bytes of raw data; 830,654 bytes of compressed data.
+
+If I comment the code to compress the test vectors, and leave the code to
+generate the test vectors, the program runs in less than 1 second.
+
+[This was run on]
+athena% uname -a
+SunOS department-of-alchemy.mit.edu 5.8 Generic_108528-08 sun4u sparc
+SUNW,Ultra-60
+athena%
+
+Obviously these are preliminary and nonscientific results only, and there
+are other factors to consider with Jabber, such as the likelihood
+previously mentioned that the XML processing is going to be the limiting
+factor in processor time. I find the topic quite interesting, however, so I
+am going to fiddle around with it over the next few days and see if I can
+get it to do better with custom deflate dictionaries and such. Hopefully I
+will even find time to write something on the topic and post it with my
+source code. However, based on these initial results I am very wary of
+gzipping instant messaging XML because of the apparent high processing cost
+and mediocre compression ratio. I will continue to test but my hypothesis
+is that gzip or any generic compression algorithm is going to be very
+mediocre for Jabber as instant messaging.
+
+-Mike
+
+
+
+                                                                                                                                       
+                      Adam Theo                                                                                                        
+                      &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">adamtheo at theoret</A>        To:       jdev &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;                                                        
+                      ic.com&gt;                  cc:                                                                                     
+                      Sent by:                 Subject:  [JDEV] GZipping Jabber Messages                                               
+                      <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber</A>                                                                                                
+                      .org                                                                                                             
+                                                                                                                                       
+                                                                                                                                       
+                      01/04/2002 03:32                                                                                                 
+                      PM                                                                                                               
+                      Please respond to                                                                                                
+                      jdev                                                                                                             
+                                                                                                                                       
+                                                                                                                                       
+
+
+
+Hi, all. There's a good discussion going on over at the DotGNU Developer
+list about gzip'ing the XML that is transmitted around on the DotGNU
+platform.
+
+Was wondering if it would be possible to incorporate the same thing for
+future versions of the Jabber server? Is it feasible, anyway? They are
+saying the trade-offs for extra resource consumption would not be bad at
+all if designed into the server properly, and would reduce bandwidth
+very dramatically (like by 80%, i think). This would be useful for
+high-volume servers with enough processing power, i think...
+--
+    /\    -- Adam Theo, Age 22, Tallahassee FL USA --
+   //\\   Theoretic Solutions (<A HREF="http://www.theoretic.com">http://www.theoretic.com</A>)
+  /____\    &quot;Software, Internet Services and Advocacy&quot;
+/--||--\ Personal Website (<A HREF="http://www.theoretic.com/adamtheo">http://www.theoretic.com/adamtheo</A>)
+    ||    Jabber Open IM (<A HREF="http://www.jabber.org">http://www.jabber.org</A>)
+    ||    Email &amp; Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">adamtheo at theoretic.com</A>
+    ||    AIM: AdamTheo2000   ICQ: 3617306   Y!: AdamTheo2
+  &quot;A free-market socialist computer geek patriotic American buddhist.&quot;
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039863.html">[JDEV] GZipping Jabber Messages
+</A></li>
+	<LI>Next message: <A HREF="039872.html">[JDEV] GZipping Jabber Messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39869">[ date ]</a>
+              <a href="thread.html#39869">[ thread ]</a>
+              <a href="subject.html#39869">[ subject ]</a>
+              <a href="author.html#39869">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

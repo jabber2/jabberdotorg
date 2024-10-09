@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] SASL EXTERNAL for s2s in jabberd14
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SASL%20EXTERNAL%20for%20s2s%20in%20jabberd14&In-Reply-To=%3C436BED1E.2070909%40tthias.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="052529.html">
+   <LINK REL="Next"  HREF="052533.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] SASL EXTERNAL for s2s in jabberd14</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SASL%20EXTERNAL%20for%20s2s%20in%20jabberd14&In-Reply-To=%3C436BED1E.2070909%40tthias.net%3E"
+       TITLE="[jdev] SASL EXTERNAL for s2s in jabberd14">m at tthias.net
+       </A><BR>
+    <I>Fri Nov  4 17:22:06 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="052529.html">[jdev] SASL EXTERNAL for s2s in jabberd14
+</A></li>
+        <LI>Next message: <A HREF="052533.html">[jdev] SASL EXTERNAL for s2s in jabberd14
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#52531">[ date ]</a>
+              <a href="thread.html#52531">[ thread ]</a>
+              <a href="subject.html#52531">[ subject ]</a>
+              <a href="author.html#52531">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>HI Justin!
+
+
+Thanks for your suggestions.
+
+Justin Karneges schrieb:
+
+&gt;<i>Since I suspect it will be easy to have TLS misconfigurations, I would 
+</I>&gt;<i>recommend that we treat a failed TLS/SASL auth as the same as not even 
+</I>&gt;<i>supporting it in the first place.  In that case, I would not consider it 
+</I>&gt;<i>wrong to attempt dialback as a fallback.
+</I>&gt;<i>
+</I>&gt;<i>I'd say this is just a policy choice for the sending server.
+</I>&gt;<i>
+</I>&gt;<i>Personally, I don't like these kinds of auto-mechanisms because they are 
+</I>&gt;<i>susceptible to downgrade attacks.  If I were designing a server, maybe I'd 
+</I>&gt;<i>have two security modes:
+</I>&gt;<i>  1) default insecure, have a list of domains required to be secure
+</I>&gt;<i>  2) default secure, have a list of domains allowed to be insecure
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>Sounds good to me. I can integrate this into the other host based s2s 
+configuration options, that I already have to force or forbid STARTTLS.
+
+&gt;<i>
+</I>&gt;<i>XMPP-Core 14.2 says: 'The certificate SHOULD then be checked against the 
+</I>&gt;<i>expected identity of the peer following the rules described in [RFC 2818], 
+</I>&gt;<i>except that a subjectAltName extension of type &quot;xmpp&quot; MUST be used as the 
+</I>&gt;<i>identity if present.'
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>Maybe I should reread or RFCs completely again. Did not check this 
+section ... ;)
+
+&gt;&gt;<i>- If the certificate is for &quot;example.com&quot;, do you accept this
+</I>&gt;&gt;<i>certificate to be used for &quot;service.example.com&quot; as well? Currently I
+</I>&gt;&gt;<i>don't. But I am not sure if this is correct/intended by RFC3920.
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>You shouldn't.  And I don't think XMPP-Core says to do this either.  However, 
+</I>&gt;<i>given that the draft does mention subdomains in places, maybe we could use a 
+</I>&gt;<i>clarification.  I personally don't think the word 'subdomain' should exist in 
+</I>&gt;<i>the entire draft, but it is there.
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>I don't really like to allow subdomains either. But it might be handy if 
+you do not have to include all services offered by a server into the 
+certificate (so you need to get a new certificate whenever you add a 
+service) or get separate certificates for all services.
+
+&gt;&gt;<i>- Do you package a set of CA certificates with your server distribution?
+</I>&gt;&gt;<i>Which CAs should be trusted/included?
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>I say leave the selection of CAs to others more qualified.
+</I>&gt;<i>
+</I>&gt;<i>My recommendation is to use the certificates of the operating system if 
+</I>&gt;<i>possible, or ship a copy of the CAs found in Mozilla.  This is how QCA 2.0 
+</I>&gt;<i>works.
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>Currently I am using the certificates distributed by Debian on my own 
+server, plus the class 1 certificate of cacert.org. - And have added no 
+certificates to the snapshot packages of jabberd14.
+If I'd bundle the certificates with the distribution, it would also get 
+more important to secure the distribution of the software. Same with 
+products like Firefox. You download them using a unprotected connection 
+and most of the time you do not even verify the hash value of the 
+package. - But you trust the certificates in this browser afterwards.
+
+&gt;<i>From your other mail:
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>I got asked (on Jabber) how I do this verification and how I know which
+</I>&gt;&gt;<i>domain the server wants to authenticate later on.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>If the connecting server sent a from attribute in the stream root, I am
+</I>&gt;&gt;<i>checking against this. If there was no from attribute (the other server
+</I>&gt;&gt;<i>does not have to send this attribute), I just check if the certificate
+</I>&gt;&gt;<i>is not expired and I can validate the certification chain up to a
+</I>&gt;&gt;<i>trusted root CA certificate.
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>Of course, this is only a problem with a wildcard domain or multiple domains 
+</I>&gt;<i>in the connecting server's cert, correct?
+</I>&gt;<i>
+</I>&gt;<i>This is an interesting problem.  I could be wrong, but I think you can pass an 
+</I>&gt;<i>identifier with SASL EXTERNAL.  Maybe in here we should pass a JID?
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>No, I didn't talk about multiple domains or wildcards. The thing was 
+about the decission if I offer SASL EXTERNAL. In short:
+If there is no from attribute, I offer SASL EXTERNAL whenever I can 
+verify the certificate to be valid, doesn't matter for which identity it 
+is valid.
+If there is a from attribute, I make the same checks as if there is no 
+from attribute, but in addition I check if the content of the from 
+attribute (after stringprep) matches one of the identities in the 
+certificate (after stringprep).
+
+With SASL EXTERNAL the client sends the authorization identity in the 
+initial response (base64 encoded as CDATA in the &lt;auth/&gt; element). At 
+that point I recheck the certificate, if it contains the authorization 
+identity and authenticate and authorize this ID (even if it differs from 
+the domain sent in the from attribute).
+
+At present I allow only to authenticate as the same as you authorize. 
+Checking cerficicates and espacially deciding which certificate to 
+present to the peer, when proxy authorization gets implemented might 
+become an interesting and complex job ;)
+
+
+Tot kijk
+     Matthias
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="052529.html">[jdev] SASL EXTERNAL for s2s in jabberd14
+</A></li>
+	<LI>Next message: <A HREF="052533.html">[jdev] SASL EXTERNAL for s2s in jabberd14
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#52531">[ date ]</a>
+              <a href="thread.html#52531">[ thread ]</a>
+              <a href="subject.html#52531">[ subject ]</a>
+              <a href="author.html#52531">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] XEP-0199 (XMPP Ping) to test reliability
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XEP-0199%20%28XMPP%20Ping%29%20to%20test%20reliability&In-Reply-To=%3C7290.1201097425.207522%40peirce.dave.cridland.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085523.html">
+   <LINK REL="Next"  HREF="085528.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] XEP-0199 (XMPP Ping) to test reliability</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XEP-0199%20%28XMPP%20Ping%29%20to%20test%20reliability&In-Reply-To=%3C7290.1201097425.207522%40peirce.dave.cridland.net%3E"
+       TITLE="[jdev] XEP-0199 (XMPP Ping) to test reliability">dave at cridland.net
+       </A><BR>
+    <I>Wed Jan 23 08:10:25 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085523.html">[jdev] XEP-0199 (XMPP Ping) to test reliability
+</A></li>
+        <LI>Next message: <A HREF="085528.html">[jdev] XEP-0199 (XMPP Ping) to test reliability
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85524">[ date ]</a>
+              <a href="thread.html#85524">[ thread ]</a>
+              <a href="subject.html#85524">[ subject ]</a>
+              <a href="author.html#85524">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed Jan 23 13:43:15 2008, Tomasz Sterna wrote:
+&gt;<i> On &#346;r, 2008-01-23 at 13:32 +0100, Yann Leboulanger wrote:
+</I>&gt;<i> &gt; Ok, XEP-0199 will do that then ;)
+</I>&gt;<i> 
+</I>&gt;<i> I've been trying to explain that whitespace keepalive is enough.
+</I>&gt;<i> It seems that I failed...
+</I>
+I was going to send a post on why it is, when it isn't, etc. So maybe  
+I should...
+
+There are, roughly, three kinds of NAT.
+
+1) Linux boxes, and similar almost reasonable NATs.
+
+These will simply maintain dormant connections. I forget how many a  
+typical Linux box with a few meg can hold, but it's lots.
+
+You don't need anything here.
+
+2) Bad NATs.
+
+These will sever dormant TCP connections silently, but they will send  
+back RST packets on further attempts. (Some even reestablish the TCP  
+session, rather weirdly, although this often fails because they've  
+already sent an RST packet back to the server, in which case the RST  
+packet you get is from the server, rather than synthetic).
+
+Whitespace is all you need here, to keep the session alive and detect  
+when it's severed.
+
+3) Piss poor NATs.
+
+These are the ones that sever your connection, and then throw away  
+anything else they see.
+
+To handle these, whitespace will keep the session up, but if for some  
+reason this fails, then the sympton will be that nothing comes back  
+down the line.
+
+XEP-0198 is one option here, as is XEP-0199. But there's no need to  
+send XEP-0199 every minute - instead, use it when you suspect the  
+link is down. This might be because of long term inactivity, and/or  
+because you're sending (real) traffic and getting no response.  
+(Obviously &lt;iq/&gt; stanzas emit a response, but normally people answer  
+&lt;message/&gt; stanzas too.).
+
+Dave.
+-- 
+Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at jabber.org</A>
+  - <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+  - <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085523.html">[jdev] XEP-0199 (XMPP Ping) to test reliability
+</A></li>
+	<LI>Next message: <A HREF="085528.html">[jdev] XEP-0199 (XMPP Ping) to test reliability
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85524">[ date ]</a>
+              <a href="thread.html#85524">[ thread ]</a>
+              <a href="subject.html#85524">[ subject ]</a>
+              <a href="author.html#85524">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

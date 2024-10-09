@@ -1,0 +1,22 @@
+--- ./old/pthsock/client.c    Wed Mar  7 02:38:24 2001
++++ ./new/pthsock/client.c    Thu Aug 30 21:23:44 2001
+@@ -355,6 +355,19 @@
+         }
+         else
+         {   /* normal delivery of packets after authed */
++           if (! j_strcmp(xmlnode_get_name(x), "message"))
++            {
++               char * msg = spools(xmlnode_pool(x),
++                                   "from='",
++                                   jid_full(jid_user(cd->session_id)),
++                                   "' to='",
++                                   xmlnode_get_attrib(x, "to"),
++                                   "' ",
++                                   xmlnode2str(xmlnode_get_tag(x, "body")),
++                                   xmlnode_pool(x));
++
++               logger("msg", cd->session_id->server, msg);
++            }
+             x = pthsock_make_route(x, jid_full(cd->session_id), cd->client_id, NULL);
+             deliver(dpacket_new(x), cd->si->i);
+         }

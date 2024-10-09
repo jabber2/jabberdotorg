@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Encrypted xml transfer, was servers specifying from fields
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Encrypted%20xml%20transfer%2C%20was%20servers%20specifying%20from%20fields&In-Reply-To=0G9R007JGGEVYL%40mail.coserv.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006452.html">
+   <LINK REL="Next"  HREF="006425.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Encrypted xml transfer, was servers specifying from fields</H1>
+    <B>Thomas Muldowney</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Encrypted%20xml%20transfer%2C%20was%20servers%20specifying%20from%20fields&In-Reply-To=0G9R007JGGEVYL%40mail.coserv.net"
+       TITLE="[JDEV] Encrypted xml transfer, was servers specifying from fields">temas at box5.net
+       </A><BR>
+    <I>Tue Mar  6 15:07:21 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006452.html">[JDEV] Encrypted xml transfer, was servers specifying from fields
+</A></li>
+        <LI>Next message: <A HREF="006425.html">[JDEV] search and vCard with xdb_file
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6469">[ date ]</a>
+              <a href="thread.html#6469">[ thread ]</a>
+              <a href="subject.html#6469">[ subject ]</a>
+              <a href="author.html#6469">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The large problem is wherein you lay your trust.  If you trust the server then
+SSL and other symmetric ciphers work great, but if you feel you cannot trust the
+server then they fail miserably.  With jabber you've compounded the problem by
+having the multiple servers.  If you can't guarantee a SSL connection between
+every hop of message delivery you have a trust issue.  Especially if the server
+is blindly routing the data (which it should partially do, we've designed a 
+router here anyway).  So having different methods is a must.  We've had lengthy
+and wholesome conversation over this in the jdev chat channel.  I'd be happy
+to do it again =)
+
+--temas
+
+On Mon, Mar 05, 2001 at 11:30:03PM -0600, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A> wrote:
+&gt;<i> I've been reading this thread back and forth and boys, you need to 
+</I>&gt;<i> go do a lot of reading first. Don't reinvent the #%@! wheel. In 
+</I>&gt;<i> particular read Schneir's Applied Crypto and Secrets &amp; Lies, plus 
+</I>&gt;<i> the docs on the AES standard as well as the docs on SSL/TLS 
+</I>&gt;<i> (there's also a good book on it, don't have it inf front of me, but it's 
+</I>&gt;<i> the only one on Amazon :).
+</I>&gt;<i> 
+</I>&gt;<i> You're down the right track. Symetric encryption (used by DES and 
+</I>&gt;<i> Rijndael) is much more effecient than Asymetric (used by Public 
+</I>&gt;<i> Key encryption such as PGP or X.509), but you do have a problem: 
+</I>&gt;<i> how to share the key. 
+</I>&gt;<i> 
+</I>&gt;<i> SSL has the same situation. The way SSL solves it is to use PK 
+</I>&gt;<i> (through the use of X.509 certificates) to authenticate the session 
+</I>&gt;<i> (at least the server must authenticate itself, the client auth is 
+</I>&gt;<i> optional). Then the server sends a random key to be used 
+</I>&gt;<i> (normally this is 3DES or RC4, but Rijndael would be a better 
+</I>&gt;<i> choice). 
+</I>&gt;<i> 
+</I>&gt;<i> Another way to negoitate the key is to use Diffie-Hellman protocol, 
+</I>&gt;<i> but that's almost as much overhead as using PK &amp; not nearly as 
+</I>&gt;<i> secure.
+</I>&gt;<i> 
+</I>&gt;<i> If you were using a totally stream based system and could 
+</I>&gt;<i> negotiate a key, then Blowfish would be a better choice. 
+</I>&gt;<i> 
+</I>&gt;<i> You could use SSL to negotiate a session between two parties but 
+</I>&gt;<i> there's no gurantee that you're on the same server (at least with 
+</I>&gt;<i> HTTP based XML-RPC you know the app is on the same server). 
+</I>&gt;<i> Thus if you want the speed of symetric with Jabber, you're probably 
+</I>&gt;<i> better off setting up a protocol that uses a secure timestamp to 
+</I>&gt;<i> note latency (ie. say the session is considered over if we don't hear 
+</I>&gt;<i> anything after x seconds) OR use presence to denote session 
+</I>&gt;<i> (session is over once either client denotes not-available). Use PGP 
+</I>&gt;<i> or X.509 cert to verify one another. Then exchange the key. then 
+</I>&gt;<i> use a symetric encryption to perform the application encryption.
+</I>&gt;<i> 
+</I>&gt;<i> However, SSL or simple message based PK is going to be fine 
+</I>&gt;<i> 99% of the time. Most people don't want hard-core encryption, they 
+</I>&gt;<i> just want to know that the majority of the world can't read their 
+</I>&gt;<i> messages without going through a lot of trouble. And a lot of 
+</I>&gt;<i> people would really just settle with knowing who they were talking 
+</I>&gt;<i> to ( alot of spam would simply stop if we required signed email), 
+</I>&gt;<i> and encryption can come or go.
+</I>&gt;<i> 
+</I>&gt;<i> Plus Jabber (and other XML-RPC protocols) are just transport 
+</I>&gt;<i> layers. while they should have some type of encryption in them, 
+</I>&gt;<i> applications built on-top of them will require their own particular 
+</I>&gt;<i> security. That's the 1% standard SSL and PK won't contain. But 
+</I>&gt;<i> the good news there's plenty of $$ to be mined in them thar hills :).
+</I>&gt;<i> 
+</I>&gt;<i> If you really want to see how encryption should really work in a 
+</I>&gt;<i> program, check out Groove (www.groove.net). It uses X.509 as the 
+</I>&gt;<i> default. You don't turn it on. You can't turn it off. It's seemless. 
+</I>&gt;<i> Groove is what the future should be. :). Oh, Groove was designed 
+</I>&gt;<i> by Ray Ozzie who created Lotus Notes and was fighting crypto 
+</I>&gt;<i> battles before most of this list was in grade school (or even born, 
+</I>&gt;<i> though that makes *me* feel old :).
+</I>&gt;<i> 
+</I>&gt;<i> Mark
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Mark Wilcox
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A>
+</I>&gt;<i> Got LDAP?
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20010306/2fa2901d/attachment.pgp">https://www.jabber.org/jdev/attachments/20010306/2fa2901d/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006452.html">[JDEV] Encrypted xml transfer, was servers specifying from fields
+</A></li>
+	<LI>Next message: <A HREF="006425.html">[JDEV] search and vCard with xdb_file
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6469">[ date ]</a>
+              <a href="thread.html#6469">[ thread ]</a>
+              <a href="subject.html#6469">[ subject ]</a>
+              <a href="author.html#6469">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Modification to running jabberd on Mac OS X
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Modification%20to%20running%20jabberd%20on%20Mac%20OS%20X&In-Reply-To=p05101503b8ddc7184e2e%40%5B10.1.35.9%5D">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="012147.html">
+   <LINK REL="Next"  HREF="012142.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Modification to running jabberd on Mac OS X</H1>
+    <B>Thomas Muldowney</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Modification%20to%20running%20jabberd%20on%20Mac%20OS%20X&In-Reply-To=p05101503b8ddc7184e2e%40%5B10.1.35.9%5D"
+       TITLE="[JDEV] Modification to running jabberd on Mac OS X">temas at box5.net
+       </A><BR>
+    <I>Mon Apr 15 11:18:45 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="012147.html">[JDEV] Modification to running jabberd on Mac OS X
+</A></li>
+        <LI>Next message: <A HREF="012142.html">[JDEV] Jabber Web Client
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12177">[ date ]</a>
+              <a href="thread.html#12177">[ thread ]</a>
+              <a href="subject.html#12177">[ subject ]</a>
+              <a href="author.html#12177">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I just put this in CVS, and it will be integrated into 1.4.3 with some
+other small, but important, fixes.
+
+--temas
+
+
+On Sat, 2002-04-13 at 06:48, Max Horn wrote:
+&gt;<i> At 17:35 Uhr -0700 12.04.2002, Sean Voisen wrote:
+</I>&gt;<i> &gt;After quite a bit of pain, I successfully got jabberd 1.4.2 running 
+</I>&gt;<i> &gt;on Mac OS X.  I was having problems with the dlcompat library 
+</I>&gt;<i> &gt;packaged with fink.
+</I>&gt;<i> 
+</I>&gt;<i> Note that the olde ones were also packaged with Fink at some point, 
+</I>&gt;<i> and all the dlcompats versions you see out there are probably based 
+</I>&gt;<i> on us :-)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> &gt;For some reason the older dlcompat version 20020120 works, while the 
+</I>&gt;<i> &gt;newer 20020322 does not.  I'm not sure why - but if anyone is able 
+</I>&gt;<i> &gt;to succeed with the newer version, I'd like to know.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;Just thought any Mac developers might find this useful.
+</I>&gt;<i> 
+</I>&gt;<i> Most interesting. We (or rather Jorge and Peter) have rewritten 
+</I>&gt;<i> dlcompat from scratch in the newer releases, adding some features.
+</I>&gt;<i> 
+</I>&gt;<i> But I can reproduce your problem over here when trying to run jabberd 
+</I>&gt;<i> with the new dlcompat:
+</I>&gt;<i> 
+</I>&gt;<i> &gt;Loading ./jsm/jsm.so failed: 'dlcompat: unable to find symbol &quot;__init&quot;'
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> What happens is this: jabberd tries to dlopen jsm.so in 
+</I>&gt;<i> jabberd/load.c, function load_loader(). Now our dlopen method works 
+</I>&gt;<i> fine, but in the end, it tries to run an &quot;_init&quot; method, if existing, 
+</I>&gt;<i> from the module. This function is not there, so  _init() is not 
+</I>&gt;<i> called - fine. Only that we use dlsym to retrieve the symbol, which, 
+</I>&gt;<i> upon failing, sets the error string used by dlerror. Not good, since 
+</I>&gt;<i> now we indicate an error occured! A clear bug, I think
+</I>&gt;<i> 
+</I>&gt;<i> OTOH, this is also a bug in Jabberd, since it relies on dlerror to 
+</I>&gt;<i> detect an error - but it should rather check the return value of 
+</I>&gt;<i> dlopen, and only if that is NULL, should it call dlerror()!
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Thanks Sean, we'll look into it, and if Peter agrees, will release a 
+</I>&gt;<i> fixed version ASAP. I hope jabberd will also be fixed soon, too :-)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Max
+</I>&gt;<i> -- 
+</I>&gt;<i> -----------------------------------------------
+</I>&gt;<i> Max Horn
+</I>&gt;<i> Software Developer
+</I>&gt;<i> 
+</I>&gt;<i> email: &lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">max at quendi.de</A>&gt;
+</I>&gt;<i> phone: (+49) 6151-494890
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="012147.html">[JDEV] Modification to running jabberd on Mac OS X
+</A></li>
+	<LI>Next message: <A HREF="012142.html">[JDEV] Jabber Web Client
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12177">[ date ]</a>
+              <a href="thread.html#12177">[ thread ]</a>
+              <a href="subject.html#12177">[ subject ]</a>
+              <a href="author.html#12177">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

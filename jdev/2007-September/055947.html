@@ -1,0 +1,204 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Stream Initiation: extension
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Stream%20Initiation%3A%20extension&In-Reply-To=%3C46FB5936.1000500%40privat.utfors.se%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="055946.html">
+   <LINK REL="Next"  HREF="055948.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Stream Initiation: extension</H1>
+    <B>Mats Bengtsson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Stream%20Initiation%3A%20extension&In-Reply-To=%3C46FB5936.1000500%40privat.utfors.se%3E"
+       TITLE="[jdev] Stream Initiation: extension">matben at privat.utfors.se
+       </A><BR>
+    <I>Thu Sep 27 02:18:14 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="055946.html">[jdev] libjingle or another C++ API ?
+</A></li>
+        <LI>Next message: <A HREF="055948.html">[jdev] Stream Initiation: extension
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55947">[ date ]</a>
+              <a href="thread.html#55947">[ thread ]</a>
+              <a href="subject.html#55947">[ subject ]</a>
+              <a href="author.html#55947">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dear all,
+
+Introduction:
+-------------
+
+While I was trying to implement the SVG graphics model in my whiteboard
+I was getting problems with elements that have an external reference.
+In short, SVG images typically have a xlink:href attribute with a HTTP
+link which wont work in a XMPP environment with p2p interaction due to
+NATs, firewalls etc. A typical SVG image element looks like:
+
+&lt;image x='32.0' y='32.0' 
+       xlink:href='<A HREF="http://192.168.0.3:8077/blender.png'">http://192.168.0.3:8077/blender.png'</A> 
+       id='158229644' width='128' height='128'/&gt;
+
+Putting an ibb element as a child is not an option.
+
+Using Stream Initiation (XEP-0095) wont work either since this is using an
+iq-set/si method which can't be embedded in an image element. Using iq-set/si
+directly with some extra info telling the target this is a SVG image wont
+be compatible with existing implementations. 
+
+The problem with SI (Stream Initiation) in this context is that it effectively
+is a PUT operation while we require a GET method (like HTTP) for it to
+be embeddable. You have to interpret this yourself since it is badly expressed.
+
+Instead I switched the order SI works by embedding the si element inside a
+message, as a child to the image element, and let the target send an iq-get/si,
+note the *get*, to the initiator (the entity that sent the image element).
+In this way an arbitrary number of embedded si elements (images) can be 
+contained in a message. Compare with HTTP/HTML: a client obtains a HTML 
+document containing a number of HTTP references which it GETs.
+
+The targets iq-get/si element corresponds almost exactly to the targets
+response to an iq-set/si element, see note below. Since the embedded si
+element is identical to the si in an iq-set query, the target will select
+which stream it wants, and include this in its response, which is now a
+iq-get query instead of the iq-result in the existing SI standard.
+
+Two differences exist compared to XEP. The first is that since we don't get
+an iq-set id attribute we must use the id attribute of the si element (SID) as
+a reference in the stream negotiating. Thus, the iq-get/si element MUST contain
+a SID which is used by the initiator as the reference to its stream offer.
+
+Cited from the XEP:
+&quot;This attribute MUST be present on type='set', and MUST be a valid string. 
+ This SHOULD NOT be sent back on type='result', since the &lt;iq/&gt; &quot;id&quot; attribute 
+ provides the only context needed.&quot;
+
+The second difference is that since the target sends an iq-get/si it needs
+a response. Either an iq-result if the SID was indeed made by the initiator,
+or an iq-error if not found. The iq-result element should be empty.
+
+Comparison:
+
+         XEP            this                task
+
+      iq-set/si      si subelement     offer stream initiation
+     iq-result/si      iq-get/si       select stream (or deny)
+         -             iq-result           dummy
+
+The rest using the actual streams goes on unchanged.
+
+
+Use Case:
+---------
+
+This is seen from the initiator, the one who sends a message containing a
+SVG image, and offers stream initiation:
+
+SEND:
+&lt;message to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mari at mus.se</A>/work' type='chat'&gt;
+  &lt;thread&gt;ee2944c6&lt;/thread&gt;
+  &lt;x xmlns='<A HREF="http://jabber.org/protocol/svgwb'">http://jabber.org/protocol/svgwb'</A>&gt;
+    &lt;image x='32.0' y='32.0' 
+	   xlink:href='<A HREF="http://192.168.0.3:8077/blender.png'">http://192.168.0.3:8077/blender.png'</A> 
+	   id='158229644' width='128' height='128'&gt;
+      &lt;si xmlns='<A HREF="http://jabber.org/protocol/si'">http://jabber.org/protocol/si'</A> 
+	  id='3c803c10-6983032b' mime-type='image/png' 
+	  profile='<A HREF="http://jabber.org/protocol/si/profile/file-transfer'">http://jabber.org/protocol/si/profile/file-transfer'</A>&gt;
+	&lt;file xmlns='<A HREF="http://jabber.org/protocol/si/profile/file-transfer'">http://jabber.org/protocol/si/profile/file-transfer'</A> 
+	      name='blender.png' size='12582'/&gt;
+	&lt;feature xmlns='<A HREF="http://jabber.org/protocol/feature-neg'">http://jabber.org/protocol/feature-neg'</A>&gt;
+	  &lt;x xmlns='jabber:x:data' type='form'&gt;
+	    &lt;field var='stream-method' type='list-single'&gt;
+	      &lt;option&gt;&lt;value&gt;<A HREF="http://jabber.org/protocol/bytestreams&lt;/value">http://jabber.org/protocol/bytestreams&lt;/value</A>&gt;&lt;/option&gt;
+	      &lt;option&gt;&lt;value&gt;<A HREF="http://jabber.org/protocol/ibb&lt;/value">http://jabber.org/protocol/ibb&lt;/value</A>&gt;&lt;/option&gt;
+	    &lt;/field&gt;
+	  &lt;/x&gt;
+	&lt;/feature&gt;
+      &lt;/si&gt;
+    &lt;/image&gt;
+  &lt;/x&gt;
+&lt;/message&gt;
+
+You see that the si element is completely identical to the XEP standard.
+Then the target responds and we get:
+
+RECV: 
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mari at mus.se</A>/work' 
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mats at home.se</A>/coci' xml:lang='sv' 
+    type='get' id='1011'&gt;
+  &lt;si xmlns='<A HREF="http://jabber.org/protocol/si'">http://jabber.org/protocol/si'</A> 
+      id='3c803c10-6983032b'&gt;
+    &lt;feature xmlns='<A HREF="http://jabber.org/protocol/feature-neg'">http://jabber.org/protocol/feature-neg'</A>&gt;
+      &lt;x xmlns='jabber:x:data' type='submit'&gt;
+	&lt;field var='stream-method'&gt;
+	  &lt;value&gt;<A HREF="http://jabber.org/protocol/bytestreams&lt;/value">http://jabber.org/protocol/bytestreams&lt;/value</A>&gt;
+	&lt;/field&gt;
+      &lt;/x&gt;
+    &lt;/feature&gt;
+    &lt;file name='blender.png' size='12582' 
+	  xmlns='<A HREF="http://jabber.org/protocol/si/profile/file-transfer'/">http://jabber.org/protocol/si/profile/file-transfer'/</A>&gt;
+  &lt;/si&gt;
+&lt;/iq&gt;
+
+Note the iq-get and note that it contains a SID which MUST be there.
+Since we are the initiator of this SID we just respond with:
+
+SEND: 
+&lt;iq type='result' id='1011' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mari at mus.se</A>/work'/&gt;
+
+And from here things go on as usual.
+
+
+Discussion:
+-----------
+
+It would be very practical if we could find some kind of URI which could be
+used as a global reference to the file since this fits better with the GET
+method described here, but I see all the problems finding such a representation.
+
+The PUT method from the XEP is a single instance, and when finished it is gone
+forever. In the GET scenario we would like to see a persistant file reference
+which allows files to be obtained several times.
+
+This method wont work for groupchats due to what I just said, but this is a 
+general problem with SI in groupchats. Instead, we must direct stream
+offers to each participant.
+
+
+Any thoughts?
+
+The Coccinella cvs (<A HREF="http://coccinella.im">http://coccinella.im</A>) contains a working implementation
+of SVG whiteboards including image transports as described here.
+See also: <A HREF="http://coccinella.im/node/103">http://coccinella.im/node/103</A>
+
+/Mats
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="055946.html">[jdev] libjingle or another C++ API ?
+</A></li>
+	<LI>Next message: <A HREF="055948.html">[jdev] Stream Initiation: extension
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55947">[ date ]</a>
+              <a href="thread.html#55947">[ thread ]</a>
+              <a href="subject.html#55947">[ subject ]</a>
+              <a href="author.html#55947">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

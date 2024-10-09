@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Transport Authors Please Read -- Jabber 1.3+, etc...
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Transport%20Authors%20Please%20Read%20--%20Jabber%201.3%2B%2C%20etc...&In-Reply-To=%3C20001122220308.B13242%40Flint.digix.dyndns.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="063372.html">
+   <LINK REL="Next"  HREF="063374.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Transport Authors Please Read -- Jabber 1.3+, etc...</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Transport%20Authors%20Please%20Read%20--%20Jabber%201.3%2B%2C%20etc...&In-Reply-To=%3C20001122220308.B13242%40Flint.digix.dyndns.org%3E"
+       TITLE="[JDEV] Transport Authors Please Read -- Jabber 1.3+, etc...">keith at digix.dyndns.org
+       </A><BR>
+    <I>Wed Nov 22 21:03:08 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="063372.html">[JDEV] Transports and groupchat
+</A></li>
+        <LI>Next message: <A HREF="063374.html">[JDEV] Transport Authors Please Read -- Jabber 1.3+, etc...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63373">[ date ]</a>
+              <a href="thread.html#63373">[ thread ]</a>
+              <a href="subject.html#63373">[ subject ]</a>
+              <a href="author.html#63373">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm in the middle of rewriting Yahoo-Transport for the Jabber 1.3+ server, (MIO enabled, jabberd .so)  and I've made some cool improvements that I'd like to see make it into all the transports...
+
+1&gt; XDB -- with Jabber 1.2+, transports can now use XDB storage to store user specific data, instead of putting the passwords plain-text into the roster, you can now store it in XDB, so that no passwords are sent over the wire (except when registering) this will increase security, and make alot of people happy.
+
+2&gt; MIO -- use it!  MIO provides an interface for socket handling, and hides the complexity of using sockets... Internally, it will use Select to manage the sockets, allowing better performance than tstreams does, it can also be swapped out to provide a sig/IO, polld, async/IO, etc backend, transparent to the transport, this will help with scaling, and reduce the number of threads needed in the transport (Yahoo transport now uses no threads of it's own)
+
+3&gt; Multiple Registrations -- if you store your passwords and logon info in XDB, you can support multiple registrations from clients. (ie, if I have 3 ICQ accounts, I can log into them all at the same time through jabber.. this hasn't been hashed out yet, but I was thinking something like returing the iq:register GET, like &lt;iq ...&gt;&lt;query iq:register&gt;...item1..&lt;/query&gt;&lt;query iq:register&gt;... item2..&lt;/query&gt; ....&lt;/iq&gt;, so each registration is stored in it's own query tag.. this way we don't break older clients.. they will just see the first registration, and we can then have more advanced clients (or every client) support multiple registrations, and have cool GUIs for this data.. 
+
+4&gt; PPDB and multiple JIDs logged in to one account -- The transports should allow for a user to be logged into jabber multiple times (different resources) and still use the same session in the transport.. this is easily accomplished using PPDB, just feed every presence tag you get from users into the PPDB, then query the PPDB to determine if the user is still logged into jabber, when you get an unavailable from them.
+
+5&gt; 407 errors -- normally used to tell the user they don't have a subscription when they try to do things like sending messages across the transport.. currently, you had to asume if they didn't have an active session, then they don't have a registration, which is a false assumption.. but you can now query XDB for the registration data, the user doesn't even have to be logged in.. this way, if they don't have a sessions, but they have registered, instead of sending a 407, you should log them in, and deliver thier message, like a good transport.
+
+6&gt; Route Tags &amp; DNS lookups -- I *think* that using MIO to connect to a host (like the remote network) will block the server during the lookup -- this is bad!  one way to get around this is to use the dnsrv component.  setup your dnsrv component to resend back to your transport, when you need to do a lookup, send it to dnsrv, it will resolve the host in a non-blocking manner, and route you back the IP address to connect to, so you can just connect to the IP, without blocking the server... A must have!!
+
+7&gt; That's all i can think of now.. if you have more issues you would like to see make it into transports, I'd love to hear them, or if you want to make corrections to these items, or comment, send them back to this list!
+
+Thanks for your time!
+
+Keith Minkler
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="063372.html">[JDEV] Transports and groupchat
+</A></li>
+	<LI>Next message: <A HREF="063374.html">[JDEV] Transport Authors Please Read -- Jabber 1.3+, etc...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63373">[ date ]</a>
+              <a href="thread.html#63373">[ thread ]</a>
+              <a href="subject.html#63373">[ subject ]</a>
+              <a href="author.html#63373">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

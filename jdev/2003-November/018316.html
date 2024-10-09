@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Building jabberd-2.0rc1: MySQL Path?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Building%20jabberd-2.0rc1%3A%20MySQL%20Path%3F&In-Reply-To=55142718-2080-11D8-B143-000A95E2E700%40terrapin.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="018253.html">
+   <LINK REL="Next"  HREF="018256.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Building jabberd-2.0rc1: MySQL Path?</H1>
+    <B>Douglas Anarino</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Building%20jabberd-2.0rc1%3A%20MySQL%20Path%3F&In-Reply-To=55142718-2080-11D8-B143-000A95E2E700%40terrapin.com"
+       TITLE="[JDEV] Building jabberd-2.0rc1: MySQL Path?">lists at syntropo.com
+       </A><BR>
+    <I>Fri Nov 28 12:00:48 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="018253.html">[JDEV] Building jabberd-2.0rc1: MySQL Path?
+</A></li>
+        <LI>Next message: <A HREF="018256.html">[JDEV] Building jabberd-2.0rc1: MySQL Path?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#18316">[ date ]</a>
+              <a href="thread.html#18316">[ thread ]</a>
+              <a href="subject.html#18316">[ subject ]</a>
+              <a href="author.html#18316">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Yay! It finally worked!
+
+I was actually building on Mac OSX (a clean install of Panther). The 
+core problem was that I was not building MySQL from source. The MySQL 
+binaries for OSX did not seem to include the dynamic library file that 
+the jabberd configure script was looking for (which on my system is 
+called 'libmysqlclient.dylib'). When I built MySQL from source, this 
+file did wind up at /usr/local/mysql/lib/mysql, but creating the 
+temporary folder with the symbolic links worked like a charm!
+
+So in summation, to get jabberd2 to build on Mac OSX Panther:
+
+1) Build MySQL from SOURCE - download the MySQL source code. This is a 
+tar.gz file which Stuffit Expander might delete, and you'll likely be 
+left with just a tar file and the decompressed folder. Move the tar 
+file to /usr/local. From the decompressed directory, open the 
+INSTALL-SOURCE read me file and follow the directions for 'Installing 
+source' (NOT the standard, binary install instructions). If you've 
+already got a mysql user (because you have OSX Server, or created one 
+manually) you can skip the first two steps (groupadd and useradd). The 
+third step decompresses the tar.gz file, but you just have a tar file 
+at this point, so use this instead:
+    shell&gt; tar -xvf mysql-VERSION.tar
+Follow the rest of the MySQL installation instructions (configure, 
+make, etc.)
+2) Create Aliases - make a new directory somewhere and take note of its 
+path (ALIAS-PATH below). I called mine mysql and put it in 
+/usr/local/jabberd. Make symbolic links to mysql's lib and include 
+directories in this new directory:
+    shell&gt; ln -s /usr/local/mysql/lib/mysql ALIAS-PATH/lib
+    shell&gt; ln -s /usr/local/mysql/include/mysql ALIAS-PATH/include
+3) Build jabberd - pass the alias path to jabberd's configure script 
+using the with-mysql switch:
+    shell&gt; ./configure --with-mysql=ALIAS-PATH
+Follow the rest of the jabberd installation instructions (make, etc.)
+4) Clean Up - you can delete the original tar file and the decompressed 
+MySQL directory in your downloads folder. Keep the decompressed 
+directory in /usr/local in case you need to rebuild MySQL in future. I 
+would also keep the alias directory in case you need to rebuild 
+jabberd.
+
+Thanks, everyone, for your help getting this going...
+doug
+
+<A HREF="http://Syntropo.com">http://Syntropo.com</A>
+
+
+On Nov 26, 2003, at 9:20 PM, Paul Curtis wrote:
+
+&gt;<i>
+</I>&gt;<i> On Wednesday, November 26, 2003, at 01:13 PM, Douglas Anarino wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> Thanks for your help! I don't have a libmysqlclient.so file in my 
+</I>&gt;&gt;<i> MySQL installation, just libmysqlclient.a and libmysqlclient_r.a 
+</I>&gt;&gt;<i> files. I installed MySQL from a package file - maybe it didn't 
+</I>&gt;&gt;<i> include this file? Is there a way to build it from the files I have, 
+</I>&gt;&gt;<i> or do I need to build MySQL from source?
+</I>&gt;<i>
+</I>&gt;<i> You probably have the same Solaris package of MySQL I have .... ;)
+</I>&gt;<i>
+</I>&gt;<i> Here's exactly what I did:
+</I>&gt;<i> Did a 'pkgadd' of the MySQL packages from www.sunfreeware.com
+</I>&gt;<i> Created a temporary directory '/opt/mysql'
+</I>&gt;<i> Symbolically linked '/usr/local/mysql/include/mysql' to 
+</I>&gt;<i> /opt/mysql/include'
+</I>&gt;<i> Symbolically linked '/usr/local/mysql/lib/mysql' to /opt/mysql/lib'
+</I>&gt;<i> Ran 'configure' with '--with-mysql=/opt/mysql' and the storage/auth 
+</I>&gt;<i> options.
+</I>&gt;<i> 'make'
+</I>&gt;<i>
+</I>&gt;&gt;<i> This all seems very complex to me - I would think jabberd would just 
+</I>&gt;&gt;<i> require some options in config.xml to use a database. Will I have to 
+</I>&gt;&gt;<i> rebuild jabberd each time I switch databases?
+</I>&gt;<i>
+</I>&gt;<i> The issue is the Solaris packages for MySQL .... they install in 
+</I>&gt;<i> &quot;non-standard&quot; locations compared to every other MySQL installation 
+</I>&gt;<i> I've ever seen.
+</I>&gt;<i>
+</I>&gt;<i> This could be a dynamically loaded mechanism for databases, but still 
+</I>&gt;<i> would require source code specific to each database. Since you would 
+</I>&gt;<i> have to have database specific code, it doesn't really make much 
+</I>&gt;<i> difference whether you compile the libraries in or load them at 
+</I>&gt;<i> runtime .... you would still need the MySQL include and library files 
+</I>&gt;<i> available.
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i>
+</I>&gt;<i> Paul
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="018253.html">[JDEV] Building jabberd-2.0rc1: MySQL Path?
+</A></li>
+	<LI>Next message: <A HREF="018256.html">[JDEV] Building jabberd-2.0rc1: MySQL Path?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#18316">[ date ]</a>
+              <a href="thread.html#18316">[ thread ]</a>
+              <a href="subject.html#18316">[ subject ]</a>
+              <a href="author.html#18316">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

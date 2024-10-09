@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Routing
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Routing&In-Reply-To=A790BE8D83ECC3469047C2E344EABE61353AD4B0C2%40zamail01.k2workflow.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="027927.html">
+   <LINK REL="Next"  HREF="027929.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Routing</H1>
+    <B>Artur Hefczyc</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Routing&In-Reply-To=A790BE8D83ECC3469047C2E344EABE61353AD4B0C2%40zamail01.k2workflow.com"
+       TITLE="[jdev] Routing">ajdev at tigase.org
+       </A><BR>
+    <I>Mon Jun 23 07:21:18 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="027927.html">[jdev] Routing
+</A></li>
+        <LI>Next message: <A HREF="027929.html">[jdev] Routing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27928">[ date ]</a>
+              <a href="thread.html#27928">[ thread ]</a>
+              <a href="subject.html#27928">[ subject ]</a>
+              <a href="author.html#27928">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Jonathan,
+
+First - you didn't tell us what you are writing about...
+Are you working on kind of clustering implementation for some server
+or what?
+
+Anyway.
+I think the basic idea is good. I mean with the token-ring like
+implementation.
+
+This is how clustering in Tigase server is implemented.
+It is more like on your second diagram:
+
+Router-1   &lt;-----&gt;   Router-2   &lt;-------&gt;   Router-n
+
+There are SM, c2s, s2s and possible other components (MUC, PubSub)
+attached to each router. Routers deliver packets to components by
+the packet address. Whole clustering is implemented on the component
+level. The component decides whether the packet can be processed
+locally or it should be forwarded to a different cluster node.
+
+This is because each component has different needs about clustering
+so the logic must be inside the component otherwise the router
+implementation would be too complex and couldn't be generic.
+
+Artur
+
+On 23 Jun 2008, at 12:42, Jonathan Dickinson wrote:
+
+&gt;<i> Hey All,
+</I>&gt;<i>
+</I>&gt;<i> You will need a monospace font for this one :).
+</I>&gt;<i>
+</I>&gt;<i> Can anyone give me some advice on this problem? From what I can  
+</I>&gt;<i> tell, currently routers are a congestion point for all components.  
+</I>&gt;<i> E.g.
+</I>&gt;<i>
+</I>&gt;<i> +--------+
+</I>&gt;<i> | ROUTER +-S2S
+</I>&gt;<i> +---+----+
+</I>&gt;<i>    |
+</I>&gt;<i>   C2S
+</I>&gt;<i>
+</I>&gt;<i> As you can see the performance of the whole server depends on the  
+</I>&gt;<i> router, and the router can't be scaled horizontally by clustering it  
+</I>&gt;<i> (as far as I can tell). Like as follows:
+</I>&gt;<i>
+</I>&gt;<i> +--------+   +--------+
+</I>&gt;<i> | ROUTER +---+ ROUTER +-C2S
+</I>&gt;<i> +--------+   +--------+
+</I>&gt;<i> |        |   |        |
+</I>&gt;<i> C2S     C2S  C2S      S2S
+</I>&gt;<i>
+</I>&gt;<i> Can anyone correct me on this?
+</I>&gt;<i>
+</I>&gt;<i> I came up with the following solution to the problem:
+</I>&gt;<i>
+</I>&gt;<i>              C2S      S2S
+</I>&gt;<i>               |        |
+</I>&gt;<i>               +--------+
+</I>&gt;<i>               | ROUTER |
+</I>&gt;<i>               +----+---+
+</I>&gt;<i>              /     |    \
+</I>&gt;<i> C2S-+--------+ +----+---+ +--------+-C2S
+</I>&gt;<i>    | ROUTER +-+ FAILURE+-+ ROUTER |
+</I>&gt;<i> C2S-+--------+ +----+---+ +--------+-C2S
+</I>&gt;<i>              \     |    /
+</I>&gt;<i>               +----+---+
+</I>&gt;<i>               | ROUTER |
+</I>&gt;<i>               +--------+
+</I>&gt;<i>               |        |
+</I>&gt;<i>              S2S      S2S
+</I>&gt;<i>
+</I>&gt;<i> The router network works like a token ring network, only that there  
+</I>&gt;<i> is no token. Each router can send the packet along to the next as it  
+</I>&gt;<i> wishes (in one direction only). The following flow would apply:
+</I>&gt;<i>
+</I>&gt;<i> &lt;!-- Router1 --&gt;
+</I>&gt;<i> &lt;route from=&quot;c2s1.50&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">joe at joe.com</A>&quot;&gt;
+</I>&gt;<i>  ...
+</I>&gt;<i> &lt;/route&gt;
+</I>&gt;<i>
+</I>&gt;<i> &lt;!-- Router2 --&gt;
+</I>&gt;<i> &lt;route from=&quot;r1&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">joe at joe.com</A>&quot;&gt;
+</I>&gt;<i>  &lt;visit name=&quot;r1&quot;/&gt;
+</I>&gt;<i>  ...
+</I>&gt;<i> &lt;/route&gt;
+</I>&gt;<i>
+</I>&gt;<i> &lt;!-- Router3 --&gt;
+</I>&gt;<i> &lt;route from=&quot;r2&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">joe at joe.com</A>&quot;&gt;
+</I>&gt;<i>  &lt;visit name=&quot;r1&quot;/&gt;
+</I>&gt;<i>  &lt;visit name=&quot;r2&quot;/&gt;
+</I>&gt;<i>  ...
+</I>&gt;<i> &lt;/route&gt;
+</I>&gt;<i>
+</I>&gt;<i> If at any point one of the routers handles the packet successfully  
+</I>&gt;<i> it simply stops passing the route node around. If the route node  
+</I>&gt;<i> visits the same router twice it:
+</I>&gt;<i>
+</I>&gt;<i> a. If the node is from 'this' domain send it to the failure node.
+</I>&gt;<i> b. If the node is not from 'this' domain:
+</I>&gt;<i>   1. If I have a S2S component attached send it to that.
+</I>&gt;<i>   2. If I don't have a S2S component attached send it on.
+</I>&gt;<i>
+</I>&gt;<i> Components would send failures if no connected client is found: thus  
+</I>&gt;<i> making the router continue routing the packet.
+</I>&gt;<i>
+</I>&gt;<i> The sexy thing about this is that you should be able to remove and  
+</I>&gt;<i> connect routers to the network without bringing the whole thing down.
+</I>&gt;<i>
+</I>&gt;<i> Great so far, this would work well with single-sign-in capable  
+</I>&gt;<i> systems (i.e. no resources/priorities like MSN). Now, I can't for  
+</I>&gt;<i> the life of me figure out a way to handle resources and priorities.  
+</I>&gt;<i> One way would be to (but it's ugly):
+</I>&gt;<i>
+</I>&gt;<i> Component gets route packet:
+</I>&gt;<i>
+</I>&gt;<i> &lt;route from=&quot;r4&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">joe at joe.com</A>&quot;&gt;
+</I>&gt;<i>  &lt;visit name=&quot;r3&quot;/&gt;
+</I>&gt;<i>  &lt;visit name=&quot;r4&quot;/&gt;
+</I>&gt;<i>  &lt;priority name=&quot;c2s4.1&quot; resource=&quot;home&quot; value=&quot;0&quot;/&gt;
+</I>&gt;<i>  &lt;priority name=&quot;c2s3.50&quot; resource=&quot;mobile&quot; value=&quot;50&quot;/&gt;
+</I>&gt;<i>  ...
+</I>&gt;<i> &lt;/route&gt;
+</I>&gt;<i>
+</I>&gt;<i> Thus each stanza would make a complete trip round the network (2 at  
+</I>&gt;<i> worst) before it could be sent. Does anyone have any clever ideas  
+</I>&gt;<i> how to get around this?
+</I>&gt;<i>
+</I>&gt;<i> Thanks!
+</I>&gt;<i>
+</I>&gt;<i> Jonathan
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> FAQ: <A HREF="http://www.jabber.org/discussion-lists/jdev-faq">http://www.jabber.org/discussion-lists/jdev-faq</A>
+</I>&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>
+Artur
+-- 
+Artur Hefczyc
+<A HREF="http://www.tigase.org/">http://www.tigase.org/</A>
+<A HREF="http://artur.hefczyc.net/">http://artur.hefczyc.net/</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="027927.html">[jdev] Routing
+</A></li>
+	<LI>Next message: <A HREF="027929.html">[jdev] Routing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27928">[ date ]</a>
+              <a href="thread.html#27928">[ thread ]</a>
+              <a href="subject.html#27928">[ subject ]</a>
+              <a href="author.html#27928">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

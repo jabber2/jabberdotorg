@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Complex DTD=2 SQL
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Complex%20DTD%3D2%20SQL&In-Reply-To=%3CIJEGLMLEOBEDFMLKIGPMCEGNCIAA.timklem%40yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="046167.html">
+   <LINK REL="Next"  HREF="046188.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Complex DTD=2 SQL</H1>
+    <B>Tim Klem</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Complex%20DTD%3D2%20SQL&In-Reply-To=%3CIJEGLMLEOBEDFMLKIGPMCEGNCIAA.timklem%40yahoo.com%3E"
+       TITLE="[JDEV] Complex DTD=2 SQL">timklem at yahoo.com
+       </A><BR>
+    <I>Wed Jun 25 09:46:52 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="046167.html">[JDEV] Complex DTD=2 SQL
+</A></li>
+        <LI>Next message: <A HREF="046188.html">[jadmin] RE: [JDEV] Complex DTD=2 SQL
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46168">[ date ]</a>
+              <a href="thread.html#46168">[ thread ]</a>
+              <a href="subject.html#46168">[ subject ]</a>
+              <a href="author.html#46168">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Bernino,
+
+I think the SELECT data fields should be stated explicitly. The bindvar may
+be failing on the &quot;SELECT *&quot;.
+
+Specifically:
+
+&lt;querydef name=&quot;score-get&quot; dtd=&quot;2&quot; type=&quot;get&quot; namespace=&quot;lind:score&quot;&gt;
+    &lt;text&gt;SELECT sid, username, gameid, score, date
+           FROM score WHERE gameid = '$$gameid$$' AND username =
+'$$user$$'&lt;/text&gt;
+
+Plus this way, if changes are ever made to the DB table structure, you won't
+break this.
+
+Regards,
+
+Tim
+
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+Bernino Lind
+Sent: Wednesday, June 25, 2003 10:29 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+Subject: [JDEV] Complex DTD=2 SQL
+
+
+Dear all,
+
+I need a bit of adwise.
+
+I have a working simple dtd=&quot;2&quot; sql set/get pair with my own namespace.
+
+I need to make these more sql queries more complex by adding more
+variables in my select statements.
+
+I can do this no problem with my update/insert with bindvar tag=... but
+with select I hit problems, which I cant resolve...:
+
+My select in xdb_sql.xml / queredef:
+
+     &lt;querydef name=&quot;score-get&quot; dtd=&quot;2&quot; type=&quot;get&quot; namespace=&quot;lind:score&quot;&gt;
+        &lt;text&gt;SELECT * FROM score WHERE gameid = '$$gameid$$' AND username
+= '$$user$$'&lt;/text&gt;
+        &lt;user&gt;$$user$$&lt;/user&gt;
+        &lt;bindvar tag=&quot;gameid&quot;&gt;$$gameid$$&lt;/bindvar&gt;
+        &lt;top-result&gt;
+          &lt;x xmlns='lind:score'/&gt;
+        &lt;/top-result&gt;
+          &lt;tuple-node&gt;&lt;item/&gt;&lt;/tuple-node&gt;
+            &lt;bindcol tag=&quot;sid&quot; offset=&quot;0&quot;/&gt;
+            &lt;bindcol tag=&quot;username&quot; offset=&quot;1&quot;/&gt;
+            &lt;bindcol tag=&quot;gameid&quot; offset=&quot;2&quot;/&gt;
+            &lt;bindcol tag=&quot;score&quot; offset=&quot;3&quot;/&gt;
+            &lt;bindcol tag=&quot;date&quot; offset=&quot;4&quot;/&gt;
+        &lt;/querydef&gt;
+    &lt;/queries&gt;
+
+
+What happens when I fire off my xml is that the type=&quot;set&quot; works just
+fine, but firing off a gives a warning:
+
+WARNING:  pg_atoi: zero-length string
+
+Which I guess means that gameid is null, even though my iq packet is good:
+
+&lt;iq type=&quot;get&quot;&gt;
+  &lt;query xmlns='lind:score'&gt;
+    &lt;gameid&gt;123&lt;/gameid&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+And theres something in it:
+jdb=# SELECT * FROM score WHERE gameid = '123' AND username =
+'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">psi at 192.168.0.166</A>';
+ sid |     username      | gameid | score  |            date
+-----+-------------------+--------+--------+----------------------------
+  10 | <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">psi at 192.168.0.166</A> |    123 | 234234 | 2003-06-17 15:42:41.611469
+  12 | <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">psi at 192.168.0.166</A> |    123 | 234234 | 2003-06-17 16:12:12.182216
+  13 | <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">psi at 192.168.0.166</A> |    123 | 234234 | 2003-06-25 15:31:02.446713
+  14 | <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">psi at 192.168.0.166</A> |    123 | 234234 | 2003-06-25 15:31:11.871944
+  15 | <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">psi at 192.168.0.166</A> |    123 | 234234 | 2003-06-25 16:02:51.309132
+(5 rows)
+
+When I change the querydef to have just say username - no problem, it
+selects and outputs the way I want it...
+
+Help,
+Best Regards Bernino Lind
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="046167.html">[JDEV] Complex DTD=2 SQL
+</A></li>
+	<LI>Next message: <A HREF="046188.html">[jadmin] RE: [JDEV] Complex DTD=2 SQL
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46168">[ date ]</a>
+              <a href="thread.html#46168">[ thread ]</a>
+              <a href="subject.html#46168">[ subject ]</a>
+              <a href="author.html#46168">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

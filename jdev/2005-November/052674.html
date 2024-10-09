@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: [xmppwg] Incorrect SASL Digest MD5 example in XMPP Core
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20%5Bxmppwg%5D%20Incorrect%20SASL%20Digest%20MD5%20example%20in%20XMPP%20Core&In-Reply-To=%3C20051122163457.GA58076%40ik.nu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="052671.html">
+   <LINK REL="Next"  HREF="052675.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: [xmppwg] Incorrect SASL Digest MD5 example in XMPP Core</H1>
+    <B>Ralph Meijer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20%5Bxmppwg%5D%20Incorrect%20SASL%20Digest%20MD5%20example%20in%20XMPP%20Core&In-Reply-To=%3C20051122163457.GA58076%40ik.nu%3E"
+       TITLE="[jdev] Re: [xmppwg] Incorrect SASL Digest MD5 example in XMPP Core">jabber.org at ralphm.ik.nu
+       </A><BR>
+    <I>Tue Nov 22 10:34:57 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="052671.html">[jdev] Jabber consultant Jobs
+</A></li>
+        <LI>Next message: <A HREF="052675.html">AW: [jdev] Re: Thoughts on Interplanetary Jabber System ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#52674">[ date ]</a>
+              <a href="thread.html#52674">[ thread ]</a>
+              <a href="subject.html#52674">[ subject ]</a>
+              <a href="author.html#52674">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+To expand on my previous mail [1], the problem is that, unlike XMPP,
+in IMAP's profile for SASL it is not possible to send additional data
+along with a servers' indication of successful authentication. This is
+covered by section 5.2 in RFC 2222, copied here in full:
+
+5.2.  Server returns success with additional data
+
+   Some mechanisms may specify that server challenge data be sent to the
+   client along with an indication of successful completion of the
+   exchange.  This data would, for example, authenticate the server to
+   the client.
+
+   If a protocol's profile does not permit this server challenge to be
+   returned with a success indication, then the server issues the server
+   challenge without an indication of successful completion.  The client
+   then responds with no data.  After receiving this empty response, the
+   server then indicates successful completion.
+
+In the DIGEST-MD5 authentication mechanism, there is such additional
+data. It can be used for subsequent authentications without challenges.
+So for the IMAP profile there are two challenges, one 'real' and one for
+carrying the additional data on success in the 'rspauth' field.
+
+The IMAP exchange appears to be copied to the XMPP examples in RFC 3920,
+also resulting in two challenges. However, since the XMPP profile *does*
+support sending along additional data in the &lt;success/&gt; element, the
+data from the second 'challenge' should go in the &lt;success/&gt; element
+instead, resulting in the exchange as mentioned in [1].
+
+So, to detect this, you need to try logging in with DIGEST-MD5 while
+monitoring the exchange. If there are two &lt;challenge/&gt; elements send by
+the server, the implementation is not correct.
+
+Note that a client could always accept the wrong behaviour by storing
+the result of the second query and sending back &lt;response&gt;=&lt;/response&gt;,
+waiting for the empty badly implemented server to send back an empty
+&lt;success/&gt;. Of course I'd rather not have such workarounds in place.
+
+Note, that this could apply to mechanisms other than DIGEST-MD5, too.
+
+I think we should start checking implementations for this and fix things
+as soon as possible, before it becomes practically impossible because of
+deployment. I know that some server implementations use the cyrus sasl
+library for their SASL implementation, and if so, check for the use of
+the SASL_SUCCESS_DATA flag to sasl_server_new(). If you don't use it,
+your implementation is most probably not correct.
+
+Since jabberd2 (2.0s10 is the one I checked) has this error in its
+implemention, I suspect all client implementations that successfully
+authenticate to jabberd2 using the DIGEST-MD5 mechanism to be faulty.
+I'd like to urge server and client developers to check their code and
+report back to the xmppwg list (or me privately) about their findings,
+so we have a clear scope on the problem.
+
+[1] <A HREF="https://www.jabber.org/xmppwg/2005-October/002332.html">https://www.jabber.org/xmppwg/2005-October/002332.html</A>
+
+-- 
+Groetjes,
+
+ralphm
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="052671.html">[jdev] Jabber consultant Jobs
+</A></li>
+	<LI>Next message: <A HREF="052675.html">AW: [jdev] Re: Thoughts on Interplanetary Jabber System ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#52674">[ date ]</a>
+              <a href="thread.html#52674">[ thread ]</a>
+              <a href="subject.html#52674">[ subject ]</a>
+              <a href="author.html#52674">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

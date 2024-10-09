@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Bug in mod_filter.c ?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Bug%20in%20mod_filter.c%20%3F&In-Reply-To=%3C3D20DD44.5070307%40openone.cz%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042568.html">
+   <LINK REL="Next"  HREF="042581.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Bug in mod_filter.c ?</H1>
+    <B>tomash</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Bug%20in%20mod_filter.c%20%3F&In-Reply-To=%3C3D20DD44.5070307%40openone.cz%3E"
+       TITLE="[JDEV] Bug in mod_filter.c ?">tomas.holenda at openone.cz
+       </A><BR>
+    <I>Mon Jul  1 17:52:52 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042568.html">[JDEV] Re: jabrss BETA testers wanted
+</A></li>
+        <LI>Next message: <A HREF="042581.html">[JDEV] DOS is mod_filter (was Bug in mod_filter.c)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42575">[ date ]</a>
+              <a href="thread.html#42575">[ thread ]</a>
+              <a href="subject.html#42575">[ subject ]</a>
+              <a href="author.html#42575">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+maybe I have found a bug in mod_filter.c in jabber1.4.2. Here is 
+description of situation,
+in which the server is deterministically crashing:
+
+I create following filtering rule (its possible to create it from Gabber):
+
+&lt;query xmlns='jabber:iq:filter' xdbns='jabber:iq:filter'&gt;
+  &lt;rule name='New Rule'&gt;
+    &lt;forward&gt;/dev/null&lt;/forward&gt;
+    &lt;from&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">5762728 at icq.jabber.cz</A>&lt;/from&gt;
+  &lt;/rule&gt;
+&lt;/query&gt;
+
+After receiving icq message from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">5762728 at icq.jabber.cz</A>, server crashes. 
+Here is dump
+from gdb:
+
+Program received signal SIGSEGV, Segmentation fault.
+0x40258eb9 in mod_filter_handler (m=0x8225060, arg=0x0) at mod_filter.c:621
+621                     new-&gt;next=cur_action-&gt;forward;
+(gdb) bt
+#0  0x40258eb9 in mod_filter_handler (m=0x8225060, arg=0x0) at 
+mod_filter.c:621
+#1  0x40250064 in js_mapi_call (si=0x80dfa08, e=3, packet=0x8210000,
+    user=0x814dcd8, s=0x814c968) at modules.c:160
+#2  0x4024eb87 in js_deliver_local (si=0x80dfa08, p=0x8210000, ht=0x815cac8)
+    at deliver.c:57
+#3  0x4024f504 in js_packet (i=0x80df890, p=0x820ffb0, arg=0x80dfa08)
+    at deliver.c:230
+#4  0x08054ee0 in deliver_instance (i=0x80df890, p=0x820ffb0) at 
+deliver.c:689
+#5  0x08054583 in deliver (p=0x820ffb0, i=0x81329b8) at deliver.c:482
+#6  0x402861eb in at_parse_incoming_im (ass=0x814d790, command=0x8226618)
+    at messages.c:164
+#7  0x40294a5a in incomingim_ch1 ()
+   from /home/jabber/jabber-1.4.2/lib/aimtrans.so
+#8  0x40295510 in incomingim () from 
+/home/jabber/jabber-1.4.2/lib/aimtrans.so
+#9  0x40295d56 in snachandler () from 
+/home/jabber/jabber-1.4.2/lib/aimtrans.so
+#10 0x40299767 in consumesnac () from 
+/home/jabber/jabber-1.4.2/lib/aimtrans.so
+#11 0x4029a0c9 in aim_rxdispatch ()
+   from /home/jabber/jabber-1.4.2/lib/aimtrans.so
+#12 0x4028b08f in at_session_main (arg=0x814d188) at sessions.c:1020
+#13 0x4002979e in pth_ctrl () from /usr/lib/libpth.so.14
+#14 0x400bc674 in makecontext () from /lib/libc.so.6
+#15 0x400e2983 in free () from /lib/libc.so.6
+
+Variable &quot;new&quot; is NULL at this time.
+
+I'm not so familiar with the jabberd source, so I don't know how to 
+solve this correctly, so I have
+created this dirty fix. Server is not crashing any more (at last this 
+way :-) ).
+
+--- jabber-1.4.2-orig/jsm/modules/mod_filter.c  Fri Feb  8 08:39:28 2002
++++ jabber-1.4.2/jsm/modules/mod_filter.c       Mon Jul  1 11:48:25 2002
+@@ -615,6 +615,10 @@
+             else if(j_strcmp(xmlnode_get_name(cur),&quot;forward&quot;)==0)
+             {
+                 jid new=jid_new(p,xmlnode_get_data(cur));
++               if (!new) {
++                  log_debug(ZONE, &quot;My dirty fix 2! kykyrykyky!\n&quot;);
++                  return M_IGNORE;
++                }
+                 if(m-&gt;packet-&gt;type == JPACKET_IQ)
+                     break;
+                 cur_action-&gt;has_action=1;
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042568.html">[JDEV] Re: jabrss BETA testers wanted
+</A></li>
+	<LI>Next message: <A HREF="042581.html">[JDEV] DOS is mod_filter (was Bug in mod_filter.c)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42575">[ date ]</a>
+              <a href="thread.html#42575">[ thread ]</a>
+              <a href="subject.html#42575">[ subject ]</a>
+              <a href="author.html#42575">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

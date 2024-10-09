@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber server on HPUX
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20server%20on%20HPUX&In-Reply-To=%3CC9054F12A3EED311B0160090274D91210471B9EE%40shannon.ie.logica.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039560.html">
+   <LINK REL="Next"  HREF="039563.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber server on HPUX</H1>
+    <B>Brennan, James</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20server%20on%20HPUX&In-Reply-To=%3CC9054F12A3EED311B0160090274D91210471B9EE%40shannon.ie.logica.com%3E"
+       TITLE="[JDEV] Jabber server on HPUX">BrennanJ at logica.com
+       </A><BR>
+    <I>Thu Nov 29 02:42:44 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039560.html">[JDEV] Server Side - Questions
+</A></li>
+        <LI>Next message: <A HREF="039563.html">[JDEV] Jabber server on HPUX
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39561">[ date ]</a>
+              <a href="thread.html#39561">[ thread ]</a>
+              <a href="subject.html#39561">[ subject ]</a>
+              <a href="author.html#39561">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Rick,
+
+Yes - that's exactly what I experienced!
+
+Although, as you say, pth compiles fine, it's actually
+the get/set/swapcontext() methods that it uses.
+
+I found that pth just stopped 'switching' to other threads,
+grinds to a halt, takes up 100%cpu and doesn't get to spawn
+the other jabber process.
+
+I traced it down to get/set/swapcontext() in the pth.
+You can force pth to use sigsetjmp/siglongjump instead
+and the way you do this is with the ./configure switches
+that I describe in my email at the end.
+
+james
+
+Logica Mobile Networks,
+Dublin, Ireland.
+
+-----Original Message-----
+From: Rick Hickerson [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">richard_hickerson at agilent.com</A>]
+Sent: Wednesday, November 28, 2001 7:51 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] Jabber server on HPUX
+
+
+I get it compiled OK with pth-1.4.0, and can execute:
+./jabberd/jabberd -D -h &lt;my.fully.qualified.hostname&gt;
+
+But there everything stops. `top` shows jabberd as using 100% of one of the
+CPUs, and any attempt to connect to port 5222 is refused.  
+
+When running in the foreground, one message comes to the console:
+Wed Nov 28 13:32:59 2001  mio.c:568 MIO is starting up
+
+It doesn't respond to &lt;ctrl&gt;-c.  I have to login another session and `kill
+-9`
+to shut it down.
+
+Rick
+
+&quot;Brennan, James&quot; wrote:
+&gt;<i> 
+</I>&gt;<i> I think this is the same problem that I had.
+</I>&gt;<i> The problem is the pth component which jabber uses.
+</I>&gt;<i> This is the thread component part.
+</I>&gt;<i> 
+</I>&gt;<i> You will find this component in the directory:
+</I>&gt;<i> jabberd/pth-1.3.7  (I use pth-1.4.0 but this should not matter)
+</I>&gt;<i> 
+</I>&gt;<i> You need to enter this directory and run configure with
+</I>&gt;<i> the following flags:
+</I>&gt;<i> 
+</I>&gt;<i> ./configure --with-mctx-mth=sjlj --with-mctx-dsp=sjlj --with-mctx-stk=sas
+</I>&gt;<i> 
+</I>&gt;<i> You then need to build the pth component.
+</I>&gt;<i> Just run make in the pth-1.3.7 directory.
+</I>&gt;<i> 
+</I>&gt;<i> Then go back out to the jabber directory and make the system.
+</I>&gt;<i> 
+</I>&gt;<i> Get in touch with me if this doesn't make sense or work.
+</I>&gt;<i> 
+</I>&gt;<i> james
+</I>
+This e-mail and any attachment is for authorised use by the intended recipient(s) only.  It may contain proprietary material, confidential information and/or be subject to legal privilege.  It should not be copied, disclosed to, retained or used by, any other party.  If you are not an intended recipient then please promptly delete this e-mail and any attachment and all copies and inform the sender.  Thank you.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039560.html">[JDEV] Server Side - Questions
+</A></li>
+	<LI>Next message: <A HREF="039563.html">[JDEV] Jabber server on HPUX
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39561">[ date ]</a>
+              <a href="thread.html#39561">[ thread ]</a>
+              <a href="subject.html#39561">[ subject ]</a>
+              <a href="author.html#39561">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

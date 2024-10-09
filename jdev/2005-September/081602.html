@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Trouble sending greek characters (and I guess other	languages) in Jabber messages (with Perl's Net::Jabber)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Trouble%20sending%20greek%20characters%20%28and%20I%20guess%20other%0A%09languages%29%20in%20Jabber%20messages%20%28with%20Perl%27s%20Net%3A%3AJabber%29&In-Reply-To=%3Cop.sxv7k50qqj7son%40smtp.chello.nl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="081601.html">
+   <LINK REL="Next"  HREF="081603.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Trouble sending greek characters (and I guess other	languages) in Jabber messages (with Perl's Net::Jabber)</H1>
+    <B>Tijl Houtbeckers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Trouble%20sending%20greek%20characters%20%28and%20I%20guess%20other%0A%09languages%29%20in%20Jabber%20messages%20%28with%20Perl%27s%20Net%3A%3AJabber%29&In-Reply-To=%3Cop.sxv7k50qqj7son%40smtp.chello.nl%3E"
+       TITLE="[jdev] Trouble sending greek characters (and I guess other	languages) in Jabber messages (with Perl's Net::Jabber)">thoutbeckers at splendo.com
+       </A><BR>
+    <I>Thu Sep 29 20:54:31 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="081601.html">[jdev] Trouble sending greek characters (and I guess other languages) in Jabber messages (with Perl's Net::Jabber)
+</A></li>
+        <LI>Next message: <A HREF="081603.html">[jdev] Ok, here's my tiny little Perl script
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81602">[ date ]</a>
+              <a href="thread.html#81602">[ thread ]</a>
+              <a href="subject.html#81602">[ subject ]</a>
+              <a href="author.html#81602">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The answer is simple; Use UTF-8, and use it correctly.
+
+If it goes wrong, then either something in your code, or in Net::Jabber or  
+Perl is going wrong too.
+While neither Net:Jabber nor Perl has a very brilliant history in  
+supporting unicode, I think by now both are mature enough to assume (for  
+now) the error is in your code. For the rest I'll leave this one to the  
+Perl experts though..
+
+On Thu, 29 Sep 2005 15:44:26 +0200, John Talbot &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jtalbot at proionta.gr</A>&gt;  
+wrote:
+
+&gt;<i> How is it that Jabber clients can send greek characters to other Jabber  
+</I>&gt;<i> clients and they display nicely? They do, somehow.
+</I>&gt;<i>
+</I>&gt;<i> But when I try to get my perl script to send a greek character to a  
+</I>&gt;<i> Jabber server (and I believe I've tried everything everything under the  
+</I>&gt;<i> sun - details below), all I get on my Jabber client is weird accented  
+</I>&gt;<i> characters from the upper 8859-1 charset.
+</I>&gt;<i>
+</I>&gt;<i> Here's what I tried, and you'll see the paradox:
+</I>&gt;<i>
+</I>&gt;<i> Using a windows jabber client's raw XML entry (from an admin account), I  
+</I>&gt;<i> wrote:
+</I>&gt;<i>
+</I>&gt;<i> SENT: &lt;message to=&quot;192.168.1.100/announce/motd&quot;&gt;&lt;body&gt;Ya sou (but in  
+</I>&gt;<i> greek letters)&lt;/body&gt;&lt;/message&gt;
+</I>&gt;<i>
+</I>&gt;<i> This makes the client show an announcement in perfectly readable Greek  
+</I>&gt;<i> characters.
+</I>&gt;<i>
+</I>&gt;<i> However when I asked my Perl script to send the exact same command (with  
+</I>&gt;<i> &quot;Ya sou&quot; written both in ISO-GREEK and in UTF-8, two cases), then only  
+</I>&gt;<i> accented western european vowels appeared in the notification. In the  
+</I>&gt;<i> ISO-GREEK case, I got the same number of western accented letters as the  
+</I>&gt;<i> number of greek letters in Ya sou, in the UTF-8 case, I got double the  
+</I>&gt;<i> western letters.
+</I>&gt;<i>
+</I>&gt;<i> This seems rather strange... because if during Pandion's raw XML entry,  
+</I>&gt;<i> the letters of &quot;Ya sou&quot; were sent neither in ISO-GREEK nor in UTF-8,  
+</I>&gt;<i> then how WERE they sent?
+</I>&gt;<i>
+</I>&gt;<i> [Pause]
+</I>&gt;<i>
+</I>&gt;<i> I just read a bit of the core XMPP protocol, it says an  
+</I>&gt;<i> xml:lang='language-code' attribute should be used right after  
+</I>&gt;<i> connection...
+</I>&gt;<i>
+</I>&gt;<i> I'm using the Net::Jabber library for my Perl scripts. Could it be that  
+</I>&gt;<i> the library doesn't use xml:lang? (I have no way to check) Even if so, I  
+</I>&gt;<i> tried including an xml:lang='el' (that's the symbol for greek) attribute  
+</I>&gt;<i> in the &lt;message&gt; tag that Perl sends, and that didn't change a thing  
+</I>&gt;<i> (even though according to the core XMPP protocol it should have worked,  
+</I>&gt;<i> if that were the problem) neither with the UTF-8 version of the string  
+</I>&gt;<i> nor the ISO-GREEK one.
+</I>&gt;<i>
+</I>&gt;<i> What do you think might be going on?
+</I>&gt;<i>
+</I>&gt;<i> I could send you a trimmed version of the script if you need.
+</I>&gt;<i>
+</I>&gt;<i> Many thanks,
+</I>&gt;<i> John
+</I>&gt;<i>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="081601.html">[jdev] Trouble sending greek characters (and I guess other languages) in Jabber messages (with Perl's Net::Jabber)
+</A></li>
+	<LI>Next message: <A HREF="081603.html">[jdev] Ok, here's my tiny little Perl script
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81602">[ date ]</a>
+              <a href="thread.html#81602">[ thread ]</a>
+              <a href="subject.html#81602">[ subject ]</a>
+              <a href="author.html#81602">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

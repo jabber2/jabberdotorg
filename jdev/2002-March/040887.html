@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Docs on the XDB element ?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Docs%20on%20the%20XDB%20element%20%3F&In-Reply-To=%3C1015437225.1444.0.camel%40bilbol%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="040858.html">
+   <LINK REL="Next"  HREF="040866.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Docs on the XDB element ?</H1>
+    <B>Stefan Praszalowicz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Docs%20on%20the%20XDB%20element%20%3F&In-Reply-To=%3C1015437225.1444.0.camel%40bilbol%3E"
+       TITLE="[JDEV] Docs on the XDB element ?">stefan at avedya.com
+       </A><BR>
+    <I>Wed Mar  6 11:53:44 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="040858.html">[JDEV] Docs on the XDB element ?
+</A></li>
+        <LI>Next message: <A HREF="040866.html">[JDEV] Docs on the XDB element ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40887">[ date ]</a>
+              <a href="thread.html#40887">[ thread ]</a>
+              <a href="subject.html#40887">[ subject ]</a>
+              <a href="author.html#40887">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey stephane,
+
+If I understand correctly you want to store data using Jabber's
+persistence layer, aka XDB.
+Well it's simple enough. What you can do is look at existing components
+to see how they do it.
+
+XDB can SET or GET xml nodes. The nodes are stored and retrieved
+according to the particular host, user and namespace specified in the
+packet.
+
+
+- XDB Set
+It will store whatever is in the node in the 'db' (flat files by
+default)
+
+Example:
+	&lt;xdb type='set' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">someuser at host.com</A>'
+	 from='sessions' ns='jabber:x:offline' id='4'&gt;
+		&lt;offline xmlns='jabber:x:offline'/&gt;
+	&lt;/xdb&gt;
+
+This will replace the content of the namespace 'jabber:x:offline', for
+the user 'someuser' of the host 'host.com' by the fragment &lt;offline
+.../&gt;
+
+
+- XDB Get
+
+&lt;xdb type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">popo at host.com</A>'
+	from='sessions' ns='jabber:iq:auth' id='1'/&gt;
+
+This will look into a file for the server 'host.com', user 'popo' and
+namespace 'jabber:iq:auth' and send you back the node that's been set at
+this place.
+
+It will return a packet that looks like:
+
+&lt;xdb type='result' to='sessions'
+	from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">popo at host.com</A>' ns='jabber:iq:auth' id='1'&gt;
+	&lt;password xmlns='jabber:iq:auth'&gt;frob&lt;/password&gt;
+&lt;/xdb&gt;
+
+
+
+Basically you can think of that as a way to store variables, with a
+variable name equal to server+user+namespace.
+
+Note that Jabber provides a default flat file XDB component that's able
+to store and retrieve any XML you want without any change. If you want
+to have a SQL based XDB component, then you must create SQL queries
+that'll match every particular XML you want to store (unless you store
+the XML direclty into a varchar or text, blob ...)
+
+Hope it helps a bit.
+Stefan
+
+
+On Wed, 2002-03-06 at 17:55, Riviere St&#233;phane Jean wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> I'm currently developing external server components (in Java) and need to
+</I>&gt;<i> store/retrieve some information about the component, registered clients....
+</I>&gt;<i> 
+</I>&gt;<i> This can be done using the &lt;XBD/&gt; element, but I didn't find much
+</I>&gt;<i> information but this :
+</I>&gt;<i> <A HREF="http://docs.jabber.org/general/html/component-intro.html">http://docs.jabber.org/general/html/component-intro.html</A>
+</I>&gt;<i> 
+</I>&gt;<i> Does further documentation about XDB exist or will I have to make personal
+</I>&gt;<i> tests to find how it works ?
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for your help,
+</I>&gt;<i> 
+</I>&gt;<i> St&#233;phane.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> [ For those who are interested on my configuration : 
+</I>&gt;<i> - jabberd 1.4.1 with Conferencing / JUD / MSN Transport / Weather service
+</I>&gt;<i> ;-)
+</I>&gt;<i> - server is an old P2 300MHz / 92MB RAM running a RedHat 6.2
+</I>&gt;<i> - external components are developed in Java with jabberbeans latest CVS
+</I>&gt;<i> sources
+</I>&gt;<i> ]
+</I>&gt;<i> 
+</I>&gt;<i> ------------------------------------------
+</I>&gt;<i> email : <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Stephane.sr.Riviere at atosorigin.com</A>
+</I>&gt;<i> t&#233;l : (0)3.20.60.77.14
+</I>&gt;<i> 
+</I>&gt;<i> Ing&#233;nieur R&amp;D
+</I>&gt;<i> Equipe Grands Projets
+</I>&gt;<i> Direction Recherche &amp; D&#233;veloppement
+</I>&gt;<i> ATOS ORIGIN Activit&#233; Multim&#233;dia
+</I>&gt;<i> <A HREF="http://www.atosorigin.com">http://www.atosorigin.com</A> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="040858.html">[JDEV] Docs on the XDB element ?
+</A></li>
+	<LI>Next message: <A HREF="040866.html">[JDEV] Docs on the XDB element ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40887">[ date ]</a>
+              <a href="thread.html#40887">[ thread ]</a>
+              <a href="subject.html#40887">[ subject ]</a>
+              <a href="author.html#40887">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

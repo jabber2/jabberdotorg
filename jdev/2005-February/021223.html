@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] SOCKS5 Bytestream File Transfer problem
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20SOCKS5%20Bytestream%20File%20Transfer%20problem&In-Reply-To=d55e29bf0502251450fc60a68%40mail.gmail.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="021221.html">
+   <LINK REL="Next"  HREF="021225.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] SOCKS5 Bytestream File Transfer problem</H1>
+    <B>Justin Karneges</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20SOCKS5%20Bytestream%20File%20Transfer%20problem&In-Reply-To=d55e29bf0502251450fc60a68%40mail.gmail.com"
+       TITLE="[jdev] SOCKS5 Bytestream File Transfer problem">justin-keyword-jabber.093179 at affinix.com
+       </A><BR>
+    <I>Fri Feb 25 17:38:32 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="021221.html">[jdev] SOCKS5 Bytestream File Transfer problem
+</A></li>
+        <LI>Next message: <A HREF="021225.html">[jdev] SOCKS5 Bytestream File Transfer problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#21223">[ date ]</a>
+              <a href="thread.html#21223">[ thread ]</a>
+              <a href="subject.html#21223">[ subject ]</a>
+              <a href="author.html#21223">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Friday 25 February 2005 02:50 pm, Anthony Ortiz wrote:
+&gt;<i> [1] If the Target is willing to accept the bytestream, it MUST attempt
+</I>&gt;<i> to open a standard TCP socket on the network address of the StreamHost
+</I>&gt;<i> communicated by the Initiator. If the Initiator provides more than one
+</I>&gt;<i> StreamHost, the Target SHOULD try to connect to them in the order they
+</I>&gt;<i> occur.
+</I>&gt;<i>
+</I>&gt;<i> ...
+</I>&gt;<i>
+</I>&gt;<i> [3] If the Target is able to open a TCP socket on a StreamHost, it
+</I>&gt;<i> MUST utilize the SOCKS5 protocol specified in RFC 1928 [7] to
+</I>&gt;<i> establish the connection with the StreamHost. In accordance with the
+</I>&gt;<i> SOCKS5 RFC, the Target MAY have to authenticate in order to use the
+</I>&gt;<i> proxy. However, any authentication required is beyond the scope of
+</I>&gt;<i> this JEP.
+</I>[snip]
+&gt;<i> At first, my understanding was that I should open a standard TCP
+</I>&gt;<i> connection to the streamhost(s) (192.168.1.100:8010 in this particular
+</I>&gt;<i> case) in order to test if the connnection could be made (as per the
+</I>&gt;<i> paragraph [1]). I did this at first and that part worked fine &amp; was
+</I>&gt;<i> able to connect, but then I stripped that code out because it seemed
+</I>&gt;<i> redundant after I read paragraph [3] which states that I will have to
+</I>&gt;<i> open a SOCKS5 connection to that streamhost anyway, and in the
+</I>
+Maybe it's not fully clear (and I'm simply reading from the quoted text you 
+provided), but what [3] is intended to mean is that you would perform the 
+SOCKS5 protocol over the established TCP connection from [1].  There are not 
+two connections.  I suppose it is spelled out in steps like this in case 
+you're writing your own SOCKS protocol code.  If you're using a SOCKS library 
+to perform the connection, which will both create the TCP connection as well 
+as negotiate the SOCKS5 protocol over it, then that's all you need to use.
+
+&gt;<i> Proxy.setDefaultProxy(host, port); // sets SOCKS5 proxy to be
+</I>&gt;<i> 192.168.1.100:8010
+</I>&gt;<i>
+</I>[snip]
+&gt;<i> So this tells me that the actual SOCKS5 host to connect to is the SHA1
+</I>&gt;<i> hash of sid + from + to and that the port is 0. That is why I have the
+</I>&gt;<i> following line in my code :
+</I>
+Well, just to ensure our terminology is clear, the SOCKS5 host (or proxy, or 
+server, or whatever) is 192.168.1.100.  The destination (or DST) host, ie the 
+one that you'll ask the SOCKS5 host to bridge you to, is the hash.
+
+Of course, you're aware that the hash is not a real host, and that the SOCKS5 
+host (in this example, Psi) is not actually going to perform an outbound 
+connection to the DST as a result.  It is simply used as a handshake.
+
+&gt;<i> Socket ss = new SocksSocket(SocksHost, 0);
+</I>
+My confusion with this line of code is that I don't see how it relates to the 
+Proxy object.  In other words, how does the SocksSocket know what SOCKS5 host 
+to connect to?  I know nothing about the library you're using though, so 
+maybe the Proxy object interfaces with some global settings in the 
+background, and SocksSocket draws from that.
+
+It could be that you understand the protocol, and are coding with the right 
+intent, but simply coding it wrong. ;-)
+
+&gt;<i> p.s. btw Justin... great work on the PSI client!
+</I>
+Glad you like it. :)
+
+Have fun,
+-Justin
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="021221.html">[jdev] SOCKS5 Bytestream File Transfer problem
+</A></li>
+	<LI>Next message: <A HREF="021225.html">[jdev] SOCKS5 Bytestream File Transfer problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#21223">[ date ]</a>
+              <a href="thread.html#21223">[ thread ]</a>
+              <a href="subject.html#21223">[ subject ]</a>
+              <a href="author.html#21223">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] File transfer and Jabber (summary)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfer%20and%20Jabber%20%28summary%29&In-Reply-To=%3C00d601c0ce79%24e8124510%24760fcf82%40cc.gatech.edu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="065905.html">
+   <LINK REL="Next"  HREF="065883.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] File transfer and Jabber (summary)</H1>
+    <B>Rob Kooper</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfer%20and%20Jabber%20%28summary%29&In-Reply-To=%3C00d601c0ce79%24e8124510%24760fcf82%40cc.gatech.edu%3E"
+       TITLE="[JDEV] File transfer and Jabber (summary)">kooper at cc.gatech.edu
+       </A><BR>
+    <I>Thu Apr 26 12:54:14 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="065905.html">[JDEV] File transfer and Jabber
+</A></li>
+        <LI>Next message: <A HREF="065883.html">[JDEV] server problems and solutions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65971">[ date ]</a>
+              <a href="thread.html#65971">[ thread ]</a>
+              <a href="subject.html#65971">[ subject ]</a>
+              <a href="author.html#65971">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Ok lets see if I can summarize what we came up with so far. Figured since I
+started this thread I should see if I can bring some conclusion to it, and
+maybe even some recommendations. Things that I have since been wondering
+about (and did not put in first message) will be included at the end of
+this.
+
+It looks like there are 3 options available for transfering files. Each of
+these options have pro's and con's. I'll try and list them here. The first
+two options (P2P and sepereate server) are the preferred option, the last
+option (In-band) should be considered a last option.
+
+For a P2P transfer has the advantage that all the transfers will happen
+without the server being involved, this will make sure no extra burden is
+placed on the server. The disadvantage of this is when clients are behind a
+firewall (restricted ports), or are using NAT (no real address). However in
+case of NAT I think if we have the client set up the connection it still
+should work. I can see the following protocol:
+  Sender -&gt; Receiver [iq file transfer request, IP-address, port, filename,
+filesize]
+  Receiver -&gt; Sender  [iq no thank you] protocol ends (allows sender to free
+up port etc)
+or
+  Receiver -&gt; Sender &lt;connect to ip:port retrieve file&gt; protocol ends.
+This will allow the receiver to keep their IP address hidden (NAT) and will
+let the receiver decide whether they want to download the file.
+
+The second option would be to use an additional server. The advantage of
+this is that a user can upload the file to the dedicated server once and
+have multiple people download the file. Disadvantage is that a specialized
+server is required, with usernames and passwords. But there are already this
+type of services available, on the other hand people can just place the file
+in their personal webpace and send the URL. Advantage is the same as before,
+no burden on the server, and both sender and receiver ip address stay
+hidden.. I can see the following (very simple) protocol.
+  Sender -&gt; Receiver [iq file transfer request, URL]
+  Receiver receives file from URL (by potentially passing the URL to a
+browser)
+This is the easiest protocol to implement, but the sender has to trust the
+inbetween agent.
+
+The final option is for users to use the server as an intermediary. The
+advantage of this is that we can use the existing infrastructure and if
+people can connect to the server they can transfer the files. Disadvantage
+(and this can be major, this why this should be a last possibility) that the
+server will be in the middle of the file transfer and will have to handle
+all messages. I can see the following protocol
+  Sender -&gt; Receiver [iq file transfer request, &lt;cookie&gt;, filename,
+filesize]
+  Receiver -&gt; Sender [iq request file chunk, &lt;cookie&gt; | filename, chucksize,
+&lt;last ID received&gt;] (
+  Sender -&gt; Receiver [iq file chuck, &lt;cookie&gt; | filename, chucksize, ID]
+(repeat untill file is received)
+This allows the receiver to control how fast it receives the data. If the
+receiver requests more data than the sender is willing to send in one chunk
+it can send a smaller chunk.
+
+Best would be if we have some sort of global process. So maybe a total
+protocol would be something like
+S --&gt; R : &lt;iq file-transfer-request, cookie, filename, size&gt;
+R --&gt; S : &lt;iq file-transfer-request, cookie, &quot;No Thanks&quot;&gt; END
+R --&gt; S : &lt;iq file-transfer-request, cookie, &quot;Yes Please&quot;, list of transport
+mechanism in order[P2P, URL, IB]&gt;
+and then depending on what the server wants and what the client can do, jump
+to the right protocol as listed above.
+
+Interesting becomes when we start to add gateways to other IM's to the whole
+problem. Now the gateway will pretend to be the sender. In the case of the
+transfer protocol with the other IM is not a P2P connection, or requires
+some additional data to be send before the connection is established the
+gateway will need to become a sender and receiver (receiving the file from
+the other IM and sending it to the jabber user). YUCK
+
+Anyhow, hope I did not miss anything and this helps a  little,
+
+Rob
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="065905.html">[JDEV] File transfer and Jabber
+</A></li>
+	<LI>Next message: <A HREF="065883.html">[JDEV] server problems and solutions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65971">[ date ]</a>
+              <a href="thread.html#65971">[ thread ]</a>
+              <a href="subject.html#65971">[ subject ]</a>
+              <a href="author.html#65971">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

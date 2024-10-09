@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Security in XMPP/Jabber: some questions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Security%20in%20XMPP/Jabber%3A%20some%20questions&In-Reply-To=%3C3ECC34EA.7090400%40akuma.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="045759.html">
+   <LINK REL="Next"  HREF="045761.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Security in XMPP/Jabber: some questions</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Security%20in%20XMPP/Jabber%3A%20some%20questions&In-Reply-To=%3C3ECC34EA.7090400%40akuma.org%3E"
+       TITLE="[JDEV] Security in XMPP/Jabber: some questions">mass at akuma.org
+       </A><BR>
+    <I>Wed May 21 21:24:42 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="045759.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+        <LI>Next message: <A HREF="045761.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45760">[ date ]</a>
+              <a href="thread.html#45760">[ thread ]</a>
+              <a href="subject.html#45760">[ subject ]</a>
+              <a href="author.html#45760">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Mattias Campe wrote:
+
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> yesterday, I did a presentation of Jabber at my university (actually 
+</I>&gt;<i> it was a presentation for my RSS headlines jabber component) and they 
+</I>&gt;<i> asked me how secure Jabber was. Unfortunately I couldn't answer that 
+</I>&gt;<i> question very good. As I still need to give in my r&#233;sum&#233;, I would like 
+</I>&gt;<i> to have some more information on this one.
+</I>&gt;<i>
+</I>&gt;<i> First, I've done some more research myself, but I still have some 
+</I>&gt;<i> questions. From DJ Adams book, I know that there are 3 methodes to 
+</I>&gt;<i> authenticate, namely plaintext, digest and zero knowledge. Is it 
+</I>&gt;<i> correct that most clients use digest by default? 
+</I>
+Currently, althought the XMPP working group has put effort into also 
+using SASL.
+
+&gt;<i> Then there is SSL (Secure Socket Layer?) that you can use to encrypt 
+</I>&gt;<i> the whole stream, am I correct? Still, I don't see that clients use 
+</I>&gt;<i> this by default. What is the reason for this? I've read somewhere that 
+</I>&gt;<i> it could  be that this causes problems on some proxy servers, is this 
+</I>&gt;<i> true? And does SSL provide end-to-end security or only 
+</I>&gt;<i> client-to-my-own-server security? 
+</I>
+SSL is expensive, and there isn't always an easy way to support it for a 
+particular client implementation. Also, SSL only secures a segment of 
+the transport, it is not end-to-end and thus there are no security 
+guarantees either that the traffic will or will not traverse the network 
+at some point in clear text, and also no way to verify the identities of 
+all the other intermediate routes so that you can decide if you want to 
+trust them.
+
+&gt;<i> Other two known ones are PGP and GnuPG, what's the difference between 
+</I>&gt;<i> those two? Is a client supporting PGP compatible with one supporting 
+</I>&gt;<i> GnuPG? How does this actually work? Is it encrypted at the client 
+</I>&gt;<i> side, decrypted at the server side, to know the to address and then 
+</I>&gt;<i> encrypted again to send it to the &quot;other side&quot;? What if the other side 
+</I>&gt;<i> doesn't know about PGP, how those this side knows about that lack of 
+</I>&gt;<i> feature? 
+</I>
+OpenPGP is what GPG supports, and there is existing end-to-end 
+encryption based on this. You do not have protection outside of the 
+payload, and this sort of asymmetric encryption (with public and private 
+keys) is much more computationally expensive in terms of bandwidth usage 
+processor usage - but at least the processing is done on the ends of the 
+network rather than the intermediate routes.
+
+Normally OpenPGP support is indicated by signing the presence status. 
+The actual signed data is meaningless (it would be simple to forge by 
+just sending a previous signed block), but you can get the key id used 
+to sign the data from the signature block, and use this to retrieve the 
+key and start using it based on the level of trust in it.
+
+&gt;<i> I read in &quot;The Instant Messaging Standards Race: Comparing XMPP/Jabber 
+</I>&gt;<i> and SIP/SIMPLe&quot; from Jabber Inc. sth. about SASL (Simple 
+</I>&gt;<i> Authentication and Security Layer) and TLS (Transport Layer Security). 
+</I>&gt;<i> What is the principle of those two? 
+</I>
+
+TLS is basically the standardized SSL. SASL is the IETF authentication 
+standard. The main point of SASL is that it provides a framework for 
+adding new authentication mechanisms, but also saves all the effort of 
+designing an authentication system and verifying the authentication 
+system is secure - you can just use an off-the-shelf library.
+
+&gt;<i> What is meant by &quot;end-to-end&quot; vs &quot;hop-to-hop&quot; encryption, that with 
+</I>&gt;<i> the first one even the server can't read what is in the message? But 
+</I>&gt;<i> how do they know then where to send the message? 
+</I>
+end to end means that only the sender and recipient require knowledge of 
+how to decrypt the message; hop-to-hop means the transport is secure, 
+but the intermediate parties (the servers) can see the contents. PGP is 
+used for end-to-end, while SSL/TLS is hop-to-hop.
+
+I've always thought of the SSL choice being one that the administrator 
+makes, not one that the user makes. If you can connect to a server with 
+both a straight connection and with SSL, there is little reason to 
+connect _with_ SSL, because the administrator already has made the 
+policy decision that information is allowed to travel across the network 
+in the clear. SSL just uses more processing power, memory, and bandwidth 
+in this case. Just my opinion, though :-)
+
+&gt;<i> Will jabberd2 support more security than the current jabberd server? 
+</I>
+It already does. :-)
+
+-David Waite
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="045759.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+	<LI>Next message: <A HREF="045761.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45760">[ date ]</a>
+              <a href="thread.html#45760">[ thread ]</a>
+              <a href="subject.html#45760">[ subject ]</a>
+              <a href="author.html#45760">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

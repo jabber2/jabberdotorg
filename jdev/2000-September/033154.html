@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] core dump with 1.0.1 on redhat 6.2.. debug dump
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20core%20dump%20with%201.0.1%20on%20redhat%206.2..%20debug%20dump&In-Reply-To=%3CPine.BSF.4.20.0009060916390.16618-100000%40eng.cybersites.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="033151.html">
+   <LINK REL="Next"  HREF="033152.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] core dump with 1.0.1 on redhat 6.2.. debug dump</H1>
+    <B>Benjamin Kahn</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20core%20dump%20with%201.0.1%20on%20redhat%206.2..%20debug%20dump&In-Reply-To=%3CPine.BSF.4.20.0009060916390.16618-100000%40eng.cybersites.com%3E"
+       TITLE="[JDEV] core dump with 1.0.1 on redhat 6.2.. debug dump">xkahn at cybersites.com
+       </A><BR>
+    <I>Wed Sep  6 08:18:30 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="033151.html">[JDEV] core dump with 1.0.1 on redhat 6.2.. debug dump
+</A></li>
+        <LI>Next message: <A HREF="033152.html">[JDEV] Net::Jabber and envelopes
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33154">[ date ]</a>
+              <a href="thread.html#33154">[ thread ]</a>
+              <a href="subject.html#33154">[ subject ]</a>
+              <a href="author.html#33154">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>	Try upping the value of your per-thread stack size...  The line is
+in libetherex/src/log.c near the top and looks like this:
+
+unsigned int etherx_stack_default = 16*1024;
+
+	Try changing it to this:
+
+unsigned int etherx_stack_default = 64*1024;
+
+	And reinstall libetherex and try jserver.  I was playing around
+with a lot of add-on modules, and so I needed a lot of stack size, but my
+error was the same as what you are getting.
+
+On Tue, 5 Sep 2000, Cheng-Wei Cheng wrote:
+
+&gt;<i> Date: Tue, 5 Sep 2000 20:04:20 -0700 
+</I>&gt;<i> From: Cheng-Wei Cheng &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">CCheng at gluecode.com</A>&gt;
+</I>&gt;<i> Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> To: &quot;'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> Subject: RE: [JDEV] core dump with 1.0.1 on redhat 6.2.. debug dump
+</I>&gt;<i> 
+</I>&gt;<i> it still died around the same place
+</I>&gt;<i> .. but the .so message disappeared
+</I>&gt;<i> 
+</I>&gt;<i> [<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at epoxy</A> bin]# ./jserver -D
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/config.c:112 config query log/error
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/log.c:70 log_init
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  warn/jserver Initializing Services
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/unknown.c:39 THREAD:UNKNOWN starting
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:43 mapi_master 1
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/offline.c:44 THREAD:OFFLINE starting
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:43 mapi_master 2
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/server.c:40 THREAD:SERVER starting
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:43 mapi_master 3
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/users.c:93 THREAD:USERS starting
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/config.c:150 name 4 for (null)
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/config.c:112 config query names/default
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/config.c:112 config query names
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/config.c:150 name 0 for
+</I>&gt;<i> epoxy.hq.gluecode.com
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/config.c:150 name 3 for
+</I>&gt;<i> epoxy.hq.gluecode.com
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/config.c:112 config query listen
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/tlisten.c:32 tlisten_start: (null)
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/services.c:176 listening on (null):5222
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/svc_hell.c:193 svc_hell: init()
+</I>&gt;<i> 
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/svc_irc.c:260 svc_irc startup
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/config.c:112 config query listen
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  error/jserver Failed to listen for service irc
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/svc_telnet.c:243 svc_telnet startup
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/config.c:112 config query listen
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  error/jserver Failed to listen for service telnet
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:83 mapi_register 3
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:43 mapi_master 3
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:83 mapi_register 3
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:43 mapi_master 3
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:83 mapi_register 3
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:43 mapi_master 3
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:83 mapi_register 3
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:43 mapi_master 3
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/mod_filter.c:442 FILTER init
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:83 mapi_register 4
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:43 mapi_master 4
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:83 mapi_register 2
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:43 mapi_master 2
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:83 mapi_register 0
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:43 mapi_master 0
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/svc_irc.c:260 svc_irc startup
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/config.c:112 config query listen
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  error/jserver Failed to listen for service irc
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/svc_telnet.c:243 svc_telnet startup
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/config.c:112 config query listen
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  error/jserver Failed to listen for service telnet
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/svc_client.c:293 svc_client: init()
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/svc_hell.c:193 svc_hell: init()
+</I>&gt;<i> 
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/mod_dso.c:82 mod_dso
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/config.c:112 config query dso
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/mod_dso.c:43 mod_dso_load
+</I>&gt;<i> /usr/local/jabber/lib/jabber/mod_time.so
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:83 mapi_register 3
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:43 mapi_master 3
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/mod_dso.c:43 mod_dso_load
+</I>&gt;<i> /usr/local/jabber/lib/jabber/mod_version.so
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:83 mapi_register 3
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:43 mapi_master 3
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/mod_dso.c:43 mod_dso_load
+</I>&gt;<i> /usr/local/jabber/lib/jabber/mod_echo.so
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  error/jserver mod_dso loading
+</I>&gt;<i> /usr/local/jabber/lib/jabber/mod_echo.so failed:
+</I>&gt;<i> /usr/local/jabber/lib/jabber/mod_echo.so: cannot open shared object file: No
+</I>&gt;<i> such file or directory
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/main.c:100 Main loop waiting
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/tlisten.c:87 tlisten_main: startup
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/config.c:112 config query names/default
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/svc_hell.c:57 releasing demon 0
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:43 mapi_master 2
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/services.c:121 registration request
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/modules.c:192 mapi_call 2
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/sessions.c:202 session_create
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/users.c:150 js_user(d0)
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/users.c:162 js_user not current
+</I>&gt;<i> Tue Sep  5 19:57:16 2000  debug/xdb.c:121 GET jabber:iq:auth
+</I>&gt;<i> Segmentation fault (core dumped)
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+						-Ben
+
+------------------------------------ |\      _,,,--,,_  ,) ----------
+Benjamin Kahn                        /,`.-'`'   -,  ;-;;'
+(212) 924 - 2220 ext 201            |,4-  ) )-,_ ) /\
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ben at cybersites.com</A> --------------- '---''(_/--' (_/-' ---------------
+   I just want to make the world a better place for me to live in.
+			-Lucy in a Peanuts comic
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="033151.html">[JDEV] core dump with 1.0.1 on redhat 6.2.. debug dump
+</A></li>
+	<LI>Next message: <A HREF="033152.html">[JDEV] Net::Jabber and envelopes
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33154">[ date ]</a>
+              <a href="thread.html#33154">[ thread ]</a>
+              <a href="subject.html#33154">[ subject ]</a>
+              <a href="author.html#33154">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

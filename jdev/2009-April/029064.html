@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] SASL (again)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20SASL%20%28again%29&In-Reply-To=A790BE8D83ECC3469047C2E344EABE61027CE3C683B4%40zamail01.k2workflow.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="029063.html">
+   <LINK REL="Next"  HREF="029072.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] SASL (again)</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20SASL%20%28again%29&In-Reply-To=A790BE8D83ECC3469047C2E344EABE61027CE3C683B4%40zamail01.k2workflow.com"
+       TITLE="[jdev] SASL (again)">dave at cridland.net
+       </A><BR>
+    <I>Wed Apr 15 09:57:53 CDT 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="029063.html">[jdev] SASL (again)
+</A></li>
+        <LI>Next message: <A HREF="029072.html">[jdev] xmppony 0.1 is released!
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29064">[ date ]</a>
+              <a href="thread.html#29064">[ thread ]</a>
+              <a href="subject.html#29064">[ subject ]</a>
+              <a href="author.html#29064">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed Apr 15 13:52:13 2009, Jonathan Dickinson wrote:
+&gt;<i> Hi All,
+</I>&gt;<i> 
+</I>&gt;<i> RFC 4616 implies that it is possible to store a digest for CRAM-MD5  
+</I>&gt;<i> in the database (just above 3. Pseudo-Code). From what I can tell  
+</I>&gt;<i> you need to store a plain-text password (at best the XORed  
+</I>&gt;<i> passwords, which is pointless).
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>In all practical senses, yes, but it's possible to store a  
+digest-like entity.
+
+&gt;<i> A CRAM digest is created as follows:
+</I>&gt;<i> 
+</I>&gt;<i> MD5(
+</I>&gt;<i>    (K XOR opad),
+</I>&gt;<i>    MD5(
+</I>&gt;<i>       (K XOR ipad),
+</I>&gt;<i>       timestamp
+</I>&gt;<i>       )
+</I>&gt;<i>    )
+</I>
+Where, in turn, K is derived from, in C-like pseudocode:
+
+K = (strlen(password) &gt; L) ? MD5(password) : password + ('\0' * (L -  
+strlen(password)))
+Where L is the block length of the hash algorithm, or 128 bits in the  
+case of MD5.
+
+So K might be reasonable stuff, or it might be the password.
+
+But that's not what CRAM-MD5 suggests storing - they suggest storing  
+the intemediate hash states - effectively an MD5 internal array pair  
+pre-primed with (K ^ opad) and (K ^ ipad). This is considerably more  
+secure than &quot;just a XOR&quot;, as K is at least one block-size, and  
+therefore it's roughly the same, I think, as an MD5 to extract the  
+password, which is to say it requires a brute-force attack, made  
+harder because the combination of the two hashes means that you need  
+to find a solution to both.
+
+Still, in general, you just call an HMAC-MD5 function in some  
+library, and, in rare cases, you write the HMAC wrapper over a stock  
+MD5 - either way, the best you have is the XOR products, which aren't  
+nearly as good unless your users really like long passwords.
+
+Moreover, by doing this, you're forced into storing a seperate secret  
+for DIGEST-MD5, so in most cases, server implementors have two modes  
+- storing plaintext passwords, for flexiblility in mechanisms, and  
+storing hashed passwords, which essentially restricts to PLAIN and -  
+hopefully soon - SCRAM.
+
+Dave.
+-- 
+Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at dave.cridland.net</A>
+  - <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+  - <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+</PRE>
+
+
+
+
+
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="029063.html">[jdev] SASL (again)
+</A></li>
+	<LI>Next message: <A HREF="029072.html">[jdev] xmppony 0.1 is released!
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29064">[ date ]</a>
+              <a href="thread.html#29064">[ thread ]</a>
+              <a href="subject.html#29064">[ subject ]</a>
+              <a href="author.html#29064">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

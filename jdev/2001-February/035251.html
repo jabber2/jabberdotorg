@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Secure instant messaging.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Secure%20instant%20messaging.&In-Reply-To=%3C1698040.981140936461.JavaMail.buckrogers1965%40gomailjtp06%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="035252.html">
+   <LINK REL="Next"  HREF="035257.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Secure instant messaging.</H1>
+    <B>james rogers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Secure%20instant%20messaging.&In-Reply-To=%3C1698040.981140936461.JavaMail.buckrogers1965%40gomailjtp06%3E"
+       TITLE="[JDEV] Secure instant messaging.">buckrogers1965 at go.com
+       </A><BR>
+    <I>Fri Feb  2 13:08:56 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="035252.html">[JDEV] Server problems 1.2 &amp; 1.4
+</A></li>
+        <LI>Next message: <A HREF="035257.html">[JDEV] Secure instant messaging.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35251">[ date ]</a>
+              <a href="thread.html#35251">[ thread ]</a>
+              <a href="subject.html#35251">[ subject ]</a>
+              <a href="author.html#35251">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>What the world needs is a secure method to send messages between clients.  The method must be secure, fast and easy to manage.  All encryption and decryption must be done on the clients because of the processing power available on that end.  The server should never see any message contents.  A method of adapting jabber to these requirements is as follows.
+
+First of all, when you register as a user the client will generate a public and private key and encrypt your private key with a passphrase.  The public and private key is stored in your xdb database entry.  
+
+When the client authenticates you will request your public and private key entries from the server with an &lt;iq&gt; request, same as you request the agent list and roster currently.  Once the client has the private key it requests your passphrase and decodes the private key.
+
+When you subscribe to anyone you will also send your public key information to the other client.  When they accept your subscription they will send their public key to you.
+
+After this, when you send a message to anyone on your roster you will sign everything that would be inside the body of the message with your private key to confirm that the message could have only come from you.  Then you will encrypt the body of the message with the public key of the person who you are sending the message to.  Finally you will uuencode the message, place the message between the &lt;body&gt;&lt;/body&gt; tags and send it to the jabber server same as always.
+
+The jabber server will perform the same operations on the message that it always does on the rest of the message, only the body of the message is encrypted so that the contents cannot be seen.
+
+Finally the recipient of the message will receive the message and will first uudecode the message body, unencrypt the message with their private key and confirm the message with the senders public key.
+
+I would say that if a particular account is compromised, that it would be best to mark the account as unusable and create a new account, because the public and private key is really the only way to confirm that someone is really who they say they are.
+
+----
+
+The only real change to the server is the additional security messages to retrieve the private key, the addition of a public key field to the roster information and the exchange of public keys during subscription.
+
+The changes to the client are more extensive, since it must initially generate a public and passphrase encrypted private key and send this as an additional registration request.  After authentication the client must then request the public and encrypted keys from the server and prompt the user for that users passphrase in order to successfully decrypt the private key.
+
+The client must also digitally sign with its own private key, encrypt with the recipients public key and uuencode the body of all messages.
+
+Any received messages would need the body uudecoded, decrypted with the private key and finally checked against the senders public key to confirm that the message came from them.  
+
+--
+
+I believe that having a secure method of sending and receiving messages that is totally invisible to the users would be a huge selling point for end users.  Users need never even bother with keys, the system will handle everything automatically.
+
+While encrypting the entire connection will hide the routing information contained in messages, it will not hide the message contents from prying eyes on the server or in the offline message store.  This might be used on systems that need the addition security of hiding every byte of data behind an iron wall.  And I believe that this is used in the jabber 1.4 server as well.  But it doesn't actually confirm messages are from who they say they are from, and it doesn't hide the message bodies from the people running the server.
+
+If there is interest in this method it might be worthwhile to modify the jabberd server and an existing client to perform the extra key handling to give this method a try.  
+
+Of course, this will only work if you aren't using a transport for another im service, as they probably won't like getting secure messages. :)
+
+Thanks for listening to me.  I welcome any and all input.
+
+
+___________________________________________________
+GO.com Mail                                    
+Get Your Free, Private E-mail at <A HREF="http://mail.go.com">http://mail.go.com</A>
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="035252.html">[JDEV] Server problems 1.2 &amp; 1.4
+</A></li>
+	<LI>Next message: <A HREF="035257.html">[JDEV] Secure instant messaging.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35251">[ date ]</a>
+              <a href="thread.html#35251">[ thread ]</a>
+              <a href="subject.html#35251">[ subject ]</a>
+              <a href="author.html#35251">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

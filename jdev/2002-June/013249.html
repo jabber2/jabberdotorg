@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabber:x:expire question
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20jabber%3Ax%3Aexpire%20question&In-Reply-To=u4rfn208s.fsf%40tenovis.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="013248.html">
+   <LINK REL="Next"  HREF="013256.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabber:x:expire question</H1>
+    <B>DJ Adams</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20jabber%3Ax%3Aexpire%20question&In-Reply-To=u4rfn208s.fsf%40tenovis.com"
+       TITLE="[JDEV] jabber:x:expire question">dj.adams at pobox.com
+       </A><BR>
+    <I>Fri Jun 28 06:14:17 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="013248.html">[JDEV] jabber:x:expire question
+</A></li>
+        <LI>Next message: <A HREF="013256.html">[JDEV] scalability 
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13249">[ date ]</a>
+              <a href="thread.html#13249">[ thread ]</a>
+              <a href="subject.html#13249">[ subject ]</a>
+              <a href="author.html#13249">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Fri, Jun 28, 2002 at 11:58:27AM +0200, Andreas Ames wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> having read the relevant parts of DJ Adams' very useful book, I've
+</I>&gt;<i> been wondering whether it's possible for the *sender* to prohibit
+</I>&gt;<i> delivery of offline stored messages through the use of
+</I>&gt;<i> 
+</I>&gt;<i> &lt;message ...&gt;
+</I>&gt;<i>         ...
+</I>&gt;<i>         &lt;x xmlns='jabber:x:expire' seconds='0'/&gt;
+</I>&gt;<i> &lt;/message&gt;.
+</I>&gt;<i> 
+</I>&gt;<i> Is my assumption correct?
+</I>
+Yup. If you look at the code in jsm/modules/mod_offline.c, you'll see a
+simple calculation:
+
+expire = j_atoi(xmlnode_get_attrib(x,&quot;seconds&quot;),0);                             stored = j_atoi(xmlnode_get_attrib(x,&quot;stored&quot;),now);
+diff = now - stored;
+if(diff &gt;= expire)
+{
+    log_debug(ZONE,&quot;dropping expired message %s&quot;,xmlnode2str(cur));
+    xmlnode_hide(cur);
+    continue;
+}
+  
+So in this case, the JSM will drop the message rather than deliver
+it when the recipient comes online.
+
+dj
+&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> cheers,
+</I>&gt;<i> 
+</I>&gt;<i> Andreas
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="013248.html">[JDEV] jabber:x:expire question
+</A></li>
+	<LI>Next message: <A HREF="013256.html">[JDEV] scalability 
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13249">[ date ]</a>
+              <a href="thread.html#13249">[ thread ]</a>
+              <a href="subject.html#13249">[ subject ]</a>
+              <a href="author.html#13249">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

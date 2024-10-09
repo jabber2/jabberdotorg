@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Release Candidate 1 of jabberd14 1.6.0 is available
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Release%20Candidate%201%20of%20jabberd14%201.6.0%20is%20available&In-Reply-To=%3C457C904E.2060306%40tthias.eu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="084251.html">
+   <LINK REL="Next"  HREF="084253.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Release Candidate 1 of jabberd14 1.6.0 is available</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Release%20Candidate%201%20of%20jabberd14%201.6.0%20is%20available&In-Reply-To=%3C457C904E.2060306%40tthias.eu%3E"
+       TITLE="[jdev] Release Candidate 1 of jabberd14 1.6.0 is available">m at tthias.eu
+       </A><BR>
+    <I>Sun Dec 10 16:55:10 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="084251.html">[jdev] AIM and Yahoo now open?
+</A></li>
+        <LI>Next message: <A HREF="084253.html">[jdev] libjingle
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#84252">[ date ]</a>
+              <a href="thread.html#84252">[ thread ]</a>
+              <a href="subject.html#84252">[ subject ]</a>
+              <a href="author.html#84252">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I want to announce, that I just made available the first release
+candidate of jabberd14 version 1.6.0.
+
+The software is available for download at
+<A HREF="http://download.jabberd.org/jabberd14/">http://download.jabberd.org/jabberd14/</A>
+
+New features and changes visible to the user
+    * Support for Privacy Lists (RFC3921 and XEP-0016)
+    * jabberd14 can localize the messages it sends to users to different
+      languages
+    * SASL authentication is possible if jabberd14 is used together with
+      jadc2s (at least the following mechanisms should be supported:
+      CRAM-MD5, PLAIN, GSSAPI, DIGEST-MD5, NTLM, SRP, OTP, KERBEROS_V4)
+    * Support for Flexible Offline Message Retrieval (XEP-0013)
+    * Support for XMPP Ping (XEP-0199)
+    * jabberd14 now handles XML namespaces
+    * jabberd14 now handles xml:lang attributes defined on the stream
+      root element, declaring the default language of the stream. If a
+      stanza does not redeclare the language, this language is passed
+      along with the stanza.
+    * The full stanza that requests subscription to a user is passed
+      to this user, even if it has been stored offline. In addition the
+      request is stamped if the time of the request, if it is delivered
+      from offline storage.
+    * FIX: Handling of presences with negative priority had bugs, e.g.
+      messages were not delivered when changing from negative to
+      non-negative priority.
+
+Changes in administration of the server
+    * Easier integration of jabberd14 into web projects, by having
+      additional data available in the database (e.g. presence
+      information can now be read by a web page with a single SQL SELECT
+      statement)
+    * New base handler base_dir that can periodically check a directory
+      for *.stanza files. These files are read, parsed, the content is
+      processed as a stanza, and the file is deleted afterwards. This
+      can be useful to inject messages and other stanzas to the server.
+      Stanzas sent to the handler are written as files using the *.out
+      extension. The directories for reading and writing are configured
+      using the &lt;in/&gt; and &lt;out/&gt; elements inside the &lt;dir/&gt; element.
+    * jabberd14 does not cache passwords in the session manager anymore,
+      you can now just update passwords in SQL and they are used
+      instantly. You can also just insert a password in your SQL
+      database to create a new account for a user.
+    * It is possible to block account names from being registered and
+      to enforce minimum and maximum lengths of the username on
+      registration of new accounts
+    * After an account has been deleted by the user, the JabberID is
+      blocked against reregistrations for half a year.
+    * jabberd14 can now easily migrate from old filespools (xdb_file) to
+      newer storage handlers by reconfiguring the server and then
+      importing the old data (-I command line option)
+    * The session manager of jabberd14 can no be restarted without users
+      sessions being dropped. This allows reconfiguring of the session
+      manager while it is serving users.
+    * Jabberd14 now understands the protocol between c2s and session
+      manager components of jabberd2. This allows development and usage
+      of c2s components for both server implementations.
+    * Settings in the dialback component configuration for disabling
+      xmpp streams or disabling tls now also affect subdomains of the
+      configured host. It is now also possible to require s2s
+      connections to some or all other hosts to be encrypted.
+    * Jabberd14 now supports SASL EXTERNAL authentication using TLS
+      certificates on s2s links.
+    * xdb_sql can be configured to execute an SQL query just after a
+      connection to the database server has been established or
+      reestablished.
+      This is useful for example if you are using MySQL 4.1+ and want to
+      set your used charset (&quot;SET NAMES utf8&quot;).
+    * jabberd14 now uses libpopt for command line parsing.
+    * jabberd14 now detects stale pidfiles, and ignores them.
+    * The list of online users has to be fetched using service discovery
+      instead of browsing now.
+    * Removed support for the jabber:iq:admin namespace.
+    * Disabled support for the jabber:iq:agent and jabber:iq:agents in
+      the default configuration file.
+    * Removed support for the jabber:iq:filter namespace (which had
+      already been disabled in the default configuration of jabberd14
+      1.4.4).
+    * Removed the mod_groups module.
+    * jabberd14 automatically generates the list of supported features
+      for a reply to a service discovery request. There is no need
+      anymore to configure a disco result in the configuration file.
+
+md5sum:
+3dc614f3732f90990b2089bf7bd06938  jabberd14-1.6.0-RC1.tar.gz
+
+sha1sum:
+d32cecc34a90a7bcaf8b11bc33ef6e68c5d47fb0  jabberd14-1.6.0-RC1.tar.gz
+
+-- 
+Matthias Wimmer      Fon +49-700 77 00 77 70
+Z&#252;richer Str. 243    Fax +49-89 95 89 91 56
+81476 M&#252;nchen        <A HREF="http://ma.tthias.eu/">http://ma.tthias.eu/</A>
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 4263 bytes
+Desc: S/MIME Cryptographic Signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20061210/f0a897ff/attachment-0002.bin">https://www.jabber.org/jdev/attachments/20061210/f0a897ff/attachment-0002.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="084251.html">[jdev] AIM and Yahoo now open?
+</A></li>
+	<LI>Next message: <A HREF="084253.html">[jdev] libjingle
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#84252">[ date ]</a>
+              <a href="thread.html#84252">[ thread ]</a>
+              <a href="subject.html#84252">[ subject ]</a>
+              <a href="author.html#84252">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

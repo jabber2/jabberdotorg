@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] GSSAPI and service hostname
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20GSSAPI%20and%20service%20hostname&In-Reply-To=%3CE8C194DC-6261-461D-9524-94BBE85A6253%40inf.ed.ac.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="087334.html">
+   <LINK REL="Next"  HREF="087336.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] GSSAPI and service hostname</H1>
+    <B>Simon Wilkinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20GSSAPI%20and%20service%20hostname&In-Reply-To=%3CE8C194DC-6261-461D-9524-94BBE85A6253%40inf.ed.ac.uk%3E"
+       TITLE="[jdev] GSSAPI and service hostname">sxw at inf.ed.ac.uk
+       </A><BR>
+    <I>Fri Jan 16 07:23:15 CST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="087334.html">[jdev] GSSAPI and service hostname
+</A></li>
+        <LI>Next message: <A HREF="087336.html">[jdev] XMPP Meetup in San Francisco
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87335">[ date ]</a>
+              <a href="thread.html#87335">[ thread ]</a>
+              <a href="subject.html#87335">[ subject ]</a>
+              <a href="author.html#87335">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+On 16 Jan 2009, at 13:02, Tomasz Sterna wrote:
+
+&gt;<i> Dnia 2009-01-15, czw o godzinie 17:21 +0100, Robin Redeker pisze:
+</I>&gt;&gt;<i> I've received a bugreport for my Perl module AnyEvent::XMPP recently,
+</I>&gt;&gt;<i> that says that I should not pass the domain of the JID as service  
+</I>&gt;&gt;<i> hostname
+</I>&gt;&gt;<i> to SASL (and later the GSSAPI mechanism).
+</I>&gt;<i>
+</I>&gt;<i> I think you should.
+</I>
+Not with GSSAPI, and not if you want to be compatible with anyone else.
+
+The GSSAPI SASL mechanism needs to know the service hostname so it can  
+talk construct a request for the correct service principal to the KDC.  
+It has to know a hostname, because that's the way that Kerberos has  
+traditionally worked - a service principal contains the name of the  
+host running the service, not of the domain that the service is being  
+run for. This has been discussed a number of times on the jdev list,  
+and within the Kerberos community, and those of us who have  
+implemented XMPP clients and servers supporting GSSAPI have come to  
+the consensus that this is the current correct behaviour.
+
+In the longer term, as I noted in a previous post, domain based names  
+are the way forwards. This is going to definitely require changes to  
+the common SASL APIs, and possibly to the SASL GSSAPI wire  
+specification (although 'GSSAPI' which we're all still using has  
+already been superceded by GS2)
+
+&gt;<i> It's server job to map the provided domain name to a specific  
+</I>&gt;<i> hostname.
+</I>&gt;<i> Just like it is server job to map the domain name to a realm, in  
+</I>&gt;<i> case of
+</I>&gt;<i> DIGEST-MD5.
+</I>
+The server can't do this in a way that's safe - bear in mind that with  
+Kerberos, it's the client side that needs to know who it's talking to  
+- it's not a case of mapping incoming connections into an  
+authentication realm (in the way that DIGEST-MD5 does). Allowing the  
+client to ask the server 'who are you today?' immediately opens the  
+way for MITM attacks, and defeats the whole point of using GSSAPI in  
+the first place.
+
+&gt;&gt;<i> I also wonder which server supports GSSAPI mechanims, so that I can
+</I>&gt;&gt;<i> test implementation.
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="http://jabberd2.xiaoka.com/">http://jabberd2.xiaoka.com/</A>
+</I>&gt;<i> Although its not tested much.
+</I>
+We're using a version of jabberd2 with Cyrus SASL to provide GSSAPI  
+support. It works well for us, and is what most of the client GSSAPI  
+support (Pidgin, Adium, etc) which I wrote was originally tested  
+against, but it's not what's currently being distributed. Openfire has  
+a GSSAPI implementation that libpurple's code has been tested against  
+that a number of big Kerberos users are using in production. I believe  
+there are also patches for Kerberos support in ejabberd, but I'm not  
+sure if they've been integrated, and I'm not aware of any  
+interoperability testing that has been done.
+
+Cheers,
+
+Simon.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="087334.html">[jdev] GSSAPI and service hostname
+</A></li>
+	<LI>Next message: <A HREF="087336.html">[jdev] XMPP Meetup in San Francisco
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87335">[ date ]</a>
+              <a href="thread.html#87335">[ thread ]</a>
+              <a href="subject.html#87335">[ subject ]</a>
+              <a href="author.html#87335">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

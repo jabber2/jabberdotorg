@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] SASL EXTERNAL for s2s in jabberd14
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20SASL%20EXTERNAL%20for%20s2s%20in%20jabberd14&In-Reply-To=436BC590.9090704%40tthias.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="023248.html">
+   <LINK REL="Next"  HREF="023249.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] SASL EXTERNAL for s2s in jabberd14</H1>
+    <B>Alexey Shchepin</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20SASL%20EXTERNAL%20for%20s2s%20in%20jabberd14&In-Reply-To=436BC590.9090704%40tthias.net"
+       TITLE="[jdev] SASL EXTERNAL for s2s in jabberd14">alexey at sevcom.net
+       </A><BR>
+    <I>Fri Nov  4 16:58:24 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="023248.html">[jdev] SASL EXTERNAL for s2s
+</A></li>
+        <LI>Next message: <A HREF="023249.html">[jdev] bytestreams and Psi
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23240">[ date ]</a>
+              <a href="thread.html#23240">[ thread ]</a>
+              <a href="subject.html#23240">[ subject ]</a>
+              <a href="author.html#23240">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello, Matthias!
+
+On Fri, 04 Nov 2005 21:33:20 +0100, you said:
+
+ MW&gt; Hi!  I have implemented SASL EXTERNAL on s2s connects in jabberd14 the
+ MW&gt; last days, and like to share some thoughts on this, as well as I'd like to
+ MW&gt; get thoughts of other developpers, that already implemented this.
+
+ MW&gt; - When do you offer SASL EXTERNAL on an incoming connection? I
+ MW&gt; implemented, that the s2s connection manager always checks the peers
+ MW&gt; certificate as soon as a TLS layer is established. Only if the certificate
+ MW&gt; could be validated (not expired, if the incoming stream had a from
+ MW&gt; attribute if this matches the certificate, signed by a trusted CA, ...) I
+ MW&gt; offer the peer to use SASL EXTERNAL. In all other cases I know that SASL
+ MW&gt; EXTERNAL would fail anyway so I do not have to offer it. Better for the
+ MW&gt; peer to try dialback.
+
+In latest SVN version of ejabberd, certificate on incoming S2S connection is
+checked right after receiving &quot;&lt;stream:stream&gt;&quot;, but without using &quot;from&quot;
+attribute.
+
+ MW&gt; - What do you do if you connected to an other server which offered you
+ MW&gt; SASL auth but the authentication failed? Do you retry the connection using
+ MW&gt; dialback or do you consider it as a final auth failure? Currently I do not
+ MW&gt; retry it using dialback but bounce the stanza back to the sender. I am
+ MW&gt; aware that this might be wrong and retrying the connection using dialback
+ MW&gt; could be better.
+
+ejabberd retries connection using starttls+dialback.
+
+ MW&gt; - I guess at least for now we have to handle certificates, that do not
+ MW&gt; contain the id-on-xmppAddr object as well and therefore have to support
+ MW&gt; domains as commonName as well. Right? In that case, it is known practice
+ MW&gt; in such certificates to have wildcards in domains,
+ MW&gt; e.g. &quot;*.example.com&quot;. Do you handle these? How do you handle these? I am
+ MW&gt; allowing this certificate for &quot;subdomain.example.com&quot;, but not for
+ MW&gt; &quot;example.com&quot;.
+
+I don't handle this case yet.
+
+ MW&gt; - If the certificate is for &quot;example.com&quot;, do you accept this certificate
+ MW&gt; to be used for &quot;service.example.com&quot; as well? Currently I don't. But I am
+ MW&gt; not sure if this is correct/intended by RFC3920.
+
+Same here.
+
+ MW&gt; - Do you support having a SASL authenticated link in one direction and a
+ MW&gt; dialback &quot;authenticated&quot; link in the other direction between two servers? 
+
+Yes.
+
+ MW&gt; Especially do you accept and process to receive db:verify requests on a
+ MW&gt; SASL link? Currently I do.
+
+Yes, ejabberd accepts it, but doesn't try to send db:verify in SASL links.
+
+ MW&gt; - Do you package a set of CA certificates with your server distribution? 
+ MW&gt; Which CAs should be trusted/included?
+
+No.
+
+ MW&gt; What servers out there support SASL EXTERNAL already and are available for
+ MW&gt; at least evaluation? I'd like to do some interoperability tests?
+
+e.jabber.ru, but it doesn't process id-on-xmppAddr.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 1930 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20051105/0be0e76e/attachment.bin">https://www.jabber.org/jdev/attachments/20051105/0be0e76e/attachment.bin</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="023248.html">[jdev] SASL EXTERNAL for s2s
+</A></li>
+	<LI>Next message: <A HREF="023249.html">[jdev] bytestreams and Psi
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23240">[ date ]</a>
+              <a href="thread.html#23240">[ thread ]</a>
+              <a href="subject.html#23240">[ subject ]</a>
+              <a href="author.html#23240">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

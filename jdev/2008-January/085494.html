@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Server suddenly closing &lt;stream:stream&gt; on	&lt;presence&gt;&lt;status/&gt;&lt;/presence&gt;. Why?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Server%20suddenly%20closing%20%3Cstream%3Astream%3E%20on%0A%09%3Cpresence%3E%3Cstatus/%3E%3C/presence%3E.%20Why%3F&In-Reply-To=%3Ce0be61630801171846s367cb67bjb23e9daba00bda34%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085493.html">
+   <LINK REL="Next"  HREF="085495.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Server suddenly closing &lt;stream:stream&gt; on	&lt;presence&gt;&lt;status/&gt;&lt;/presence&gt;. Why?</H1>
+    <B>Sean Gilbertson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Server%20suddenly%20closing%20%3Cstream%3Astream%3E%20on%0A%09%3Cpresence%3E%3Cstatus/%3E%3C/presence%3E.%20Why%3F&In-Reply-To=%3Ce0be61630801171846s367cb67bjb23e9daba00bda34%40mail.gmail.com%3E"
+       TITLE="[jdev] Server suddenly closing &lt;stream:stream&gt; on	&lt;presence&gt;&lt;status/&gt;&lt;/presence&gt;. Why?">sean.gilbertson at gmail.com
+       </A><BR>
+    <I>Thu Jan 17 20:46:07 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085493.html">[jdev] Server suddenly closing &lt;stream:stream&gt;	on	&lt;presence&gt;&lt;status/&gt;&lt;/presence&gt;. Why?
+</A></li>
+        <LI>Next message: <A HREF="085495.html">[jdev] Server suddenly closing &lt;stream:stream&gt; on	&lt;presence&gt;&lt;status/&gt;&lt;/presence&gt;. Why?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85494">[ date ]</a>
+              <a href="thread.html#85494">[ thread ]</a>
+              <a href="subject.html#85494">[ subject ]</a>
+              <a href="author.html#85494">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+Thank you for your responses and suggestions.
+
+I have some more information on this issue: I took out all the code
+that retrieves the contact list and sets the status (which would
+trigger availability information), and the server still closes the
+connection gracefully (i.e. by sending &lt;/stream:stream&gt;).  I even took
+out the library I was using to handle parsing the XML; I just read it
+in (in a buffered fashion), and spit it out.  So, it seems as though -
+on my phone at least (not in debug mode on my computer!) - as soon as
+I finish sending stanzas one after another, the server closes the
+connection.  What's up with that?
+
+Oh, and the server is Google Talk.  I'm using SSL.
+
+Here's what the server sends to me:
+
+&lt;stream:stream from=&quot;gmail.com&quot; id=&quot;2823903EEAA22D0D&quot;
+xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> xmlns=&quot;jabber:client&quot;&gt;
+  &lt;iq type=&quot;result&quot;&gt;
+    &lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+      &lt;username/&gt;
+      &lt;resource/&gt;
+      &lt;password/&gt;
+    &lt;/query&gt;
+  &lt;/iq&gt;
+  &lt;iq type=&quot;result&quot;/&gt;
+&lt;/stream:stream&gt;
+
+Thanks!
+Sean
+
+On Jan 13, 2008 3:38 PM, Tomasz Sterna &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tomek at xiaoka.com</A>&gt; wrote:
+&gt;<i> On So, 2008-01-12 at 20:22 -0600, Sean Gilbertson wrote:
+</I>&gt;<i> &gt; So here's my current problem: When I send a &lt;presence&gt;&lt;status&gt;My
+</I>&gt;<i> &gt; status here!&lt;/status&gt;&lt;/presence&gt; tag to the server, it immediately
+</I>&gt;<i> &gt; sends me a &lt;iq/&gt; and then, immediately following that, a
+</I>&gt;<i> &gt; &lt;/stream:stream&gt;, which closes the connection.  My input loop then
+</I>&gt;<i> &gt; closes, and the whole thing is kaput.
+</I>&gt;<i>
+</I>&gt;<i> It would be good to see the actual stream dump - what did you send, and
+</I>&gt;<i> what came in.
+</I>&gt;<i>
+</I>&gt;<i> Something like my client dumps on debug console:
+</I>&gt;<i>
+</I>&gt;<i> OUT:
+</I>&gt;<i> &lt;iq to='chrome.pl' type='get' id='iq731'&gt;
+</I>&gt;<i> &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'/">http://jabber.org/protocol/disco#info'/</A>&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i> IN:
+</I>&gt;<i> &lt;iq xmlns='jabber:client' id='iq731' from='chrome.pl'
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">smoku at chrome.pl</A>/VAIO' type='result'&gt;
+</I>&gt;<i> &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'">http://jabber.org/protocol/disco#info'</A>&gt;
+</I>&gt;<i> &lt;identity name='Chrome XMPP server' type='im' category='server'/&gt;
+</I>&gt;<i> &lt;feature var='jabber:iq:private'/&gt;
+</I>&gt;<i> &lt;feature var='presence'/&gt;
+</I>&gt;<i> &lt;feature var='jabber:iq:time'/&gt;
+</I>&gt;<i> &lt;feature var='urn:xmpp:ping'/&gt;
+</I>&gt;<i> &lt;feature var='<A HREF="http://jabber.org/protocol/vacation'/">http://jabber.org/protocol/vacation'/</A>&gt;
+</I>&gt;<i> &lt;feature var='urn:xmpp:time'/&gt;
+</I>&gt;<i> &lt;feature var='urn:xmpp:blocking'/&gt;
+</I>&gt;<i> &lt;feature var='vcard-temp'/&gt;
+</I>&gt;<i> &lt;feature var='jabber:iq:version'/&gt;
+</I>&gt;<i> &lt;feature var='message'/&gt;
+</I>&gt;<i> &lt;feature var='msgoffline'/&gt;
+</I>&gt;<i> &lt;feature var='jabber:iq:privacy'/&gt;
+</I>&gt;<i> &lt;feature var='<A HREF="http://jabber.org/protocol/amp'/">http://jabber.org/protocol/amp'/</A>&gt;
+</I>&gt;<i> &lt;feature var='jabber:iq:roster'/&gt;
+</I>&gt;<i> &lt;feature var='iq'/&gt;
+</I>&gt;<i> &lt;feature var='jabber:iq:last'/&gt;
+</I>&gt;<i> &lt;feature var='<A HREF="http://jabber.org/protocol/disco'/">http://jabber.org/protocol/disco'/</A>&gt;
+</I>&gt;<i> &lt;x xmlns='jabber:x:data' type='result'&gt;
+</I>&gt;<i> &lt;field type='hidden' var='FORM_TYPE'&gt;
+</I>&gt;<i> &lt;value&gt;<A HREF="http://jabber.org/network/serverinfo&lt;/value">http://jabber.org/network/serverinfo&lt;/value</A>&gt;
+</I>&gt;<i> &lt;/field&gt;
+</I>&gt;<i> &lt;field var='abuse-addresses'&gt;
+</I>&gt;<i> &lt;value&gt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">abuse at xiaoka.com</A>&lt;/value&gt;
+</I>&gt;<i> &lt;/field&gt;
+</I>&gt;<i> &lt;field var='admin-addresses'&gt;
+</I>&gt;<i> &lt;value&gt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">group at xiaoka.com</A>&lt;/value&gt;
+</I>&gt;<i> &lt;value&gt;xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">smoku at xiaoka.com</A>&lt;/value&gt;
+</I>&gt;<i> &lt;/field&gt;
+</I>&gt;<i> &lt;field var='sales-addresses'&gt;
+</I>&gt;<i> &lt;value&gt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">group at xiaoka.com</A>&lt;/value&gt;
+</I>&gt;<i> &lt;/field&gt;
+</I>&gt;<i> &lt;field var='support-addresses'&gt;
+</I>&gt;<i> &lt;value&gt;xmpp:chrome.pl&lt;/value&gt;
+</I>&gt;<i> &lt;/field&gt;
+</I>&gt;<i> &lt;/x&gt;
+</I>&gt;<i> &lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i>   /\_./o__ Tomasz Sterna
+</I>&gt;<i>  (/^/(_^^' &#65279;<A HREF="http://www.xiaoka.com/">http://www.xiaoka.com/</A>
+</I>&gt;<i> ._.(_.)_   im:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">smoku at xiaoka.com</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+
+-- 
+&quot;Courage in an untrained mind leads to cruelty, and in a trained mind
+it leads to hope and compassion.&quot; ~ P.J. Saher
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085493.html">[jdev] Server suddenly closing &lt;stream:stream&gt;	on	&lt;presence&gt;&lt;status/&gt;&lt;/presence&gt;. Why?
+</A></li>
+	<LI>Next message: <A HREF="085495.html">[jdev] Server suddenly closing &lt;stream:stream&gt; on	&lt;presence&gt;&lt;status/&gt;&lt;/presence&gt;. Why?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85494">[ date ]</a>
+              <a href="thread.html#85494">[ thread ]</a>
+              <a href="subject.html#85494">[ subject ]</a>
+              <a href="author.html#85494">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

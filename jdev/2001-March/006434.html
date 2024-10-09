@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] servers specifying from fields
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20servers%20specifying%20from%20fields&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006430.html">
+   <LINK REL="Next"  HREF="006435.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] servers specifying from fields</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20servers%20specifying%20from%20fields&In-Reply-To="
+       TITLE="[JDEV] servers specifying from fields">dwaite at jabber.com
+       </A><BR>
+    <I>Sun Mar  4 11:02:51 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006430.html">[JDEV] servers specifying from fields
+</A></li>
+        <LI>Next message: <A HREF="006435.html">[JDEV] Encrypted xml transfer, was servers specifying from fields
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6434">[ date ]</a>
+              <a href="thread.html#6434">[ thread ]</a>
+              <a href="subject.html#6434">[ subject ]</a>
+              <a href="author.html#6434">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Mathew A Johnston wrote:
+
+&gt;<i> I'm not sure if I understand the significance of, &quot;specifically for
+</I>&gt;<i> sending namespace fragments, and not for sending entire XML documents. In
+</I>&gt;<i> particular, specify whether you can send multiple namespace extensions
+</I>&gt;<i> through, and make sure people know they cannot do  things like insert a
+</I>&gt;<i> DTD or PI instructions (including &lt;?xml version=1.0?&gt;&quot;
+</I>&gt;<i>
+</I>&gt;<i> You mean whether they can send more than 1 &lt;x&gt; element within the
+</I>&gt;<i> encrypted block? Why is sending entire xml messages illegal?
+</I>&gt;<i>
+</I>
+'entire XML messages' is too vague for me to answer :-) You mean, why can't I sent
+ten encrypted &lt;message&gt; packets to someone? It isn't in your spec - it looks like the
+data that is decrypted has to be parsed, and is inserted in-place to replace a
+namespace extrension.
+
+An XML document also has only one 'root' element, so you can't just have ten messages
+or ten extensions, you would have to have some root tag in order to make the block
+'valid XML' in that case. Which is why it is important to make sure you decide
+whether or not to support it.
+
+&gt;<i>
+</I>&gt;<i> I think an error reporting method - ie &quot;I dont recognise this
+</I>&gt;<i> namespace&quot; would be a good thing. For the client to simply send back a
+</I>&gt;<i> message saying &quot;huh? i dont understand namespace xyz?&quot; is what I'm
+</I>&gt;<i> thinking. I'm thinking that there's already some support for this - i sort
+</I>&gt;<i> of recall hearing about this somewhere.
+</I>
+I don't think so. I haven't heard of it anywhere.
+
+&gt;<i>
+</I>&gt;<i> I think we need a better method of key exchange - maybe an ability to use
+</I>&gt;<i> a 3rd party certificate authority. Of course, this is all client
+</I>&gt;<i> dependant, and does not necessarily need to have anything to do with
+</I>&gt;<i> jabber it's self; but I do think that we need a standard. Like you said,
+</I>&gt;<i> if it's easy to forge online messages that include the user's public key
+</I>&gt;<i> (to later be used for encrypted messages sent to the user), its hard to
+</I>&gt;<i> trust that we're actually sending to who we want to. Different levels of
+</I>&gt;<i> key security should be offered:
+</I>&gt;<i>
+</I>&gt;<i>         low: dont ever use encrypted messages
+</I>&gt;<i>         medium low: accept whatever key user claims on presence
+</I>&gt;<i>         medium: warn on change from last known key
+</I>&gt;<i>         medium high: 3rd party certificate authority
+</I>&gt;<i>         high: manual key exchange
+</I>&gt;<i>
+</I>&gt;<i> My two main concerns with jabber security are the ability to send messages
+</I>&gt;<i> encrypted (of any sort) and the strength of key exchange between clients.
+</I>&gt;<i>
+</I>
+well, we don't really need to use PGP encryption at all. Email has to because they
+can't negotiate a session key; we can negotiate a key and use something like rjindel
+or 3des. Faster, less memory requirements on the client, debatably more secure
+encryption, and a signifiantly less amount of traffic.
+
+&gt;<i>
+</I>&gt;<i> I think that if we can secure key exchange, and offer a way to send &lt;x&gt;
+</I>&gt;<i> elements encrypted (since all extentions should use x elements right?) we
+</I>&gt;<i> can provide a way for developers to implement their own secure private
+</I>&gt;<i> namespaces in their clients, to fill their needs. Right now, unless they
+</I>&gt;<i> implement what we're talking about, people cant really write extentions
+</I>&gt;<i> that are nice and secure, which sucks.
+</I>
+Nah, &lt;x&gt; is just the root element of namespaces made by Jabber (there was a published
+DTD a while back with 'x' being in the jabber DTD, which is technically illegal and
+made things even more confusing. )
+
+The element is defined by the namespace , so for instance you are supposed to use:
+&lt;iq type='set'&gt;
+&lt;vCard xmlns='vcard-temp'&gt;....&lt;/vCard&gt;
+&lt;iq&gt;
+
+or
+
+&lt;message to='whoever'&gt;
+&lt;html xmlns=&quot;<A HREF="http://www.w3.org/1999/xhtml&quot;">http://www.w3.org/1999/xhtml&quot;</A>&gt;&lt;body&gt;&lt;i&gt;blah&lt;/i&gt;&lt;/body&gt;&lt;/html&gt;
+&lt;body&gt;blah&lt;/body&gt;
+&lt;/message&gt;
+
+-David Waite
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006430.html">[JDEV] servers specifying from fields
+</A></li>
+	<LI>Next message: <A HREF="006435.html">[JDEV] Encrypted xml transfer, was servers specifying from fields
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6434">[ date ]</a>
+              <a href="thread.html#6434">[ thread ]</a>
+              <a href="subject.html#6434">[ subject ]</a>
+              <a href="author.html#6434">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

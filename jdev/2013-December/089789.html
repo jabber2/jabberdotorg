@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] A rapidxml fork for XMPP
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20A%20rapidxml%20fork%20for%20XMPP&In-Reply-To=%3CCABt5oAsEZKV4KW6Ad6mNEvRo75%2ByBd3X%3DOD%3DFfA2_YY5qyaF1Q%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089790.html">
+   <LINK REL="Next"  HREF="089788.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] A rapidxml fork for XMPP</H1>
+    <B>mat henshall</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20A%20rapidxml%20fork%20for%20XMPP&In-Reply-To=%3CCABt5oAsEZKV4KW6Ad6mNEvRo75%2ByBd3X%3DOD%3DFfA2_YY5qyaF1Q%40mail.gmail.com%3E"
+       TITLE="[jdev] A rapidxml fork for XMPP">mat at squareconnect.com
+       </A><BR>
+    <I>Thu Dec  5 18:39:06 UTC 2013</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089790.html">[jdev] A rapidxml fork for XMPP
+</A></li>
+        <LI>Next message: <A HREF="089788.html">[jdev] A rapidxml fork for XMPP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89789">[ date ]</a>
+              <a href="thread.html#89789">[ thread ]</a>
+              <a href="subject.html#89789">[ subject ]</a>
+              <a href="author.html#89789">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, Dec 5, 2013 at 12:54 AM, Dave Cridland &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A>&gt; wrote:
+
+&gt;<i> On Thu, Dec 5, 2013 at 6:15 AM, mat henshall &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mat at squareconnect.com</A>&gt;wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> I do agree on the need for using optimized parsers (we have an xml parser
+</I>&gt;&gt;<i> that fits in a few hundred bytes of code and read only memory) that is
+</I>&gt;&gt;<i> extremely fast and efficient on small devices. BTW the trick to avoid the
+</I>&gt;&gt;<i> tag comparison is to convert the various tags and namespaces to hash values
+</I>&gt;&gt;<i> as they come in during parsing and then only compare on the hash value. We
+</I>&gt;&gt;<i> have a small utility that calculates the hash values and writes as a header
+</I>&gt;&gt;<i> file as part of the compile time all the possible namespaces and tag names
+</I>&gt;&gt;<i> that we are interested in. Extremely efficient in terms of both computation
+</I>&gt;&gt;<i> and memory space. Careful choice of the hash algorithm means very little
+</I>&gt;&gt;<i> chance of collision.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i> That's a neat idea - I was intending to add in attribute hashing in order
+</I>&gt;<i> to handle the well-formedness constraints (and also optimize attribute
+</I>&gt;<i> searches in general), but I'd not thought about compile-time precalculation
+</I>&gt;<i> of hashes, that's terribly clever, and an idea I'll shamelessly steal.
+</I>&gt;<i> FWIW, I was also going to build a simplistic single-hash Bloom on parse to
+</I>&gt;<i> elide some searches, too.
+</I>&gt;<i>
+</I>&gt;<i> Are you using any particular hash algorithm, or are you generating a
+</I>&gt;<i> perfect hash at buildtime too?
+</I>&gt;<i>
+</I>
+Can't get much simpler&#8230;.
+
+The utility for compile time simply takes a list of name/value pairs and
+calculates the hash on each string and then outputs as an enum structure.
+
+The utility checks for any collisions&#8230; never had one yet.
+
+At run time, the element names, attribute names and namespaces are all
+computed as each character is being parsed&#8230; In a constrained embedded
+environment, the saving of constant memory can be significant, as well as
+the need for much smaller buffers while parsing/processing.
+
+The use of a 32 bit hash value allows me to use 'switch' statements for the
+decision of what to do for a particular namespace etc. In some 32 bit
+environments using a switch is extremely efficient and results in much
+smaller code than the alternatives as well (e.g. table driven).
+
+
+*#define* MULTIPLIER 37
+
+
+uint32_t *sq_addToHash*( uint32_t hash, *unsigned* *char* c);
+
+
+uint32_t *sq_addToHash*( uint32_t hash, *unsigned* *char* c)
+
+{
+
+*return* MULTIPLIER *hash + c;
+
+}
+
+
+
+If you are interested, I'll check with my business partners and see if we
+can release the XML parser and hash utility as open source.
+
+
+
+-- 
+
+Mat Henshall
+Founder and CEO, Square Connect, Inc.
+San Jose, CA
+www.squareconnect.com
+cell: 650.814.7585
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20131205/4d72d789/attachment-0001.html">https://www.jabber.org/jdev/attachments/20131205/4d72d789/attachment-0001.html</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089790.html">[jdev] A rapidxml fork for XMPP
+</A></li>
+	<LI>Next message: <A HREF="089788.html">[jdev] A rapidxml fork for XMPP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89789">[ date ]</a>
+              <a href="thread.html#89789">[ thread ]</a>
+              <a href="subject.html#89789">[ subject ]</a>
+              <a href="author.html#89789">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

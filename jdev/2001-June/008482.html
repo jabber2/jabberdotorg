@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Passwords, zero-K and storage
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Passwords%2C%20zero-K%20and%20storage&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="008477.html">
+   <LINK REL="Next"  HREF="008494.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Passwords, zero-K and storage</H1>
+    <B>DJ Adams</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Passwords%2C%20zero-K%20and%20storage&In-Reply-To="
+       TITLE="[JDEV] Passwords, zero-K and storage">dj.adams at pobox.com
+       </A><BR>
+    <I>Fri Jun 15 17:52:58 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="008477.html">[JDEV] Jablient is up on jabWiki
+</A></li>
+        <LI>Next message: <A HREF="008494.html">[JDEV] Passwords, zero-K and storage
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8482">[ date ]</a>
+              <a href="thread.html#8482">[ thread ]</a>
+              <a href="subject.html#8482">[ subject ]</a>
+              <a href="author.html#8482">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all
+
+there was a question in the jdev room about how to avoid storing usernames
+and passwords in the &lt;username&gt;.xml files on the server.[1] 
+
+I blurted out 'zero-K!' for half the answer - a way of &quot;removing the 
+liability of storing password on the server&quot;[2]. This was followed by
+another answer a couple of mins later which contradicted me. I tried
+it out on my server, and sure enough, even when the mod_auth_plain and
+mod_auth_digest modules were commented out of JSM's load list, a password
+in plain text was stored on the server as well as the zero-K stuff. 
+
+Hmmm, I thought. And went about my business, sheepishly. But this 
+contradiction played on my mind, until such time as now where it has
+forced me out of bed to check it out. 
+
+The reason why this is the case (plaintext password stored despite 
+only using the zero-K auth module) is because of mod_register, which
+stores the password, in the NS_AUTH space, when a user registers, 
+regardless of what it's fellow e_REGISTER event handlers (mod_auth_plain
+and mod_auth_0k [3]) are designed to do, or so it seems. 
+
+Here's the relevant bit in mod_auth_plain:
+
+int mod_auth_plain_reset(mapi m, jid id, xmlnode pass)
+{
+    log_debug(&quot;mod_auth_plain&quot;,&quot;resetting password&quot;);
+    if(xmlnode_get_data(pass) == NULL) return 1;
+
+    xmlnode_put_attrib(pass,&quot;xmlns&quot;,NS_AUTH);
+    return xdb_set(m-&gt;si-&gt;xc, jid_user(id), NS_AUTH, pass);   &lt;----
+}
+
+and here's the relevant bit in mod_auth_0k:
+
+int mod_auth_0k_reset(mapi m, jid id, xmlnode xpass)
+
+    ...
+
+    }else{ /* make them exist with an empty password */
+        log_debug(ZONE,&quot;NS_AUTH check - user DOES NOT exist&quot;);
+        x = xmlnode_new_tag_pool(xmlnode_pool(xpass),&quot;password&quot;);
+        xmlnode_put_attrib(x,&quot;xmlns&quot;,NS_AUTH);
+        if(xdb_set(m-&gt;si-&gt;xc, jid_user(id), NS_AUTH, x))      &lt;----
+            return 1; /* uhoh */
+    }
+
+Both store a password (plaintext, or empty, respectively) in NS_AUTH space.
+
+So mod_register doesn't need to - and even if it were to, how would it
+know about the existence (or not) of mod_auth_plain or mod_auth_0k, i.e.
+how could it know about whether to store a plaintext or an empty 
+password? It doesn't, and goes ahead and does the former:
+
+mreturn mod_register_new(mapi m, void *arg)
+
+    ...
+
+        /* try to save the auth data */
+        if(xdb_set(m-&gt;si-&gt;xc, jid_user(m-&gt;packet-&gt;to), NS_AUTH, xmlnode_get_tag(m-&gt;packet-&gt;iq,&quot;password&quot;)))                                   &lt;----
+        {
+            jutil_error(m-&gt;packet-&gt;x, TERROR_FORBIDDEN); 
+            break;
+        }
+ 
+I'm aware of other related issues regarding existence checks for users,
+but am trying to keep them separate from what I see as a bit of an
+issue with server-side password storage and administrator expectations.
+
+Anyway, I would suggest that the snippet of code in mod_register_new()
+shown above is both redundant and wrong, and should be removed. The 
+purpose of this code is served by mod_auth_plain and / or mod_auth_0k.
+
+Of course, I'm ready to be contradicted again; I'd like to hear what
+others think. I've tried this out (removing the snippet) on my test
+server and it solves the problem and doesn't cause any others, as far
+as my minimal testing has shown.
+
+What do you think?
+
+dj
+
+
+[1] <A HREF="http://perl.jabber.org/logs/conference.jabber.org/jdev/2001-06-12.html">http://perl.jabber.org/logs/conference.jabber.org/jdev/2001-06-12.html</A>
+    at around 13:16pm
+
+[2] <A HREF="http://docs.jabber.org/draft-proto/html/zerok.html">http://docs.jabber.org/draft-proto/html/zerok.html</A>
+
+[3] and mod_last too, but this doesn't count here
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="008477.html">[JDEV] Jablient is up on jabWiki
+</A></li>
+	<LI>Next message: <A HREF="008494.html">[JDEV] Passwords, zero-K and storage
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8482">[ date ]</a>
+              <a href="thread.html#8482">[ thread ]</a>
+              <a href="subject.html#8482">[ subject ]</a>
+              <a href="author.html#8482">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

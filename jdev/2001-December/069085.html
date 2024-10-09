@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] request for help (jabber protocol - xml streams)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20request%20for%20help%20%28jabber%20protocol%20-%20xml%20streams%29&In-Reply-To=%3CPASFEXCHANGEmGzrLCC00000485%40pasfexchange.backstage.photoalley.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="069039.html">
+   <LINK REL="Next"  HREF="069086.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] request for help (jabber protocol - xml streams)</H1>
+    <B>zak</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20request%20for%20help%20%28jabber%20protocol%20-%20xml%20streams%29&In-Reply-To=%3CPASFEXCHANGEmGzrLCC00000485%40pasfexchange.backstage.photoalley.com%3E"
+       TITLE="[JDEV] request for help (jabber protocol - xml streams)">zsy at photoalley.com
+       </A><BR>
+    <I>Thu Dec 27 19:05:31 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="069039.html">[JDEV] (no subject)
+</A></li>
+        <LI>Next message: <A HREF="069086.html">[JDEV] The &quot;other&quot; java jabber server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#69085">[ date ]</a>
+              <a href="thread.html#69085">[ thread ]</a>
+              <a href="subject.html#69085">[ subject ]</a>
+              <a href="author.html#69085">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>hi all,
+
+i'm just starting out and was just trying to write a really simple test to 
+connect to a jabber server.  however, for some reason my parser hangs when 
+trying to read the first &lt;stream:stream response from the server.  here is 
+the code for reference.  i know it's really bad code, but like i said, i was 
+trying to do something fast and simple as an example.  not sure if i'm making 
+some protocol errors or if i'm hanging because something is blocking?  any 
+ideas?
+
+thanks, zak.
+
+public class JabTest 
+{
+    public static void main(String[] args) 
+    {
+        String init = &quot;&lt;?xml version='1.0' encoding='UTF-8' ?&gt; &quot; +
+        &quot;&lt;stream:stream to='jabber.org' xmlns='jabber:client' &quot; +
+        &quot;xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;&quot;;
+        String terminate = &quot;&lt;/stream:stream&gt;&quot;;
+        Socket s = null;
+        PrintWriter out = null;
+        BufferedReader in = null;
+        try 
+        {
+            InetAddress addr = InetAddress.getByName(&quot;jabber.org&quot;);
+            s = new Socket(addr, 5222);
+            try
+            {
+                out = new PrintWriter(
+                new BufferedWriter(
+                new OutputStreamWriter(s.getOutputStream(), &quot;UTF8&quot;)), true); 
+            }
+            catch (UnsupportedEncodingException uee)
+            {
+                throw new RuntimeException(&quot;encoding error - &quot; + uee.getMessage());
+            }
+            
+            out.println(init);
+            out.flush();
+
+            try
+            {
+                in = new BufferedReader(
+                new InputStreamReader(s.getInputStream(), &quot;UTF8&quot;));
+            }
+            catch (UnsupportedEncodingException uue)
+            {
+                System.out.println(&quot;encoding error - &quot; + uue.getMessage());
+            }
+
+            InputSource is = new InputSource(in);
+            XMLReader xr = XMLReaderFactory.createXMLReader(
+            &quot;org.apache.xerces.parsers.SAXParser&quot;);
+            xr.setContentHandler(new MyHandler());
+            xr.parse(is); // this call hangs
+            
+            out.println(terminate);
+        } 
+        
+        catch (UnknownHostException uhe) 
+        {
+            System.out.println(&quot;unknown host - &quot; + uhe.getMessage());
+        } 
+
+        catch (IOException ioe) 
+        {
+            System.out.println(&quot;IO Error - &quot; + ioe.getMessage());
+        } 
+
+        catch (SAXException se)
+        {
+            System.out.println(&quot;SAX exception - &quot; + se.getMessage());
+        }
+
+        finally 
+        {
+            try 
+            {
+                in.close();
+                out.close();
+                s.close();
+            } 
+            
+            catch (IOException ioe) 
+            {
+                System.out.println(&quot;IO exception - &quot; + ioe.getMessage());
+            }
+        }
+    }
+}
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="069039.html">[JDEV] (no subject)
+</A></li>
+	<LI>Next message: <A HREF="069086.html">[JDEV] The &quot;other&quot; java jabber server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#69085">[ date ]</a>
+              <a href="thread.html#69085">[ thread ]</a>
+              <a href="subject.html#69085">[ subject ]</a>
+              <a href="author.html#69085">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

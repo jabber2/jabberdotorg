@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] mod_mymod.c
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20mod_mymod.c&In-Reply-To=%3C3A30E71F.F705620%40idealx.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034331.html">
+   <LINK REL="Next"  HREF="034334.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] mod_mymod.c</H1>
+    <B>Rodolphe Duge de Bernonville</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20mod_mymod.c&In-Reply-To=%3C3A30E71F.F705620%40idealx.com%3E"
+       TITLE="[JDEV] mod_mymod.c">rod at idealx.com
+       </A><BR>
+    <I>Fri Dec  8 07:50:23 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034331.html">[JDEV] mod_mymod.c
+</A></li>
+        <LI>Next message: <A HREF="034334.html">[JDEV] mod_mymod.c
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34333">[ date ]</a>
+              <a href="thread.html#34333">[ thread ]</a>
+              <a href="subject.html#34333">[ subject ]</a>
+              <a href="author.html#34333">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> 
+</I>&gt;<i> Hi again,
+</I>&gt;<i> 
+</I>&gt;<i> Got that bit working, really cool effects going on now, just one more question
+</I>&gt;<i> 
+</I>&gt;<i> If my instance receives a message and it would like to store the message in
+</I>&gt;<i> the offline storage (ie only notify the user of the message but not send the
+</I>&gt;<i> message itself) - how would that go?
+</I>&gt;<i> 
+</I>&gt;<i> Encapsulate the message into jabber:x:offline ?
+</I>&gt;<i> 
+</I>
+well, i dont really see what you mean  ... 
+but you can send directly your message to the offline storage ...
+
+
+register your function with register_phandler 
+to be in jabberd's instance list 
+
+
+your_function_in_your_instance_whatever_you_want_to_do_but_i_dont_really_understand(instance
+id, dpacket dp, void *arg))
+{
+    ssi si = (ssi) arg;
+    xmlnode msg;
+   
+    /*  xmlnode sent to your instance is in dp-&gt;x  */
+
+    ... stuff with your xmlnode ....
+
+
+    xdb_set(si-&gt;xc, server_of_your_user, jid_of_your_user, NS_OFFLINE,
+msg);
+    /*  returns 1 if ok ... 0 for bad args 
+        NS_OFFLINE is in jabber.h
+    */    
+
+    xmlnode_free(msg);
+}
+
+
+this would put the msg xmlnode you ve built  to your database.
+
+If you want to notify user for it you may try 
+to send him a message (no idea if it will work ...)
+
+
+your_function_in_your_instance__whatever_you_want_to_do_but_maybe_it_is_what_you_need(instance
+id, dpacket dp, void *arg))
+{
+    xmlnode msg;
+    xmlnode notify;
+   
+    /*  xmlnode sent to your instance is in dp-&gt;x  */
+
+    ... stuff with your xmlnode ....
+
+
+    xdb_set(si-&gt;xc, server_of_your_user, jid_of_your_user, NS_OFFLINE,
+msg);
+    /*  returns 1 if ok ... 0 for bad args  */    
+
+    notify = xmlnode_new_tag(&quot;message&quot;);
+    xmlnode_put_attrib(notify, &quot;to&quot;, jid_of_your_user);
+    
+    ... insert stuff in your message ...
+
+    
+    deliver (dpacket_new(notify), si-&gt;i); 
+
+    xmlnode_free(msg);
+    return M_PASS / M_HANDLED;
+}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034331.html">[JDEV] mod_mymod.c
+</A></li>
+	<LI>Next message: <A HREF="034334.html">[JDEV] mod_mymod.c
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34333">[ date ]</a>
+              <a href="thread.html#34333">[ thread ]</a>
+              <a href="subject.html#34333">[ subject ]</a>
+              <a href="author.html#34333">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

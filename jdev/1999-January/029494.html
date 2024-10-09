@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Well-formed XML.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Well-formed%20XML.&In-Reply-To=%3CPine.LNX.3.96.990121145658.31838D-100000%40mondo.eppg.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="029496.html">
+   <LINK REL="Next"  HREF="029497.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Well-formed XML.</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Well-formed%20XML.&In-Reply-To=%3CPine.LNX.3.96.990121145658.31838D-100000%40mondo.eppg.com%3E"
+       TITLE="[JDEV] Well-formed XML.">jeremie at jabber.org
+       </A><BR>
+    <I>Thu Jan 21 15:13:44 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="029496.html">[JDEV] Well-formed XML.
+</A></li>
+        <LI>Next message: <A HREF="029497.html">[JDEV] Well-formed XML.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29494">[ date ]</a>
+              <a href="thread.html#29494">[ thread ]</a>
+              <a href="subject.html#29494">[ subject ]</a>
+              <a href="author.html#29494">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>This is all REALLY great stuff, and was my original intention to do it
+this way when I first started long long ago...  it's the &quot;right&quot; way to do
+it from many points of view :)
+
+BUT, as I started implimenting the server(and learning C at the same time) 
+it was MUCH easier to deal with the protocol the way it is now, and I'll
+explain:  The server uses a main select() IO loop to handle the multiple
+connections, and when there is data to read another function checks for
+the &lt;j&gt;&lt;/j&gt; tags and extracts that packet, then hands it off to a general
+handler routine which THEN passes that data to a (custom written) XML
+parser, so the parser is just getting the data with one root element like
+it expects....  So really, the protocol was adapted to make writing the
+server easier at the time I started writing it.  And if you take the
+approach to have a small handler roll around with the incoming data and
+extract &quot;packets&quot; and hand them to the XML parser as it gets them, it
+works quite well.
+
+The &quot;right&quot; way to do it would be to just have the IO loop constantly
+streaming data in chunks to an XML parser and change the protocol to look
+more like a real XML document. I'd like to use expat to do this, but I
+haven't looked into it enough yet to determine how it can deal with
+incoming &quot;chunks&quot; of data...
+
+The reason I haven't taken this step at any point yet is because it would
+end up being an almost complete server rewrite, and although I'd REALLY
+like to do that and do many things differenty/right, I just haven't had
+enough TIME :)
+
+To summarize, what we currently have &quot;works&quot; but could stand for a good
+deal of improvement.  I announced/launched what I had in the state that it
+is earlier this month so that I could hopefully find some help in doing
+that &quot;improvement&quot;.
+
+&lt;NOTE&gt;
+I'm going to do my best to write up a BIG STATUS UPDATE tonight
+with all kinds of ideas and stuff on everything, from the server to the
+protocol to the web site/docs and more...  hopefully help to bring
+everyone to the same page and we can go from there
+&lt;/NOTE&gt;
+
+Jer
+
+On Thu, 21 Jan 1999, Jason Diamond wrote:
+
+&gt;<i> Hi, I have another protocol related suggestion. I've been experimenting
+</I>&gt;<i> with a Java client and have been using several of the major XML parsers
+</I>&gt;<i> to test it out. Apparently, a well-formed XML document needs to have a
+</I>&gt;<i> single root element. Much like the root &lt;html&gt;&lt;!-- everything else goes
+</I>&gt;<i> here --&gt;&lt;/html&gt; element in HTML. All of the parsers I've tried so far,
+</I>&gt;<i> stopped parsing at the second &lt;j&gt; element. There are several ugly
+</I>&gt;<i> workarounds but I think it would be much more conducive to our goals if
+</I>&gt;<i> we could take any off the shelf XML parser and not have to modify it in
+</I>&gt;<i> order to write a Jabber client. So, I propose that both the server and
+</I>&gt;<i> client wrap all their messages in a root &lt;jabber&gt;&lt;/jabber&gt; element.
+</I>&gt;<i> Attributes could be used to specify the client and protocol much like
+</I>&gt;<i> the current &lt;j type='connection'&gt; element. Maybe something like this:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;jabber agent='Jabzilla v1.0' protocol='19990121'&gt;
+</I>&gt;<i>   &lt;j type='login'&gt;&lt;user&gt;foo&lt;/user&gt;&lt;pass&gt;bar&lt;/pass&gt;&lt;/j&gt;
+</I>&gt;<i>   &lt;!-- etc. --&gt;
+</I>&gt;<i> &lt;/jabber&gt;
+</I>&gt;<i> 
+</I>&gt;<i> The end &lt;/jabber&gt; element could be used to indicate that the server or
+</I>&gt;<i> client is getting ready to close the connection. Comments? I'm in the
+</I>&gt;<i> process of downloading Cygwin32 so that I can make the necessary changes
+</I>&gt;<i> to the server to test it out.
+</I>&gt;<i> 
+</I>&gt;<i> Just out of curiosity, why are all the messages between client and
+</I>&gt;<i> server wrapped in a &lt;j type='foo'&gt; element? Why not &lt;login&gt; or
+</I>&gt;<i> &lt;message&gt;? If we used element names rather than attribute types to
+</I>&gt;<i> distinguish the purpose of a message, we could create a DTD specifying
+</I>&gt;<i> what elements are allowed to be nested in others. For example, &lt;user&gt;
+</I>&gt;<i> and &lt;pass&gt; would only be allowed in a &lt;login&gt; element. I'm not proposing
+</I>&gt;<i> that we validate the XML as it comes in from the server, but it could be
+</I>&gt;<i> used as a specification. Much like EBNF is for more traditional
+</I>&gt;<i> protocols. And who knows, maybe while implementing and debugging our
+</I>&gt;<i> clients we could have it validate the XML as an aid to determine a
+</I>&gt;<i> source of errors.
+</I>&gt;<i> 
+</I>&gt;<i> Bye,
+</I>&gt;<i> Jason.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="029496.html">[JDEV] Well-formed XML.
+</A></li>
+	<LI>Next message: <A HREF="029497.html">[JDEV] Well-formed XML.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29494">[ date ]</a>
+              <a href="thread.html#29494">[ thread ]</a>
+              <a href="subject.html#29494">[ subject ]</a>
+              <a href="author.html#29494">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

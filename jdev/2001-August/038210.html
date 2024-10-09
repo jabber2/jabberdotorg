@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] IQ queries sent to client vs. handled by server?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20IQ%20queries%20sent%20to%20client%20vs.%20handled%20by%20server%3F&In-Reply-To=%3C65465D4A-8706-11D5-8623-00306555704E%40%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="038208.html">
+   <LINK REL="Next"  HREF="038214.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] IQ queries sent to client vs. handled by server?</H1>
+    <B>Jens Alfke</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20IQ%20queries%20sent%20to%20client%20vs.%20handled%20by%20server%3F&In-Reply-To=%3C65465D4A-8706-11D5-8623-00306555704E%40%3E"
+       TITLE="[JDEV] IQ queries sent to client vs. handled by server?">jens at mac.com
+       </A><BR>
+    <I>Thu Aug  2 00:22:41 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="038208.html">[JDEV] IQ queries sent to client vs. handled by server?
+</A></li>
+        <LI>Next message: <A HREF="038214.html">[JDEV] IQ queries sent to client vs. handled by server?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38210">[ date ]</a>
+              <a href="thread.html#38210">[ thread ]</a>
+              <a href="subject.html#38210">[ subject ]</a>
+              <a href="author.html#38210">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wednesday, August 1, 2001, at 07:56 PM, Thomas Charron wrote:
+
+&gt;<i>   DoH!  I stand corrected.  The server has this currently implemented 
+</I>&gt;<i> as a
+</I>&gt;<i> server module ALREADY as mod_xml.  The applicable cose is located at
+</I>&gt;<i> <A HREF="http://download.jabber.org/cvs/jabber2/jsm/modules/mod_xml.c">http://download.jabber.org/cvs/jabber2/jsm/modules/mod_xml.c</A>
+</I>&gt;<i>   Basically, do a set on ANY *NON* jabber:* namespace, and it will 
+</I>&gt;<i> store it.
+</I>
+I skimmed through the code; I'm totally unfamiliar with the server 
+implementation but I got the gist of it. It definitely seems that the 
+mod_xml_get function, which handles the &quot;get&quot; requests, intercepts ALL 
+non-&quot;jabber:&quot; namespaces and ALWAYS returns the stored XML (or an empty 
+result if nothing is stored). In other words, live client-to-client 
+&quot;get&quot; requests are effectively impossible, since the server will eat 
+them all. The only way around this is to make up a new namespace in the 
+&quot;jabber:&quot; domain, which is of course a Bad Idea.
+
+So isn't this kind of a monkey wrench in the whole Jabber extensibility 
+story? The functionality of IQ queries has been greatly reduced by 
+this -- now, to define a new query type you have to hack the server to 
+get around mod_xml, otherwise the clients won't be able to talk to each 
+other.
+
+mod_xml looks like a really poorly thought-out idea. It would have been 
+great had it reserved some particular namespace and only handled queries 
+in children of that, but by eating the entire namespace universe apart 
+from &quot;jabber:&quot;, it leaves no room for anything else.
+
+(Or have I managed to completely misunderstand those few pages of C 
+code?)
+
+--Jens
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="038208.html">[JDEV] IQ queries sent to client vs. handled by server?
+</A></li>
+	<LI>Next message: <A HREF="038214.html">[JDEV] IQ queries sent to client vs. handled by server?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38210">[ date ]</a>
+              <a href="thread.html#38210">[ thread ]</a>
+              <a href="subject.html#38210">[ subject ]</a>
+              <a href="author.html#38210">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

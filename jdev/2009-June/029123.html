@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Jabber Login with OpenID
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Jabber%20Login%20with%20OpenID&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE61027E5AB3ACE9%40zamail01.k2workflow.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="029122.html">
+   <LINK REL="Next"  HREF="029146.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Jabber Login with OpenID</H1>
+    <B>Jonathan Dickinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Jabber%20Login%20with%20OpenID&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE61027E5AB3ACE9%40zamail01.k2workflow.com%3E"
+       TITLE="[jdev] Jabber Login with OpenID">jonathan.dickinson at k2.com
+       </A><BR>
+    <I>Wed Jun  3 03:06:59 CDT 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="029122.html">[jdev] Jabber Login with OpenID
+</A></li>
+        <LI>Next message: <A HREF="029146.html">[jdev] Jabber Login with OpenID
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29123">[ date ]</a>
+              <a href="thread.html#29123">[ thread ]</a>
+              <a href="subject.html#29123">[ subject ]</a>
+              <a href="author.html#29123">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On
+</I>&gt;<i> Behalf Of Peter Saint-Andre
+</I>&gt;<i> Sent: 03 June 2009 06:18 AM
+</I>&gt;<i> To: Jabber/XMPP software development list
+</I>&gt;<i> Subject: Re: [jdev] Jabber Login with OpenID
+</I>&gt;<i> 
+</I>&gt;<i> -----BEGIN PGP SIGNED MESSAGE-----
+</I>&gt;<i> Hash: SHA1
+</I>&gt;<i> 
+</I>&gt;<i> On 5/22/09 6:39 AM, Bernhard zwischenbrugger wrote:
+</I>&gt;<i> &gt; Hi All
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I try to make a webchat with OpenID Login.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; OpenID is not difficult.
+</I>&gt;<i> &gt; Using <A HREF="https://rpxnow.com/">https://rpxnow.com/</A> for example makes it very simple.
+</I>&gt;<i> &gt; Also a Jabber Login using &quot;Strophe&quot; or and other BOSH Lib is simple.
+</I>&gt;<i> &gt; No Problem with that
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; But combining this 2 things is not easy at all.
+</I>&gt;<i> &gt;
+</I>
+So what you need is some kind of SSO (Single Sign On) solution. Using OpenID from a thick Jabber client would probably be *very* difficult (because it's intimately tied to the browser). It may be possible from your side of things, however.
+
+I haven't had the time to grep OpenID yet - but this&lt;<A HREF="http://www.windley.com/archives/2006/04/how_does_openid.shtml">http://www.windley.com/archives/2006/04/how_does_openid.shtml</A>&gt; came in pretty useful. You will need to appropriate an OpenID implementation. This is a hashed out version of what would need to happen - so you WILL need to make changes to ensure security (esp against replay).
+
+You will need something like the following in the database:
+
+OpenIDLogins - IdentityUrl (nvarchar), Token (nvarchar), JabberID (nvarchar), Success (bool)
+
+So when you hit step 5 in the above document you will need to add that login to the table. At this point you would probably set up IdentityUrl, Token and JabberID. Success would be false.
+
+I assume the JabberID would be published in the OpenID document. I don't have the time to go through the OpenID spec right now but I assume it would look something like:
+
+&lt;openId&gt;
+
+ &lt;url&gt;<A HREF="http://myoidserver.com/jack&lt;/url">http://myoidserver.com/jack&lt;/url</A>&gt;
+ &lt;jabberId xmlns=&quot;urn:xmpp:tmp:openId&quot;&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jack at myoidserver.com</A>&lt;/jabberId&gt;
+ &lt;!-- Further OID fields --&gt;
+
+&lt;/openId&gt;
+
+@PSA - maybe someone should hash out a XEP, if appropriate?
+
+Once the OpenID server directs the user back to your site with a successful login you would then update the Success field to true. You would need to communicate the token to the client in a cookie or hidden field - obviously you would need to protect it somehow (SSL).
+
+The client could then use that token in a custom SASL mechanism (may I suggest OID-TOKEN). Which would simply:
+
+C: [IdentityUrl]+[Token]
+S: Success/Failure
+
+The user is now authenticated.
+
+&gt;<i> Peter
+</I>&gt;<i> 
+</I>&gt;<i> - --
+</I>&gt;<i> Peter Saint-Andre
+</I>&gt;<i> <A HREF="https://stpeter.im/">https://stpeter.im/</A>
+</I>&gt;<i> 
+</I>&gt;<i> -----BEGIN PGP SIGNATURE-----
+</I>&gt;<i> Version: GnuPG v1.4.8 (Darwin)
+</I>&gt;<i> Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org">http://enigmail.mozdev.org</A>
+</I>&gt;<i> 
+</I>&gt;<i> iEYEARECAAYFAkol+XoACgkQNL8k5A2w/vwCKgCfUs8a/XmsTxHlv2ZXby2NOGn5
+</I>&gt;<i> 800AnRZpERPHEGg+Vf8VzyMN738TOSV9
+</I>&gt;<i> =7Xlp
+</I>&gt;<i> -----END PGP SIGNATURE-----
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I></PRE>
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="029122.html">[jdev] Jabber Login with OpenID
+</A></li>
+	<LI>Next message: <A HREF="029146.html">[jdev] Jabber Login with OpenID
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29123">[ date ]</a>
+              <a href="thread.html#29123">[ thread ]</a>
+              <a href="subject.html#29123">[ subject ]</a>
+              <a href="author.html#29123">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

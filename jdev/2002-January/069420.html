@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] About the protocol
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20About%20the%20protocol&In-Reply-To=%3C000601c19e10%2440900450%248e00a8c0%40solo%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="069427.html">
+   <LINK REL="Next"  HREF="069429.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] About the protocol</H1>
+    <B>German Pablo de la Cruz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20About%20the%20protocol&In-Reply-To=%3C000601c19e10%2440900450%248e00a8c0%40solo%3E"
+       TITLE="[JDEV] About the protocol">gerlc at ciudad.com.ar
+       </A><BR>
+    <I>Tue Jan 15 16:01:57 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="069427.html">[JDEV] iq question
+</A></li>
+        <LI>Next message: <A HREF="069429.html">[JDEV] About the protocol
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#69420">[ date ]</a>
+              <a href="thread.html#69420">[ thread ]</a>
+              <a href="subject.html#69420">[ subject ]</a>
+              <a href="author.html#69420">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks very muche Peter!.
+
+I comment my case. I need to make a messenger with support to a internal
+protocol form my mates(I see in Jabber a good point). But today I need
+communication to my clients to.
+
+I don't have any problem to make bloking on the client side. But when I
+send an unavailable because of the previous presence, they see me for a
+glance.
+
+I try to keep the block list in the server. But I don't know how!
+
+Apart of that. I try to make messagin to MSN too. I see that sending and
+unavailable to a MSN buddy must result in a block. But it work only with
+all of the client (sending a presence without to:) I don't know if it is
+a bug or what.
+
+Thanks again!
+
+German
+
+
+&gt;<i> I'm implementing a Jabber client over Java, then I fault into two
+</I>&gt;<i> problems
+</I>&gt;<i> 
+</I>&gt;<i> 	1- How block a user like MSN Messenger.
+</I>
+Blocking communications from specific JIDs is usually done client-side.
+There is no Jabber protocol for this.
+
+&gt;<i> 	2- How define a name to show in the roster of each buddy that
+</I>&gt;<i> see my presence.
+</I>
+When you add a roster item, you can include a 'name' attribute, like so:
+
+&lt;iq type=&quot;set&quot; id=&quot;uniquevalue&quot;&gt;
+  &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+    &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.net</A>&quot; 
+        name=&quot;Romeo&quot; 
+        subscription=&quot;none&quot; 
+        ask=&quot;subscribe&quot;&gt;
+      &lt;group&gt;friends&lt;/group&gt;
+    &lt;/item&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+However, AFAIK there is no way to suggest to your &quot;buddy&quot; what that name
+attribute should include.
+
+Peter
+
+
+--__--__--
+
+Message: 6
+Date: Tue, 15 Jan 2002 09:51:10 -0800
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+From: Chris Chen &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ckchris at idream.net</A>&gt;
+Subject: Re: [JDEV] iq question
+Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+
+Technically, you should be giving each message (or ones that you're
+waiting 
+on a reply for) a different ID rather than the same ID.  The way I do it
+is 
+to have a global ID counter that increments every time it is 
+called.  Jabber IM uses a string-based unique ID approach.  Any way
+works 
+as long as the ID can be unique within your own context.
+
+Thanks,
+Chris
+
+At 03:56 PM 1/14/2002, you wrote:
+&gt;<i>hello,
+</I>&gt;<i>
+</I>&gt;<i>i was wondering if there is a way to send an id/key element to the the
+</I>server
+&gt;<i>which the server will return in it's reply on a iq packet by packet
+</I>basis.
+&gt;<i>basically, my concern is that some replies from the server simply
+</I>return
+&gt;<i>something like &lt;iq type=&quot;result&quot; id=&quot;1001&quot;/&gt; to signal a successful iq
+</I>&gt;<i>operation.  however, if i have different components listening for iq
+</I>packets,
+&gt;<i>but in different contexts then it's not possible for my listeners to
+</I>know
+&gt;<i>when the success signal was meant for them or not.  is there some other
+</I>&gt;<i>mechanism that i can use for this?
+</I>&gt;<i>
+</I>&gt;<i>for a concrete example i have a listener that waits for the return iq
+</I>packet
+&gt;<i>after authenticating, jabber:iq:auth, which returns  &lt;iq type=&quot;result&quot;
+</I>&gt;<i>id=&quot;1001&quot;/&gt; for success and another listener that listens for iq
+</I>packets for
+&gt;<i>jabber:iq:private which can also return &lt;iq type=&quot;result&quot; id=&quot;1001&quot;/&gt;.
+</I>my
+&gt;<i>intent was for each listener to get both packets and to leave it up to
+</I>the
+&gt;<i>listeners to filter out the packets their interested in.
+</I>&gt;<i>
+</I>&gt;<i>any help with this would be appreciated.
+</I>&gt;<i>
+</I>&gt;<i>zak.
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+PGP at <A HREF="ldap://certserver.pgp.com/">ldap://certserver.pgp.com/</A>
+
+
+
+--__--__--
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+End of jdev Digest
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="069427.html">[JDEV] iq question
+</A></li>
+	<LI>Next message: <A HREF="069429.html">[JDEV] About the protocol
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#69420">[ date ]</a>
+              <a href="thread.html#69420">[ thread ]</a>
+              <a href="subject.html#69420">[ subject ]</a>
+              <a href="author.html#69420">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

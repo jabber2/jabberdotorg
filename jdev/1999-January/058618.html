@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Minor 'bug'let ?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Minor%20%27bug%27let%20%3F&In-Reply-To=%3C3693E654.F50CCB45%40webweaving.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058609.html">
+   <LINK REL="Next"  HREF="058620.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Minor 'bug'let ?</H1>
+    <B>Dirk-Willem van Gulik</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Minor%20%27bug%27let%20%3F&In-Reply-To=%3C3693E654.F50CCB45%40webweaving.org%3E"
+       TITLE="[JDEV] Minor 'bug'let ?">dirkx at webweaving.org
+       </A><BR>
+    <I>Wed Jan  6 16:40:21 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058609.html">[JDEV] Minor 'bug'let ?
+</A></li>
+        <LI>Next message: <A HREF="058620.html">[JDEV] Minor 'bug'let ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58618">[ date ]</a>
+              <a href="thread.html#58618">[ thread ]</a>
+              <a href="subject.html#58618">[ subject ]</a>
+              <a href="author.html#58618">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Jeremie Miller wrote:
+
+&gt;<i> &gt; Secondly, given that the active_fd_set is (re)build each time; it
+</I>&gt;<i> &gt; is worthwhile to keep a maxfd; rather than FD_SETSIZE; at least
+</I>&gt;<i> &gt; on FreeBSD that makes a speed difference.
+</I>&gt;<i>
+</I>&gt;<i> I'm no god on this select stuff, so could you explain what you mean?  I'm
+</I>&gt;<i> not sure what the FD_SETSIZE really does I guess.
+</I>
+I'll give it a go and send you a diff; all it does is that when the (largish)
+bit array
+is sequentially walked trhough, from bit 0 to bit n-1 it stops at this max. On
+a
+desktop machine; FD_SETSIZE is typically so low (256 or so) that you do not
+incur that much of an overhead; but on a server; it can be set (usually at
+kernel
+level) quite high. We use values upward of 64000 for certain applications. As
+most (BSDish) kernels seem to epect low values; we find that keeping the value
+
+low is worth the expense of keeping a max performance wise.
+
+&gt;<i> &gt; Thirdly setting TCP_NODELAY and alllowing for port REUSE might be
+</I>&gt;<i> &gt; nice.
+</I>&gt;<i> &gt;         if( (setsockopt(c-&gt;id,SOL_SOCKET,SO_REUSEADDR,(const char
+</I>&gt;<i> &gt; *)&amp;one,sizeof(one))) &lt;0)
+</I>&gt;<i> This one is already in the socket.c file.
+</I>
+Hmm, must have missed that. Sorry.
+
+&gt;<i> &gt;         if( (setsockopt(c-&gt;id,IPPROTO_TCP,TCP_NODELAY,(const void
+</I>&gt;<i> &gt; *)&amp;one,sizeof(one))) &lt;0)
+</I>&gt;<i>
+</I>&gt;<i> What does TCP_NODELAY exactly do?  I've read up on some of this stuff, but
+</I>&gt;<i> it's not always clear.
+</I>
+Well basically it is a _hint_ to the kernel to send things right away. I.e not
+wait for any more
+data so it can fill a MTU/MSS nicely. The neat way of using it is with near
+atomic writes, for example using an iovec if you have to assemble a parcel of
+data from multiple places. But
+as soon as you have done the write/send you hint to the kernel that it is OK
+to send it.
+
+I believe the origin lies with the first telnet applications; where they
+wanted indivudual key
+strokes to go across as soon as possible; rather than waiting for 1500 of them
+or so to
+be concatenated before sending them.
+
+It is a hint, nothing more, an may be ignored; as you might notice with the
+delay at the beginning (I tried using the protocol for something called PLOP
+which needs very fast status updates over long haul/round-trip-time links).
+This is issue you run in to, with BSD stacks, in that you might fall victum of
+having two segments  at the start of the connection if your packet is between
+101 and 208 bytes, and hence you get a slow start (i,e. a full RTT  timeout
+extra between the first and second packet). But that is arguably a kernel bug
+or engineering compromise.
+
+Forgive me for nattering.
+
+Dw.
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058609.html">[JDEV] Minor 'bug'let ?
+</A></li>
+	<LI>Next message: <A HREF="058620.html">[JDEV] Minor 'bug'let ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58618">[ date ]</a>
+              <a href="thread.html#58618">[ thread ]</a>
+              <a href="subject.html#58618">[ subject ]</a>
+              <a href="author.html#58618">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

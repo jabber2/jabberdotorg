@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Net::Jabber vs. Jabber::Connection?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Net%3A%3AJabber%20vs.%20Jabber%3A%3AConnection%3F&In-Reply-To=%3C3CF9BDF7.4070709%40jabberstudio.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042217.html">
+   <LINK REL="Next"  HREF="042221.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Net::Jabber vs. Jabber::Connection?</H1>
+    <B>Nicholas Perez</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Net%3A%3AJabber%20vs.%20Jabber%3A%3AConnection%3F&In-Reply-To=%3C3CF9BDF7.4070709%40jabberstudio.org%3E"
+       TITLE="[JDEV] Net::Jabber vs. Jabber::Connection?">nick at jabberstudio.org
+       </A><BR>
+    <I>Sun Jun  2 01:40:55 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042217.html">[JDEV] Net::Jabber vs. Jabber::Connection?
+</A></li>
+        <LI>Next message: <A HREF="042221.html">[JDEV] Jabber scalability
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42220">[ date ]</a>
+              <a href="thread.html#42220">[ thread ]</a>
+              <a href="subject.html#42220">[ subject ]</a>
+              <a href="author.html#42220">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I have actually used both libs to a very indepth degree. JabminRPC in 
+its short lived life has been written in J::C and then rewritten in N::J.
+
+J::C is really nice for things other than jabber since it depends 
+strongly upon XML::Parser, and that allows you to basically parse things 
+other than jabber packets (like the jabber.xml config file) in an xpath 
+like way.
+
+I also really like N::J for those really high level abstractions. I 
+wrote a simple webpresence bot using N::J and the part that took the 
+longest was talking via DBI and DBD::ODBC to MySQL. I had the jabber 
+connection up and running in under 2 minutes.
+
+But alas both have flaws too. After while you get tired of 
+typing/cutting/pasting, all of those methods with J::C to accomplish the 
+simple things that N::J does in one method. As for N::J Everything is an 
+object and you only get objects back, and that can be cumbersome with 
+things that are not fully implemented, such as XDB(understandable since 
+its not written into a JEP or anything anywhere. No official means no 
+support), that you could easily just get a jabber node and parse it out 
+via J::C.
+
+The only major problem right now with _both_ libs, is the complete lack 
+of asynchronous parsing. This means the major bottleneck in your perl 
+apps is the parser and you must wait in the queue to get parsed. Part of 
+that issue falls upon perl's inability to be properly threaded. And this 
+in turn leads people to write parsers that are explicitly blocking 
+because of the serialization.
+
+But overall, I love the work and love that goes into these libs. It 
+enables anyone to jump into jabber programming and to add jabber 
+abilities to just about anything that has a perl interface.
+
+DJ Adams wrote:
+&gt;<i> On Sat, Jun 01, 2002 at 04:10:51PM -0500, Ryan Eatmon wrote:
+</I>&gt;<i> 
+</I>&gt;&gt;<i>You could try Process(0) to wait 0 seconds (ie. exit immediatly).  As 
+</I>&gt;&gt;<i>for being odd that Process() blocks, this is the same behavior as many 
+</I>&gt;&gt;<i>other Perl modules (IO:Select comes to mind first).  I would argue that 
+</I>&gt;&gt;<i>Jabber::Connection is the odd man out.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Why?
+</I>&gt;<i> 
+</I>&gt;<i> J::C's process() uses IO::Select (specifically the can_read() function).
+</I>&gt;<i> The behaviour is the same - it blocks for up to X seconds waiting for
+</I>&gt;<i> something to be available. Calling process() (i.e. with no explicit
+</I>&gt;<i> value) just makes the function assume 0 seconds.
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;&gt;<i>As for the differences between the two.  DJ wrote Jabber::XXXXXX as an 
+</I>&gt;&gt;<i>exercise and is slowly adding more to it.  Net::Jabber is meant to be a 
+</I>&gt;&gt;<i>100% protocol compatible and high level implementation (in other words 
+</I>&gt;&gt;<i>GetFrom() is high level as it hides the guts from you).
+</I>&gt;<i> 
+</I>&gt;<i>   
+</I>&gt;<i> It did start out as an excercise but turned out to be the module I was
+</I>&gt;<i> looking for too ;-) It's different to N::J in that it's a lowlevel
+</I>&gt;<i> lightweight approach. Rather than include high-level functions like
+</I>&gt;<i> GetFrom(), it allows you to build your own (the equivalent here is 
+</I>&gt;<i> attr('from')) using the NodeFactory module which was loosely aimed to
+</I>&gt;<i> reflect the API of the xmlnode library in the open source Jabber server.
+</I>&gt;<i> It gives you the flexibility to manipulate the nodes of the Jabber XML
+</I>&gt;<i> protocol as you see fit.
+</I>&gt;<i> 
+</I>&gt;<i> The examples you see on some of my web pages are with N::J as that was
+</I>&gt;<i> what I was using at the time. 
+</I>&gt;<i> 
+</I>&gt;<i> Although I've seen examples of people using both J::C and N::J together,
+</I>&gt;<i> it's usually the case that people will find one or the other that they
+</I>&gt;<i> feel comfortable with (bottom-up vs top-down approaches). 
+</I>&gt;<i> 
+</I>&gt;<i> Cheers
+</I>&gt;<i> dj
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+-- 
+Nick
+
+JabminRPC Developer
+JabberSMTP Developer
+ChatBot's B1tch
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042217.html">[JDEV] Net::Jabber vs. Jabber::Connection?
+</A></li>
+	<LI>Next message: <A HREF="042221.html">[JDEV] Jabber scalability
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42220">[ date ]</a>
+              <a href="thread.html#42220">[ thread ]</a>
+              <a href="subject.html#42220">[ subject ]</a>
+              <a href="author.html#42220">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

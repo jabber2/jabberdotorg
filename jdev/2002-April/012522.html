@@ -1,0 +1,340 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: [jadmin] xdb_sql ...
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20%5Bjadmin%5D%20xdb_sql%20...&In-Reply-To=005e01c1ebc6%243369aca0%240dc4f80c%40Jadwiga">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="012511.html">
+   <LINK REL="Next"  HREF="012583.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: [jadmin] xdb_sql ...</H1>
+    <B>Chris McDonald</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20%5Bjadmin%5D%20xdb_sql%20...&In-Reply-To=005e01c1ebc6%243369aca0%240dc4f80c%40Jadwiga"
+       TITLE="[JDEV] Re: [jadmin] xdb_sql ...">phx-jabber at mindspring.com
+       </A><BR>
+    <I>Wed Apr 24 15:34:54 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="012511.html">[JDEV] Re: [jadmin] xdb_sql ...
+</A></li>
+        <LI>Next message: <A HREF="012583.html">[JDEV] Re: xdb_sql ...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12522">[ date ]</a>
+              <a href="thread.html#12522">[ thread ]</a>
+              <a href="subject.html#12522">[ subject ]</a>
+              <a href="author.html#12522">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>There was some talk of this in the last week or so, basically from my
+experience, xdb_sql doesn't work with the transports properly.  You need two
+xdb_&lt;stuff&gt; sections...xdb_sql to handle the jabber stuff and xdb_file to
+handle the transports.  You use the &lt;host&gt;...&lt;/host&gt; sections to designate
+which db handles which traffic.  Check the archives for the last week or so,
+I posted what a sample &lt;xdb&gt; section would look like with both parts in
+there.
+
+Chris McDonald
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mcdonc at corp.earthlink.net</A>
+MIS-Intranet Development
+EarthLink Phoenix Call Center
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+Andrew Kornak
+Sent: Wednesday, April 24, 2002 12:28 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: [JDEV] Re: [jadmin] xdb_sql ...
+
+All,
+
+    To those who have managed to get xdb_sql working with transports;
+my congratulations and a plea for assistance. I managed to get the jabber
+server running fine. I even manage to register transports with a MySQL
+database. But, when logging out and logging in again, failure. The transport
+is not registered. I am running the transports in seperate server processes.
+My configuration in jabber.xml is:
+
+ === xdb section ===
+&lt;xdb id=&quot;xdb_sql&quot;&gt;
+    &lt;host&gt;jabber.server.com&lt;/host&gt;
+    &lt;host&gt;yahoo.server.com&lt;/host&gt;
+    &lt;ns&gt;jabber:iq:roster&lt;/ns&gt;
+    &lt;ns&gt;jabber:x:offline&lt;/ns&gt;
+    &lt;ns&gt;jabber:iq:filter&lt;/ns&gt;
+    &lt;ns&gt;jabber:iq:last&lt;/ns&gt;
+    &lt;ns&gt;jabber:iq:auth&lt;/ns&gt;
+    &lt;ns&gt;jabber:iq:auth:0k&lt;/ns&gt;
+    &lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+    &lt;ns&gt;vcard-temp&lt;/ns&gt;
+    &lt;load&gt;
+      &lt;xdb_sql&gt;./xdb_sql/xdb_sql.so&lt;/xdb_sql&gt;
+    &lt;/load&gt;
+    &lt;jabberd:include&gt;./xdb_sql/xdb_sql.xml&lt;/jabberd:include&gt;
+    &lt;load&gt;
+      &lt;xdb_file&gt;./xdb_file/xdb_file.so&lt;/xdb_file&gt;
+    &lt;/load&gt;
+    &lt;xdb_file xmlns=&quot;jabber:config:xdb_file&quot;&gt;
+      &lt;spool&gt;&lt;jabberd:cmdline flag='s'&gt;./spool&lt;/jabberd:cmdline&gt;&lt;/spool&gt;
+    &lt;/xdb_file&gt;
+  &lt;/xdb&gt;
+
+=== yahoo ===
+  &lt;service id=&quot;yahootrans&quot;&gt;
+    &lt;host&gt;yahoo.server.com&lt;/host&gt;
+    &lt;accept&gt;
+      &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+      &lt;port&gt;5236&lt;/port&gt;
+      &lt;secret&gt;secret&lt;/secret&gt;
+    &lt;/accept&gt;
+  &lt;/service&gt;
+
+
+Thank you.
+
+Regards,
+Andrew Kornak
+---
+
+----- Original Message -----
+From: &quot;Andrew Kornak&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">akornak at rapidmedianetwork.com</A>&gt;
+To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>&gt;
+Sent: Friday, April 19, 2002 1:34 PM
+Subject: Re: [jadmin] ICQv7 and xdb_sql
+
+
+&gt;<i> Chris,
+</I>&gt;<i>
+</I>&gt;<i>     In the example sql code in xdb_sql the code creates a yahoo table with
+</I>a
+&gt;<i> login id and password, etc. Is it even possible to use xdb_sql with
+</I>&gt;<i> transports? I have had very little
+</I>&gt;<i> success. I added a &lt;host&gt; tag for yahoo.someserver.com in the xdb_sql
+</I>&gt;<i> section of jabber.xml
+</I>&gt;<i> and yahoo complains about &quot;no logon information&quot;. I can get jabber working
+</I>&gt;<i> wihtout the yahoo transport incorporated. I would like to be able to
+</I>&gt;<i> administer jabber as well as the transports in a
+</I>&gt;<i> database. I am using jabber-1.4.2 and xdb_sql-1.2. I tried other versions
+</I>&gt;<i> with various
+</I>&gt;<i> combinations and these work the best for me so far. Any help or success
+</I>&gt;<i> stories would be
+</I>&gt;<i>  greatly appreciated! Thanks.
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i>
+</I>&gt;<i> Andrew Kornak
+</I>&gt;<i>
+</I>&gt;<i> ----- Original Message -----
+</I>&gt;<i> From: &quot;Chris McDonald&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">phx-jabber at mindspring.com</A>&gt;
+</I>&gt;<i> To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>&gt;
+</I>&gt;<i> Sent: Friday, April 19, 2002 10:03 AM
+</I>&gt;<i> Subject: RE: [jadmin] ICQv7 and xdb_sql
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &gt; You'll basically have two xdb_xxx sections, each one relying on the
+</I>&gt;<i> &lt;host/&gt;
+</I>&gt;<i> &gt; tag to specify what it's responsible for...
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;         &lt;xdb id=&quot;xdb_sql&quot;&gt;
+</I>&gt;<i> &gt;         &lt;host&gt;your.servername.com&lt;/host&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:iq:roster&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:x:offline&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:iq:filter&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:iq:last&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:iq:auth&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:iq:auth:0k&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;vcard-temp&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;load&gt;
+</I>&gt;<i> &gt;         &lt;xdb_sql&gt;/path/to/xdb_sql.so&lt;/xdb_sql&gt;
+</I>&gt;<i> &gt;         &lt;/load&gt;
+</I>&gt;<i> &gt;         &lt;jabberd:include&gt;/path/to/xdb_sql.xml&lt;/jabberd:include&gt;
+</I>&gt;<i> &gt;         &lt;/xdb&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;         &lt;xdb id=&quot;xdb_file&quot;&gt;
+</I>&gt;<i> &gt;         &lt;host&gt;msn.your.servername.com&lt;/host&gt;
+</I>&gt;<i> &gt;         &lt;host&gt;yahoo.your.servername.com&lt;/host&gt;
+</I>&gt;<i> &gt;         &lt;host&gt;icq.your.servername.com&lt;/host&gt;
+</I>&gt;<i> &gt;         &lt;host&gt;irc.your.servername.com&lt;/host&gt;
+</I>&gt;<i> &gt;         &lt;host&gt;aim.your.servername.com&lt;/host&gt;
+</I>&gt;<i> &gt;         &lt;host&gt;jud.your.servername.com&lt;/host&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:iq:roster&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:x:offline&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:iq:filter&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:iq:last&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:iq:auth&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:iq:auth:0k&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;ns&gt;vcard-temp&lt;/ns&gt;
+</I>&gt;<i> &gt;         &lt;load&gt;
+</I>&gt;<i> &gt;         &lt;xdb_file&gt;./xdb_file/xdb_file.so&lt;/xdb_file&gt;
+</I>&gt;<i> &gt;         &lt;/load&gt;
+</I>&gt;<i> &gt;         &lt;xdb_file xmlns=&quot;jabber:config:xdb_file&quot;&gt;
+</I>&gt;<i> &gt;         &lt;spool&gt;&lt;jabberd:cmdline
+</I>flag='s'&gt;./spool&lt;/jabberd:cmdline&gt;&lt;/spool&gt;
+&gt;<i> &gt;         &lt;/xdb_file&gt;
+</I>&gt;<i> &gt;         &lt;/xdb&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Or something like that...This may be a bit outdated, so it may require
+</I>&gt;<i> some
+</I>&gt;<i> &gt; tinkering...but you should get the idea...
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Chris McDonald
+</I>&gt;<i> &gt; MIS-Intranet Development
+</I>&gt;<i> &gt; Jabber Project
+</I>&gt;<i> &gt; Earthlink Phoenix Call Center
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin-admin at jabber.org</A>]On Behalf
+</I>Of
+&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ralonso at lis.state.oh.us</A>
+</I>&gt;<i> &gt; Sent: Friday, April 19, 2002 4:55 AM
+</I>&gt;<i> &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+</I>&gt;<i> &gt; Subject: RE: [jadmin] ICQv7 and xdb_sql
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; In a message on JDEV the other day
+</I>&gt;<i> &gt; (<A HREF="http://mailman.jabber.org/pipermail/jdev/2002-April/011201.html">http://mailman.jabber.org/pipermail/jdev/2002-April/011201.html</A>),
+</I>someone
+&gt;<i> &gt; said that xdb_sql only works for vcard information and you have to use
+</I>&gt;<i> &gt; xdb_file for the JUD.  Can anyone confirm or deny this?  Chris, how did
+</I>&gt;<i> you
+</I>&gt;<i> &gt; configure your server in order to get xdb_sql to work for JUD?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks,
+</I>&gt;<i> &gt; Robert
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; From: Chris McDonald [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">phx-jabber at mindspring.com</A>]
+</I>&gt;<i> &gt; Sent: Wednesday, April 17, 2002 8:21 PM
+</I>&gt;<i> &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+</I>&gt;<i> &gt; Subject: RE: [jadmin] ICQv7 and xdb_sql
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; You have to run xdb_sql as the db for your jabber users and xdb_file for
+</I>&gt;<i> the
+</I>&gt;<i> &gt; transports.  At least, that's how I had to do it back in the day when I
+</I>&gt;<i> was
+</I>&gt;<i> &gt; using it.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Chris McDonald
+</I>&gt;<i> &gt; MIS-Intranet Development
+</I>&gt;<i> &gt; Jabber Project
+</I>&gt;<i> &gt; Earthlink Phoenix Call Center
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin-admin at jabber.org</A>]On Behalf
+</I>Of
+&gt;<i> &gt; Costas A. Makris
+</I>&gt;<i> &gt; Sent: Wednesday, April 17, 2002 2:42 PM
+</I>&gt;<i> &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+</I>&gt;<i> &gt; Subject: [jadmin] ICQv7 and xdb_sql
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Can ICQv7 and xdb_sql coexist and co-operate on the same server? If
+</I>&gt;<i> &gt; yes, is there any extra  configuration needed to make them work
+</I>&gt;<i> &gt; together in addition to the configurations done to make each of the
+</I>&gt;<i> &gt; add-ons work independently?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Best Regards
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Costas
+</I>On Mon, 2002-04-08 at 10:33, Benoit Orihuela wrote:
+&gt;<i> hi,
+</I>&gt;<i>
+</I>&gt;<i> &gt; 2.  I need the user to log in (the very first time) and have their
+</I>&gt;<i> &gt; users there for them... no subscribing to a group or anyting.
+</I>&gt;<i> this can be simply done with a sql script (at least as simple as doing it
+</I>for
+&gt;<i> xml files with a perl script ...)
+</I>
+Ok, can you start me in that direction with a pointer where to start?
+
+&gt;<i>
+</I>&gt;<i> &gt; Otherwise, it appears that xdb_sql/mod_groups would be great. (also,
+</I>&gt;<i> &gt; its not really ready to roll production-wise is it?)
+</I>&gt;<i> xdb_sql does not currently support mod_groups related namespaces but it
+</I>supports
+&gt;<i> roster groups (don't know if it is enough for what you need).
+</I>&gt;<i> otherwise, xdb_sql has already been used in production environments with
+</I>more
+&gt;<i> than 10000 connected users so I think it's ready to roll production-wise
+</I>:<i>) ...
+</I>&gt;<i>
+</I>
+10000 users sounds production ready to me too!  From the sounds of it
+Roster Groups would be enough.... I dont need the ability to subscribe
+to a group... i just need to be able to create users, that are
+auto-magically subscribed to everyone, and everyone auto-magically gets
+'newuser' added to their roster.
+
+I can surely take my 3rd or 4th stab at xdb_sql...  ive tried, and
+posted to the list... its frustrating w/o a central place for all things
+xdb_sql.  I feel i installed it correctly, edited my Makefile correctly
+(for mysql)... the db just never ends up with any user data (and i
+believe i was having problems registering users) so something obvioulsy
+wasnt quite right.
+
+and just to be complete, here are the links to my files!
+
+<A HREF="http://sodatrain.com/jabber.xml.txt">http://sodatrain.com/jabber.xml.txt</A>
+<A HREF="http://sodatrain.com/xdb_sql.xml.txt">http://sodatrain.com/xdb_sql.xml.txt</A>
+<A HREF="http://sodatrain.com/Makefile">http://sodatrain.com/Makefile</A>
+
+
+Thank you-
+
+
+&gt;<i> regards,
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Benoit.
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jadmin mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jadmin">http://mailman.jabber.org/listinfo/jadmin</A>
+</I>--
+|||<i>  |||  |||  |||  |||
+</I>Duncan Shannon
+Premier TechCorps
+
+
+
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="012511.html">[JDEV] Re: [jadmin] xdb_sql ...
+</A></li>
+	<LI>Next message: <A HREF="012583.html">[JDEV] Re: xdb_sql ...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12522">[ date ]</a>
+              <a href="thread.html#12522">[ thread ]</a>
+              <a href="subject.html#12522">[ subject ]</a>
+              <a href="author.html#12522">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

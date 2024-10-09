@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: Jabber sigs/crypto
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Jabber%20sigs/crypto&In-Reply-To=%3C4.1.19990218125921.00a6cf10%40chimera.acm.jhu.edu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="029546.html">
+   <LINK REL="Next"  HREF="029554.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: Jabber sigs/crypto</H1>
+    <B>Corbett J. Klempay</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Jabber%20sigs/crypto&In-Reply-To=%3C4.1.19990218125921.00a6cf10%40chimera.acm.jhu.edu%3E"
+       TITLE="[JDEV] Re: Jabber sigs/crypto">cklempay at acm.jhu.edu
+       </A><BR>
+    <I>Thu Feb 18 12:49:17 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="029546.html">[JDEV] Re: Jabber sigs/crypto
+</A></li>
+        <LI>Next message: <A HREF="029554.html">[JDEV] Re: Jabber sigs/crypto
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29553">[ date ]</a>
+              <a href="thread.html#29553">[ thread ]</a>
+              <a href="subject.html#29553">[ subject ]</a>
+              <a href="author.html#29553">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i>    Backlashes:
+</I>&gt;<i>        A user would have to be careful not to use the exact same phrase at
+</I>&gt;<i>the beginning of an instant message that the encryption function places to
+</I>&gt;<i>denote encrypted text (ie, ---begin encrypted text here --- ; or whatever)
+</I>&gt;<i>or else the recieving client program will try to decipher the plain text.
+</I>
+Hmmm...I'm not sure of an obvious way around this right now, but this seems
+to be an unacceptable (to me at least) requirement...if I were a user of a
+problem like this and was told 'yeah, type your message here, but whatever
+you do, don't start with this particular string'...it just would give me
+the impression that the system was somehow shoddy.  There must be one way
+or another around it...
+
+&gt;<i>        Users would have to have the same client program, or compatible
+</I>&gt;<i>programs (which could be easily accomplished by releasing the lib and code
+</I>&gt;<i>to developers.  Users without client programs would be unable to decrypt
+</I>&gt;<i>secure messages, and should have a intercepting routine that would stop the
+</I>&gt;<i>message from appearing, and send a return message stating so.  This would
+</I>&gt;<i>have to be included in all clients to ensure there is no confusion.  Another
+</I>&gt;<i>thing for the enabled clients would be to not allow encryption to
+</I>&gt;<i>Jabber-only &quot;buddies&quot;, I don't think ICQ or AIM would work   :)    And
+</I>&gt;<i>remember to code for the least common denominator machine, the PC's little
+</I>&gt;<i>endian, to ensure platform portability.
+</I>
+I would have assumed the code would be designed such that it could run on
+either big or little endian, depending on compilation constants.
+
+&gt;<i>        As with any uses of keys, this could seriously hamper &quot;roaming&quot;
+</I>&gt;<i>capabilities of the user (for secure modes, that is).  Unless the keys were
+</I>&gt;<i>stored on the server, which would kinda disrupt the whole idea of the thing
+</I>&gt;:<i>)
+</I>
+Perhaps key distribution could work sort of like this:
+
+- when the user originally registers, the server that registered them
+stores their public key.  None of the other servers have it.
+- when you add someone to your 'buddy' list (or if you explicitly request
+it, I guess), your client contacts its current server to retrieve the key.
+If the server does not have it, then it radiates out in a DNS kind of
+manner...contacting another to see if he has it, and so forth.  Once the
+server has retrieved the key, it can give it to the client.  The server
+will keep keys it had to retrieve from elsewhere for a configurable amount
+of time (like say 2 weeks) and then delete them; this way, dead/unused keys
+will not just infinitely fill up everywhere; the 'dead wood' bloat will go
+on at all servers (as all servers will likely take initial registrations),
+but this way the 'dead wood' redundancy will be kept to a minimum.  Some
+other method could perhaps be implemented at each server to periodically
+kill dead accounts (like if the account/key hasn't been accessed in 6
+months (or some other configurable period) and no other servers have
+retrieved the key, then you can consider him dead).  This way, we prevent
+the case where each server (as time approaches infinity) has an unwieldy
+amount of usued accounts filling up space on it.  
+
+So, with such a design, the average user who uses it on a daily/several
+times a week basis will have quick response; he'll be talking to other
+people who are on a lot, and their keys will be floating around at various
+servers. The worst case is on the first time ever key retrieval when the
+server must traverse the servers all the way to the other user's
+registration server...but even this won't take too long (and that would
+only happen if the other user had never had their key requested anywhere
+before).  So, in the general case, it should be pretty good behavior.
+
+&gt;<i>    Better yet, make an &quot;aware&quot; client program disable the encryption and
+</I>&gt;<i>sigs for &quot;buddies&quot; that are not tagged with &quot;encryption aware&quot; options (like
+</I>&gt;<i>a check-box within a &quot;buddy config&quot; menu).  This would allow unaware clients
+</I>&gt;<i>to not be &quot;readied&quot; for encryption tags.  Aware clients would just alert
+</I>&gt;<i>&quot;their own user&quot; that they cannot send sigs or encrypted text to that
+</I>&gt;<i>particular buddy.
+</I>&gt;<i>
+</I>
+Hmm...this is a good idea.  Anything to make it easier on people with
+encryption unaware clients (like the average AOL-type person).
+
+&gt;<i>    This would require changes to the Jabber server program, to accept and
+</I>&gt;<i>verify users as they log on, but the program would have to be flexible
+</I>&gt;<i>enough to allow non-enabled clients to logon without.  But if implemented,
+</I>&gt;<i>could be done by just verifying the digital signature.
+</I>&gt;<i>
+</I>
+Yeah, so this is what I was talking about earlier...if the Jabber server
+needs to verify a digital sig for every user as they log on, will this
+place an unacceptable processing burden on the server's CPU?  (or in other
+words will server scalability suck because of this processing overhead)  I
+think I need to do some investigation into how fast verification is with a
+variety of algorithms.
+
+&gt;&gt;&gt;<i> Make a 40-bit weak version and a 128-bit one (a la the browsers)?
+</I>&gt;<i>
+</I>&gt;<i>I would think that 40-bit would be quite suffencient for just one or two
+</I>&gt;<i>line messages between friends.
+</I>
+Yeah, _you_ might feel that it's adequate, but lots of people would
+disagree.  I mean, don't get me wrong: I myself am one of those people who
+doesn't bother getting the 128-bit versions of Netscape to do my online
+purchases; I figure if someone feels like taking the effort to get my
+credit card number, they almost deserve it (then again, it would be
+Mastercard who'd be taking the hit, I think).  I think especially if people
+would want to use Jabber in a business environment, they'd be looking for &gt;
+40 bit.  This appears to have already been an issue with ICQ; I guess
+several businesses complained to Mirabilis when they realized how easy it
+was to sniff and spoof with ICQ, and how they couldn't talk about
+business-related matters with confidence when using it.  (to which
+Mirabilis responded that ICQ was never intended for use in a business
+environment, blah blah)  Applied Crypto recommends:
+tactical military info (minutes/hours) 56-64 bits
+product announcements, mergers, interest rates (days/weeks) 64 bits
+long-term business plans (years) 64 bits
+trade secrets (decades) 112 bits
+
+&gt;<i>To go the 128-bit route, is to open a whole
+</I>&gt;<i>can of legal worms in distribution and all that.  Although, I think it would
+</I>&gt;<i>be cool if we went one step further, to say 512-bit, and became the de-facto
+</I>&gt;<i>standard for transmitting credit card numbers and the like through the
+</I>&gt;<i>internet, but then again, that's just dreaming.
+</I>
+As I mentioned a few paragraphs above, I'm wondering if the 'dumbed-down
+key' approach is workable here.
+
+&gt;<i>As soon as my server comes up (should be a month or so, life, you know), I
+</I>&gt;<i>would be glad to host it, if no other host is found by then.
+</I>&gt;<i>
+</I>
+I'm sure I can host some stuff on our ACM machines (hey, we even have an 8
+node Beowulf cluster we're just finishing bringing online, too! :)...our
+main user machine (chimera.acm.jhu.edu) might be of use.
+
+&gt;<i>It has been freed up since Apr 97.  El Gamal sounds good (although I think I
+</I>&gt;<i>read somewhere that it is &quot;relatively easy&quot; to break, ie, the NSA would have
+</I>&gt;<i>no problems at all).
+</I>
+? Are you sure about this one, or perhaps you have it crossed in your mind
+with another one?  If you have seen evidence of this and remember where,
+can you point me there?  All of the reading I've done so far has made no
+mention of known major flaws in El Gamal; it is still regarded as being
+secure (unless some new developments to indicate otherwise have gone on
+more recently than my literature)
+
+&gt;<i>The only other non-patented system I can think of
+</I>&gt;<i>off-hand would be the Blowfish algorithm, by Bruce Schneier, which he
+</I>&gt;<i>distributes freely.  It can handle up to, I think, 448-bit encryption, but
+</I>&gt;<i>has a larger memory footprint.  Either would work, I would guess.
+</I>&gt;<i>
+</I>
+Well, no.  El Gamal is a public key (asymmetric) system; Blowfish is
+symmetric (like DES).  There is no way to use Blowfish for authentication.
+It might be possible to use a hybrid approach (like PGP) and use an
+asymmetric algorithm for signing and authentication, and key management,
+but while still using a symmetric (and thus MUCH faster...on the order of
+1000x faster) algorithm to do the encryption of the bulk data.
+
+CJK
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="029546.html">[JDEV] Re: Jabber sigs/crypto
+</A></li>
+	<LI>Next message: <A HREF="029554.html">[JDEV] Re: Jabber sigs/crypto
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29553">[ date ]</a>
+              <a href="thread.html#29553">[ thread ]</a>
+              <a href="subject.html#29553">[ subject ]</a>
+              <a href="author.html#29553">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] MIU, was: MSN transport questions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20MIU%2C%20was%3A%20MSN%20transport%20questions&In-Reply-To=%3C27735295.1062679294538.JavaMail.harmeet%40kodemuse.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="046766.html">
+   <LINK REL="Next"  HREF="046746.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] MIU, was: MSN transport questions</H1>
+    <B>harmeet at kodemuse.com</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20MIU%2C%20was%3A%20MSN%20transport%20questions&In-Reply-To=%3C27735295.1062679294538.JavaMail.harmeet%40kodemuse.com%3E"
+       TITLE="[JDEV] MIU, was: MSN transport questions">harmeet at kodemuse.com
+       </A><BR>
+    <I>Thu Sep  4 01:41:22 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="046766.html">[JDEV] Jabberd 1.4.2a-10 - Memory comsumption.
+</A></li>
+        <LI>Next message: <A HREF="046746.html">[JDEV] MIU, was: MSN transport questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46765">[ date ]</a>
+              <a href="thread.html#46765">[ thread ]</a>
+              <a href="subject.html#46765">[ subject ]</a>
+              <a href="author.html#46765">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>----- Original Message -----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">maqi at jabberstudio.org</A>
+&gt;<i> 
+</I>&gt;<i> What are the current features of MIU?
+</I>
+Currently MSNP8 is supported for send/recv messages, buddy list
+management and status.  AIM and ICQ is supported for send/recv
+messages, budddy list including nick names retrieval &amp; buddy presence
+notifications.  Yahoo is in very early stage.
+
+I will be adding a scope document shortly with web site for planned
+features with some timeline.
+Here is a precursor:
+
+- Tools to track Protocol changes (use it to figure out deltas from
+  Oscar spec currrently)
+- Support for AIM, ICQ, MSN, Yahoo. IRC and possibly Jabber to
+  follow.
+- Library to support basic messeging but will contain processing
+  data units for additional features.
+- UI for basic IM. Could add direct IM, file transfer etc. if folks
+  help out. This is to allow people to use the library on daily basis
+  and help track IM network issues. Also allows developers to build UI
+  as they Like it.  
+- Code Generation. Bulk of code for all IM Protocols would be
+  generated. I am currently settling on Webmacro for this. The
+  communication part would be common and the library would be easily
+  portable from Java, TCL, C++ etc.
+
+More in a scope and design document prob. in a week or so.
+
+&gt;<i> AIM/ICQ SSI (server side buddy list) support?
+</I>
+Partly. SSI is a large set, but I am working on it. Code generator for
+AIM generates some of SSI stubs, I have handcoded some, but this area
+needs work and re-work
+
+&gt;<i> Full presence support?
+</I>
+for AIM, ICQ, MSN presence is tracked. I expect this would be done. If
+you look at the project and spot holes or if I didn't understand the
+breadth of this question please let me know.
+
+&gt;<i> By what clients is MIU used?
+</I>
+It has its' own UI client and a few people use it. My employer is
+financing (part) of my time on it.
+There will be at some point nightly/weekly test runs and a good
+attempt to fight against library atrophy.  The desire is to have a
+long term, viable open source project with liberal Apache style
+license. Hope is that folks like yourself may get interested and
+contribute to build a healthy community. Contributions, participation
+is very wellcome if MIU project interests you (external site will be
+www.unifiedmessenger.org).
+
+Regd C/Java debate:
+  My 2 cents are that one could generate code for PDUs and use
+  either. I was thinking of generating code for Java, Itcl(OO variant
+  of TCL) and possible C++ and C#.  would be good too. Generation is
+  currently not great for now and nothing I could point to, but trying
+  to understand a good way. If someone wants to help out that is
+  awesome. I think a better forum would be miu-devel list at
+  sourceforge.net but ideas are of course more important than forum.
+
+A few folks asked me offline about MSNP8 details. I am responding here
+as more than one person is interested in this. There is documentation
+for MSNP8, but it is a mess. I am not going to describe MSNP7 as it is
+documented at hypothetic.org. I am also assuming one knows MSN P7
+well. USR command is the key change so revising USR cmd and login steps
+for MSN P7 may be useful.
+
+Here is what I had to do in authentication part. (haven't yet found any other issues)
+- Get rid of INF commands. (just don't send them)
+- Change USR Authentication from MD5 to CKI.
+
+here is the USR sequence.
+C: USR &lt;transactionID&gt; TWN I &lt;userid&gt;   // I means initate
+[S: &lt;may issue redirect&gt;]
+S: USR &lt;transactionID&gt; TWN S .. lc=...
+take the part from 'lc=' till end of line this is the challenge.
+
+Now start SSL.  ( see
+<A HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/miu/src/java/miu/im/msn/MSNHttpsAuth.java">http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/miu/src/java/miu/im/msn/MSNHttpsAuth.java</A>)
+// get the host to do SSL authentication against.
+1. Fetch <A HREF="https://nexus.passport.com/rdr/pprdr.asp">https://nexus.passport.com/rdr/pprdr.asp</A>
+2. Look for response header PassportURLs
+3. Split the header value on ','
+4. Look for part that starts with &quot;DALogin=&quot;. Extract loginURL(host&amp;URI)
+
+// now authenticate
+1. Make get request against LoginURL from DALogin header above.
+2. In get request add this header Authorization: Passport1.4
+   OrgVerb=GET,OrgURL=http%3A%2F%2Fmessenger%2Emsn%2Ecom,sign-in=&lt;urlencoded
+   userid&gt;,pwd=&lt;urlencoded password&gt;,&lt;challenge got from USER
+   &lt;transactionID&gt; TWN S &lt;challenge&gt;
+3. From resonse read 'Authentication-Info' header
+4. Split response value on ',' and obtain value within single
+  quoutes in part that starts with from-pp. This is the authentication
+  value that allows you to to finish login process. Let us call this
+  auth-token.
+
+close ssl and go back to USR login process.
+send 
+C: USR &lt;transactionID&gt; TWN S &lt;auth-token&gt;
+Server should respond with
+S: USR &lt;transactionID&gt; OK
+
+And then you are in MSNP7 and hypothetic.org world.
+
+Feel free to build from this documentation or use the library. I
+can modify the library if you need something for easier reuse. 
+
+
+Cheers,
+Harmeet
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="046766.html">[JDEV] Jabberd 1.4.2a-10 - Memory comsumption.
+</A></li>
+	<LI>Next message: <A HREF="046746.html">[JDEV] MIU, was: MSN transport questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46765">[ date ]</a>
+              <a href="thread.html#46765">[ thread ]</a>
+              <a href="subject.html#46765">[ subject ]</a>
+              <a href="author.html#46765">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

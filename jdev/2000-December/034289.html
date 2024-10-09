@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] FreeBSD woes -OR- FreeBSD accept() issue
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20FreeBSD%20woes%20-OR-%20FreeBSD%20accept%28%29%20issue&In-Reply-To=%3C20001205155528.D310%40Flint.digix.dyndns.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034287.html">
+   <LINK REL="Next"  HREF="034288.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] FreeBSD woes -OR- FreeBSD accept() issue</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20FreeBSD%20woes%20-OR-%20FreeBSD%20accept%28%29%20issue&In-Reply-To=%3C20001205155528.D310%40Flint.digix.dyndns.org%3E"
+       TITLE="[JDEV] FreeBSD woes -OR- FreeBSD accept() issue">keith at digix.dyndns.org
+       </A><BR>
+    <I>Tue Dec  5 14:55:28 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034287.html">[JDEV] Jabber Configure Documentation
+</A></li>
+        <LI>Next message: <A HREF="034288.html">[JDEV] Commission Technical Sales Manager
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34289">[ date ]</a>
+              <a href="thread.html#34289">[ thread ]</a>
+              <a href="subject.html#34289">[ subject ]</a>
+              <a href="author.html#34289">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey jdev,
+
+I've run into a problem with the 1.2/1.3+ server on FreeBSD, in io_select(1.2) and MIO(1.3)
+
+it seems that the accept() call is blocking, even though the listening socket is set to non-blocking...
+
+here is my code to set the sockets into non-blocking.. this is called for every socket that is put into MIO...
+&lt;from mio.c&gt;
+    599     /* set the socket to non-blocking */
+    600     flags =  fcntl(fd, F_GETFL, 0);
+    601     flags |= O_NONBLOCK;
+    602     fcntl(fd, F_SETFL, flags);
+
+... 
+and here is the code that is calling accept()...
+    259 mio _mio_accept(mio m)
+    260 {
+    261     struct sockaddr_in sa;
+    262     size_t sa_size = sizeof(sa);
+    263     int fd;
+    264     mio new;
+    265
+    266     /* pull a socket off the accept queue */
+    267     fd = accept(m-&gt;fd, (struct sockaddr*)&amp;sa, (int*)&amp;sa_size);
+    268     if(fd &lt;= 0)
+    269     {
+    270         /* this will try again eventually,
+    271          * if it's a blocking issue */
+    272         return NULL;
+    273     }
+
+these code snippets were taken from the 1.3 server (HEAD CVS) but is similar in the 1.2 server, and neither work correctly on FreeBSD.. is there something here that I am doing wrong that is obvious (or not)?
+
+if anyone could help out, i would very much appreciate it (along with our FreeBSD friends)
+
+Thanks!
+
+Keith Minkler
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034287.html">[JDEV] Jabber Configure Documentation
+</A></li>
+	<LI>Next message: <A HREF="034288.html">[JDEV] Commission Technical Sales Manager
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34289">[ date ]</a>
+              <a href="thread.html#34289">[ thread ]</a>
+              <a href="subject.html#34289">[ subject ]</a>
+              <a href="author.html#34289">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,228 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber DOM Proposal
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20DOM%20Proposal&In-Reply-To=%3C002d01be93a3%24785f5ae0%241e04a8c0%40na.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="029859.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber DOM Proposal</H1>
+    <B>Dave Smith</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20DOM%20Proposal&In-Reply-To=%3C002d01be93a3%24785f5ae0%241e04a8c0%40na.com%3E"
+       TITLE="[JDEV] Jabber DOM Proposal">dsmith at ai.uwf.edu
+       </A><BR>
+    <I>Sat May  1 02:22:19 CDT 1999</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="029859.html">[JDEV] Jabber DOM Proposal
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29856">[ date ]</a>
+              <a href="thread.html#29856">[ thread ]</a>
+              <a href="subject.html#29856">[ subject ]</a>
+              <a href="author.html#29856">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Greetings...
+
+I have been doing some serious analysis of the current DOM
+(jpair/xpt/xpt_pool) combo, and the W3C recommendation of the DOM. I've also
+been looking at etherx and the jabber transport, trying to understand how
+they use all of the nifty data structures.
+
+Regarding the current DOM, it's unbelievably close to the actual W3C
+recommendation for a DOM. Of course, the naming conventions are all way
+different, but the heart of design is essentially the same. :) I suspect
+that's on purpose. I've been trying to write a DOM according to the spec and
+have found it to be a little more complicated than I originally anticipated.
+Actually, it's not so much that the code is difficult to write, I just want
+to maximize the *performance* and I've been trying different data structures
+so that traversing the DOM nodes will be fast. Unfortunately, the W3C DOM
+really isn't optimized for *any* structure(which ensures flexibility in the
+DOM usage), except a linked list (which is pretty doggone inefficient when
+you go searching for elements by name). I know, I know, Jer, you said it
+would be easier just to work with the existing structure...I just like to
+make sure.. :) While the W3C DOM is handy if you don't know what you're
+dealing with, I'm now in agreement with all the rest of you that our DOM
+should be optmized for the task at hand. As such, I would like formally
+define our DOM so that we can expose it in the client lib and simplify our
+existing code.
+
+Things to keep in mind (will eventually be a proper introduction)
+1.) The Jabber protocol is based on a XML *subset*. As such, the W3C DOM
+really doesn't apply since we don't support all of XML anyway
+2.) The Jabber DOM is more interested in organizing the contents of the XML
+packet than in keeping the contents of packets in sequence. Parent-child
+relationships are preserved, but the order of multiple child tags (with the
+same name)within a parent is *not*.
+
+DOM Public API types &amp; functions
+--------------------------------------------------------------
+The Jabber DOM shall provide the following opaque data types:
+1.) Tag: represents a XML tag; may have sub-tags, attributes, and one (1)
+datum
+2.) Attribute : represents the XML attribute(of the form &lt;name&gt;=&lt;value&gt;)
+associated with a tag
+3.) Datum: represents character data stored between tags
+
+To traverse the DOM, the following operations are provided:
+1.) hasTag(Tag t, String name) : Integer
+    Desc: Determines if &lt;t&gt; has any subtags which match &lt;name&gt;; returns
+number of matching tags
+2.) hasAttribute(Tag t, String name) : Boolean
+    Desc: Determines if &lt;t&gt; has any attributes with name of &lt;name&gt;
+3.) hasDatum(Tag t) : Boolean
+    Desc: Determines if &lt;t&gt; has any character data
+4.) getTag(Tag t, String name) : Tag
+    Desc: Attempt to retrieve first subtag in &lt;t&gt; which matches &lt;name&gt;;
+returns NULL if none are found
+5.) getNextTagSibling(Tag t) : Tag
+    Desc: Returns any following tags (of same name, at this level in DOM
+tree); returns NULL if none exist
+6.) getPrevTagSibling(Tag t) : Tag
+    Desc: Returns any previous tags (of same name, at this level in DOM
+tree); returns NULL if none exist
+7.) getTagName(Tag t) : String
+    Desc: Returns name of a tag
+8.) getTagDatum(Tag t) : Pointer
+    Desc: Returns pointer to tag &lt;t&gt;'s datum; *not* null terminated
+9.) getTagDatumSz(Tag t) : Integer
+    Desc: Returns length of tag &lt;t&gt;'s datum segment
+10.) getAttribute(Tag t, String name) : String
+    Desc: Returns value of tag &lt;t&gt;'s attribute by name of &lt;name&gt;
+11.) putAttribute(Tag t, String name, String value) : void
+    Desc: Adds/replaces attribute &lt;name&gt; with &lt;value&gt; on tag &lt;t&gt;
+12.) addTag(Tag parent, Tag child): void
+    Desc: Adds &lt;child&gt; as subtag to &lt;parent&gt;; does *not* replace existing
+tags
+13.) addDatum(Tag t, Pointer datum, Integer datum_sz) : void
+    Desc: Appends &lt;datum&gt; to end of &lt;t&gt;'s existing datum; increments &lt;t&gt;'s
+datum size accordingly
+14.) deleteTag(Tag t) : void
+    Desc: Releases &lt;t&gt;, including all attributes, children and datum; use
+with care
+15.) deleteAttribute(Tag t, String name)
+    Desc: Releases attribute &lt;name&gt; associated with &lt;t&gt;
+
+DOM Internal representations
+--------------------------------------------------------------
+The Jabber DOM shall use the following internal data structures for the
+representation of parsed XML:
+1.) Node = the equivalent of a XML tag; contains:
+    1.2) Value : String
+    1.3) Attribs : AttribTree
+    1.4) Children : NodeTree
+    1.5) NextSibling : Node
+    1.6) PrevSibling : Node
+
+2.) Attrib = the equivalent of a XML tag attribute; contains:
+    2.1) Name : String
+    2.2) Value : String
+
+3.) AttribTree = a balanced binary tree (AVL, probably) contains Attribs
+keyed by Attrib.Name
+
+4.) NodeList = a unordered linked list of Nodes which all have the same
+name; contains:
+    4.1) Name : String
+    4.2) Nodes : Linked List
+
+4.) NodeTree = a balanced binary tree (AVL, again) containing NodeLists;
+keyed by the NodeList.Name
+
+Traversal of these structures shall be accomplished
+1.) GetFirstNode(NodeTree n, String name) : Node
+     Desc: Searches the NodeTree for the NodeList containing Nodes with
+&lt;name&gt;. Returns first node in that list.
+
+2.) GetNextSibling(Node node) : Node
+     Desc: Returns next sibling node
+
+3.)  HasSibling(Node node) : Boolean
+     Desc: Determines if a given node has another sibling
+
+4.) AddNode(NodeTree n, Node node) : void
+    Desc: Inserts node into NodeTree at the end of a NodeList for Nodes with
+this name
+
+5.) AddChildNode(Node parent, Node child) : void
+    Desc: Inserts a &lt;child&gt; into &lt;parent&gt;.Children
+
+6.) DeleteNode(Node node) : void
+    Desc: Releases a node's memory (including any child nodes); redirects
+siblings next/prev pointers
+
+7.) NewAttribute(Node node, String name,  String value) : void
+    Desc: Creates a new attribute for &lt;node&gt; with &lt;name&gt;=&lt;value&gt;
+
+8.) GetAttribute(Node node, String name) : Attribute
+    Desc: Returns attribute with matching name, or NULL
+
+9.) GetAttributeValue(Node node, String name) : String
+    Desc: Returns value of an attribute with matching name
+
+10.) DeleteAttribute(Node node, String name)
+    Desc: Releases an attribute's memory
+
+The API I have defined below should be sufficient for most parsing tasks.
+It's also fairly optimized for searching (using AVL trees), so you'll be
+able to find tags of a certain type (that is with a given name) in O(log n)
+time. Once you've found those, tags, you're restricted to O(n) traversal.
+Basically, the DOM sorts tags by name and maintains tags with the same name
+in a linked list. So, if you're receiving a roster message with this
+content: &lt;roster&gt;&lt;add&gt;abc&lt;/add&gt;&lt;add&gt;dave&lt;/add&gt;&lt;delete&gt;bob&lt;/delete&gt;&lt;/roster&gt;,
+you'll get the following:
+
+tag tree: Tag(roster, Children(add, delete))
+Child(add) has linked list = Tag(add, Datum(abc)), Tag(add, Datum(dave))
+Child(delete) has linked list = Tag(delete, Datum(bob))
+
+This setup will allow you to quickly isolate all the &lt;add&gt; tags in a
+&lt;roster&gt; packet and process them iteratively.
+
+I realize this representation is mildly redundant. If you read on, you'll
+find I have optimized it a little bit, but it's still more complex than the
+current DOM (jpair/xpt/xpt_pool). However, I feel it is *much* more cohesive
+and maps closer to the actual format of the data. This is key to developing
+a good client library that is flexible and useful. :) I also feel quite
+strongly that the tradeoffs in additional memory consumption is well worth
+the ability to search and process large packets (should they ever occur).
+
+Let me know what you think. :)
+
+d.
+
+
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="029859.html">[JDEV] Jabber DOM Proposal
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29856">[ date ]</a>
+              <a href="thread.html#29856">[ thread ]</a>
+              <a href="subject.html#29856">[ subject ]</a>
+              <a href="author.html#29856">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

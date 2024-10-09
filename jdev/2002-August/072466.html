@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re:Creating a presence server component?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3ACreating%20a%20presence%20server%20component%3F&In-Reply-To=%3C3D57CA08.4B0C91F5%40terravirtual.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="072463.html">
+   <LINK REL="Next"  HREF="072516.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re:Creating a presence server component?</H1>
+    <B>Sylvain Roberdeau</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3ACreating%20a%20presence%20server%20component%3F&In-Reply-To=%3C3D57CA08.4B0C91F5%40terravirtual.net%3E"
+       TITLE="[JDEV] Re:Creating a presence server component?">sylvain.roberdeau at terravirtual.net
+       </A><BR>
+    <I>Mon Aug 12 09:45:29 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="072463.html">[JDEV] Re:Creating a presence server component?
+</A></li>
+        <LI>Next message: <A HREF="072516.html">[JDEV] Re:Creating a presence server component?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72466">[ date ]</a>
+              <a href="thread.html#72466">[ thread ]</a>
+              <a href="subject.html#72466">[ subject ]</a>
+              <a href="author.html#72466">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+    thanks for this way.
+    I hastly changed my config to integrate a listener write in Perl but I
+encounter a pb with config in &quot;jabber.xml&quot;.
+
+&lt;service id=&quot;sniffer&quot;&gt;
+    &lt;host&gt;myserver&lt;/host&gt;
+    &lt;host&gt;sniffer.myserver&lt;/host&gt;
+    &lt;accept&gt;
+        &lt;ip/&gt;
+        &lt;port&gt;myport&lt;/port&gt;
+        &lt;secret&gt;secret&lt;/secret&gt;
+    &lt;/accept&gt;
+&lt;/service&gt;
+
+when I set &lt;host&gt;myserver&lt;/host&gt;  I get an error during user's connection :
+20020812T16:28:59: [notice] (myserver): bouncing a routed packet to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">myuser at myserver</A> from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">20 at c2s</A>/8105460:
+Unable to deliver, destination unknown
+
+when I set &lt;host&gt;localhost&lt;/host&gt; and &lt;host&gt;sniffer.localhost&lt;/host&gt; all work
+fine, but &quot;sniffer&quot; don't receive fragment. It see them only when &quot;to&quot;  JID is
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">... at localhost</A>&quot;.
+&lt;service id=&quot;sniffer&quot;&gt;
+    &lt;host&gt;localhost&lt;/host&gt;
+    &lt;host&gt;sniffer.localhost&lt;/host&gt;
+    &lt;accept&gt;
+        &lt;ip/&gt;
+        &lt;port&gt;myport&lt;/port&gt;
+        &lt;secret&gt;secret&lt;/secret&gt;
+    &lt;/accept&gt;
+&lt;/service&gt;
+
+I don't understand where is the mistake...
+Any help?
+
+Sylvain
+
+Jean-Louis Seguineau /EXC/TEC a &#233;crit :
+
+&gt;<i> Hey,
+</I>&gt;<i>
+</I>&gt;<i> That's easy ! And it has nothing to do with whatever language you use. It
+</I>&gt;<i> does it requires to write a JSM module as long as your component is only
+</I>&gt;<i> meant to process the received packets and not interfere with the JSM
+</I>&gt;<i> processing. This can be applied to build a kind of packet &quot;sniffer&quot; and
+</I>&gt;<i> allow you to count, record, monitor, etc...
+</I>&gt;<i>
+</I>&gt;<i> You just need to declare a service in your jabber.xml so to receive a copy
+</I>&gt;<i> of all packets going through the server.
+</I>&gt;<i>
+</I>&gt;<i> &lt;service id=&quot;sniffer.myserver&quot;&gt;
+</I>&gt;<i>     &lt;host&gt;myserver&lt;/host&gt;
+</I>&gt;<i>     &lt;host&gt;myjpolld.myserver&lt;/host&gt;
+</I>&gt;<i>     &lt;host&gt;sniffer.myserver&lt;/host&gt;
+</I>&gt;<i> ....
+</I>&gt;<i>   plus any aother internal JID that you want to monitor
+</I>&gt;<i>
+</I>&gt;<i>     &lt;accept&gt;
+</I>&gt;<i>         &lt;ip/&gt;
+</I>&gt;<i>         &lt;port&gt;myport&lt;/port&gt;
+</I>&gt;<i>         &lt;secret&gt;secret&lt;/secret&gt;
+</I>&gt;<i>     &lt;/accept&gt;
+</I>&gt;<i> &lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i> Then the sniffer component will receive a copy of all traffic for the
+</I>&gt;<i> &lt;host&gt;s. The component can sit on another server as any component can.
+</I>&gt;<i>
+</I>&gt;<i> There is no way that I jnow of to separate the packets types before they are
+</I>&gt;<i> sent to the component. But you can either make one component per packet type
+</I>&gt;<i> and filter the input, or make a filter component that in turn direct the
+</I>&gt;<i> right packet type to a specific processor component.
+</I>&gt;<i>
+</I>&gt;<i> Hope it helps
+</I>&gt;<i>
+</I>&gt;<i> Jean-Louis
+</I>&gt;<i>
+</I>&gt;<i> ----- Original Message -----
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Message: 3
+</I>&gt;<i> &gt; Date: Sun, 11 Aug 2002 12:48:49 +0200
+</I>&gt;<i> &gt; From: &quot;Sylvain Roberdeau&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sylvain.roberdeau at terravirtual.net</A>&gt;
+</I>&gt;<i> &gt; Organization: Terra Virtual
+</I>&gt;<i> &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; Subject: Re: [JDEV] Creating a presence server component?
+</I>&gt;<i> &gt; Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Hi,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;      sorry if I was not clear :)
+</I>&gt;<i> &gt;     I hope to create an &quot;element&quot; for Jabber server which can intercept
+</I>&gt;<i> &gt; &lt;presence&gt;, &lt;message&gt; and &lt;iq&gt; and apply some specific process. For
+</I>&gt;<i> example, log
+</I>&gt;<i> &gt; all data with a specific structure, file repartition, SNMP messages,
+</I>&gt;<i> MRTG...
+</I>&gt;<i> &gt;     I haven't a good grip on C to build all with this language and I want
+</I>&gt;<i> to
+</I>&gt;<i> &gt; split process in a separate Jabberd (to avoid overload)
+</I>&gt;<i> &gt;     The only way if find it's to build a JSM Module which send specific
+</I>&gt;<i> message
+</I>&gt;<i> &gt; to a service (write in Java, Perl, Python,...)
+</I>&gt;<i> &gt;     Jabberd -&gt;JSM module -&gt; Service
+</I>&gt;<i> &gt;     The constraint is to create a specific message structure between JSM
+</I>&gt;<i> Module
+</I>&gt;<i> &gt; and Service (maybe with &lt;x&gt; namespace).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;     I was looking for an other way :  build a specific service which can
+</I>&gt;<i> receive
+</I>&gt;<i> &gt; all blocks in a separate server. I don't kown if it's possible and I guess
+</I>&gt;<i> there
+</I>&gt;<i> &gt; are some limitations (presence = avalaible or unavalaible, none other by
+</I>&gt;<i> &gt; example).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;     If somebody knows an other solution than the first...
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Sylvain
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: sylvain.roberdeau.vcf
+Type: text/x-vcard
+Size: 466 bytes
+Desc: Carte pour Roberdeau Sylvain
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20020812/f3e7be81/attachment-0002.vcf">https://www.jabber.org/jdev/attachments/20020812/f3e7be81/attachment-0002.vcf</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="072463.html">[JDEV] Re:Creating a presence server component?
+</A></li>
+	<LI>Next message: <A HREF="072516.html">[JDEV] Re:Creating a presence server component?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72466">[ date ]</a>
+              <a href="thread.html#72466">[ thread ]</a>
+              <a href="subject.html#72466">[ subject ]</a>
+              <a href="author.html#72466">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

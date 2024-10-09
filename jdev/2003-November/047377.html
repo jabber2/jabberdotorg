@@ -1,0 +1,351 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: jabberd 1.4.3 release candidate again
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20jabberd%201.4.3%20release%20candidate%20again&In-Reply-To=%3Cbopoij%249eg%241%40sea.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="047375.html">
+   <LINK REL="Next"  HREF="047380.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: jabberd 1.4.3 release candidate again</H1>
+    <B>Frank Seesink</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20jabberd%201.4.3%20release%20candidate%20again&In-Reply-To=%3Cbopoij%249eg%241%40sea.gmane.org%3E"
+       TITLE="[JDEV] Re: jabberd 1.4.3 release candidate again">frank at mail.wvnet.edu
+       </A><BR>
+    <I>Mon Nov 10 22:29:00 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="047375.html">[JDEV] Re: jabberd 1.4.3 release candidate again
+</A></li>
+        <LI>Next message: <A HREF="047380.html">[JDEV] Re: jabberd 1.4.3 release candidate again
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47377">[ date ]</a>
+              <a href="thread.html#47377">[ thread ]</a>
+              <a href="subject.html#47377">[ subject ]</a>
+              <a href="author.html#47377">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey David!
+
+Thanks for the quick response.  Regarding the MU-C end of things, I was 
+just noting some things I observed.  Not sure if a patch is the way to 
+go, but figured I'd better post what I was finding.
+
+Note I'm just standing on the shoulders of giants here.  Whoever did the 
+initial work to make Jabberd compile under Cygwin deserves most of the 
+credit.  I just used his/her work to get the rest to build.  And the 
+rest of the credit goes to the Cygwin and gcc teams, who obviously have 
+made serious leaps since Jabberd 1.4.2 was first released.
+
+That being said, if I understand all this stuff right, what I'm seeing 
+is that under both *nix and Cygwin, building a dynamic library that you 
+can compile against by using a .a library is now pretty much trivial. 
+But the linchpin lies in building such a .a library for an executable. 
+Under *nix this seems no more complex than doing so for a dynamic 
+library, allowing things like Jabberd's plugin architecture, where 
+pieces like MU-C can &quot;see&quot; both functions and variables within the main 
+jabberd.exe just as easily as jabberd.exe can &quot;see&quot; any libraries it was 
+compiled against.
+
+In Cygwin, there appears to be a limitation (I tried my best in my 
+limited capacity to explain this in another message...not sure I was 
+successful).  Noting that one conditional in jabberd.h, it APPEARS that 
+you can use the old 5-step process to build a .a file from the 
+jabberd.exe which contains the exported functions, but NOT variables. 
+At least that's how it looks.  I'm guessing here as I did not write this 
+conditional, but its existence makes me believe that exporting variables 
+is non-trivial under Cygwin vs. exporting functions.  Note the function 
+get_debug_flag() is used EXCLUSIVELY by Cygwin code (both in the dnsrv 
+code and log.c).
+
+Using the Cygwin tools like 'nm' to build an export list from a binary 
+gives you all the functions but apparently NOT the variables that should 
+be &quot;exposed&quot; to outside modules like MU-C.  So when I initially tried 
+compiling MU-C v0.52, the compilation failed with an unresolved 
+reference to deliver__flag, as there was no such export in the jabberd.a 
+file.  I confirmed this by looking at the jabberd.def file created 
+during the compilation of jabberd itself, and sure enough, there was no 
+line in the file (just a basic text file) with deliver__flag.
+
+So I manually added the reference to the export list in the .def file by 
+way of an echo statement in the jabberd Makefile.  When I recompiled 
+jabberd, jabberd.a now contained that in its export table.  This made 
+the compilation of MU-C v0.52 happy, and it appeared to hook in and run 
+just fine...as long as I did not CREATE a room.  I could bring up the 
+MU-C window, click around in it, see it build the conference room list 
+from jabber.org and tipic.com (I was using the Rhymbox client)--implying 
+my jabber server was going out and getting all that info from 
+jabber.org/tipic.com--and even join MU-chats on OTHER servers.  But the 
+moment I tried to CREATE a room on my jabber server, BOOM!  I just 
+suspected that this was when MU-C tried to &quot;touch&quot; deliver__flag.  But I 
+haven't dug that deep to confirm.  I'm sure you probably know this off 
+the top of your head. :-)
+
+I have no idea if this means such a patch is the way to go.  I just 
+wanted to let folks know what I've been finding, and based on what I 
+found, it seems that maybe this can explain why I get such a vicious 
+segfault when I try to create a room with MU-C v0.52.  I mean, jabberd 
+just up and dies with a core dump.  It's like clockwork.  And if any 
+other module writers have been having fits under Cygwin, this might be 
+one thing to note.
+
+If this helps you understand how things are under Cygwin, then great. 
+I'd love to feel like I've done something useful.  But I won't lie to 
+you.  I'm just guessing here, as I'm so rusty in my coding skills that 
+maybe I'm overlooking something simple. :-/  Don't know if the answer is 
+a patch to avoid trying to access deliver__flag, or if like the 
+debug_flag, what's needed is a simple accessor function like 
+get_debug_flag() and its matching modifier function set_debug_flag(). 
+Something like get_deliver__flag() and set_deliver__flag().  But that 
+would require the code be modified in jabberd itself, not in MU-C.
+
+But if you can provide a patch just to test this theory, that'd be 
+awesome.  Not sure how relevant this will be once you bring out v0.6 
+though, as it seems you're doing a good bit of overhauling if I 
+understand right...like the use of glibc, for example.  By the way, I 
+did not have success building that from source under Cygwin.  But again, 
+could just be me.  (Man how I wish all these &quot;givens&quot; like glibc and 
+bind were offered as clean packages under Cygwin, but I don't think I'm 
+the guy for the job. :-()
+
+P.S.  I have an updated Makefile for you for MU-C v0.52.  It greatly 
+simplifies the difference between *nix and Cygwin.  I'm attaching it 
+here.  You'll see what I mean if you compare it to the last one I sent 
+you.  By the way, for MU-C v0.3, all I do is remove hash.o from 
+conference_OBJECTS.
+
+David Sutton wrote:
+&gt;<i> (CC'ing to the MU-Conference list)
+</I>&gt;<i> 
+</I>&gt;<i> Hi there,
+</I>&gt;<i> 
+</I>&gt;<i>   If its the deliver__flag thats causing the issue, then I can make up a
+</I>&gt;<i> patch that will disable it if the cygwin define is set. FYI, this was a
+</I>&gt;<i> hack done in the v0.5.x series, to try and help room entry times, and
+</I>&gt;<i> the associated cpu usage. There is a pipe in the pth scheduler code that
+</I>&gt;<i> is causing large cpu usage if you try and send lots of small stanzas
+</I>&gt;<i> through the jabberd deliver() function one at a time. By triggering that
+</I>&gt;<i> flag, you can ask the hosting jabberd to simply queue up the packets,
+</I>&gt;<i> until the flag is released and you flush the queue by sending the
+</I>&gt;<i> deliver(NULL, NULL). 
+</I>&gt;<i> 
+</I>&gt;<i>   If this does fix things, then I'll incorporate the patch into cvs.
+</I>&gt;<i> 
+</I>&gt;<i> Regards,
+</I>&gt;<i> 
+</I>&gt;<i>   David
+</I>&gt;<i> 
+</I>&gt;<i> On Mon, 2003-11-10 at 15:14, Frank Seesink wrote:
+</I>&gt;<i> 
+</I>&gt;&gt;<i>More info regarding the segfault caused by using -D under Cygwin:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>I have tracked things down to line 826 in ./jabberd/mio.c (indicated 
+</I>&gt;&gt;<i>with &lt;===):
+</I>&gt;&gt;<i>____________________________________________________________
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>         log_debug(ZONE,&quot;mio while loop top&quot;);
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>         /* if we are closing down, exit the loop */
+</I>&gt;&gt;<i>         if(mio__data-&gt;shutdown == 1 &amp;&amp; mio__data-&gt;master__list == NULL)
+</I>&gt;&gt;<i>             break;
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>         /* wait for a socket event */
+</I>&gt;&gt;<i>         FD_SET(mio__data-&gt;zzz[0],&amp;rfds); /* include our wakeup socket */
+</I>&gt;&gt;<i>         if(bcast &gt; 0)
+</I>&gt;&gt;<i>             FD_SET(bcast,&amp;rfds); /* optionally include our 
+</I>&gt;&gt;<i>announcements socket
+</I>&gt;&gt;<i>*/
+</I>&gt;&gt;<i>         retval = pth_select(maxfd+1, &amp;rfds, &amp;wfds, NULL, NULL);   &lt;===
+</I>&gt;&gt;<i>         /* if retval is -1, fd sets are undefined across all platforms */
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>         log_debug(ZONE,&quot;mio while loop, working&quot;);
+</I>&gt;&gt;<i>____________________________________________________________
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>!!!!!
+</I>&gt;&gt;<i>Apparently this call to pth_select() is making Jabberd go BOOM! right on 
+</I>&gt;&gt;<i>startup.
+</I>&gt;&gt;<i>!!!!!
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>(Verified this by adding a few more log_debug() lines just before and 
+</I>&gt;&gt;<i>after the offending call, and sure enough, got up to but not past 
+</I>&gt;&gt;<i>pth_select()).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Did some Googling and best I could find was the following thread:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>	<A HREF="http://www.mail-archive.com/pth-users@gnu.org/msg00052.html">http://www.mail-archive.com/pth-users@gnu.org/msg00052.html</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>which would seem to indicate that possibly enough data is being pushed 
+</I>&gt;&gt;<i>onto the run-time stack to cause the &quot;STACK OVERFLOW&quot;.  Not sure why 
+</I>&gt;&gt;<i>simply enabling debug mode would do this, as all it does is throw out 
+</I>&gt;&gt;<i>statements (and why does this happen under Cygwin but apparently not 
+</I>&gt;&gt;<i>under Linux/etc.?).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>As written in discussion thread listed above:
+</I>&gt;&gt;<i>________________________________________
+</I>&gt;&gt;<i>There are only one good reason I can think of which cause the stack
+</I>&gt;&gt;<i>overflow in such a &quot;simple thread&quot;: Some of your functions or functions
+</I>&gt;&gt;<i>inside some other libraries (libc, etc.) use large variables on the
+</I>&gt;&gt;<i>stack. In C, every variable not declared &quot;static&quot; in a function is per
+</I>&gt;&gt;<i>default allocated from the run-time stack. So, if you have a simple
+</I>&gt;&gt;<i>&quot;char buf[SIZE]&quot; somewhere and SIZE is a few KB in size, this noticably
+</I>&gt;&gt;<i>fills the stack of the thread while the function's scope is active.
+</I>&gt;&gt;<i>________________________________________
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Looked at the code for debug_log() in ./jabberd/log.c, which is 
+</I>&gt;&gt;<i>basically what's called.  log_debug is just a macro that resolves to a 
+</I>&gt;&gt;<i>conditional check to see if debug_flag is set, in which case run 
+</I>&gt;&gt;<i>debug_log() is called (see ./jabberd/jabberd.h lines 109-113).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Only thing I see is the declarations at the beginning of debug_log():
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>     va_list ap;
+</I>&gt;&gt;<i>     char message[MAX_LOG_SIZE];
+</I>&gt;&gt;<i>     char *pos, c = '\0';
+</I>&gt;&gt;<i>     int offset;
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>which might push a good bit of data on the stack depending on what the 
+</I>&gt;&gt;<i>size of the va_list type is and the value of MAX_LOG_SIZE (which is 1024 
+</I>&gt;&gt;<i>as seen on line 105 in jabberd.h).  But if that's the cause, I don't 
+</I>&gt;&gt;<i>think I'd be seeing the last debug message (&quot;mio while loop top&quot;) as the 
+</I>&gt;&gt;<i>program should be bombing out as the code enters debug_log().  And 
+</I>&gt;&gt;<i>considering this function is called, entered, run, and returned, any 
+</I>&gt;&gt;<i>values it pushed on the stack are popped before continuing.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>The only other thing I see that might affect the run-time stack are the 
+</I>&gt;&gt;<i>calls to FD_SET(), which I'm not quite sure how they resolve.  All caps 
+</I>&gt;&gt;<i>indicates a #define, but did a grep through the code and found nothing. 
+</I>&gt;&gt;<i>   Looked at the GNU Pth docs, and nothing there except references to 
+</I>&gt;&gt;<i>lower-case 'fd_set' var type.  Googling makes me think this is some kind 
+</I>&gt;&gt;<i>of Unix standard connected with the select() function (which appears to 
+</I>&gt;&gt;<i>be superceded/replaced by GNU Pth where it's used), so not quite sure 
+</I>&gt;&gt;<i>how one plays with the other.  But maybe FD_SET under Cygwin pushes more 
+</I>&gt;&gt;<i>data onto the stack than it does under *nix?  But does turning on debug 
+</I>&gt;&gt;<i>output really cause this?  Not sure they're connected when I look at the 
+</I>&gt;&gt;<i>code.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Guess at this point I'm kind of at a loss.  Looks like serious reading 
+</I>&gt;&gt;<i>time to try and get up to speed on all this.  But if anyone out there-- 
+</I>&gt;&gt;<i>unlike me out on the fringes--has intimate knowledge of this code or 
+</I>&gt;&gt;<i>just the whole pthread vs. GNU Pth function calls, I'd love to get some 
+</I>&gt;&gt;<i>insight.  Thanks in advance for reading this far and for any help you 
+</I>&gt;&gt;<i>can provide.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>____________________________________________________________
+</I>&gt;&gt;<i>ACCESSING VARIABLES FROM OUTSIDE COMPILED MODULE UNDER CYGWIN
+</I>&gt;&gt;<i>AND MU-Conference
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>After noting lines 109-113 in ./jabberd/jabberd.h, it occurred to me 
+</I>&gt;&gt;<i>that jabberd.exe is compiled slightly differently under Cygwin than it 
+</I>&gt;&gt;<i>is under *nix.  *nix version just checks debug_flag var directly (which 
+</I>&gt;&gt;<i>is declared in ./jabberd/log.c), whereas Cygwin version calls a trivial 
+</I>&gt;&gt;<i>function to do same.  (NOTE:  Did a grep on all the jabberd code, and 
+</I>&gt;&gt;<i>this is the ONLY reference to __CYGWIN__ I can find in the entire source 
+</I>&gt;&gt;<i>tree!!  So is this really the only difference in code now?)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Not sure why that's necessary, but removing this conditional, using just 
+</I>&gt;&gt;<i>the *nix version of the #define, and re-compiling gave a few hiccups. 
+</I>&gt;&gt;<i>Had to add a line to the Makefile to add one more export variable for 
+</I>&gt;&gt;<i>doing the non-*nix build of export lib.  But even then things weren't 
+</I>&gt;&gt;<i>100% right, as running jabberd.exe gave issues.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>I suspect this all ties in with the way dynamic libraries can hook back 
+</I>&gt;&gt;<i>into variables exported from executables in *nix but trying to do 
+</I>&gt;&gt;<i>something similar under Cygwin gives all kinds of headaches (see post 
+</I>&gt;&gt;<i>from 6Nov2003 for more info).  And this simple &quot;wrapper&quot; function might 
+</I>&gt;&gt;<i>be a trick, possibly because under Cygwin functions can be exported but 
+</I>&gt;&gt;<i>variables cannot?  (That's a question, not a statement.)  I have no 
+</I>&gt;&gt;<i>clue.  So I've left this alone for now.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>But this might explain why MU-Conference v0.52 blows up on me as well, 
+</I>&gt;&gt;<i>whereas v0.3 does not.  MU-C v0.52 appears to try and connect back into 
+</I>&gt;&gt;<i>a variable deliver__flag, which is defined in ./jabberd/deliver.c and 
+</I>&gt;&gt;<i>compiled into jabberd.exe.  I added this variable to the export list via 
+</I>&gt;&gt;<i>the Makefile, which allows MU-C v0.52 to compile/link against 
+</I>&gt;&gt;<i>./jabberd/jabberd.a just fine, but MU-C still blows sky high when a room 
+</I>&gt;&gt;<i>is created.  However, MU-C v0.3 suffers none of these issues, and 
+</I>&gt;&gt;<i>compiles fine without that entry, implying MU-C v0.3 does NOT try to 
+</I>&gt;&gt;<i>look at deliver__flag.  Anyway, just more observations.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Frank Seesink wrote:
+</I>&gt;&gt;<i>...
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>Ok, I admit it.  I'm kind of on a mission.  At this point Jabberd 
+</I>&gt;&gt;&gt;<i>1.4.3CVS compiles/links/runs the same under Cygwin as it does on other 
+</I>&gt;&gt;&gt;<i>*nix platforms, with the one exception of running in debug mode (using 
+</I>&gt;&gt;&gt;<i>the -D switch).
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>So let me ask this, as I'm just starting to dig into the source code 
+</I>&gt;&gt;&gt;<i>itself.  Can anyone steer me in the right direction as to why, whenever 
+</I>&gt;&gt;&gt;<i>I attempt to fire up Jabberd in debug mode, I see the following:
+</I>&gt;&gt;&gt;<i>____________________________________________________________
+</I>&gt;&gt;&gt;<i>$ ./jabberd/jabberd.exe -D
+</I>&gt;&gt;&gt;<i>Sat Nov  8 18:44:11 2003  mio.c:787 MIO is starting up
+</I>&gt;&gt;&gt;<i>Sat Nov  8 18:44:11 2003  mio.c:816 mio while loop top
+</I>&gt;&gt;&gt;<i>**Pth** STACK OVERFLOW: thread pid_t=0xa040750, name=&quot;unknown&quot;
+</I>&gt;&gt;&gt;<i>Segmentation fault
+</I>&gt;&gt;&gt;<i>____________________________________________________________
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>This happens regardless of whether I have configured/built jabberd with 
+</I>&gt;&gt;&gt;<i>(--enable-ssl) or without SSL support.  So I've ruled that out at least. 
+</I>&gt;&gt;&gt;<i> It fails with the generic jabber.xml config.  Basically, I have not 
+</I>&gt;&gt;&gt;<i>been able to get Jabberd to fire up if I use the -D switch.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>The actual pid_t number may vary (haven't been paying enough attention 
+</I>&gt;&gt;&gt;<i>to notice if it changes or if there's a pattern to be honest), but the 
+</I>&gt;&gt;&gt;<i>sequence of messages is always the same.  Jabberd starts and dies in the 
+</I>&gt;&gt;&gt;<i>blink of an eye.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>However, simply NOT running in debug mode avoids ALL this, and I've had 
+</I>&gt;&gt;&gt;<i>a Jabber server running for weeks at a time in production (granted, low 
+</I>&gt;&gt;&gt;<i>user load, but still), usually only restarting when I reboot the Windows 
+</I>&gt;&gt;&gt;<i>XP Pro box it's running on.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>Has anyone else experienced this kind of behavior on any other platform? 
+</I>&gt;&gt;&gt;<i>  Any insight into where to look?  I realize running Cygwin under 
+</I>&gt;&gt;&gt;<i>Windows, I'm working in a cludged environment at best.  But figured it 
+</I>&gt;&gt;&gt;<i>best to ask you good folks if you've ever seen this before, as you might 
+</I>&gt;&gt;&gt;<i>save me a great deal of time in finding the source of the problem...even 
+</I>&gt;&gt;&gt;<i>if the end result is just &quot;It's a limitation of Cygwin/Windows.  Suck it 
+</I>&gt;&gt;&gt;<i>up.&quot; :-)
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>In the meantime, the hunt continues...
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>_______________________________________________
+</I>&gt;&gt;<i>jdev mailing list
+</I>&gt;&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: Makefile.mu-conference-0.52
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20031110/73da63b9/attachment.asc">https://www.jabber.org/jdev/attachments/20031110/73da63b9/attachment.asc</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="047375.html">[JDEV] Re: jabberd 1.4.3 release candidate again
+</A></li>
+	<LI>Next message: <A HREF="047380.html">[JDEV] Re: jabberd 1.4.3 release candidate again
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47377">[ date ]</a>
+              <a href="thread.html#47377">[ thread ]</a>
+              <a href="subject.html#47377">[ subject ]</a>
+              <a href="author.html#47377">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

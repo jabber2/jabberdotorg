@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] About IRC Transport
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20About%20IRC%20Transport&In-Reply-To=%3C1003405115.2855.11.camel%40pere-mobile.sys.legend.net.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039252.html">
+   <LINK REL="Next"  HREF="039234.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] About IRC Transport</H1>
+    <B>David Sutton</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20About%20IRC%20Transport&In-Reply-To=%3C1003405115.2855.11.camel%40pere-mobile.sys.legend.net.uk%3E"
+       TITLE="[JDEV] About IRC Transport">dsutton at legend.co.uk
+       </A><BR>
+    <I>Thu Oct 18 06:38:35 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039252.html">[JDEV] About IRC Transport
+</A></li>
+        <LI>Next message: <A HREF="039234.html">[JDEV] How to find the presence of a user at server side (was
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39219">[ date ]</a>
+              <a href="thread.html#39219">[ thread ]</a>
+              <a href="subject.html#39219">[ subject ]</a>
+              <a href="author.html#39219">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+  I've also been looking at the transport, and found a different bug or
+two, although its mainly a problem with the implementation. On line 744,
+where we are trying to get a hash of users for a channel, the character
+'=' is used to find the part of the line which has the channel name in
+it. The problem is that i've seen that it can also be a '@', which will
+cause it to fail. The fix I implemented works as follows:
+
+ /* :me 353 mynick = #channel :@me +you them */
+ char *ptr;
++char *delimit = &quot;@ &quot;;
+ chans channel;
+            
+ ptr = strchr(icpr-&gt;next, '=');
+ if(ptr == NULL)
++{
++    ptr = strstr(icpr-&gt;next, delimit);
++    if(ptr == NULL)
++    {
++        continue;
++    }
++}
+
+I had to use &quot;@ &quot; as using the @ by itself would mean it could match
+op'ed users.
+
+I know that Benoit has done some excellent work on the transport so far
+and I would like to offer my help and services.
+
+Regards,
+
+  David
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039252.html">[JDEV] About IRC Transport
+</A></li>
+	<LI>Next message: <A HREF="039234.html">[JDEV] How to find the presence of a user at server side (was
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39219">[ date ]</a>
+              <a href="thread.html#39219">[ thread ]</a>
+              <a href="subject.html#39219">[ subject ]</a>
+              <a href="author.html#39219">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

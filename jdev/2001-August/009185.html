@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] load backend pgsql fixed - now xdb_sql and length of username
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20load%20backend%20pgsql%20fixed%20-%20now%20xdb_sql%20and%20length%20of%20username&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="009171.html">
+   <LINK REL="Next"  HREF="009194.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] load backend pgsql fixed - now xdb_sql and length of username</H1>
+    <B>Barry Hoggard</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20load%20backend%20pgsql%20fixed%20-%20now%20xdb_sql%20and%20length%20of%20username&In-Reply-To="
+       TITLE="[JDEV] load backend pgsql fixed - now xdb_sql and length of username">barry at tristanmedia.com
+       </A><BR>
+    <I>Wed Aug 29 14:47:52 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="009171.html">[JDEV] How can I debug &quot;cannot load backend 'pgsql' &quot; error?
+</A></li>
+        <LI>Next message: <A HREF="009194.html">[JDEV] load backend pgsql fixed - now xdb_sql and length of username
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9185">[ date ]</a>
+              <a href="thread.html#9185">[ thread ]</a>
+              <a href="subject.html#9185">[ subject ]</a>
+              <a href="author.html#9185">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Here's the answer.  Doing a &quot;make CPPFLAGS=-DPOSTGRESQL_BACKEND&quot; without a
+full make clean didn't clear out xdb_sql_backend.o, so it was missing the
+code to connect.
+
+Sorry for the wasted bandwidth.
+
+Now it's connecting.  My test machine has a long hostname, so I found that
+32 varchars wasn't enough for username.  I've increased it to 64 and I'm
+testing to see what, if anything, is going to break.
+
+
+----- Original Message -----
+From: &quot;Barry Hoggard&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">barry at tristanmedia.com</A>&gt;
+To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Sent: Wednesday, August 29, 2001 12:47 PM
+Subject: [JDEV] How can I debug &quot;cannot load backend 'pgsql' &quot; error?
+
+
+&gt;<i> I'm trying to integrate jabber with an existing postgres database.  I can
+</I>&gt;<i> make the installation work fine with xdb_file.
+</I>&gt;<i>
+</I>&gt;<i> Everything compiled cleanly with make CPPFLAGS=-DPOSTGRESQL_BACKEND, but
+</I>&gt;<i> when I start it up, I get:
+</I>&gt;<i>
+</I>&gt;<i> Wed Aug 29 12:38:25 2001  deliver.c:460 DELIVER 3:-internal &lt;log
+</I>&gt;<i> type='alert' from='-internal'&gt;[xdbsql_config_init] cannot load backend
+</I>&gt;<i> &amp;apos;pgsql&amp;apos;&lt;/log&gt;
+</I>&gt;<i> Wed Aug 29 12:38:25 2001  deliver.c:649 delivering to instance 'elogger'
+</I>&gt;<i> 20010829T16:38:25: [alert] (-internal): [xdbsql_config_init] cannot load
+</I>&gt;<i> backend 'pgsql'
+</I>&gt;<i> Wed Aug 29 12:38:25 2001  deliver.c:460 DELIVER 3:-internal &lt;log
+</I>&gt;<i> type='alert' from='-internal'&gt;[xdb_sql] configuration failed&lt;/log&gt;
+</I>&gt;<i> Wed Aug 29 12:38:25 2001  deliver.c:649 delivering to instance 'elogger'
+</I>&gt;<i> 20010829T16:38:25: [alert] (-internal): [xdb_sql] configuration failed
+</I>&gt;<i>
+</I>&gt;<i> My jabber.xml file contains this for the relevant area:
+</I>&gt;<i>
+</I>&gt;<i>   &lt;xdb id=&quot;xdb_sql&quot;&gt;
+</I>&gt;<i>     &lt;host/&gt;
+</I>&gt;<i>         &lt;ns&gt;jabber:iq:roster&lt;/ns&gt;
+</I>&gt;<i>         &lt;ns&gt;jabber:x:offline&lt;/ns&gt;
+</I>&gt;<i>         &lt;ns&gt;jabber:iq:filter&lt;/ns&gt;
+</I>&gt;<i>         &lt;ns&gt;jabber:iq:last&lt;/ns&gt;
+</I>&gt;<i>         &lt;ns&gt;jabber:iq:auth&lt;/ns&gt;
+</I>&gt;<i>         &lt;ns&gt;jabber:iq:auth:0k&lt;/ns&gt;
+</I>&gt;<i>         &lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+</I>&gt;<i>         &lt;ns&gt;vcard-temp&lt;/ns&gt;
+</I>&gt;<i>         &lt;load&gt;
+</I>&gt;<i>           &lt;xdb_sql&gt;./xdb_sql/xdb_sql.so&lt;/xdb_sql&gt;
+</I>&gt;<i>         &lt;/load&gt;
+</I>&gt;<i>         &lt;jabberd:include&gt;./xdb_sql/xdb_sql.xml&lt;/jabberd:include&gt;
+</I>&gt;<i>   &lt;/xdb&gt;
+</I>&gt;<i>
+</I>&gt;<i> I've changed the xdb_sql.xml file to contain this for the xdb_sql tag:
+</I>&gt;<i>
+</I>&gt;<i>   &lt;xdb_sql xmlns=&quot;jabberd:xdb_sql:config&quot;&gt;
+</I>&gt;<i>     &lt;!-- Backend to use --&gt;
+</I>&gt;<i>     &lt;backend&gt;postgres&lt;/backend&gt;
+</I>&gt;<i>
+</I>&gt;<i>     &lt;!-- Configure information about the SQL connection --&gt;
+</I>&gt;<i>     &lt;connection&gt;
+</I>&gt;<i>       &lt;host&gt;pollux&lt;/host&gt;
+</I>&gt;<i>       &lt;db&gt;jabber&lt;/db&gt;
+</I>&gt;<i>       &lt;user&gt;jabber&lt;/user&gt;
+</I>&gt;<i>       &lt;pass&gt;&lt;/pass&gt;
+</I>&gt;<i>     &lt;/connection&gt;
+</I>&gt;<i>
+</I>&gt;<i> ...
+</I>&gt;<i>
+</I>&gt;<i> I can connect from this machine to my postgres if I type &quot;psql -hpollux
+</I>&gt;<i> jabber jabber&quot; at the command prompt.
+</I>&gt;<i>
+</I>&gt;<i> I don't see an obvious place for failure in the code for
+</I>xdbsql_config_init.
+&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Barry Hoggard
+</I>&gt;<i> Tristan Media LLC
+</I>&gt;<i> e: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">barry at tristanmedia.com</A>
+</I>&gt;<i> p: 212-627-1596
+</I>&gt;<i> aim: hoggardb
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="009171.html">[JDEV] How can I debug &quot;cannot load backend 'pgsql' &quot; error?
+</A></li>
+	<LI>Next message: <A HREF="009194.html">[JDEV] load backend pgsql fixed - now xdb_sql and length of username
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9185">[ date ]</a>
+              <a href="thread.html#9185">[ thread ]</a>
+              <a href="subject.html#9185">[ subject ]</a>
+              <a href="author.html#9185">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

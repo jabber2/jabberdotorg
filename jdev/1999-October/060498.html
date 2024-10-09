@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Connectivity and streaming.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Connectivity%20and%20streaming.&In-Reply-To=%3C199910131600.LAA31570%40ductape.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="060490.html">
+   <LINK REL="Next"  HREF="060499.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Connectivity and streaming.</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Connectivity%20and%20streaming.&In-Reply-To=%3C199910131600.LAA31570%40ductape.net%3E"
+       TITLE="[JDEV] Connectivity and streaming.">tcharron at ductape.net
+       </A><BR>
+    <I>Wed Oct 13 11:00:10 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="060490.html">[JDEV] Connectivity and streaming.
+</A></li>
+        <LI>Next message: <A HREF="060499.html">[JDEV] Connectivity and streaming.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#60498">[ date ]</a>
+              <a href="thread.html#60498">[ thread ]</a>
+              <a href="subject.html#60498">[ subject ]</a>
+              <a href="author.html#60498">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Quoting Scott Robinson &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">quad at jabber.org</A>&gt;:
+&gt;<i> &lt;disclaimer&gt;
+</I>&gt;<i> This post is being originated from the fact that there are many able coders
+</I>&gt;<i> on this list, but none can become involved because Jer leaves many details
+</I>&gt;<i> for later. The coding architecture of Jabber is still very centralized. The
+</I>&gt;<i> recent message-level routing discussion has given me much faith in The
+</I>&gt;<i> Jabber Team, and I believe that we can work from what we currently have
+</I>&gt;<i> into
+</I>&gt;<i> developing a full v0.7 protocol spec.
+</I>&gt;<i> &lt;/disclaimer&gt;
+</I>
+  I agree, in part.  Anyone is welcome to join libs-dev and start chatting, but 
+I have seen '0' traffic on that list..  Nadda, zlich, zip.  I guess I don't 
+understand your complaint here?  It it that you think Jer is idea hording?
+
+&gt;<i> &lt;summary&gt;
+</I>&gt;<i> Currently, on docs.jabber.org, Jer has posted a very sketchy example of an
+</I>&gt;<i> XML streaming system. While this works for many systems, and it especially
+</I>&gt;<i> flows well with our &quot;coherent XML document&quot; paradigm, I would like to place
+</I>&gt;<i> the following on the table: we cannot assume we'll be running on a reliable
+</I>&gt;<i> socket medium.
+</I>&gt;<i> &lt;/summary&gt;
+</I>
+  This I CAN agree with.  I truely wish we had a more solid document on exactly 
+what the XML Streams will look like, etc..
+
+&gt;<i> &lt;completeness&gt;
+</I>&gt;<i> a) client and transport
+</I>&gt;<i> Between the client and transport, the connection requirements are unknown
+</I>&gt;<i> as well as the data. This is exactly what the Jabber paradigm is in that we
+</I>&gt;<i> want to create transports which can connect to ANY IM-esque protocol in
+</I>&gt;<i> existance as well as ones to come. This means we cannot place any
+</I>&gt;<i> requirements upon the data coming into our transports.
+</I>&gt;<i> &lt;/completeness&gt;
+</I>
+  Err, I don't think there are any limitations.  Heck, the 
+transport&lt;=&gt;Etherx&lt;=&gt;transport protocol encapsulates everything inside of a 
+CDATA segment.  To be honest, I'm RELYING on the way etherx encapsulates the 
+data to handle NON Jabber traffic..
+ 
+&gt;<i> &lt;important&gt;
+</I>&gt;<i> b) transport and router
+</I>&lt;SNIP&gt;
+&gt;<i> general thought (as well as what I've seen in the documentation) is we'll
+</I>&gt;<i> have a reliable (TCP) connection between the transport and router. We
+</I>&gt;<i> cannot
+</I>&gt;<i> assume this! This is only available on a TCP/IP network, which by the
+</I>&gt;<i> design
+</I>&gt;<i> of Jabber we cannot have network-level assumptions of this sort. New forms
+</I>&gt;<i> of intra-level communication will appear. Example: direct router access as
+</I>&gt;<i> seen in the new direct jabbertransport access and direct etherx access via
+</I>&gt;<i> IPC/shared memory.
+</I>
+  Ok, confusal here.  I *THINK* I grasp what your saying here, but technically 
+speaking, there is no reason why there HAS to be a persistent connection 
+between the router and the transport.  Who ever said that?  Granted, THERE HAS 
+TO BE A CONNECTION LONG ENOUGH to transfer the data, and we cannot 'split' it, 
+but it does nOT have to be persistant.  Shared memory I'm not getting.  Shared 
+memory doesn't work anything like a socket connection.  Please, explain more 
+regarding what you mean?
+
+&gt;<i> c) router and router
+</I>&gt;<i> We've also made the assumption communications between routers will be
+</I>&gt;<i> TCP/IP
+</I>&gt;<i> only. The XML streams recommended implementation has given direct support
+</I>&gt;<i> for this. A router on a unreliable network would be forced to understand
+</I>&gt;<i> (or
+</I>&gt;<i> parse) the contents of a &quot;properly&quot; implemented Jabbertransport. As it is
+</I>&gt;<i> also stated in the plans for our routing system, in general, we cannot have
+</I>&gt;<i> this.
+</I>&gt;<i> &lt;/improtant&gt;
+</I>
+  (*BANG*)  That was my remaining brain cell exploding.  No one has stepped 
+forward and implemented any other protocols beside's TCP/IP.  There is NO 
+REASON why someone could not add that capability.  I bet technically it 
+wouldn't be all that hard to rig in something like IPX..  (Ok, I'm gonna say 
+it, but EEEEEWWWWWWWw!!!!)
+
+&gt;<i> &lt;solution&gt;
+</I>&gt;<i> Rather than force network requirements upon our communications layers, we
+</I>&gt;<i> should reduce the needs of our REFERENCE transport and router. XML
+</I>&gt;<i> streaming, as an example, should have recommendations for short/burst
+</I>&gt;<i> connections and streams. In that, jabbertransport would need to communicate
+</I>&gt;<i> with etherx in much shorter (hopefully, a single message per connection)
+</I>&gt;<i> squeals.
+</I>
+  Again, there is nothing saying that the transport needs to stay connected.  
+Etherx should be able to spool messages when the transport is not connected, 
+not a problem.  Actually, one of the reasons when we where looking at the route 
+tag that I mentioned archived, simply becouse this is what etherx would do when 
+it can't send the message, and basically spools it offline to ensure the 
+message persists..
+
+&gt;<i> &lt;silver lining&gt;
+</I>&gt;<i> There is hope though! I can see an improved T&amp;R (JabberBox) protocol which
+</I>&gt;<i> allows for route-checking, and more importantly a way of querying the MTS
+</I>&gt;<i> (maximum transmission size) and whether a connection is &quot;reliable.&quot; This,
+</I>&gt;<i> unfortunately, would only be on a transport-to-transport basis. However,
+</I>&gt;<i> remember we want all the processing in the transports and not the routers
+</I>&gt;<i> (or clients to a level).
+</I>&gt;<i> &lt;/silver lining&gt;
+</I>&gt;<i> &lt;/solution&gt;
+</I>
+  Yes, we want the processing of the XML messages within the transports, but 
+I'd suppose that we could setup the XML streams to allow fragmented XML 
+streams, allowing The streams to be split up..  (Oh dear god, what do we do 
+with the routing data when it goes two different ways..).  Heck, we could send 
+the XML streams as larger sized UDP packets..  That's as unreliable as you can 
+get..
+
+&gt;<i> &lt;alternatives&gt;
+</I>&gt;<i> I can imagine posts of &quot;well, then we can the unreliable systems be FORCED
+</I>&gt;<i> to code a reliable protocol underneath Jabber.&quot; However, I, as a developer,
+</I>&gt;<i> would not appreciate network transport requirements to come bundled into
+</I>&gt;<i> this new &quot;universal&quot; communications system. It might even give me reason to
+</I>&gt;<i> move to a project which didn't require even MORE coding on my part.
+</I>
+  This is all at the stream layer, IMHO.  The Jabber protocol that most people 
+have been using/looking at is a TCP/IP based protocol, no questions asked.  
+That's what Jabbertransport is currently IS.  I would like to see, for the 
+reasons you stated, that etherx itself support fragmentation, etc of messages, 
+and perhaps even tag the streams with 'Packet ID's'.  This can all be done with 
+what we have now.  I don;t think we've been veering AWAY from a non TCP/IP 
+oriented situation, I just don;t think we've headed twards it either.
+
+  To that point, I'd also like to say we've been gearing it twards person to 
+person IM.  This fits in your example, as when I want to send/recieve SMS 
+messages via cellphone/pager.  The data transfered may not be someone saying 
+'Hello, how was your day..' type of messages..  It could easily be something 
+like log file entries, public key transfers, etc..  etc..
+
+  Now, that's not to say we've geared AWAY from this, we just haven't focused 
+on it.
+
+&gt;<i> We want to take over the world, let's give the world a reason to take us
+</I>&gt;<i> with open arms.
+</I>
+  Good way to put it.  I get what your trying to say, I just perhaps don't 
+agree with the idea that we're straying away from anything BUT TCP/IP..
+
+--- 
+Thomas Charron
+&lt;&lt; Wanted: One decent sig &gt;&gt;
+&lt;&lt; Preferably litle used  &gt;&gt;
+&lt;&lt; and stored in garage.  ?&gt;&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="060490.html">[JDEV] Connectivity and streaming.
+</A></li>
+	<LI>Next message: <A HREF="060499.html">[JDEV] Connectivity and streaming.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#60498">[ date ]</a>
+              <a href="thread.html#60498">[ thread ]</a>
+              <a href="subject.html#60498">[ subject ]</a>
+              <a href="author.html#60498">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

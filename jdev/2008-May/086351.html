@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] XEP XSL
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XEP%20XSL&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE612A1EC076B9%40zamail01.k2workflow.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="086361.html">
+   <LINK REL="Next"  HREF="086352.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] XEP XSL</H1>
+    <B>Jonathan Dickinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XEP%20XSL&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE612A1EC076B9%40zamail01.k2workflow.com%3E"
+       TITLE="[jdev] XEP XSL">jonathanD at k2.com
+       </A><BR>
+    <I>Fri May 23 06:09:43 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="086361.html">[jdev] help us fix jabberd2 and get $500
+</A></li>
+        <LI>Next message: <A HREF="086352.html">[jdev] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86351">[ date ]</a>
+              <a href="thread.html#86351">[ thread ]</a>
+              <a href="subject.html#86351">[ subject ]</a>
+              <a href="author.html#86351">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi All,
+
+I appropriated the XEP XSL for use in one of the projects I am working on. I found one thing, the &lt;spec&gt; element could really become useful. For example:
+
+See &lt;spec&gt;0001&lt;/spec&gt; on how to write XEP documents.
+
+Here are the changes I made:
+
+&lt;xsl:template match='spec' mode='list'&gt;
+    &lt;xsl:param name='speccount' select='&quot;&quot;'/&gt;
+    &lt;xsl:variable name='specpos' select='position()'/&gt;
+    &lt;xsl:choose&gt;
+      &lt;xsl:when test='$specpos &amp;lt; $speccount'&gt;
+        &lt;a&gt;
+          &lt;xsl:attribute name='href'&gt;
+            &lt;xsl:text&gt;<A HREF="http://www.xmpp.org/extensions/xep-&lt;/xsl:text">http://www.xmpp.org/extensions/xep-&lt;/xsl:text</A>&gt;
+            &lt;xsl:value-of select='.' /&gt;
+            &lt;xsl:text&gt;.html&lt;/xsl:text&gt;
+          &lt;/xsl:attribute&gt;
+          XEP-&lt;xsl:value-of select='.'/&gt;
+        &lt;/a&gt;
+        &lt;xsl:text&gt;, &lt;/xsl:text&gt;
+      &lt;/xsl:when&gt;
+      &lt;xsl:otherwise&gt;
+        &lt;a&gt;
+          &lt;xsl:attribute name='href'&gt;
+            &lt;xsl:text&gt;<A HREF="http://www.xmpp.org/extensions/xep-&lt;/xsl:text">http://www.xmpp.org/extensions/xep-&lt;/xsl:text</A>&gt;
+            &lt;xsl:value-of select='.' /&gt;
+            &lt;xsl:text&gt;.html&lt;/xsl:text&gt;
+          &lt;/xsl:attribute&gt;
+          XEP-&lt;xsl:value-of select='.'/&gt;
+        &lt;/a&gt;
+      &lt;/xsl:otherwise&gt;
+    &lt;/xsl:choose&gt;
+  &lt;/xsl:template&gt;
+
+---------------
+
+&lt;xsl:choose&gt;
+            &lt;xsl:when test='$dependencies.count &amp;gt; 0'&gt;
+              &lt;xsl:text&gt;Dependencies: &lt;/xsl:text&gt;
+              &lt;xsl:apply-templates select='/xep/header/dependencies/spec' mode='list'&gt;
+                &lt;xsl:with-param name='speccount' select='$dependencies.count'/&gt;
+              &lt;/xsl:apply-templates&gt;
+
+&lt;!-- Apply to others in header --&gt;
+
+---------------
+
+  &lt;xsl:template match='spec'&gt;
+    &lt;a&gt;
+      &lt;xsl:attribute name='href'&gt;
+        &lt;xsl:text&gt; <A HREF="http://www.xmpp.org/extensions/xep-&lt;/xsl:text">http://www.xmpp.org/extensions/xep-&lt;/xsl:text</A>&gt;
+        &lt;xsl:value-of select='.' /&gt;
+        &lt;xsl:text&gt;.html&lt;/xsl:text&gt;
+      &lt;/xsl:attribute&gt;
+      XEP-&lt;xsl:value-of select='.'/&gt;
+    &lt;/a&gt;
+  &lt;/xsl:template&gt;
+
+--------------
+
+&lt;!-- Include it in all the presentational groups in the xsd. --&gt;
+
+It made my life a little easier. I am sure you could even write one that automagically handles footnotes etc.
+
+e.g. &lt;spec source='ietf' number='0001'&gt;The Internet&lt;/spec&gt;
+
+Would result in:
+
+&lt;a href=&quot;#spec-ietf-0001'&gt;[RFC 0001]&lt;/a&gt;
+
+And in the footer:
+
+[&lt;a href=&quot;<A HREF="http://www.ietf.org/rfc/rfc2119.txt&quot;">http://www.ietf.org/rfc/rfc2119.txt&quot;</A>&gt;RFC 0001&lt;/a&gt;] - The internet
+
+Jonathan
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20080523/a06ddbd6/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20080523/a06ddbd6/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="086361.html">[jdev] help us fix jabberd2 and get $500
+</A></li>
+	<LI>Next message: <A HREF="086352.html">[jdev] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86351">[ date ]</a>
+              <a href="thread.html#86351">[ thread ]</a>
+              <a href="subject.html#86351">[ subject ]</a>
+              <a href="author.html#86351">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

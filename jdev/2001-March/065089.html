@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] about encoding
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20about%20encoding&In-Reply-To=%3C20010308042701.I28864%40imag.fr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="065087.html">
+   <LINK REL="Next"  HREF="065105.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] about encoding</H1>
+    <B>Daniel Veillard</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20about%20encoding&In-Reply-To=%3C20010308042701.I28864%40imag.fr%3E"
+       TITLE="[JDEV] about encoding">veillard at redhat.com
+       </A><BR>
+    <I>Thu Mar  8 03:27:01 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="065087.html">[JDEV] about encoding
+</A></li>
+        <LI>Next message: <A HREF="065105.html">[JDEV] about encoding
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65089">[ date ]</a>
+              <a href="thread.html#65089">[ thread ]</a>
+              <a href="subject.html#65089">[ subject ]</a>
+              <a href="author.html#65089">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, Mar 08, 2001 at 04:28:23PM -0800, Jau-Lung Huang wrote:
+&gt;<i> Hi...All:
+</I>&gt;<i> 
+</I>&gt;<i>       Recently I try to use jabber in Chinese(Big5 Encoding) Environment.
+</I>&gt;<i> After some testing,winjab and JabberIM works fine in Big5.But
+</I>&gt;<i> JabberApplet and KVM is not.I ever think that maybe we can change all to 
+</I>&gt;<i> Unicode Environment to solve this problem. But It Still Can't solve all
+</I>&gt;<i> problem.Because Some Environment still are Big5 or their native language
+</I>&gt;<i> encoding. So we think that maybe add such attribute to Jabber Protocol
+</I>&gt;<i> to solve the problem.
+</I>&gt;<i> like this:
+</I>&gt;<i> &lt;message encoding=&quot;big5&quot;&gt;msg content&lt;/message&gt;
+</I>
+  No this won't work !
+
+    <A HREF="http://www.w3.org/TR/REC-xml#charencoding">http://www.w3.org/TR/REC-xml#charencoding</A>
+
+--------------
+It is a fatal error if an XML entity is determined (via default, encoding
+declaration, or higher-level protocol) to be in a certain encoding but
+contains octet sequences that are not legal in that encoding. It is also
+a fatal error if an XML entity contains no encoding declaration and its
+content is not legal UTF-8 or UTF-16.
+--------------
+
+&gt;<i> is it a good way to integrate  the Unicode and other native encoding ?
+</I>&gt;<i> welcome any idea or suggestion
+</I>&gt;<i> Thanks.
+</I>
+  Strictly speaking this is reaching the limits of the XML specification.
+&gt;<i>From a theorical point of view an XML entity cannot mix encoding. Which
+</I>implies that you cannot pass a message in a different encoding than 
+the rest of the Jabber session. At least I garantee that all implementations
+based on a conformant parser and using a single instance of that parser
+for the full session will choke (expat/libxml/... included) with an XML
+well formedness error. That's one of the limitation of the approach taken
+in the Jabber design. Note also that this limitation is not just for
+Asian character sets, but also applies to all the series of the ISO Latin
+encodings, for example if the session starts with
+
+&lt;?xml version=&quot;1.0&quot;?&gt;
+
+i.e. without specifying an encoding, it wil then be assumed to be UTF8 or
+UTF16 by the parser and
+
+&lt;message&gt;l&#224;&lt;/message&gt;
+
+i.e. using an ISO-8859-1 char must break with a well formedness error too.
+
+Practically encoding all the session in UTF8 is what makes the most sense,
+you don't have to infringe the XML specification, you stay within reasonable
+bounds, all parsers are supposed to handle UTF8 and this doesn't add an 
+extra penalty for all the protocol related messages like UTF16, and ensure
+cheaper processing on the servers (not to be neglected !).
+
+What it means is that while you can accept user input in the most reasonable
+charset, you must encode it to UTF8 before including it in a Jabber message.
+Fortunately, UTF8 can cover all the Unicode range and it is easy to
+find encoders/decoders for UTF8, for example iconv() is available on 
+UNIX system and a library can be used on Windows, I have a pointer in 
+libxml FAQ:
+   <A HREF="http://xmlsoft.org/FAQ.html#Compilatio">http://xmlsoft.org/FAQ.html#Compilatio</A>
+
+Daniel
+
+P.S.: the fact that some client accept to mix the encoding within a Jabber
+      session is a clear violation of the XML specification, it's non
+      compliant and expose their authors to some possible very negative
+      feedback from the XML community (this happened to WAP, the Jabber
+      community should make sure that their applications don't violate
+      the spec).
+
+-- 
+Daniel Veillard      | Red Hat Network <A HREF="http://redhat.com/products/network/">http://redhat.com/products/network/</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">veillard at redhat.com</A>  | libxml Gnome XML toolkit  <A HREF="http://xmlsoft.org/">http://xmlsoft.org/</A>
+<A HREF="http://veillard.com/">http://veillard.com/</A> | Rpmfind RPM search engine <A HREF="http://rpmfind.net/">http://rpmfind.net/</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="065087.html">[JDEV] about encoding
+</A></li>
+	<LI>Next message: <A HREF="065105.html">[JDEV] about encoding
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65089">[ date ]</a>
+              <a href="thread.html#65089">[ thread ]</a>
+              <a href="subject.html#65089">[ subject ]</a>
+              <a href="author.html#65089">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

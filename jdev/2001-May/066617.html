@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Request for comments on system using jabber 
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Request%20for%20comments%20on%20system%20using%20jabber%0A%20&In-Reply-To=%3C3B0E7F60.649E3051%40jabber.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="066696.html">
+   <LINK REL="Next"  HREF="066621.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Request for comments on system using jabber </H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Request%20for%20comments%20on%20system%20using%20jabber%0A%20&In-Reply-To=%3C3B0E7F60.649E3051%40jabber.com%3E"
+       TITLE="[JDEV] Request for comments on system using jabber ">dwaite at jabber.com
+       </A><BR>
+    <I>Fri May 25 10:50:56 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="066696.html">[JDEV] Jabber question!!!
+</A></li>
+        <LI>Next message: <A HREF="066621.html">[JDEV] Request for comments on system using jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66617">[ date ]</a>
+              <a href="thread.html#66617">[ thread ]</a>
+              <a href="subject.html#66617">[ subject ]</a>
+              <a href="author.html#66617">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, 24 May 2001, Thomas Charron wrote:
+
+&gt;<i> From: Jens Alfke
+</I>&gt;<i> Subject: Re: [JDEV] Request for comments on system using jabber
+</I>&gt;<i> On Thursday, May 24, 2001, at 10:23 AM, Todd Bradley wrote:
+</I>&gt;<i> Jabberbot's roster on Jabber.com is about 10 times the size of the
+</I>next
+&gt;<i> largest user's roster.  Whenever Jabberbot tries to log in now, it
+</I>causes
+&gt;<i> all kinds of server mayhem because every presence change causes the
+</I>server
+&gt;<i> to go read and parse rosters of everyone in Jabberbot's roster.  This,
+</I>and
+&gt;<i> the subsequent traffic backups, crash the server at Jabber.com
+</I>&gt;<i> I don't mean to sound snotty, but: This demonstrates a
+</I>&gt;<i> performance/scalability issue with the server (not to mention an
+</I>outright
+&gt;<i> bug if it actually crashes), not a reason not to use presence for this
+</I>
+&gt;<i> purpose.
+</I>&gt;<i> How large is that roster? If Jabber isn't scalable to this level, it
+</I>may not
+&gt;<i> yet be ready for widespread use. (Consider a mail server that crashed
+</I>if you
+&gt;<i> tried to send a message to more than 100 people at a time.) There is a
+</I>very,
+&gt;<i> very large degree of interest in the industry right now for exactly
+</I>these
+&gt;<i> sorts of IM bots.
+</I>
+IMO, mailservers should break if you try to send to more than ~20 people
+at a time. Not crash, but refuse to send. Jabber should probably work
+the same way in this case (200 users max in a roster or something
+configurable like that)
+
+Hypothetically, if you had a 10,000 user roster, that would generate
+about 5 MB of XML traffic through the server it was running on everytime
+the bot came online.  This depends a bit on the length of the average
+JID, but the same amount of information is sent whether the user is
+online or not. Even if all of those users are on the same machine, that
+would be 10,000 user rosters it would have to load up via XDB and parsed
+(since the roster is also basically the presence ACL). If the server
+wasn't intelligent, you would also have the converse - any time one of
+those 10,000 users changed their status to 'away' or went on or offline,
+it would have to load and parse a megabyte XML document.
+
+Now imagine this is a portal with a quarter of a million users, and the
+bot is added by default to everyone's roster. Not only would that roster
+be about 25MB, there would be at least a 35MB memory image for the DOM
+tree created. The restarting of that service would cause 150 MB of
+traffic to be routed through the server (25 MB going outside the local
+network), and a 35 MB roster structure would be resident on the server.
+Finally, your 250,000 user roster will be run through for every presence
+change on the server (since every user has the bot in their roster). The
+0.25 million node XML structure in memory is a linked list, so this
+would equate to a worst-case 250,000 string compares as it walks a
+quarter-million node list. Finally, at least the open source server
+implementation will cache presence for local users while they are
+online. 250,000 - 500,000 cached entries, all XMLNodes, for a
+guesstimated worst-case size of about 250 MB server memory for the bot
+to just be online.
+
+Moral of the story: if you try to solve every problem with a hammer and
+a crowbar, you just end up breaking a lot of things ;-)
+
+-David Waite
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="066696.html">[JDEV] Jabber question!!!
+</A></li>
+	<LI>Next message: <A HREF="066621.html">[JDEV] Request for comments on system using jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66617">[ date ]</a>
+              <a href="thread.html#66617">[ thread ]</a>
+              <a href="subject.html#66617">[ subject ]</a>
+              <a href="author.html#66617">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Why does libjabber complain about absence of libxode?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Why%20does%20libjabber%20complain%20about%20absence%20of%20libxode%3F&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004408.html">
+   <LINK REL="Next"  HREF="004411.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Why does libjabber complain about absence of libxode?</H1>
+    <B>David Le Corfec</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Why%20does%20libjabber%20complain%20about%20absence%20of%20libxode%3F&In-Reply-To="
+       TITLE="[JDEV] Why does libjabber complain about absence of libxode?">david.le-corfec at idealx.com
+       </A><BR>
+    <I>Mon Oct 30 12:47:44 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004408.html">[JDEV] Why does libjabber complain about absence of libxode?
+</A></li>
+        <LI>Next message: <A HREF="004411.html">[JDEV] groupchat and Jabber 1.2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4410">[ date ]</a>
+              <a href="thread.html#4410">[ thread ]</a>
+              <a href="subject.html#4410">[ subject ]</a>
+              <a href="author.html#4410">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Frederic Faure wrote:
+&gt;<i> 
+</I>&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> Since nowhere are to be found recent RPMs of the different modules required
+</I>
+If it can help Jabber people, I have attached specs to build RPMs for
+libxode and libjabber. Thanks to Jerome Tournier :)
+There aren't separated as user and devel RPMs, and version numbers
+are hardcoded and thus incorrect. But it should be helpful anyway.
+
+&gt;<i> to use Jabber, I d'loaded the source, and like a lot of people, failed with
+</I>&gt;<i> ./configure of libjabber:
+</I>&gt;<i> 
+</I>&gt;<i> checking for libxode-config... no
+</I>&gt;<i> configure: error:
+</I>&gt;<i> ******************************************************************
+</I>&gt;<i> * You do not seem to have libxode installed.  This is a required *
+</I>&gt;<i> * package for libjabber to build.  Please see:                   *
+</I>&gt;<i> *                 <A HREF="http://download.jabber.org">http://download.jabber.org</A>                     *
+</I>&gt;<i> * to get this package.                                           *
+</I>&gt;<i> ******************************************************************
+</I>&gt;<i> 
+</I>&gt;<i> =&gt; I installed pth and adns though RPM, added /usr/local/lib to
+</I>
+adns isn't used in jabber 1.1+ (don't ask me why, I wasn't there :)
+
+&gt;<i> /etc/ld.so.conf, and did run ldconfig after compiling/installing libxode. I
+</I>
+good
+
+&gt;<i> even rebooted this RH 6.2, to no avail. Why does libjabber keep complaining?
+</I>
+Check that you have libxode-config in your path.
+(do you have /usr/local/bin in your $PATH ?)
+(also remove config.cache before re-running configure, though 
+I don't think this one is cached)
+
+&gt;<i> # whereis libxode
+</I>&gt;<i> libxode: /usr/local/lib/libxode.so /usr/local/lib/libxode.la
+</I>&gt;<i> /usr/local/lib/libxode.a
+</I>
+What matters is $prefix/bin/libxode-config, it contains all the infos
+about libxode.
+
+-- 
+David Le Corfec
+-------------- next part --------------
+%define name libjabber
+%define version 1.1.4
+%define release 1
+%define prefix /usr/local
+
+
+Summary: libjabber provides Jabber transports with various library functions
+Name: %{name}
+Version: %{version}
+Release: %{release}
+Copyright: GPL
+Group: Applications/Internet
+Source: %{name}-%{version}.tgz
+BuildRoot: /var/tmp/%{name}-buildroot
+# Prefix: /usr/local
+
+%description
+libjabber provides Jabber transports with various library functions
+
+%prep
+%setup
+
+%build
+sh ./autogen.sh --prefix=%{prefix}
+#./configure
+make
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make prefix=$RPM_BUILD_ROOT%{prefix} install
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%post
+ldconfig %{prefix}/lib
+
+%postun
+ldconfig %{prefix}/lib
+
+
+%files
+%defattr(-,root,root)
+%doc AUTHORS COPYING ChangeLog INSTALL NEWS README TODO
+/usr/local/include/jabber/jabber.h
+/usr/local/lib/libjabber.so.1.0.0
+/usr/local/lib/libjabber.so.1
+/usr/local/lib/libjabber.so
+/usr/local/lib/libjabber.la
+/usr/local/lib/libjabber.a
+/usr/local/man/man1/jabber-config.1
+/usr/local/bin/jabber-config
+-------------- next part --------------
+%define name libxode
+%define version 1.2RC1
+%define release 1
+%define prefix /usr/local
+
+
+Summary: A library of XML and string helper functions
+Name: %{name}
+Version: %{version}
+Release: %{release}
+Copyright: GPL
+Group: Applications/Internet
+Source: %{name}-%{version}.tgz
+BuildRoot: /var/tmp/%{name}-buildroot
+# Prefix: /usr/local
+
+%description
+libxode provides a library of XML and string helper functions.
+Jabber agents use libxode extensively.
+
+%prep
+%setup
+
+%build
+sh ./autogen.sh --prefix=%{prefix}
+#./configure
+make
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make prefix=$RPM_BUILD_ROOT%{prefix} install
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%post
+ldconfig %{prefix}/lib
+
+%postun
+ldconfig %{prefix}/lib
+
+
+%files
+%defattr(-,root,root)
+%doc AUTHORS ChangeLog INSTALL README COPYING NEWS
+/usr/local/lib/libxode.so.1.0.0
+/usr/local/lib/libxode.so.1
+/usr/local/lib/libxode.so
+/usr/local/lib/libxode.la
+/usr/local/lib/libxode.a
+/usr/local/include/xmlparse.h
+/usr/local/include/libxode.h
+/usr/local/bin/libxode-config
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004408.html">[JDEV] Why does libjabber complain about absence of libxode?
+</A></li>
+	<LI>Next message: <A HREF="004411.html">[JDEV] groupchat and Jabber 1.2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4410">[ date ]</a>
+              <a href="thread.html#4410">[ thread ]</a>
+              <a href="subject.html#4410">[ subject ]</a>
+              <a href="author.html#4410">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,327 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] File transfers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfers&In-Reply-To=%3CEDF7294EA744D411A2ED00508B6B318502D14B8F%40sfmailhost.peoplesf.peoplepc-corp.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042324.html">
+   <LINK REL="Next"  HREF="042330.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] File transfers</H1>
+    <B>Max Metral</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfers&In-Reply-To=%3CEDF7294EA744D411A2ED00508B6B318502D14B8F%40sfmailhost.peoplesf.peoplepc-corp.com%3E"
+       TITLE="[JDEV] File transfers">Max.Metral at PeoplepcHQ.com
+       </A><BR>
+    <I>Thu Jun  6 21:23:21 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042324.html">[JDEV] File transfers
+</A></li>
+        <LI>Next message: <A HREF="042330.html">[JDEV] Re: jdev digest, Vol 1 #1470 - 4 msgs
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42328">[ date ]</a>
+              <a href="thread.html#42328">[ thread ]</a>
+              <a href="subject.html#42328">[ subject ]</a>
+              <a href="author.html#42328">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I don't understand the arbitrary port comment... They are arbitrary.
+Marshall and others picked em, and that was that.  When I hit the send
+button in my email client (Outlook) it connects to exchange on some god
+awful port with some god awful protocol that is most definitely not 110 and
+is most definitely not SMTP (SMTP is 25 by the way, not 110).  Now there's a
+connector that plugs into exchange and sends my message out to the
+appropriate SMTP server via port 25, but that has nothing to do with POP
+unless the other end HAPPENS to be using POP as the mailbox access
+mechanism.  That POP server on the other end in some ways acts as a client
+to the SMTP server, although not via networked protocols but via file system
+semantics or whatever the particular package has decided the right way to
+communicate between components is (e.g. on Win2k simple SMTP server, I would
+just look in the mailroot\Mailbox directory, or use the CDO &quot;client&quot; objects
+to access the mail store from a POP server I could write).
+ 
+POP, HTTP, SMTP and most modern protocols are really nothing special.  I
+could implement a POP &quot;server&quot; on my &quot;client machine&quot; pretty damn easily,
+and could pretty much reuse the same code for an HTTP &quot;server&quot; on my client.
+This would blur the lines in the case where, for example, I wrote a local
+POP proxy.  From the point of view of Outlook Express, my POP proxy is the
+server, but from the distant POP server it is the client. The fact that all
+of these protocols are text based, fixed command set protocols blurs the
+importance of clients and servers because of exactly what you say, that a
+client asks and a server answers.  This is not a component-wide or &quot;process&quot;
+wide distinction necessarily, it is a REQUEST wide decision, and any or all
+components can make requests of each other.  This is why it is generally a
+good idea to implement file transfer by having the client act like an HTTP
+&quot;server&quot;.  #1, it's easy, and #2, if it really IS a full blown web server
+(i.e. for a firewall workaround) everything still works just the same.
+ 
+This is all turning into a conceptual argument, and clearly you're not going
+for the analogy/metaphor, which is fine.  I can't speak for Mike, but I
+certainly don't need any lessons in Internet protocols, I've been here since
+there weren't any.  In one paragraph I think you're saying you want to make
+client-server into peer-to-peer/client-client.  If I'm understanding you
+right, I totally agree.  And what I understand that to mean is that these
+labels of distinction really aren't relevant.  So the question comes down to
+what components are well suited to doing what tasks.  The Jabber server is
+not well suited architecturally to act as a byte repeater for client
+non-messaging data transfer.  I'm not sure I'd want to do anything to
+encourage this just so some client developer can be lazy about implementing
+things the right way.  (Not to mention that this is actually complex to
+implement in ADDITION to a proper file transfer mechanism, and in the end
+costs our poor client developers more time, not less)
+ 
+I trust the maturity and experience of the members of this list to be able
+to understand conceptual discussions of this nature, this isn't developer
+school.  The original discussion was about whether the Jabber &quot;server&quot;
+should be used to shuttle packets on behalf of clients and whether that
+should be part of the protocol, at this point I'm confused reading your mail
+whether you advocate this or don't.  I'll be clear, I do not advocate
+creating protocol elements to allow the concept of a &quot;file&quot; to be routed,
+split, encoded, and reassembled by Jabber servers.  I advocate a mechanism
+for negotiating protocol based multi-party &quot;connections&quot; (i.e. clients
+providing endpoints) for things like file transfer, video conferencing,
+networked full-motion-video Parcheesi, and whatever the heck else the
+developer community thinks up.  Whatever mechanism is used should not use
+the words &quot;file transfer&quot; in anything but string literals in my opinion.
+
+-----Original Message-----
+From: Mike Oliver [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ollie at appsaspeers.com</A>]
+Sent: Thursday, June 06, 2002 8:34 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: RE: [JDEV] File transfers
+
+
+oh, right and ports 25, 143 and 110 are arbitrary.
+
+At 04:50 PM 6/6/2002 -0700, you wrote:
+
+
+He knows what he's talking about, he's just assuming too much in his
+descriptions.  People who don't know what they're talking about don't use
+words like MTA and MUA, and if they do they act very proud of knowing it. :)
+ 
+Hard distinctions between client and server are SOOO last century. :)  
+
+
+Geez and I thought last century was just a couple of years ago.
+
+
+
+
+&gt;<i>From a conceptual perspective, a *local* POP server (i.e. mycompany.com) is
+</I>in some ways a client for the overall server &quot;cloud&quot; of Internet mail.  SMTP
+is essentially a non-realtime store and forward network, which is &quot;batch&quot; in
+many ways, for lots of good reasons.
+
+
+
+Are we in La La land?  You name me one email server that uses something
+other than SMTP to transfer internet Mail between servers?  When you hit
+that old send button you tell your email client to open good old server port
+110 and transfer the email message and attachments via SMTP (the P stands
+for Protocol and there is no N for Network in it) and your email server
+looks at the addresses and sends copies of the message to all the addresses
+it can find or to another SMTP server that might know more addresses, which
+in turn sends all the messages off to other SMTP servers...POP is the
+protocol for email clients to retrieve the email and attachments from a
+SERVER as is IMAP with the key difference being the ability to have a
+persistent store of folders/mailboxes.  POP is NOT used any other way.  So
+your conceptual local POP server NEVER acts as a client and accesses some
+other server in the &quot;cloud&quot;, it sits there patiently until some other
+'server' sends it something.
+
+So from the cloud of smoke you two must be smoking conceptually, you can't
+make client-server, into client-client OR peer to peer.  Those are words you
+know as well, but knowing their meaning is more important.   A client makes
+requests and a server answers them.  Yes indeed it gets cloudy when a server
+talks to a server and the roles blur on a request by request basis, but not
+the protocols they use.   
+
+I am not advocating use of SMTP for Jabber File Transfers, however a mix of
+Protocols that are accepted protocols for file transfers and messaging is
+what I think we all want.  The Jabber protocol IS NOT a good idea for large
+files, but some direct client to client or peer to peer mechanism IS a good
+idea.
+
+Maybe I am being to precise and too concise for you two.  But as an
+Architect and developer it IS important and since this is a developer's
+forum I choose not to mislead those that may be beginning to confuse them
+with some &quot;concepts&quot; that are simply WRONG.
+
+Knowing the words is only half the battle knowing what they mean takes a
+little more effort.
+
+
+
+
+And those points of view are part of the reason we both think that putting
+this special &quot;realtime non-messaging packet forwarder&quot; hat on the Jabber
+server is a stretch, and has all the problems we've previously mentioned. 
+
+
+-----Original Message----- 
+
+From: Mike Oliver [ mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ollie at appsaspeers.com</A>
+&lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ollie at appsaspeers.com</A>&gt; ] 
+
+Sent: Thursday, June 06, 2002 7:38 PM 
+
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> 
+
+Subject: RE: [JDEV] File transfers
+
+
+
+Ok adding value, you simply don't know what you are talking about.
+
+
+
+How's that?  POP AND IMAP are protocols for Clients to talk to Servers to
+access stores of messages and attachments.  A Pop or IMAP Client DOES NOT
+talk to another Pop or IMAP Client...EVER...SMTP is the way you SEND
+messages to those stores and every single email message you send is
+transferred using SMTP and BTW SendMail is just an SMTP Program for sending
+mail, it has nothing to do with &quot;bulk&quot;.  Have you ever setup an email
+client?  If you did you had to setup the email server for getting your email
+and choose POP3 or IMAP4 and then an SMTP server for outgoing, or if you
+leave that blank it tries to use the same server you setup for incoming.
+But these are on different ports even if on the same ip address/dns name.
+
+
+
+If YOU want to add value, don't spout about things you obviously know
+NOTHING about.  Read the specifications about POP3, IMAP4 AND SMTP and you
+can find those at <A HREF="http://www.ietf.org">http://www.ietf.org</A> &lt;<A HREF="http://www.ietf.org/">http://www.ietf.org/</A>&gt; 
+
+
+
+I completely agree it depends on where you are standing and you are standing
+in the dark. 
+
+
+
+
+
+At 02:06 PM 6/6/2002 -0700, you wrote:
+
+
+
+
+
+Mike cogently queries: 
+
+&gt;<i> What planet are you from?  
+</I>
+There's a great way to add value to a thread. :) 
+
+
+
+&gt;<i> POP, IMAP and MAPI (Exchange) ARE NOT &quot;client-to-client&quot;, PLEASE! 
+</I>
+Sure, why not?  user --&gt; sendmail --&gt; mail spool accessible via POP, 
+
+at which point the server stops being so much of a server and starts 
+
+acting a little more like a peer (POP, IMAP and MAPI being ad hoc, 
+
+connected, conversational programs, unlike SMTP, which is largely a 
+
+batch-oriented bulk drop).  It all depends where you're standing. 
+
+No need to question my mudball of origin. 
+
+
+
+&gt;<i> sendmail is just an SMTP mail transfer agent program and no different than
+</I>
+
+&gt;<i> any other SMTP mail transfer agent program like those from Netscape and 
+</I>
+&gt;<i> Microsoft...ARG! 
+</I>
+
+
+Netscape makes an MTA?  What's it called?  I've seen their MUA, but 
+
+I'm surprised to hear they have an MTA.  I bet it crashes a lot. :) 
+
+
+
+F. 
+
+
+
+
+
+********************************************************************** 
+
+E-mail sent through the Internet is not secure. Western Asset therefore 
+
+recommends that you do not send any confidential or sensitive information to
+
+
+us via electronic mail, including social security numbers, account numbers, 
+
+or personal identification numbers. Delivery, and or timely delivery of 
+
+Internet mail is not guaranteed. Western Asset therefore recommends that 
+
+you do not send time sensitive or action-oriented messages to us via 
+
+electronic mail. 
+
+**********************************************************************
+
+Michael Oliver 
+
+Chief Technology Officer 
+
+AppsAsPeers.com 
+
+7391 S. Bullrider Ave. 
+
+Tucson, AZ 85747 
+
+520.574.1150 
+
+
+
+
+Michael Oliver
+Chief Technology Officer
+AppsAsPeers.com
+7391 S. Bullrider Ave.
+Tucson, AZ 85747
+520.574.1150 
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20020606/e5fe24b7/attachment-0001.htm">https://www.jabber.org/jdev/attachments/20020606/e5fe24b7/attachment-0001.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042324.html">[JDEV] File transfers
+</A></li>
+	<LI>Next message: <A HREF="042330.html">[JDEV] Re: jdev digest, Vol 1 #1470 - 4 msgs
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42328">[ date ]</a>
+              <a href="thread.html#42328">[ thread ]</a>
+              <a href="subject.html#42328">[ subject ]</a>
+              <a href="author.html#42328">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

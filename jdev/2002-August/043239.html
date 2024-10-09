@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] look for help about  unicode in jabber system
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20look%20for%20help%20about%20%20unicode%20in%20jabber%20system&In-Reply-To=%3C200208162150.g7GLomC27935%40dave2.dave.tj%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="043238.html">
+   <LINK REL="Next"  HREF="043242.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] look for help about  unicode in jabber system</H1>
+    <B>Dave</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20look%20for%20help%20about%20%20unicode%20in%20jabber%20system&In-Reply-To=%3C200208162150.g7GLomC27935%40dave2.dave.tj%3E"
+       TITLE="[JDEV] look for help about  unicode in jabber system">dave at dave.tj
+       </A><BR>
+    <I>Fri Aug 16 16:50:48 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="043238.html">[JDEV] look for help about  unicode in jabber system
+</A></li>
+        <LI>Next message: <A HREF="043242.html">[JDEV] look for help about  unicode in jabber system
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43239">[ date ]</a>
+              <a href="thread.html#43239">[ thread ]</a>
+              <a href="subject.html#43239">[ subject ]</a>
+              <a href="author.html#43239">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>C doesn't require NULL-terminated strings.  It's just that the standard
+C string library assumes that strings end in NULL (since that method's
+proven to be very effective for many applications).  There are plenty
+of enumerated-string libraries for C, and because strings aren't built
+into the language, those libraries can be every bit as efficient as
+the standard C routines (but then again, PASCAL people don't really
+care much about efficiency, anyway ... if they did, they wouldn't be
+PASCAL programmers, now, would they?).  If anything, one of C's sons
+(that bastard created by Mr. Stroustrup) makes it rediculously easy
+to use Unicode in the full UCS-32 format (or any of the other formats,
+for that matter), by creating a new character data type, and using the
+should've-been-in-STL basic_string template with that new UCS32Char type.
+If you'd prefer to avoid leaving C (a very wise choice, IMHO), you can
+use a wchar_t array ... or you can just stick with the extraordinarily
+simple (and very compatible) UTF-8 :-)
+
+As for alignment of structure elements, anything like that is guaranteed
+to cause portability headaches.  If you really want to do it in C, you can
+either fake it using character arrays, or use an inline assembly block.
+Be aware that neither C nor PASCAL provides sufficient portability
+when you try to do that kind of stuff, because that requirement by
+definition violates any hopes of portability (which is not necessarily
+bad, but it's worth considering nonetheless).  Also, the primary reason
+for system-dependent alignment is efficiency.  If your 64-bit CPU has
+to fetch two seperate 64-bit words just to get a 2-bit value, you're
+losing lots of potential speed.
+
+ - Dave
+
+
+Timothy Carpenter wrote:
+&gt;<i> 
+</I>&gt;<i> I do not think CHAR to UNICODE is the answer. CHAR is 8 bit, but UTF-8 is a
+</I>&gt;<i> way of sending UNICODE without breaking 'text' streams with data that looks
+</I>&gt;<i> like CR, LF EOF EOLN etc etc. RCSU is also another mechanism that is very
+</I>&gt;<i> intelligent use of packing, processing and compromising between ASCII and
+</I>&gt;<i> full 16-bit character sets, but I cannot recall if this protects text stream
+</I>&gt;<i> handlers from shocks. UTF-8 is less compact, but simpler, with no sliding
+</I>&gt;<i> windows.
+</I>&gt;<i> 
+</I>&gt;<i> To convert is not a huge task, to my memory - just a little masking and bit
+</I>&gt;<i> shuffling...shame no one uses PASCAL, as apart from not using &lt;NULL&gt; end
+</I>&gt;<i> tags for strings (yeah!), you can define structures to have conditional
+</I>&gt;<i> contents nailed down to the bit position, and even crossing
+</I>&gt;<i> byte/word/longword boundaries. Thus the data slots in without too much math
+</I>&gt;<i> nonsense all over the place.
+</I>&gt;<i> 
+</I>&gt;<i> Maybe this is why many C programmers quail at the thought of binary
+</I>&gt;<i> bit-packed headers and say they are unmaintainable. They probably are...in
+</I>&gt;<i> C. ;-)
+</I>&gt;<i> 
+</I>&gt;<i> Tim
+</I>&gt;<i> 
+</I>&gt;<i> On 17/08/2002 12:38 pm, &quot;&#213;&#197; &#198;&#233;&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabberjaist at hotmail.com</A>&gt; wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; do the jabber system support to east aisa GLYPH images,chinese ,japanese
+</I>&gt;<i> &gt; and korea.I want
+</I>&gt;<i> &gt; my jabber server support to unicode of east aisa.but I get a trouble. my
+</I>&gt;<i> &gt; friend tell me.
+</I>&gt;<i> &gt; just below ,is it right ,or have a better way to resolve the problem.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &#129;6&#166;1Jabber uses UTF-8 encoding
+</I>&gt;<i> &gt; &#129;6&#166;1We have not been facing any problems because we have been operating in the
+</I>&gt;<i> &gt; ASCII domain which is a subset of UTF-8.
+</I>&gt;<i> &gt; &#129;6&#166;1We need to find some kind of encoding algorithm/API which converts Unicode
+</I>&gt;<i> &gt; to UTF-8 before we send out strings to the server and some kind of decoding
+</I>&gt;<i> &gt; Algorithm/API which does the opposite when we receive strings.
+</I>&gt;<i> &gt; &#129;6&#166;1We need some kind of rendering mechanism has to make the mapping from
+</I>&gt;<i> &gt; unicode to the actual character.
+</I>&gt;<i> &gt; &#129;6&#166;1
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &#129;6&#166;1There are a couple of Microsoft APIs called MultiByteToWideChar and
+</I>&gt;<i> &gt; CharToMultiByte
+</I>&gt;<i> &gt; &#129;6&#166;1There is an Mlang API of Microsoft which has functions like
+</I>&gt;<i> &gt; ConvertStringToUnicode and ConvertUnicodeToString (I think this is our best
+</I>&gt;<i> &gt; bet. If we read this thoroughly we might be able to solve the problem)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> __________________________________________________
+</I>&gt;<i> Do You Yahoo!?
+</I>&gt;<i> Everything you'll ever need on one web page
+</I>&gt;<i> from News and Sport to Email and Music Charts
+</I>&gt;<i> <A HREF="http://uk.my.yahoo.com">http://uk.my.yahoo.com</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="043238.html">[JDEV] look for help about  unicode in jabber system
+</A></li>
+	<LI>Next message: <A HREF="043242.html">[JDEV] look for help about  unicode in jabber system
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43239">[ date ]</a>
+              <a href="thread.html#43239">[ thread ]</a>
+              <a href="subject.html#43239">[ subject ]</a>
+              <a href="author.html#43239">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

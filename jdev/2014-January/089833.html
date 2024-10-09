@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Improving XEP-0016: Privacy Lists
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Improving%20XEP-0016%3A%20Privacy%20Lists&In-Reply-To=%3C52EB9452.2020505%40geekplace.eu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089835.html">
+   <LINK REL="Next"  HREF="089834.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Improving XEP-0016: Privacy Lists</H1>
+    <B>Florian Schmaus</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Improving%20XEP-0016%3A%20Privacy%20Lists&In-Reply-To=%3C52EB9452.2020505%40geekplace.eu%3E"
+       TITLE="[jdev] Improving XEP-0016: Privacy Lists">flo at geekplace.eu
+       </A><BR>
+    <I>Fri Jan 31 12:17:22 UTC 2014</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089835.html">[jdev] Spoofing of iq ids and misbehaving servers
+</A></li>
+        <LI>Next message: <A HREF="089834.html">[jdev] XEP Building tool
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89833">[ date ]</a>
+              <a href="thread.html#89833">[ thread ]</a>
+              <a href="subject.html#89833">[ subject ]</a>
+              <a href="author.html#89833">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I recently added support for Privacy Lists (XEP-0016) in my Android
+app and ran into some problems.
+
+The major problem first: If a session is created with a privacy list,
+that has a disallow fall-through and another rule that allows
+everything from JIDs with subscription 'both', then you could easily
+end in a messy situation with XMPP server implementations that process
+this list to exactly, because they will block IQ stanzas originating
+from the server itself. The client will still be able to send IQs to
+the server, but it will never receive a reply. Those servers would
+then likely also block IQ stanzas from every entity that is not in the
+roster and subscribed as 'both', e.g. IQs used in XEP-0045.
+
+I discovered such an implementation flaw in Openfire (OF-724, [1]),
+and since I got commit access to Openfire's SVN, applied the simple
+fix.
+
+In order to prevent future server/client developers from making the
+same mistake, I suggest to extend XEP-0016 with an implementation
+notice or additional business rule, stating that under no circumstances any
+possible privacy list should block stanzas originating from the users
+service. Or, if privacy lists should really be able to block such
+stanzas, which seems kind of pointless to me, then a note, saying that
+an explicit JID allow rule may be required in such situations, should
+be added.
+
+I also suggest that XEP-0016 mentions possible unwanted side effects
+caused by solely filtering on the subscription status. For example,
+the previously mentioned Openfire fix only implicitly allows all
+stanzas where the 'from' attribute's value is the users service. But
+IQs e.g. from a MUC where 'from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">room at conference.server.tld</A>&quot;' would
+still be blocked. While this can be a valid use-case, it may not
+always be what the user intended.
+
+Florian
+
+1: <A HREF="http://issues.igniterealtime.org/browse/OF-724">http://issues.igniterealtime.org/browse/OF-724</A>
+
+</PRE>
+
+
+
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089835.html">[jdev] Spoofing of iq ids and misbehaving servers
+</A></li>
+	<LI>Next message: <A HREF="089834.html">[jdev] XEP Building tool
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89833">[ date ]</a>
+              <a href="thread.html#89833">[ thread ]</a>
+              <a href="subject.html#89833">[ subject ]</a>
+              <a href="author.html#89833">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

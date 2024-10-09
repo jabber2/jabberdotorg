@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Parent PID changed, exiting...
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Parent%20PID%20changed%2C%20exiting...&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006191.html">
+   <LINK REL="Next"  HREF="006203.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Parent PID changed, exiting...</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Parent%20PID%20changed%2C%20exiting...&In-Reply-To="
+       TITLE="[JDEV] Parent PID changed, exiting...">dwaite at jabber.com
+       </A><BR>
+    <I>Tue Feb 13 03:54:02 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006191.html">[JDEV] Parent PID changed, exiting...
+</A></li>
+        <LI>Next message: <A HREF="006203.html">[JDEV] Problems running 1.2 on Tru64
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6199">[ date ]</a>
+              <a href="thread.html#6199">[ thread ]</a>
+              <a href="subject.html#6199">[ subject ]</a>
+              <a href="author.html#6199">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>You will need to:
+1) patch the jabber source with Keith's patch
+2) verify that your jabber.xml file(s) only have &lt;stdout/&gt; tags if they are
+being launched by another jabberd process. Your main jabber.xml should not
+contain any &lt;stdout/&gt; tags.
+
+-David Waite
+
+Ayite Gaba wrote:
+
+&gt;<i> Let's me see if i get this right.
+</I>&gt;<i> To fix the &quot;Parent PID changed&quot; problem i have to modify the body of this
+</I>&gt;<i> function:  result base_stdout_heartbeat(void *arg)
+</I>&gt;<i>
+</I>&gt;<i> Is that it? I do not need to modify any other config files? if i still do
+</I>&gt;<i> have to do more modifications, please let me known which ones. Thanks a lot
+</I>&gt;<i> for your help, -- Ayite
+</I>&gt;<i>
+</I>&gt;<i> &gt;From: Keith Minkler &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kminkler at jabber.com</A>&gt;
+</I>&gt;<i> &gt;Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt;To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt;Subject: Re: [JDEV] Parent PID changed, exiting...
+</I>&gt;<i> &gt;Date: Mon, 12 Feb 2001 15:51:58 -0500
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;On Mon, Feb 12, 2001 at 01:13:21PM -0600, Thomas Muldowney wrote:
+</I>&gt;<i> &gt; &gt; It's possible that it's legacy code from 1.2, but I'm not sure.  It was
+</I>&gt;<i> &gt;missed
+</I>&gt;<i> &gt; &gt; by all of us as jabber.org runs in scripts to capture all the debug
+</I>&gt;<i> &gt;output, we
+</I>&gt;<i> &gt; &gt; apologize.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; --temas
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;this one has to do with linking two jabberd's together.. it was put in as a
+</I>&gt;<i> &gt;way
+</I>&gt;<i> &gt;for the child process to know when it is supposed to exit (when the parent
+</I>&gt;<i> &gt;process
+</I>&gt;<i> &gt;exits).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;you should ONLY be using a &lt;stdout/&gt; flag in a config file that is to be
+</I>&gt;<i> &gt;&lt;exec/&gt;'d
+</I>&gt;<i> &gt;inside of another PARENT jabberd.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;There is another section where it checks it's PID, and that is in dnsrv.. a
+</I>&gt;<i> &gt;similar
+</I>&gt;<i> &gt;instance is when dnsrv is used, the process forks itself, to run a child
+</I>&gt;<i> &gt;dnsrv
+</I>&gt;<i> &gt;module.  This child process also checks it's parent PID to see if it
+</I>&gt;<i> &gt;changes to 1,
+</I>&gt;<i> &gt;then exits if it does.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;This has worked for some time, and is only meant to happen in those two
+</I>&gt;<i> &gt;very distinct
+</I>&gt;<i> &gt;instances.. if you are running a single jabberd, and have a &lt;stdout/&gt; flag
+</I>&gt;<i> &gt;inside
+</I>&gt;<i> &gt;of it, then that is WRONG, and you need to take that &lt;stdout/&gt; flag out..
+</I>&gt;<i> &gt;that is
+</I>&gt;<i> &gt;only meant to be used while linking jabberd's together with a config
+</I>&gt;<i> &gt;section such as:
+</I>&gt;<i> &gt;&lt;exec&gt;./jabberd/jabberd -c ./jabber2.xml&lt;/exec&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;Please check your config for errors, thank you!
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;also, if there is an easier/better way for a child process to check if its
+</I>&gt;<i> &gt;parent
+</I>&gt;<i> &gt;has died, I'd love to change this code... I've looked in a lot of places
+</I>&gt;<i> &gt;for code
+</I>&gt;<i> &gt;that accomplishes this, with no luck...  this was the best I could do in
+</I>&gt;<i> &gt;short notice,
+</I>&gt;<i> &gt;and it fixed all of our &quot;zombie&quot; jabberd problems.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;Keith Minkler
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; On Mon, Feb 12, 2001 at 09:34:04AM -0800, james rogers wrote:
+</I>&gt;<i> &gt; &gt; &gt; In the jabber-1.4RC/jabberd/base direcrtory in a file called
+</I>&gt;<i> &gt;base_stdout.c on line 51 is the function that was added for jabberd version
+</I>&gt;<i> &gt;1.4 (i.e. not found in jabberd 1.2).  This is the function that is needless
+</I>&gt;<i> &gt;and causing the server to exit when it's parent process is changed.o
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Here it is:
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; result base_stdout_heartbeat(void *arg)
+</I>&gt;<i> &gt; &gt; &gt; {
+</I>&gt;<i> &gt; &gt; &gt;     static int parent = 0;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;     if(parent == 0) parent = getppid();
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;     if(parent != getppid())
+</I>&gt;<i> &gt; &gt; &gt;     {
+</I>&gt;<i> &gt; &gt; &gt;         /* parent pid has changed, bail */
+</I>&gt;<i> &gt; &gt; &gt;         log_alert(&quot;stdout&quot;,&quot;Parent PID has changed, Server Exiting&quot;);
+</I>&gt;<i> &gt; &gt; &gt;         exit(1);
+</I>&gt;<i> &gt; &gt; &gt;     }
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;     return r_DONE;
+</I>&gt;<i> &gt; &gt; &gt; }
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; I am guessing that if we change it to the following that we will keep
+</I>&gt;<i> &gt;running when we logout of the shell...
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; result base_stdout_heartbeat(void *arg)
+</I>&gt;<i> &gt; &gt; &gt; {
+</I>&gt;<i> &gt; &gt; &gt;     return r_DONE;
+</I>&gt;<i> &gt; &gt; &gt; }
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; But before I do this in my own installation...  Why was this check
+</I>&gt;<i> &gt;added?  What are we actually checking for here and is there another way to
+</I>&gt;<i> &gt;do the same check?
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; ___________________________________________________
+</I>&gt;<i> &gt; &gt; &gt; GO.com Mail
+</I>&gt;<i> &gt; &gt; &gt; Get Your Free, Private E-mail at <A HREF="http://mail.go.com">http://mail.go.com</A>
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;&lt;&lt; attach3 &gt;&gt;
+</I>&gt;<i>
+</I>&gt;<i> _________________________________________________________________
+</I>&gt;<i> Get your FREE download of MSN Explorer at <A HREF="http://explorer.msn.com">http://explorer.msn.com</A>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006191.html">[JDEV] Parent PID changed, exiting...
+</A></li>
+	<LI>Next message: <A HREF="006203.html">[JDEV] Problems running 1.2 on Tru64
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6199">[ date ]</a>
+              <a href="thread.html#6199">[ thread ]</a>
+              <a href="subject.html#6199">[ subject ]</a>
+              <a href="author.html#6199">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

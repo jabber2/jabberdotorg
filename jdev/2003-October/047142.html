@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Still another patch ... (seed the rand() function)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Still%20another%20patch%20...%20%28seed%20the%20rand%28%29%20function%29&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C148007DADACB%40corp.webb.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="047139.html">
+   <LINK REL="Next"  HREF="047143.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Still another patch ... (seed the rand() function)</H1>
+    <B>Joe Hildebrand</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Still%20another%20patch%20...%20%28seed%20the%20rand%28%29%20function%29&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C148007DADACB%40corp.webb.net%3E"
+       TITLE="[JDEV] Still another patch ... (seed the rand() function)">JHildebrand at jabber.com
+       </A><BR>
+    <I>Mon Oct 13 14:09:26 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="047139.html">[JDEV] Shameless JBother advertisement
+</A></li>
+        <LI>Next message: <A HREF="047143.html">[JDEV] Still another patch ... (seed the rand() function)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47142">[ date ]</a>
+              <a href="thread.html#47142">[ thread ]</a>
+              <a href="subject.html#47142">[ subject ]</a>
+              <a href="author.html#47142">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Can't I send an iq:last to the server to find out how long it's been up?  In
+which case, I as an attacker can get pretty close to guessing the seed...
+
+-- 
+Joe Hildebrand
+
+ 
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Matthias Wimmer [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">m at tthias.net</A>] 
+</I>&gt;<i> Sent: Saturday, October 11, 2003 5:11 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: [JDEV] Still another patch ... (seed the rand() function)
+</I>&gt;<i> 
+</I>&gt;<i> Hi!
+</I>&gt;<i> 
+</I>&gt;<i> Sorry to flood this mailinglist this week end. ;-) This is 
+</I>&gt;<i> another patch for jadc2s.
+</I>&gt;<i> 
+</I>&gt;<i> jadc2s used the rand() function to generate ids for the 
+</I>&gt;<i> digest authentication but never seeds the rand() function. 
+</I>&gt;<i> The result is that with every restart of jadc2s it generates 
+</I>&gt;<i> the same sequence of ids again. This is a very bad behavior 
+</I>&gt;<i> especially on servers with less load.
+</I>&gt;<i> An attacker could takeover and account if he is able to sniff 
+</I>&gt;<i> connections and if he is able to crash jadc2s (or jadc2s is 
+</I>&gt;<i> restarted regularily). He can just sniff which id was sent to 
+</I>&gt;<i> the client and what the client sent back as response. 
+</I>&gt;<i> Afterwards he crashes jadc2s or waits for an other restart. 
+</I>&gt;<i> Then he just has to wait for the right moment where the 
+</I>&gt;<i> server will generate this key again (counting the logins), 
+</I>&gt;<i> connect to it and he will be successfully able to 
+</I>&gt;<i> authenticate as the other user. By changing the password he 
+</I>&gt;<i> has taken over the account.
+</I>&gt;<i> 
+</I>&gt;<i> The fix is to just seed the rand() function at startup of 
+</I>&gt;<i> jadc2s with the current time that will be different for every 
+</I>&gt;<i> restart. (But using
+</I>&gt;<i> rand() to generate the digest ids still isn't a very strong
+</I>&gt;<i> implementation.)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Tot kijk
+</I>&gt;<i>     Matthias
+</I>&gt;<i> 
+</I>&gt;<i> --- jadc2s.c	2003-10-10 11:05:45.000000000 +0200
+</I>&gt;<i> +++ jadc2s-srand.c	2003-10-12 00:53:41.000000000 +0200
+</I>&gt;<i> @@ -200,6 +200,9 @@
+</I>&gt;<i>          return 1;
+</I>&gt;<i>      }
+</I>&gt;<i>  
+</I>&gt;<i> +    /* seed the rand() function */
+</I>&gt;<i> +    srand(time(NULL));
+</I>&gt;<i> +
+</I>&gt;<i>      /* start logging */
+</I>&gt;<i>      c2s-&gt;log = log_new(&quot;jadc2s&quot;);
+</I>&gt;<i>      log_write(c2s-&gt;log, LOG_NOTICE, &quot;starting up&quot;);
+</I>&gt;<i> 
+</I>&gt;<i> --
+</I>&gt;<i> For kibibytes see:
+</I>&gt;<i> <A HREF="http://www.iec.ch/online_news/etech/arch_2003/etech_0503/focus.htm">http://www.iec.ch/online_news/etech/arch_2003/etech_0503/focus.htm</A>
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="047139.html">[JDEV] Shameless JBother advertisement
+</A></li>
+	<LI>Next message: <A HREF="047143.html">[JDEV] Still another patch ... (seed the rand() function)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47142">[ date ]</a>
+              <a href="thread.html#47142">[ thread ]</a>
+              <a href="subject.html#47142">[ subject ]</a>
+              <a href="author.html#47142">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

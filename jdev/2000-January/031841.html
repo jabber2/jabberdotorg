@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Firewall jumping
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Firewall%20jumping&In-Reply-To=%3C200001201837.MAA14338%40ductape.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="031831.html">
+   <LINK REL="Next"  HREF="031845.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Firewall jumping</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Firewall%20jumping&In-Reply-To=%3C200001201837.MAA14338%40ductape.net%3E"
+       TITLE="[JDEV] Firewall jumping">tcharron at ductape.net
+       </A><BR>
+    <I>Thu Jan 20 12:37:40 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="031831.html">[JDEV] Firewall jumping
+</A></li>
+        <LI>Next message: <A HREF="031845.html">[JDEV] Firewall jumping
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#31841">[ date ]</a>
+              <a href="thread.html#31841">[ thread ]</a>
+              <a href="subject.html#31841">[ subject ]</a>
+              <a href="author.html#31841">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Quoting &quot;Michael D. Johnson&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mike_johnson at credence.com</A>&gt;:
+&gt;<i> Thomas;
+</I>&gt;<i> Passing on some thoughts about the HTTP service, and asking for return
+</I>&gt;<i> comments. I am use the symbols &lt;&lt;&gt;&gt; to indicate variable identites and
+</I>&gt;<i> || to indicate a choice. This should leave the &lt;&gt; symbol that HTML/HTTP
+</I>&gt;<i> requires.
+</I>
+  Works for me..
+
+&gt;<i> My understanding after searching through documentation of the HTTP 1.2
+</I>&gt;<i> (1.1 pre 7?) protocol seems to be fairly simplistic.  
+</I>
+  Yes, it really is..
+
+&gt;<i> We have the XML jabber server on the local machine -- A and the HTTP
+</I>&gt;<i> server on the firewall machine -- B.  It seems to me that the service we
+</I>&gt;<i> want is a server to server protocol. Then wouldn't we have to open an
+</I>&gt;<i> socket connection on port 80 between A &amp; B? 
+</I>
+  server to server would require some sort of routing system as exists in email.
+  My thoughts are just client&lt;=&gt;server at the moment.  Let me explain more 
+below..
+
+&gt;<i> We could restrict the HTTP types to GET || HEAD || PUT || DELETE ||
+</I>&gt;<i> OPTIONS || TRACE || POST  to keep the variations down. 
+</I>
+  I'd only support post, personally.  Makes things a whole lot easier.
+
+&gt;<i> Then we have a single type of message body being passed between the
+</I>&gt;<i> servers:
+</I>&gt;<i> &lt;&lt;HTTP TYPE&gt;&gt; &lt;&lt;Jabber Target HOST URL&gt;&gt;:&lt;&lt;Port #&gt;&gt; HTTP/1.1
+</I>&gt;<i> FROM     :     &lt;&lt;enduserid email tag&gt;&gt;
+</I>&gt;<i> CONTENT-TYPE    :     text/XML
+</I>&gt;<i> TRANSFER-ENCODING    : chunked
+</I>&gt;<i> CONNECTION     :     open-persist || close
+</I>&gt;<i> SERVER     :     Jabber/1.0-dev
+</I>&gt;<i> {Required blank line}
+</I>&gt;<i> &lt;BODY&gt;
+</I>&gt;<i> &lt;&lt;XML information if any&gt;&gt;
+</I>&gt;<i> &lt;BODY&gt;
+</I>&gt;<i> {Required blank line}
+</I>
+  Actually, HTTP can transfer native XML data without the need for the body 
+tags, as it's content type is text/XML
+and not text/html
+
+  Here is what I would propose for HTTP firewall jumping for client&lt;=&gt;server 
+connections..
+
+  The first thing required would be an http service for jserver.  All listening 
+sockets, etc, are provided
+by services in jserver.  This would be simple enough to add.
+
+  This server would then listen on a preconfigured port.  Lets say 5280 for 
+now, buit it could just as well
+be port 80.
+
+  Client A would initiate a client connection to the http service.  If going 
+thru a firewall or strait http isn't
+an issue here.  It's first connection would merely be an initial connection 
+request.  The server would thgen generate
+a randomly generated 'sessionID' that would be returned to the client.  All 
+connections made would now also pass this
+sessionID in the request, hence, establishing a logical session with a given ID 
+over a non persistent connection.
+
+  This logical connection could be managed by the server by pooling all of the 
+XML stream data outgoing to the client
+in a buffer.  The client would then occasionally reconnect, pass the sessionID, 
+which the server would link to
+a given logged in user connection.  The client could pass via a HTTP PUT any 
+outgoing XML data that it needs to send, 
+and the server would then pass all data back thru the HTTP connection that it 
+has in it's buffer for the client.
+
+  The server would be configured to require a client connection ever X seconds, 
+X being a configurable parameter
+dependant on the server.  If a client had not reconnected within X timeframe, 
+the user would be marked offline, all
+pooled output stored offline, and the sessionID expired.  When the client 
+reconnects AFTER the timeout, either a message
+stating the connection has expired, with an immediate disconnection, or a 
+reauthentication process of some sort could
+take place to reactivate the sessionID.
+
+  An example of the HTTP conversation is below:
+************************************
+* INITIAL CONNECTION CONVERSATION: *
+************************************
+--------------------------------------------------
+Client:
+
+GET /auth HTTP/1.0
+-------------------------
+Server:
+
+HTTP/1.0 200 OK
+Date: Wednesday, 02-Feb-95 23:04:12 GMT
+Server: Jabber/1.0-dev
+Last-modified: Monday, 31-Jan-2000 23:33:16 GMT
+Content-type: text/XML
+Content-length: 2345
+     * a blank line *
+sessionID=hgGFG798ghj65HUgf
+--------------------------------------------------
+
+****************************************
+* SUBSEQUENT CONNECTION CONVERSATIONS: *
+****************************************
+--------------------------------------------------
+Client:
+
+POST /converse HTTP/1.0
+User-Agent:  libwww/2.14
+From:  <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Stars at WDVL.com</A>
+Content-type: application/x-www-form-urlencoded
+Content-length: 150
+     * a blank line *
+sessionID=hgGFG798ghj65HUgf
+&amp;XML=&lt;message ID=&quot;789367124&quot;/&gt;
+-----------------------
+Server:
+
+HTTP/1.0 200 OK
+Date: Wednesday, 02-Feb-95 23:04:12 GMT
+Server: Jabber/1.0-dev
+Last-modified: Monday, 31-Jan-2000 23:33:16 GMT
+Content-type: text/XML
+Content-length: 2345
+     * a blank line *
+&lt;something type=&quot;some xml packets for the client&quot;/&gt;
+--------------------------------------------------
+
+  What's everyone think about this framework?
+
+--- 
+Thomas Charron
+&lt;&lt; Wanted: One decent sig &gt;&gt;
+&lt;&lt; Preferably litle used  &gt;&gt;
+&lt;&lt; and stored in garage.  ?&gt;&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="031831.html">[JDEV] Firewall jumping
+</A></li>
+	<LI>Next message: <A HREF="031845.html">[JDEV] Firewall jumping
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#31841">[ date ]</a>
+              <a href="thread.html#31841">[ thread ]</a>
+              <a href="subject.html#31841">[ subject ]</a>
+              <a href="author.html#31841">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

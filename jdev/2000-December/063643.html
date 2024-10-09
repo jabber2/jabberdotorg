@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] JPOLLD
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JPOLLD&In-Reply-To=%3C005c01c0633b%24323db8e0%243101a8c0%40dsf%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="063624.html">
+   <LINK REL="Next"  HREF="063678.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] JPOLLD</H1>
+    <B>Vijay Kumar</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JPOLLD&In-Reply-To=%3C005c01c0633b%24323db8e0%243101a8c0%40dsf%3E"
+       TITLE="[JDEV] JPOLLD">vijay at dsfinternet.com
+       </A><BR>
+    <I>Mon Dec 11 00:25:45 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="063624.html">[JDEV] JPOLLD
+</A></li>
+        <LI>Next message: <A HREF="063678.html">[JDEV] jabber users limit !!
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63643">[ date ]</a>
+              <a href="thread.html#63643">[ thread ]</a>
+              <a href="subject.html#63643">[ subject ]</a>
+              <a href="author.html#63643">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>RE: [JDEV] jabber users limit !!-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+well jpolld is used to increse the no of simulatanous users ,as by
+default sytem support only 1024 TCP connection only at a time
+so this means that only 1024 users can connect at a time ,so we use
+jpolld ,it act as layer between user &amp; jabberd
+all the TCP coonections first connected to the machine where jpolld
+is running ,then jpolld say take 100's of connections
+&amp; multiplex them to jabberd on a single socket .
+
+extract from the README file of jpolld 
+REASONING
+- ---------
+The need for large IO channels is one of the primary problems that
+surrounds any network based server once it starts to reach a high
+number of users. For Jabber the primary IO strain comes from the
+large number of persistant sockets that are necessary to have a
+largely scaled server. As the number of sockets devoted to a single
+program increases it becomes extremely difficult for a program to
+keep track and iterate over the sockets to get and process the
+information. The functions used to iterate over the sockets can also
+have possible limitations on the number of sockets it can handle. The
+most obvious solution (as it is in most IO problems) is to remove the
+IO from the actual data processing. In Jabber this is what we have
+jpolld for.
+[... Is there any more? ...]
+THEORY
+- ------
+The jpolld will act as a TCP multiplexer, it accepts multiple
+connections from clients and connects back to the server with only
+one connection. All of the client connections are then translated
+between the single server socket. This setup allows for multiple
+jpollds to be run on seperate front end boxes, and connect back to a
+larger central server.
+[... I'll put more in here ...]
+SETUP
+- -----
+The first consideration to setting up a large Jabber system is the
+target max simultaneous user count. You then need to figure out how
+many of those users you want a single jabberd server to handle. A
+good rough estimate is 40,000-60,000 users handled by a single
+jabberd. Next you need to evaluate the network requirements, and how
+the TCP handling boxes will be designed. The amount of sockets that a
+single box can handle is mostly tied to the number of NICs and the
+number of CPUs from the system (as per the model this box is mainly
+piping the IO and doing a very low amount of processing). Finding a
+balance between these two elements is crucial, if you are piping
+information to the jabberd server too quickly then it will become
+backed up and be very hard for it to recover, if it is too slow and
+the other side too beastly, potential cost goals will be wasted on
+overlypowerful servers.
+THe jabberd server must have a seperate configuration section for
+each of the jpollds that will be connecting to it. The configuriation
+is done by adding an accept service to the jabberd configuration, an
+example:
+&lt;service id='jpolld'&gt;
+&lt;host&gt;jpolld.127.0.0.1&lt;/host&gt;
+&lt;accept&gt;
+&lt;ip/&gt;
+&lt;port&gt;5225&lt;/port&gt;
+&lt;secret&gt;test&lt;/secret&gt;
+&lt;/accept&gt;
+&lt;/service&gt;
+Each of the jpollds must have a seperate port setting and seperate id
+setting.
+The jpolld is controlled by command line options. The two required
+options for jpolld are -n and -s, which are the name and secret
+respectively. These must match the id and secret from the
+configuration that is done to jabberd. The other options to the
+jpolld are also important and summarized here:
+- -d The remote port if it is different than 5225 as set in the jabberd
+config
+- -l The local port that the jpolld will listen on, defaults to 5222
+- -h The IP of the machine to connect to with jpolld, this will default
+to 
+localhost.
+When the two are connected together fully all resulting interaction
+should be transparent to the users.
+[... Clean this up! ...]
+- ----- Original Message ----- 
+From: Edward J Becker 
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> 
+Sent: Friday, December 08, 2000 11:09 PM
+Subject: [JDEV] JPOLLD
+
+
+ 
+ What is Jpolld where can I get more info on it?
+ 
+Edward
+ 
+
+-----BEGIN PGP SIGNATURE-----
+Version: PGPfreeware 6.5.8 for non-commercial use &lt;<A HREF="http://www.pgp.com">http://www.pgp.com</A>&gt;
+
+iQA/AwUBOjQmEPMOJs9j9QjTEQJrZACfYKpqSAifG5DwJouas+8BBwanFdcAoM1U
+tIiNYoAMrsEyFNXOsMSpCT18
+=5eRL
+-----END PGP SIGNATURE-----
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="063624.html">[JDEV] JPOLLD
+</A></li>
+	<LI>Next message: <A HREF="063678.html">[JDEV] jabber users limit !!
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63643">[ date ]</a>
+              <a href="thread.html#63643">[ thread ]</a>
+              <a href="subject.html#63643">[ subject ]</a>
+              <a href="author.html#63643">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

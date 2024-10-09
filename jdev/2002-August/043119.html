@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] JUD having problems loading global.xdb info after server restart. ..
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JUD%20having%20problems%20loading%20global.xdb%20info%20after%20server%0A%20restart.%20..&In-Reply-To=%3C3D518BD6.5090207%40guanosoft.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="043116.html">
+   <LINK REL="Next"  HREF="043117.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] JUD having problems loading global.xdb info after server restart. ..</H1>
+    <B>Jason Anderson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JUD%20having%20problems%20loading%20global.xdb%20info%20after%20server%0A%20restart.%20..&In-Reply-To=%3C3D518BD6.5090207%40guanosoft.org%3E"
+       TITLE="[JDEV] JUD having problems loading global.xdb info after server restart. ..">jason at guanosoft.org
+       </A><BR>
+    <I>Wed Aug  7 16:06:30 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="043116.html">[JDEV] JUD having problems loading global.xdb info after server restart. ..
+</A></li>
+        <LI>Next message: <A HREF="043117.html">[JDEV] Transport readiness
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43119">[ date ]</a>
+              <a href="thread.html#43119">[ thread ]</a>
+              <a href="subject.html#43119">[ subject ]</a>
+              <a href="author.html#43119">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>John,
+
+Your issue sounds familiar, I just answered this question on jadmin.  I 
+believe it's because you are running jud in a separate process.  A 
+workaround is to run it in-process with your main jabberd.  See my post 
+today: <A HREF="http://mailman.jabber.org/pipermail/jadmin/2002-August/006372.html">http://mailman.jabber.org/pipermail/jadmin/2002-August/006372.html</A>
+
+Of course, fixing it would be great!  I agree with you that x is going 
+to be null, but I don't know what this affects unless I look at the 
+calling method.  Have you tried commenting out the call to xmlnode.free 
+to see if it works?
+
+jason
+
+CROSSWHITE,JOHN (Non-HP-Corvallis,ex1) wrote:
+&gt;<i> Hello everyone.  I'm running jabber1.4.2 and jud0.4 on redhat 7.2.
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> Here is the behavior I'm experiencing:
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> Start jabberd.
+</I>&gt;<i> 
+</I>&gt;<i> Start a client and connect.
+</I>&gt;<i> 
+</I>&gt;<i> Register with the jud.
+</I>&gt;<i> 
+</I>&gt;<i> Perform a search and my jud entry can be found.
+</I>&gt;<i> 
+</I>&gt;<i> Restart server.
+</I>&gt;<i> 
+</I>&gt;<i> Start a client and connect.
+</I>&gt;<i> 
+</I>&gt;<i> Perform a search and my jud entry cannot be found.
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> If I reregister, the ./spool/jud/global.xdb file is updated correctly 
+</I>&gt;<i> without being overwritten.  However, if I perform a search, I can only 
+</I>&gt;<i> find users that have registered since the last server restart.  Even 
+</I>&gt;<i> though their entries are still in the global.xdb file.
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> So, I went digging into the code.  I think the culprit may be xdb_get 
+</I>&gt;<i> and I wanted to see what you guys thought.  In the file xdb.c find the 
+</I>&gt;<i> function xdb_get.  It would appear that this function ALWAYS returns 
+</I>&gt;<i> null.  And this may be the reason why the information in global.xdb 
+</I>&gt;<i> isn't being loaded correctly.
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> Here is a copy of what I think the offending code is:
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i>     /* return the xmlnode inside &lt;xdb&gt;...&lt;/xdb&gt;  */
+</I>&gt;<i> 
+</I>&gt;<i>     for(x = xmlnode_get_firstchild(newx.data); x != NULL &amp;&amp; 
+</I>&gt;<i> xmlnode_get_type(x) != NTYPE_TAG; x = xmlnode_get_nextsibling(x));
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i>     /* there were no children (results) to the xdb request, free the 
+</I>&gt;<i> packet */
+</I>&gt;<i> 
+</I>&gt;<i>     if(x == NULL)
+</I>&gt;<i> 
+</I>&gt;<i>         xmlnode_free(newx.data);
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i>     return x;
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> The for loop will always ensure that x is NULL after it has run.  
+</I>&gt;<i> Therefore, the return x statement is always going to return NULL.  Am I 
+</I>&gt;<i> incorrect in my interpretation?  Wouldn't this break loading of the 
+</I>&gt;<i> global.xdb file?
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for any information you might be able to provide.  I've been 
+</I>&gt;<i> banging my head against this for a few days now.
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> John Crosswhite
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="043116.html">[JDEV] JUD having problems loading global.xdb info after server restart. ..
+</A></li>
+	<LI>Next message: <A HREF="043117.html">[JDEV] Transport readiness
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43119">[ date ]</a>
+              <a href="thread.html#43119">[ thread ]</a>
+              <a href="subject.html#43119">[ subject ]</a>
+              <a href="author.html#43119">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

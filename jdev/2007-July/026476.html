@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] XMPP client library for PHP?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20XMPP%20client%20library%20for%20PHP%3F&In-Reply-To=46A65396.4030804%40unclassified.de">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="026475.html">
+   <LINK REL="Next"  HREF="026498.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] XMPP client library for PHP?</H1>
+    <B>Jonathan Dickinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20XMPP%20client%20library%20for%20PHP%3F&In-Reply-To=46A65396.4030804%40unclassified.de"
+       TITLE="[jdev] XMPP client library for PHP?">chayce.za at gmail.com
+       </A><BR>
+    <I>Wed Jul 25 11:38:05 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="026475.html">[jdev] XMPP client library for PHP?
+</A></li>
+        <LI>Next message: <A HREF="026498.html">[jdev] XMPP client library for PHP?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26476">[ date ]</a>
+              <a href="thread.html#26476">[ thread ]</a>
+              <a href="subject.html#26476">[ subject ]</a>
+              <a href="author.html#26476">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Yves,
+
+I am currently developing a library (actually, it's kinda finished) in C# and you shouldn't have any problems developing a library if you have a basic understating of XML and Sockets/TCP. My only hurdle was that a TCP packet may have incomplete XML data so you have to write a push-data : push-element style parser (I am sure there is an open source one out there for PHP: PHP is rather popular =P ). Other than that, the protocol is easily handled with a few simple design patterns (and liberal use of the Jabber.org website). Feel free to IM me if you have any questions.
+
+Have you thought about interfacing with some C++ code? Surely PHP has some language interop? (I used it for no more than 6 months and then discovered ROR - so don't ask me) I am sure PHP will allow you to call a DLL. By now I am sure you could even try getting PHP to talk to C#/.Net, there are some rather clever folk out there. You could even use the file system for communication (create/delete files) if that fails:
+
+Jabber Server =&gt; Watches C:\jabber\from\
+(You could use the FileSystemWatcher in C# for that)
+
+Web Server =&gt; Write C:\jabber\from\001.txt
+Web Server =&gt; Enters loop waiting for existence of C:\jabber\to\001.txt
+Jabber Server =&gt; Reads, parses and writes C:\jabber\to\001.txt
+Web Server =&gt; Reads C:\jabber\to\001.txt
+Web Server =&gt; Takes action.
+
+That is a really dirty hack (but Linux does make a rather obscene amount of use of the file system, so maybe it is viable on a Linux machine). So rather go for the interop.
+
+Try moving your project to ROR (which there are very good Jabber libraries for). Getting ROR right wont take more than a week and making a roster web app could potentially take even less time (you can even wire AJAX into it with, in some instances, changing one keyword). Have a look at <A HREF="http://the.railsi.st/2007/4/29/welcome-to-the-railsi-st">http://the.railsi.st/2007/4/29/welcome-to-the-railsi-st</A> if you are wondering if it is a good idea.
+
+If you have a server on a Windows box why not create a web service in C#/ASP.Net and get your PHP app to call web methods on that? That is also a dirty, dirty, dirty hack, once again, have a look at the interop route.
+
+Oh, your Linux machine might be rejecting the Google SSL certificate (I couldn't imagine why, but I have had problems from time-to-time with Google's certificates). See if the demo client in AGSXMMP will connect to Google talk. And you also know that there is a connect server for Google talk? There are instructions on Google for configuring various clients, so have a look at those and see how they apply to your library.
+
+SMTP and HTTP are simple, but making something like XMPP on top of them would be really chatty (there is an XMPP HTTP polling protocol, but those bytes in the header could add up /really/ quickly). Don't reject XMPP, it's really elegant, and I was tempted to write a web server using it (no cookies and ugly hidden fields, what fun).
+
+Hope that helps, sorry I don't know any PHP libraries, but if you can't find any then this will hopefully be of use. Have you considered trying to fix code.blitzaffe.com's code?
+
+Regards,
+ Jonathan Dickinson
+
+Jonathan Dickinson
+Developer [Coruscant Technology]
+
+mobile:    +27 (74) 1099 370
+jabber:     <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chayce.za at jabber.org</A>
+
+Complexity kills. [Ray Ozzie]
+
+
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf Of Yves Goergen
+Sent: 24 July 2007 09:32 PM
+To: Jabber software development list
+Subject: [jdev] XMPP client library for PHP?
+
+Hello,
+
+I have written and am running a public service of the JRU-PHP
+application, the Jabber Roster Utility to manage your contact list and
+do easy mass-editing in it, re-written in PHP [1].
+
+This was once working just fine, you could enter your JID and the
+password, get your roster, edit and save it. But then, servers began to
+support TLS encryption, Google Talk even requires it. Also, I have
+upgraded my webhosting environment from PHP 4 to PHP 5 and the highly
+sophisticated code didn't work anymore. (Remember, PHP 4's days are
+counted and PHP 6 is in the making already. I don't say that it's good
+to have new, incompatible versions all the time, but as a supporting
+library, it should work in common environments to be useful.)
+
+Currently, the project uses the Class.Jabber.PHP [2] library, together
+with my patch to support UTF-8 and another unofficial patch to support
+PHP 5 and TLS security. This seemed to work for some hosts, but I have
+made the strange observation that I could connect to Google Talk from my
+development web server running on Windows 2000, but not from my public
+web server on Linux. There were some crazy errors in PHP's encryption
+functions. Sadly, CJP has been discontinued as far as I know. The
+website is currently &quot;recovering from losing a hard drive&quot;, that's been
+at least a couple of days now. Doesn't seem to come back again.
+
+I have learned about alternatives to CJP: There's a Jabber client
+library on code.blitzaffe.com [3]. Its primary advantage over CJP is,
+according to the website, that it's event-driven and doesn't wait for a
+static time for the server to react upon requests, which makes it faster
+and more stable at the same time. I've talked to the current CJP
+maintainer and in his lack of time, he agreed that this should be the
+successor of CJP. But it fails on PHP 5 and according to the author,
+Steve Blinch, PHP 5 support has an undetermined schedule (he said this
+in January 2007). No update until today.
+
+A new library was developed for the Flyspray project [4], because they
+also couldn't find a usable one. So far it only supports sending
+messages, it doesn't have any further capabilities like roster
+management, vcards and all the other Jabber stuff. Maybe it will come,
+but now it doesn't look so.
+
+So my question is, are there any plans on this planet to create a Jabber
+client library for PHP that is working on a current web server platform
+and supports the majority of all Jabber servers? Are there any projects
+that I have missed?
+
+&gt;<i>From what I've seen in the CJP code and from my first vainly experiences
+</I>in creating an XMPP client library in C#, I know that XMPP is a highly
+complex XML-based protocol and I admire everybody who could create a
+working piece of code to speak that protocol. But both the XML structure
+with all its different namespaces that look so glued together from
+different things and the way PHP's XML functions are to be used surpass
+my capabilities so that I don't see myself able to fill that gap on my own.
+
+I do believe that the Jabber idea is a great thing, I've converted from
+ICQ a few years ago and am using my own modified version of Psi since
+then, running my own (public) server for some time now. Only the
+implementation is a bit complicated and hard to understand. Maybe this
+is the reason why there's no good and complete library for PHP? How is
+the situation for other languages? I've heard of a Perl module recently,
+agsXMPP for .NET seems to develop nicely (I'll get back to it sometime
+in the future...) and then there's still the C++ libraries that Psi and
+Gaim use. Not a very long list compared to world-leading standards like
+SMTP or HTTP - which are still a lot simpler, to be honest.
+
+So these are my thoughts for today. Are there any comments, please?
+
+[1] <A HREF="http://beta.unclassified.de/projekte/jru-php/">http://beta.unclassified.de/projekte/jru-php/</A>
+[2] <A HREF="http://cjphp.netflint.net/">http://cjphp.netflint.net/</A>
+[3] <A HREF="http://code.blitzaffe.com/pages/phpclasses/files/jabber_client_52-11">http://code.blitzaffe.com/pages/phpclasses/files/jabber_client_52-11</A>
+[4] <A HREF="http://flyspray.org/class.jabber2.php">http://flyspray.org/class.jabber2.php</A>
+
+-- 
+Yves Goergen &quot;LonelyPixel&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nospam.list at unclassified.de</A>&gt;
+Visit my web laboratory at <A HREF="http://beta.unclassified.de">http://beta.unclassified.de</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="026475.html">[jdev] XMPP client library for PHP?
+</A></li>
+	<LI>Next message: <A HREF="026498.html">[jdev] XMPP client library for PHP?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26476">[ date ]</a>
+              <a href="thread.html#26476">[ thread ]</a>
+              <a href="subject.html#26476">[ subject ]</a>
+              <a href="author.html#26476">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

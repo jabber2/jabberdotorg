@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] irc-jabber &amp; killall -HUP
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20irc-jabber%20%26%20killall%20-HUP&In-Reply-To=%3C20001114082553.I1651%40Flint.digix.dyndns.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="033932.html">
+   <LINK REL="Next"  HREF="033942.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] irc-jabber &amp; killall -HUP</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20irc-jabber%20%26%20killall%20-HUP&In-Reply-To=%3C20001114082553.I1651%40Flint.digix.dyndns.org%3E"
+       TITLE="[JDEV] irc-jabber &amp; killall -HUP">keith at digix.dyndns.org
+       </A><BR>
+    <I>Tue Nov 14 07:25:53 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="033932.html">[JDEV] irc-jabber &amp; killall -HUP
+</A></li>
+        <LI>Next message: <A HREF="033942.html">[JDEV] irc-jabber &amp; killall -HUP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33940">[ date ]</a>
+              <a href="thread.html#33940">[ thread ]</a>
+              <a href="subject.html#33940">[ subject ]</a>
+              <a href="author.html#33940">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&lt;snip/&gt;
+&gt;<i> 1 - killall -HUP jabberd does not always (ever :) do what I expect it to, for 
+</I>&gt;<i> example if I add a new service to the jabber.xml file and -HUP jabberd it 
+</I>&gt;<i> doesn't act on it, for example start to listen on a new port (if I told it 
+</I>&gt;<i> to). This can be a bit annoying if people are using the server and I have to 
+</I>&gt;<i> take it down :-)
+</I>
+hehe.. doesn't always?  It doesn't really do *anything* ... =]  currently in jabberd, there is no way to reload the config file.. this good stuff is being saved either for 1.3 or 1.5, I don't remember which offhand... but I promise it will be much much cooler than previous jabber server stuff... we are going to be doing alot of dynamic config, remote admin stuff, services with TTLs, and other cool stuff, so that an admin can change the config file remotely, and have his changes go into effect immediatly.... that being said, it doesn't work yet... I believe the only thing it does on a HUP right now, is read the new config, and load it into it's greymatter__ variable, but it has no way of notifiying each component that the config has changed yet.. 
+
+&gt;<i> 2 - I got icq-transport-0.9.something to work using groupchat. I changed a 
+</I>&gt;<i> few lines in the source (similar to other transports) and it worked like a 
+</I>&gt;<i> charm, connected to the irc server, etc. However, the most attractive feature 
+</I>&gt;<i> is to register with the agent and have it tell you when your friends come on 
+</I>&gt;<i> IRC. This uses the subagent register.irc.domain thing, and I haven't been 
+</I>&gt;<i> able to configure that properly with jabberd. I ended up with 2 accept 
+</I>&gt;<i> statements in jabber.xml (on service irc.domain and one register.irc.domain) 
+</I>&gt;<i> and adding one agent (irc.domain) that had a subagent register.irc.domain, 
+</I>&gt;<i> and well things got all complicated from there!
+</I>
+Yes, you will need two service sections for the register junk to work... kindof sucks, but I did it that way -- with the register subagent, with the promise that presence redirects would fix it, and make it seamless.. currently, it's really annoying for a client to register with irc transport, and some clients don't even support sub-agents!  maybe one of these days I'll see if i can merge the register code into the main agent... 
+
+&gt;<i> I would be perfectly happy to use that irc-transport if I could get 
+</I>&gt;<i> registration to work (ie I haven't figured out all the details needed to set 
+</I>&gt;<i> it up with jabberd). 
+</I>
+I haven't tried it yet, to be honest, but you *should* just need two service sections... say one is ip 12.34.56.78:9000 secret:irc-trans and the other 12.34.56.78:9001 secret:irc-trans, (normally, you could just use one port, and connect them both to, and use different secrets to distinguish the id's, but this way you can just use the secret variable twice, with different ports)  give the first an id of irc.foo.com, and the second an id of register.irc.foo.com, (make sure these are set in the irc_trans.xml file as well) ...
+
+you will also have to make the ehandler_new lines into ehandler_new_ex lines.. there are two of them in external.c, one for the main agent, and one for the sub-agent... just change them both.
+
+&lt;snip/&gt;
+
+-Keith
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="033932.html">[JDEV] irc-jabber &amp; killall -HUP
+</A></li>
+	<LI>Next message: <A HREF="033942.html">[JDEV] irc-jabber &amp; killall -HUP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33940">[ date ]</a>
+              <a href="thread.html#33940">[ thread ]</a>
+              <a href="subject.html#33940">[ subject ]</a>
+              <a href="author.html#33940">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

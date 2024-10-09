@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber DOM Proposal
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20DOM%20Proposal&In-Reply-To=%3CPine.LNX.3.96.990430155200.14466D-100000%40mondo.eppg.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="059151.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber DOM Proposal</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20DOM%20Proposal&In-Reply-To=%3CPine.LNX.3.96.990430155200.14466D-100000%40mondo.eppg.com%3E"
+       TITLE="[JDEV] Jabber DOM Proposal">jeremie at jabber.org
+       </A><BR>
+    <I>Fri Apr 30 16:34:45 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="059151.html">[JDEV] 0.6 release..
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59148">[ date ]</a>
+              <a href="thread.html#59148">[ thread ]</a>
+              <a href="subject.html#59148">[ subject ]</a>
+              <a href="author.html#59148">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> I have been doing some serious analysis of the current DOM
+</I>&gt;<i> (jpair/xpt/xpt_pool) combo, and the W3C recommendation of the DOM. I've also
+</I>&gt;<i> been looking at etherx and the jabber transport, trying to understand how
+</I>&gt;<i> they use all of the nifty data structures.
+</I>
+Wonderbuns!
+
+&gt;<i> Regarding the current DOM, it's unbelievably close to the actual W3C
+</I>&gt;<i> [smush]
+</I>&gt;<i> Things to keep in mind (will eventually be a proper introduction)
+</I>&gt;<i> 1.) The Jabber protocol is based on a XML *subset*. As such, the W3C DOM
+</I>&gt;<i> really doesn't apply since we don't support all of XML anyway
+</I>
+Correct.  Jabber is 100% XML but doesn't utilize all the fringe parts of
+the XML spec, as they are not needed for a protocol format and are more
+geared for a document type of context.
+
+&gt;<i> 2.) The Jabber DOM is more interested in organizing the contents of the XML
+</I>&gt;<i> packet than in keeping the contents of packets in sequence. Parent-child
+</I>&gt;<i> relationships are preserved, but the order of multiple child tags (with the
+</I>&gt;<i> same name)within a parent is *not*.
+</I>
+Yup.
+
+&gt;<i> DOM Public API types &amp; functions
+</I>&gt;<i> --------------------------------------------------------------
+</I>&gt;<i> The Jabber DOM shall provide the following opaque data types:
+</I>&gt;<i> 1.) Tag: represents a XML tag; may have sub-tags, attributes, and one (1)
+</I>&gt;<i> datum
+</I>&gt;<i> 2.) Attribute : represents the XML attribute(of the form &lt;name&gt;=&lt;value&gt;)
+</I>&gt;<i> associated with a tag
+</I>&gt;<i> 3.) Datum: represents character data stored between tags
+</I>&gt;<i> 
+</I>&gt;<i> To traverse the DOM, the following operations are provided:
+</I>&gt;<i> 1.) hasTag(Tag t, String name) : Integer
+</I>&gt;<i>     Desc: Determines if &lt;t&gt; has any subtags which match &lt;name&gt;; returns
+</I>&gt;<i> number of matching tags
+</I>&gt;<i> 2.) hasAttribute(Tag t, String name) : Boolean
+</I>&gt;<i>     Desc: Determines if &lt;t&gt; has any attributes with name of &lt;name&gt;
+</I>&gt;<i> 3.) hasDatum(Tag t) : Boolean
+</I>&gt;<i>     Desc: Determines if &lt;t&gt; has any character data
+</I>
+These aren't really critical, but they fill out the dessert tray nicely :)
+
+&gt;<i> 4.) getTag(Tag t, String name) : Tag
+</I>&gt;<i>     Desc: Attempt to retrieve first subtag in &lt;t&gt; which matches &lt;name&gt;;
+</I>&gt;<i> returns NULL if none are found
+</I>&gt;<i> 5.) getNextTagSibling(Tag t) : Tag
+</I>&gt;<i>     Desc: Returns any following tags (of same name, at this level in DOM
+</I>&gt;<i> tree); returns NULL if none exist
+</I>&gt;<i> 6.) getPrevTagSibling(Tag t) : Tag
+</I>&gt;<i>     Desc: Returns any previous tags (of same name, at this level in DOM
+</I>&gt;<i> tree); returns NULL if none exist
+</I>
+getTag() will be very handy!
+
+&gt;<i> 7.) getTagName(Tag t) : String
+</I>&gt;<i>     Desc: Returns name of a tag
+</I>&gt;<i> 8.) getTagDatum(Tag t) : Pointer
+</I>&gt;<i>     Desc: Returns pointer to tag &lt;t&gt;'s datum; *not* null terminated
+</I>&gt;<i> 9.) getTagDatumSz(Tag t) : Integer
+</I>&gt;<i>     Desc: Returns length of tag &lt;t&gt;'s datum segment
+</I>
+I'm curious about this, why wouldn't you just null terminate the string
+and avoid the getTagDatumSz method?  Also, no biggie, but in XML worlds
+the strings are usually called cdata... would it be more
+consistent/understandable to refer to them the same way?
+
+&gt;<i> 10.) getAttribute(Tag t, String name) : String
+</I>&gt;<i>     Desc: Returns value of tag &lt;t&gt;'s attribute by name of &lt;name&gt;
+</I>&gt;<i> 11.) putAttribute(Tag t, String name, String value) : void
+</I>&gt;<i>     Desc: Adds/replaces attribute &lt;name&gt; with &lt;value&gt; on tag &lt;t&gt;
+</I>&gt;<i> 12.) addTag(Tag parent, Tag child): void
+</I>&gt;<i>     Desc: Adds &lt;child&gt; as subtag to &lt;parent&gt;; does *not* replace existing
+</I>&gt;<i> tags
+</I>&gt;<i> 13.) addDatum(Tag t, Pointer datum, Integer datum_sz) : void
+</I>&gt;<i>     Desc: Appends &lt;datum&gt; to end of &lt;t&gt;'s existing datum; increments &lt;t&gt;'s
+</I>&gt;<i> datum size accordingly
+</I>&gt;<i> 14.) deleteTag(Tag t) : void
+</I>&gt;<i>     Desc: Releases &lt;t&gt;, including all attributes, children and datum; use
+</I>&gt;<i> with care
+</I>&gt;<i> 15.) deleteAttribute(Tag t, String name)
+</I>&gt;<i>     Desc: Releases attribute &lt;name&gt; associated with &lt;t&gt;
+</I>
+Yummy!
+
+&gt;<i> DOM Internal representations
+</I>&gt;<i> --------------------------------------------------------------
+</I>&gt;<i> The Jabber DOM shall use the following internal data structures for the
+</I>&gt;<i> representation of parsed XML:
+</I>&gt;<i> 1.) Node = the equivalent of a XML tag; contains:
+</I>&gt;<i>     1.2) Value : String
+</I>
+Are we missing?:
+      1.1) Name : String
+*g*
+
+&gt;<i>     1.3) Attribs : AttribTree
+</I>&gt;<i>     1.4) Children : NodeTree
+</I>&gt;<i>     1.5) NextSibling : Node
+</I>&gt;<i>     1.6) PrevSibling : Node
+</I>&gt;<i> 
+</I>&gt;<i> 2.) Attrib = the equivalent of a XML tag attribute; contains:
+</I>&gt;<i>     2.1) Name : String
+</I>&gt;<i>     2.2) Value : String
+</I>&gt;<i> 
+</I>&gt;<i> 3.) AttribTree = a balanced binary tree (AVL, probably) contains Attribs
+</I>&gt;<i> keyed by Attrib.Name
+</I>
+I highly doubt we need this... we only have a couple of attributes at most
+on any tag, doing this extra work here would be a shame :)
+
+&gt;<i> 
+</I>&gt;<i> 4.) NodeList = a unordered linked list of Nodes which all have the same
+</I>&gt;<i> name; contains:
+</I>&gt;<i>     4.1) Name : String
+</I>&gt;<i>     4.2) Nodes : Linked List
+</I>&gt;<i> 
+</I>&gt;<i> 4.) NodeTree = a balanced binary tree (AVL, again) containing NodeLists;
+</I>&gt;<i> keyed by the NodeList.Name
+</I>
+Again, the only place where we might have a ton of tags that might need
+this would be in the roster packets which will account for a very very
+low percentrage of the overall packet count. I'm no AVL expert, will it
+help much/any for simple packets like message or status?
+
+&gt;<i> [smush]
+</I>&gt;<i> current DOM (jpair/xpt/xpt_pool). However, I feel it is *much* more cohesive
+</I>&gt;<i> and maps closer to the actual format of the data. This is key to developing
+</I>&gt;<i> a good client library that is flexible and useful. :) I also feel quite
+</I>&gt;<i> strongly that the tradeoffs in additional memory consumption is well worth
+</I>&gt;<i> the ability to search and process large packets (should they ever occur).
+</I>
+I do like it(quite a bit in fact), and it would make a client
+development(and internal stuff)  much easier to understand :) 
+
+&gt;<i> Let me know what you think. :)
+</I>
+So when are you going to be checking it in?  Hehe :)
+
+Jer
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="059151.html">[JDEV] 0.6 release..
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59148">[ date ]</a>
+              <a href="thread.html#59148">[ thread ]</a>
+              <a href="subject.html#59148">[ subject ]</a>
+              <a href="author.html#59148">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

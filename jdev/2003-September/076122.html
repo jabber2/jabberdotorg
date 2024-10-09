@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Auto roster population/lock some groups
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Auto%20roster%20population/lock%20some%20groups&In-Reply-To=%3C13828F680182D511893300508BD6831704D62126%40oscex2.osc.uscg.mil%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="076124.html">
+   <LINK REL="Next"  HREF="076123.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Auto roster population/lock some groups</H1>
+    <B>Moore, Michael</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Auto%20roster%20population/lock%20some%20groups&In-Reply-To=%3C13828F680182D511893300508BD6831704D62126%40oscex2.osc.uscg.mil%3E"
+       TITLE="[JDEV] Auto roster population/lock some groups">MMoore at osc.uscg.mil
+       </A><BR>
+    <I>Thu Sep 11 13:39:58 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="076124.html">[JDEV] Auto roster population/lock some groups
+</A></li>
+        <LI>Next message: <A HREF="076123.html">[JDEV] Re:[2]  [standards-jig] NEW: JEP-0118: User Tune Information
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76122">[ date ]</a>
+              <a href="thread.html#76122">[ thread ]</a>
+              <a href="subject.html#76122">[ subject ]</a>
+              <a href="author.html#76122">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks, I'm getting a better idea of how that works now. What they want is
+to have the database hold that the group was automtically generated (IE a
+column in rostergroups called AutoGen or ReadOnly) and if the column says
+that group for that user was automatically created, then the user cannot
+edit it.
+
+What I'm thinking needs done is the database be modified to have that new
+coulumn. done.
+The server needs to be able to tell the client that the group is read-only.
+How to do this escapes me still.
+The client (Java applet) would block user attempts to modify groups that are
+read only. I have the changes made to treat MS- prefixes as read-only, I
+just need to rewrite a method that returns true/false if the user can edit
+the group.
+
+Mainly its the server part that I'm not sure what changes need done where,
+and I haven't found any documentation that says what is done where in the
+server source :P
+
+***************************************************
+Michael Moore (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mmoore at osc.uscg.mil</A>) (304) 264-2652
+Team CGCentral
+United States Coast Guard Operations Systems Center
+***************************************************
+
+-----Original Message-----
+From: Eli Burke [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">eburke at lore.net</A>]
+Sent: Thursday, September 11, 2003 2:01 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: RE: [JDEV] Auto roster population/lock some groups
+
+
+Michael,
+
+Our situation was not the same but had similar elements, so perhaps this
+will help you. 
+We had to set up automatic roster population, and then lock clients down
+so that they 
+could not send messages to users not in their roster (or add/edit/delete
+new users or groups).
+
+The eventual solution was to modify both the client and the server. The
+client was modified
+to make for a better &quot;user experience&quot; but the server was modified to
+prevent the actions
+entirely. If a user was to use a different client, it might behave
+strangely, but the server
+prevents any circumvention of the policy. 
+
+So, it seems to me you basically have two choices: modify the
+&quot;roster-add-2&quot; query in xdb_sql.xml
+so that it rejects or ignores groups that start with &quot;MS-&quot; (I'm not
+entirely sure how this will
+behave but it is easy enough to test) or modify jabberd. A cursory look
+suggests that 
+jsm/modules/mod_group.c in mod_groups_roster_insert() would be a good
+place to start, though
+it has been a while and I can't remember if that bit gets called when
+xdb_sql is running.
+
+For the curious, in order to disable ability for users to send IMs or
+add users not already in 
+their roster, we added the following code to jsm/deliver.c, approx line
+158 prior to calling js_user()
+[Note: NS_ROSTERCHECKis defined as jabber:iq:rostercheck]
+
+        /* if this is a message packet, make sure the sender is
+         * allowed to send a message to the receiver
+         */
+        if (jp &amp;&amp; jp-&gt;type == JPACKET_MESSAGE) {
+            int found = 0;
+            xmlnode x, cur;
+
+            /* query for the allowed user roster */
+            if (NULL != (x = xdb_get(si-&gt;xc, p-&gt;id, NS_ROSTERCHECK))) {
+
+                /* loop through all names returned to make sure we can
+send */
+                for(cur = xmlnode_get_firstchild(x); cur != NULL;
+                            cur = xmlnode_get_nextsibling(cur)) {
+                    if (0 == (j_strcmp(jp-&gt;to-&gt;user,
+xmlnode_get_data(cur))))
+                        found = 1;
+                }
+
+                if (! found) {
+                    log_notice(p-&gt;host,
+                        &quot;User tried to send message to invalid or &quot;
+                         &quot;unauthorized user!: %s&quot;,xmlnode2str(p-&gt;x));
+                    return r_DONE;
+                }
+            }
+        }
+
+We also added the following query to the xdb_sql.xml file:
+     &lt;querydef name=&quot;rosterck-get&quot; dtd=&quot;2&quot; type=&quot;get&quot;
+namespace=&quot;jabber:iq:rostercheck&quot;&gt;
+        &lt;text&gt;SELECT others.uid FROM memberships mem INNER JOIN
+memberships others ON others.unit_id = mem.unit_id AND others.unit_type
+= mem.unit_type INNER JOIN projects groups ON groups.id = mem.unit_id
+WHERE mem.unit_type = 'foo.base.Group.Project' AND mem.uid =
+SUBSTRING_INDEX( '$$user$$', '@', 1 ) AND others.uid != mem.uid&lt;/text&gt;
+        &lt;user&gt;$$user$$&lt;/user&gt;
+    &lt;top-result&gt;&lt;results xmlns='jabber:iq:rosterck'/&gt;&lt;/top-result&gt;
+    &lt;bindcol tag=&quot;allowed&quot; offset=&quot;0&quot; /&gt;
+     &lt;/querydef&gt;
+
+-Eli
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>] On Behalf Of
+Moore, Michael
+Sent: Thursday, September 11, 2003 11:39 AM
+To: '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'
+Subject: [JDEV] Auto roster population/lock some groups
+
+
+Hi,
+
+I'm working on a jabber solution for the US Coast Guard. One feature
+they want is automatic roster population (no problem there). They also
+want to lock down the groups that were automatically populated so the
+user can't mess with them (not too hard) but here's the difficulty: they
+want to have a column in the rostergroups table to mark that the group
+was automatically generated. Using jabberd 1.4.2 on Linux with xdb_sql
+and a mysql database but we will be moving to Solaris and Oracle soon
+though, with the client in Java (and I've not used large-scale Java
+before... whee!). 
+
+Then the client needs to block modification of those groups marked as
+auto-generated. I'm new to this whole project, I took over for someone a
+few weeks back and I'm still trying to figure it all out.  The
+documentation I've read has confused me more than helped, and Google has
+not been my friend. Has anyone done anything like this (added stuff to
+the protocol)? Obviously the client needs to know how to handle it, but
+would it require changing the server source and rebuilding? Or just
+xdb_sql? Any pointers in the right direction would be appreciated.
+
+Thanks!
+
+***************************************************
+Michael Moore (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mmoore at osc.uscg.mil</A>) (304) 264-2652
+Team CGCentral
+United States Coast Guard Operations Systems Center
+***************************************************
+
+
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="076124.html">[JDEV] Auto roster population/lock some groups
+</A></li>
+	<LI>Next message: <A HREF="076123.html">[JDEV] Re:[2]  [standards-jig] NEW: JEP-0118: User Tune Information
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76122">[ date ]</a>
+              <a href="thread.html#76122">[ thread ]</a>
+              <a href="subject.html#76122">[ subject ]</a>
+              <a href="author.html#76122">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

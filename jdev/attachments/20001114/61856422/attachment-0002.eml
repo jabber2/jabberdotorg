@@ -1,0 +1,65 @@
+[From nobody Tue Nov  3 09:30:22 2009
+Received: from dennis (unknown [194.100.32.85])
+	by fimail01.cabinet.net (Postfix) with SMTP
+	id 8134211C067; Tue, 14 Nov 2000 17:11:56 +0200 (EET)
+From: Dennis Noordsij &lt;dennis.noordsij@wiral.com&gt;
+Organization: Wiral Oy
+Date: Tue, 14 Nov 2000 17:12:50 +0200
+X-Mailer: KMail [version 1.1.99]
+Content-Type: text/plain;
+  charset=&quot;us-ascii&quot;
+To: Keith Minkler &lt;keith@flint.digix.dyndns.org&gt;,
+ jdev@gabber.org
+References: &lt;00111317090000.00326@dennis&gt; &lt;00111415543806.00362@dennis&gt;
+	&lt;20001114090017.A3735@Flint.digix.dyndns.org&gt;
+In-Reply-To: &lt;20001114090017.A3735@Flint.digix.dyndns.org&gt;
+Subject: Oops fixed it! haha :-)
+MIME-Version: 1.0
+Message-Id: &lt;00111417125008.00362@dennis&gt;
+Content-Transfer-Encoding: 8bit
+
+Well, that was a fluke
+
+New external.c :
+
+void irc_init(void)
+/*
+returns:
+  nothing
+input:
+  none
+*/
+{
+    ehandler_reg=NULL;
+    /* register both irc.foo.dom and register.irc.foo.dom */
+    ehandler_irc = ehandler_new_ex(&amp;irc_etherx_receive, 
+irc_host,&quot;jabber:component:accept&quot;, 8888);
+
+    if(irc_register)
+    { /* if there is a &lt;register/&gt; flag in the config */
+        spool sp=spool_new(main_pool);
+
+/* TRICKY NEW STUFF 
+    Hardcoded again because I am lazy :-)))
+*/
+
+        etherx_host = &quot;register.irc.mydomain&quot;;
+        etherx_init(etherx_secret, etherx_host);
+
+/*
+   END 
+   Tested it, and it works :-) Amazing!
+*/
+        
+ehandler_reg=ehandler_new_ex(&amp;irc_etherx_reg_receive,reg_host,&quot;jabber:component:accept&quot;, 
+9999);
+    }
+    if(ehandler_irc==NULL)
+    {
+        log_error(ZONE, &quot;[init] Failed to connect with etherx&quot;);
+        pool_free(main_pool);
+        exit(1);
+    }
+    return;
+}
+]

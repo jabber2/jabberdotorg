@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Patch for server SSL hang in jabberd when client is slow authenticating
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Patch%20for%20server%20SSL%20hang%20in%20jabberd%20when%20client%20is%20slow%20authenticating&In-Reply-To=%3C3CF42DC9.6000101%40phoenix-int.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042167.html">
+   <LINK REL="Next"  HREF="042143.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Patch for server SSL hang in jabberd when client is slow authenticating</H1>
+    <B>Nathan Sharp</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Patch%20for%20server%20SSL%20hang%20in%20jabberd%20when%20client%20is%20slow%20authenticating&In-Reply-To=%3C3CF42DC9.6000101%40phoenix-int.com%3E"
+       TITLE="[JDEV] Patch for server SSL hang in jabberd when client is slow authenticating">spamnps+jabber at phoenix-int.com
+       </A><BR>
+    <I>Tue May 28 20:24:25 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042167.html">[JDEV] Heartbeat patch for dialup and laptop users and faulty presence info
+</A></li>
+        <LI>Next message: <A HREF="042143.html">[JDEV] [Jabberd] Performance
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42133">[ date ]</a>
+              <a href="thread.html#42133">[ thread ]</a>
+              <a href="subject.html#42133">[ subject ]</a>
+              <a href="author.html#42133">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>This patch fixes a bug where if a client connecting via SSL doesn't 
+authenticate very quickly, the server will hang until the client 
+finishes.  This hang requires a kill -9 to force the server to stop (in 
+the case where the client hangs while authenticating).  This happens, 
+for example, using Exodus when it displays one of the warning messages 
+about the certificate being invalid in some way (expired, wrong cn, 
+etc).   The server will stay hung until the client O.K.'s or cancels the 
+dialog.
+
+The fix is to set the socket to non-blocking mode immediately after 
+accepting it, as non-blocking mode is not inherited from the listening 
+socket.  I'd appreciate it if this could make it into the next patch 
+release of 1.4 series!  This patch is against the 1.4.2 source code.
+
+  Nathan
+
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: mio_ssl.c.patch
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20020528/2a9baa71/attachment-0001.txt">https://www.jabber.org/jdev/attachments/20020528/2a9baa71/attachment-0001.txt</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042167.html">[JDEV] Heartbeat patch for dialup and laptop users and faulty presence info
+</A></li>
+	<LI>Next message: <A HREF="042143.html">[JDEV] [Jabberd] Performance
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42133">[ date ]</a>
+              <a href="thread.html#42133">[ thread ]</a>
+              <a href="subject.html#42133">[ subject ]</a>
+              <a href="author.html#42133">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

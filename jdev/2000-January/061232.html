@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Etherx communications..
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Etherx%20communications..&In-Reply-To=%3C200001311930.NAA19517%40ductape.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="061247.html">
+   <LINK REL="Next"  HREF="061233.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Etherx communications..</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Etherx%20communications..&In-Reply-To=%3C200001311930.NAA19517%40ductape.net%3E"
+       TITLE="[JDEV] Etherx communications..">tcharron at ductape.net
+       </A><BR>
+    <I>Mon Jan 31 13:30:41 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="061247.html">[JDEV] scaling a single server?
+</A></li>
+        <LI>Next message: <A HREF="061233.html">[JDEV] Standards...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61232">[ date ]</a>
+              <a href="thread.html#61232">[ thread ]</a>
+              <a href="subject.html#61232">[ subject ]</a>
+              <a href="author.html#61232">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>  Ryan..
+
+    I was looking at XML::Stream today, and I think it may need a few changes 
+in order to technically be XML::Stream, and *not* simply a Jabber client XML 
+stream.  What I noticed is this:
+
+     When communicating with Etherx versus a transport, the etherx namespace 
+needs to be included.  Not, this isn;t simply the streams namespace, but the 
+etherx namespace itself.  Etherx requires that the passed stream be able to 
+talk xmlns:etherx as well..  Example:
+
+CURRENT:
+&lt;stream:stream xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> to=&quot;server&quot; 
+xmlns=&quot;jabber:client&quot;&gt;
+
+Etherx requires:
+&lt;stream:stream xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> to=&quot;server&quot; 
+from=&quot;fromname&quot; xmlns=&quot;jabber:client&quot; xmlns:etherx=&quot;<A HREF="http://etherx.jabber.org&quot;">http://etherx.jabber.org&quot;</A> 
+etherx:secret=&quot;test&quot;&gt;
+
+    I'm trying to debate the best way to be able to pass this stuff, without 
+breaking the current implementation.  Perhaps some sort of hash needs to be 
+passed for namespace, instead of a streait string, along with a 'parameters' 
+attribute, if required, aka:
+
+  my $Con = new XML::Stream;
+
+  $Con-&gt;Connect(server =&gt; &quot;servername&quot;,
+                name   =&gt; &quot;myname&quot;,
+                port   =&gt; 5269,
+                namespace =&gt; {default  =&gt; &quot;jabber:server&quot;,
+                              etherx   =&gt; &quot;<A HREF="http://etherx.jabber.org&quot;,">http://etherx.jabber.org&quot;,</A>
+                             },
+                attributes =&gt; {etherx =&gt; {&quot;secret&quot;, &quot;test&quot;}}
+                );
+
+    This is very complex, though.  Any ideas on how to simplify this?  I was 
+almost thinking of having some sort of XML::Stream::Namespace object, where you 
+could 'create' a namespace, and pass a series of created namespaces to Connect.
+
+    Also, there is the issue of the fact that messages would come though as:
+
+&lt;message id=&quot;someID&quot; to='jabber:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test at perl</A>' type='normal' 
+from='jabber:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tcha at honda</A>/Jabba' etherx:to='perl' etherx:from='honda'/&gt;
+
+  (Yes, it's a completely empty message)
+
+    Net::Jabber::Message objects could handle this fine, but we 'lose' the 
+additional etherx namespace data, which a transport may need.
+
+    At this point, I think it's a matter of how we deal with additional 
+namespaces.  Technically, XML::Stream should be able to interface with Etherx 
+without using jabber:client or jabber:server at all, but since it's a companion 
+to etherx, it's still going to need to deal with the etherx namespace, and not 
+just the stream namespace..
+
+    Either that, or we need at the very *least*, some way to preserve these 
+additional namespace tags, and allow a Net::Jabber::Transport module access to 
+them, for *IT* to figure it out..
+    
+--- 
+Thomas Charron
+&lt;&lt; Wanted: One decent sig &gt;&gt;
+&lt;&lt; Preferably litle used  &gt;&gt;
+&lt;&lt; and stored in garage.  ?&gt;&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="061247.html">[JDEV] scaling a single server?
+</A></li>
+	<LI>Next message: <A HREF="061233.html">[JDEV] Standards...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61232">[ date ]</a>
+              <a href="thread.html#61232">[ thread ]</a>
+              <a href="subject.html#61232">[ subject ]</a>
+              <a href="author.html#61232">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

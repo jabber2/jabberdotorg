@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Strange change in jsm (CVS)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Strange%20change%20in%20jsm%20%28CVS%29&In-Reply-To=MIEIJCPMMHFPLOGKGPNCAEOGCAAA.stefan.praszalowicz%40edi-presse.fr">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="009263.html">
+   <LINK REL="Next"  HREF="009296.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Strange change in jsm (CVS)</H1>
+    <B>temas</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Strange%20change%20in%20jsm%20%28CVS%29&In-Reply-To=MIEIJCPMMHFPLOGKGPNCAEOGCAAA.stefan.praszalowicz%40edi-presse.fr"
+       TITLE="[JDEV] Strange change in jsm (CVS)">temas at box5.net
+       </A><BR>
+    <I>Tue Sep  4 14:27:22 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="009263.html">[JDEV] Strange change in jsm (CVS)
+</A></li>
+        <LI>Next message: <A HREF="009296.html">[JDEV] Strange change in jsm (CVS)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9290">[ date ]</a>
+              <a href="thread.html#9290">[ thread ]</a>
+              <a href="subject.html#9290">[ subject ]</a>
+              <a href="author.html#9290">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>CVS code is unstable, and some major presence fixes are being worked on.
+The code has very little testing, so be careful, events like this might
+not be uncommon for a while.
+
+--temas
+
+On Sat, 2001-09-01 at 16:32, Stefan Praszalowicz wrote:
+&gt;<i> Hi all !
+</I>&gt;<i> 
+</I>&gt;<i> I now use the CVS version of jabberd and noticed a little oddity in
+</I>&gt;<i> mod_presence.
+</I>&gt;<i> 
+</I>&gt;<i> To reproduce:
+</I>&gt;<i> 	userA has userB in his roster
+</I>&gt;<i> 	userB has userA in his roster
+</I>&gt;<i> 
+</I>&gt;<i> 	login as userA
+</I>&gt;<i> 	login as userB
+</I>&gt;<i> 
+</I>&gt;<i> -&gt; What happens is that userA received presence from userB, but userB does
+</I>&gt;<i> not
+</I>&gt;<i>    receive presence from userA
+</I>&gt;<i> 
+</I>&gt;<i> A message like 'invalid message, no recipient' is logged and the presence (I
+</I>&gt;<i> understand it's a probe answer) is dropped.
+</I>&gt;<i> 
+</I>&gt;<i> The following patch corrects the problem:
+</I>&gt;<i> ===============================================================
+</I>&gt;<i> 
+</I>&gt;<i> --- ./old/mod_presence.c        Sat Sep  1 00:23:07 2001
+</I>&gt;<i> +++ ./new/mod_presence.c        Sat Sep  1 00:21:53 2001
+</I>&gt;<i> @@ -70,8 +70,13 @@
+</I>&gt;<i>              log_debug(&quot;mod_presence&quot;,&quot;probe from %s and no presence to
+</I>&gt;<i> return&quot;,jid_full(m-&gt;packet-&gt;from));
+</I>&gt;<i>          }else if(_mod_presence_notified(m-&gt;packet-&gt;from,notify))
+</I>&gt;<i>          {
+</I>&gt;<i> +            xmlnode pres;
+</I>&gt;<i>              log_debug(&quot;mod_presence&quot;,&quot;got a probe, responding to
+</I>&gt;<i> %s&quot;,jid_full(m-&gt;packet-&gt;from));
+</I>&gt;<i> -            js_deliver(m-&gt;si,jpacket_new(xmlnode_dup(m-&gt;s-&gt;presence)));
+</I>&gt;<i> +
+</I>&gt;<i> +            pres = xmlnode_dup(m-&gt;s-&gt;presence);
+</I>&gt;<i> +            xmlnode_put_attrib(pres, &quot;to&quot;, jid_full(m-&gt;packet-&gt;from));
+</I>&gt;<i> +
+</I>&gt;<i> +            js_deliver(m-&gt;si,jpacket_new(pres));
+</I>&gt;<i>          }else{
+</I>&gt;<i>              log_debug(&quot;mod_presence&quot;,&quot;%s attempted to probe by someone not
+</I>&gt;<i> qualified&quot;,jid_full(m-&gt;packet-&gt;from));
+</I>&gt;<i> 
+</I>&gt;<i> ===============================================================
+</I>&gt;<i> 
+</I>&gt;<i> It seems the 'stock' jsm code has something like this but that it disappeard
+</I>&gt;<i> afterwise ... Anyway
+</I>&gt;<i> Happy jabbering
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20010904/02c0ff9b/attachment.pgp">https://www.jabber.org/jdev/attachments/20010904/02c0ff9b/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="009263.html">[JDEV] Strange change in jsm (CVS)
+</A></li>
+	<LI>Next message: <A HREF="009296.html">[JDEV] Strange change in jsm (CVS)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9290">[ date ]</a>
+              <a href="thread.html#9290">[ thread ]</a>
+              <a href="subject.html#9290">[ subject ]</a>
+              <a href="author.html#9290">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

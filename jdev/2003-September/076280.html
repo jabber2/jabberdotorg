@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: jabberd 1.4.2 segfaulting on xdb_sql, linux, oracle
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20jabberd%201.4.2%20segfaulting%20on%20xdb_sql%2C%20linux%2C%20oracle&In-Reply-To=%3C13828F680182D511893300508BD6831705227563%40oscex2.osc.uscg.mil%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="076313.html">
+   <LINK REL="Next"  HREF="076296.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: jabberd 1.4.2 segfaulting on xdb_sql, linux, oracle</H1>
+    <B>Smith, Jason</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20jabberd%201.4.2%20segfaulting%20on%20xdb_sql%2C%20linux%2C%20oracle&In-Reply-To=%3C13828F680182D511893300508BD6831705227563%40oscex2.osc.uscg.mil%3E"
+       TITLE="[JDEV] Re: jabberd 1.4.2 segfaulting on xdb_sql, linux, oracle">JSmith at osc.uscg.mil
+       </A><BR>
+    <I>Thu Sep 25 05:28:55 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="076313.html">[JDEV] Discussion of transports?
+</A></li>
+        <LI>Next message: <A HREF="076296.html">[JDEV] ljud-0.1 support?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76280">[ date ]</a>
+              <a href="thread.html#76280">[ thread ]</a>
+              <a href="subject.html#76280">[ subject ]</a>
+              <a href="author.html#76280">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I was able to get this working.  I couldn't find any way to get a thread
+safe or single threaded Oracle client library.  So what I did was rebuild
+the pth library with pthread support (added --enable-pthread to the
+configure script parameter in the pth-1.4.0 directory).  I then made a
+symlink to the libpthread.so library it generated in $ORACLE_HOME/lib.  Then
+I ran the genclntsh script in $ORACLE_HOME/bin to rebuild the client
+libraries so it would pick up the other threading library.
+
+Pth doesn't actually use the libc pthreads when you add the --enable-pthread
+flag, but provides a wrapper api for pthread --&gt; pth, so there's no conflict
+created with using different threading libraries.
+
+I don't know why it printed two connected messages in my output below,
+xdb_sql is printing two of everything.  I haven't investigated it yet
+though.
+
+--
+Jason
+
+&gt;<i> I don't have Oracle, so I probably cannot help much. But, it seems like
+</I>the
+&gt;<i> errors are threading related? It looks like your Oracle backend is
+</I>creating
+&gt;<i> two connections? I don't remember the other backends (mysql, etc.) doing
+</I>&gt;<i> this? Are you compiling with thread-safe Oracle libraries? As I said, I'm
+</I>&gt;<i> not familiar with Oracle, but Sybase has single-threaded and
+</I>multi-threaded
+&gt;<i> libraries. Do you perhaps need to set any special Oracle compile flags
+</I>&gt;<i> related to threading?
+</I>&gt;<i> 
+</I>&gt;<i> -- Ryan
+</I>
+ -----Original Message-----
+From: 	 <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> &lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>&gt; [mailto:
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> &lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>&gt;]  On Behalf Of
+Yobb
+Sent:	Wednesday, September 24, 2003 5:46 AM
+To:	 <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> &lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Subject:	[JDEV] Re: jabberd 1.4.2 segfaulting on xdb_sql, linux,
+oracle
+
+Is there anybody give some useful suggests about the problem Jason said?
+
+I  am being troubled too.
+
+
+----- Original Message -----
+From: &quot;Smith, Jason&quot; &lt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JSmith at osc.uscg.mil</A> &lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JSmith at osc.uscg.mil</A>&gt;&gt;
+Newsgroups: gmane.network.jabber.devel
+Sent: Friday, September 19, 2003 12:26 AM
+Subject: jabberd 1.4.2 segfaulting on xdb_sql, linux, oracle
+
+
+&gt;<i> Hello,
+</I>&gt;<i>
+</I>&gt;<i> The jabberd process gives me a segmentation fault when run with xdb_sql
+</I>and
+&gt;<i> Oracle.  I'm able to run jabberd fine under an identical setup with
+</I>xdb_sql
+&gt;<i> and mysql.  I'm running jabberd 1.4.2, the latest CVS version of xdb_sql,
+</I>&gt;<i> and oracle client version 9.2.0.3.0 on Debian linux with libc version
+</I>2.3.2.
+&gt;<i>
+</I>&gt;<i> If I run the daemon without the debug switch the daemon will segault
+</I>&gt;<i> immediately after I try to connect to the server.  Here's a backtrace:
+</I>&gt;<i>
+</I>&gt;<i> (gdb) r
+</I>&gt;<i> Starting program: /home/jsmith/jabber/jabber-1.4.2/jabberd/jabberd
+</I>&gt;<i> [New Thread 16384 (LWP 5372)]
+</I>&gt;<i> xdboracle_backend_new: initialized
+</I>&gt;<i> xdboracle_backend_new: initialized
+</I>&gt;<i> xdboracle_connect: Logged to Oracle, db=jabber, user=jabberuser, pass=pass
+</I>&gt;<i> xdboracle_connect: Logged to Oracle, db=jabber, user=jabberuser, pass=pass
+</I>&gt;<i> oracle_query: select SYSDATE from DUAL type 1
+</I>&gt;<i> oracle_query: select SYSDATE from DUAL type 1
+</I>&gt;<i> xdboracle_is_connected: connected
+</I>&gt;<i> xdboracle_is_connected: connected
+</I>&gt;<i> xdboracle_free_result: done
+</I>&gt;<i> xdboracle_free_result: done
+</I>&gt;<i> 20030918T08:11:19: [notice] (-internal): initializing server
+</I>&gt;<i>
+</I>&gt;<i> Program received signal SIGSEGV, Segmentation fault.
+</I>&gt;<i> [Switching to Thread 16384 (LWP 5372)]
+</I>&gt;<i> 0x40bd9426 in __pthread_internal_tsd_get () from /lib/libpthread.so.0
+</I>&gt;<i> (gdb) bt
+</I>&gt;<i> #0  0x40bd9426 in __pthread_internal_tsd_get () from /lib/libpthread.so.0
+</I>&gt;<i> #1  0x400a0de8 in malloc () from /lib/libc.so.6
+</I>&gt;<i> #2  0x400a51cc in strdup () from /lib/libc.so.6
+</I>&gt;<i> #3  0x0805a5e7 in jlimit_check (r=0x81ce660, key=0x4014e52c &quot;localhost&quot;,
+</I>&gt;<i> points=1)
+</I>&gt;<i>     at rate.c:82
+</I>&gt;<i> #4  0x08050c4b in _mio_accept (m=0x81ce5c0) at mio.c:400
+</I>&gt;<i> #5  0x080519da in _mio_main (arg=0x0) at mio.c:704
+</I>&gt;<i> #6  0x0807d4af in pth_spawn_trampoline ()
+</I>&gt;<i> #7  0x40077014 in makecontext () from /lib/libc.so.6
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> And when I try to run with debugging information, it will segfault when
+</I>the
+&gt;<i> daemon starts up, when it tries to write the debugging output to the
+</I>&gt;<i> console:
+</I>&gt;<i>
+</I>&gt;<i> (gdb) r -D
+</I>&gt;<i> [ snip ... ]
+</I>&gt;<i> 20030918T08:06:26: [notice] (-internal): initializing server
+</I>&gt;<i> Thu Sep 18 10:06:26 2003  jabberd.c:255 main load check of 1.00 with 3
+</I>total
+&gt;<i> threads
+</I>&gt;<i>
+</I>&gt;<i> Program received signal SIGSEGV, Segmentation fault.
+</I>&gt;<i> [Switching to Thread 16384 (LWP 5065)]
+</I>&gt;<i> 0x4005832e in __ctype_b_loc () from /lib/libc.so.6
+</I>&gt;<i> (gdb) bt
+</I>&gt;<i> #0  0x4005832e in __ctype_b_loc () from /lib/libc.so.6
+</I>&gt;<i> #1  0x0805b708 in format_converter (odp=0x8113ca8, fmt=0x808326d &quot;s:%d&quot;,
+</I>&gt;<i>     ap=0x8113cf4 &quot; \027\b\bl\002&quot;) at snprintf.c:579
+</I>&gt;<i> #2  0x0805c097 in strx_printv (ccp=0x8113cdc, buf=0x808d580
+</I>&quot;jabberd.c:256&quot;,
+&gt;<i> len=62,
+</I>&gt;<i>     format=0x808326c &quot;%s:%d&quot;, ap=0x8113cf4 &quot; \027\b\bl\002&quot;) at
+</I>&gt;<i> snprintf.c:904
+</I>&gt;<i> #3  0x0805c0e9 in ap_snprintf (buf=0x808d580 &quot;jabberd.c:256&quot;, len=63,
+</I>&gt;<i>     format=0x808326c &quot;%s:%d&quot;) at snprintf.c:918
+</I>&gt;<i> #4  0x0805cd03 in zonestr (file=0x8081720 &quot;mio.c&quot;, line=620) at str.c:343
+</I>&gt;<i> #5  0x08051545 in _mio_main (arg=0x0) at mio.c:620
+</I>&gt;<i> #6  0x0807d4af in pth_spawn_trampoline ()
+</I>&gt;<i> #7  0x40077014 in makecontext () from /lib/libc.so.6
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> In both cases, it segfaults when trying to make a libc call.  Also, in the
+</I>&gt;<i> first case I noticed the server is making a libpthread call.  Should the
+</I>&gt;<i> jabber daemon be using both libpthread and pth?
+</I>&gt;<i>
+</I>&gt;<i> Does anyone have any suggestions as to what the problem could be or could
+</I>be
+&gt;<i> able to offer any tips on debugging?
+</I>&gt;<i>
+</I>&gt;<i> Thanks,
+</I>&gt;<i> Jason
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="076313.html">[JDEV] Discussion of transports?
+</A></li>
+	<LI>Next message: <A HREF="076296.html">[JDEV] ljud-0.1 support?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76280">[ date ]</a>
+              <a href="thread.html#76280">[ thread ]</a>
+              <a href="subject.html#76280">[ subject ]</a>
+              <a href="author.html#76280">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

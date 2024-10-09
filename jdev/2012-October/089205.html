@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Question on Presence, Invisibility and MUC
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Question%20on%20Presence%2C%20Invisibility%20and%20MUC&In-Reply-To=%3CCAGYOVV0aawN733BDzMfCWeCDJtK1HbvOy-TYuibx0gtKM2w5Ow%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089202.html">
+   <LINK REL="Next"  HREF="089206.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Question on Presence, Invisibility and MUC</H1>
+    <B>Daniel Dormont</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Question%20on%20Presence%2C%20Invisibility%20and%20MUC&In-Reply-To=%3CCAGYOVV0aawN733BDzMfCWeCDJtK1HbvOy-TYuibx0gtKM2w5Ow%40mail.gmail.com%3E"
+       TITLE="[jdev] Question on Presence, Invisibility and MUC">dan at greywallsoftware.com
+       </A><BR>
+    <I>Mon Oct 22 19:38:11 UTC 2012</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089202.html">[jdev] Question on Presence, Invisibility and MUC
+</A></li>
+        <LI>Next message: <A HREF="089206.html">[jdev] Question on Presence, Invisibility and MUC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89205">[ date ]</a>
+              <a href="thread.html#89205">[ thread ]</a>
+              <a href="subject.html#89205">[ subject ]</a>
+              <a href="author.html#89205">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Fri, Oct 12, 2012 at 12:15 PM, Waqas Hussain &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">waqas20 at gmail.com</A>&gt; wrote:
+
+&gt;<i> On Fri, Oct 12, 2012 at 7:39 PM, Daniel Dormont
+</I>&gt;<i> &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dan at greywallsoftware.com</A>&gt; wrote:
+</I>&gt;<i> &gt; Hi all,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; In my XMPP application, users can exchange both private messages and
+</I>&gt;<i> &gt; presence and join MUCs. Ok, simple enough. I've implemented invisibility
+</I>&gt;<i> &gt; according to XEP-0126. I'd like the users to be still able to join MUCs
+</I>&gt;<i> &gt; while invisible, though. The issue I'm running into is that the first
+</I>&gt;<i> step
+</I>&gt;<i> &gt; in going invisible is sending an unavailable presence for broadcasting to
+</I>&gt;<i> &gt; all contacts: &lt;presence type='unavailable'/&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Unfortunately for me, this has the additional effect of kicking the user
+</I>&gt;<i> out
+</I>&gt;<i> &gt; of any MUCs they'd joined in that particular session. I've already
+</I>&gt;<i> figured
+</I>&gt;<i> &gt; out how to tweak the privacy list so users can join MUCs while invisible
+</I>&gt;<i> to
+</I>&gt;<i> &gt; individual contacts, basically it just looks like
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;     &lt;list name='invisible'&gt;
+</I>&gt;<i> &gt;       &lt;item type='jid'
+</I>&gt;<i> &gt;             value='conference.mydomain'
+</I>&gt;<i> &gt;             action='allow'
+</I>&gt;<i> &gt;             order='1'&gt;
+</I>&gt;<i> &gt;         &lt;presence-out/&gt;
+</I>&gt;<i> &gt;       &lt;/item&gt;
+</I>&gt;<i> &gt;       &lt;item action='deny' order='2'&gt;
+</I>&gt;<i> &gt;         &lt;presence-out/&gt;
+</I>&gt;<i> &gt;       &lt;/item&gt;
+</I>&gt;<i> &gt;     &lt;/list&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; But I'm running into this problem when the user tries to go &quot;globally&quot;
+</I>&gt;<i> &gt; invisible while already in one or more MUCs. Is there any way around
+</I>&gt;<i> this?
+</I>&gt;<i> &gt; My initial thought was to direct the unavailable presence to only the
+</I>&gt;<i> &gt; primary (IM) domain rather than having no &quot;to&quot; as indicated in the XEP,
+</I>&gt;<i> but
+</I>&gt;<i> &gt; that doesn't seem to broadcast to anybody, so contacts who already
+</I>&gt;<i> thought
+</I>&gt;<i> &gt; the user was online will continue to think so.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Is there any way around this? Or will I have to change my approach to
+</I>&gt;<i> &gt; invisibility?
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i> Blocking out-going presence to the chatrooms before you send
+</I>&gt;<i> unavailable presence might work. This is a hack which depends on the
+</I>&gt;<i> server not sending unavailable presence to blocked contacts.
+</I>&gt;<i>
+</I>&gt;<i> Directed presence is almost completely separate from normal presence
+</I>&gt;<i> status, with this one exception: unavailable presence broadcasts. I'm
+</I>&gt;<i> beginning to think this is more harmful than helpful.
+</I>&gt;<i>
+</I>&gt;<i> Relevant spec section: <A HREF="http://tools.ietf.org/html/rfc6121#section-4.6.3">http://tools.ietf.org/html/rfc6121#section-4.6.3</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>I think I need some more time to digest that section. There's something I
+still don't quite follow about it. But in the mean time, your trick of
+temporarily employing a privacy list that's the exact opposite of the
+normal invisibility one, worked fine, so thanks.
+
+dan
+
+
+
+&gt;<i> &gt; thanks,
+</I>&gt;<i> &gt; Dan
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Waqas Hussain
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20121022/595c2c13/attachment.html">https://www.jabber.org/jdev/attachments/20121022/595c2c13/attachment.html</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089202.html">[jdev] Question on Presence, Invisibility and MUC
+</A></li>
+	<LI>Next message: <A HREF="089206.html">[jdev] Question on Presence, Invisibility and MUC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89205">[ date ]</a>
+              <a href="thread.html#89205">[ thread ]</a>
+              <a href="subject.html#89205">[ subject ]</a>
+              <a href="author.html#89205">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

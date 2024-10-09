@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] How is a client crash communicated to the XMPP server?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20How%20is%20a%20client%20crash%20communicated%20to%20the%20XMPP%20server%3F&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE61352F52A3D1%40zamail01.k2workflow.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="057105.html">
+   <LINK REL="Next"  HREF="057109.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] How is a client crash communicated to the XMPP server?</H1>
+    <B>Jonathan Dickinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20How%20is%20a%20client%20crash%20communicated%20to%20the%20XMPP%20server%3F&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE61352F52A3D1%40zamail01.k2workflow.com%3E"
+       TITLE="[jdev] How is a client crash communicated to the XMPP server?">jonathanD at k2.com
+       </A><BR>
+    <I>Mon Jun  2 03:57:27 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="057105.html">[jdev] How is a client crash communicated to the XMPP server?
+</A></li>
+        <LI>Next message: <A HREF="057109.html">[jdev] How is a client crash communicated to the XMPP server?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57106">[ date ]</a>
+              <a href="thread.html#57106">[ thread ]</a>
+              <a href="subject.html#57106">[ subject ]</a>
+              <a href="author.html#57106">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Good question.
+
+You will find that the Coversant XMPP communicator does not send a &lt;presence type=&quot;unavailable&quot;/&gt; stanza when it logs out. From what I can tell is that most servers will do that on behalf of the client: it caused me a few minutes of debugging :).
+
+If you want to tell when the client disconnects unexpectedly from another client (e.g. if you have a contact that represents your server availability or something) you could do something like:
+
+&lt;presence type=&quot;available&quot;&gt;
+  ...
+  &lt;!-- NB: No 'graceful' element --&gt;
+&lt;/presence&gt;
+
+&lt;presence type=&quot;unavailable&quot;&gt;
+  ...
+  &lt;graceful xmlns=&quot;<A HREF="http://www.tempuri.org/xmpp.org/graceful&quot;">http://www.tempuri.org/xmpp.org/graceful&quot;</A>&gt;
+&lt;/presence&gt;
+
+If you receive a stanza without the graceful element you can be sure that the client quit unexpectedly (server sent 'unavailable' on behalf of the client).
+
+This raises another important question: most servers AND clients are not XMPP compliant. It is very strange and annoying. Should I take a 'tough luck, you should behave properly' approach to non-compliant clients and servers?
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf Of
+</I>&gt;<i> JabberForum
+</I>&gt;<i> Sent: 02 June 2008 10:25 AM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: [jdev] How is a client crash communicated to the XMPP server?
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Hi,
+</I>&gt;<i> I would like to discuss about what happens when an XMPP client crashes
+</I>&gt;<i> and how this information is communicated to the server..
+</I>&gt;<i>
+</I>&gt;<i> I have a server S and 2 clients C1 and C2 connected to the server. C1
+</I>&gt;<i> has C2 in its roster list and C2 has C1 in its roster list.
+</I>&gt;<i>
+</I>&gt;<i> If C1 gracefully logs out, then an iq stanza of type unavailable is
+</I>&gt;<i> sent to the server and the server broadcasts that stanza to all JIDs
+</I>&gt;<i> which have a subscription of from or both.
+</I>&gt;<i>
+</I>&gt;<i> However, I have been trying to search for what happens when the
+</I>&gt;<i> client crashes (or exits ungracefully). I havent arrived at the answer
+</I>&gt;<i> yet. Here is what RFC 3291 says :
+</I>&gt;<i>
+</I>&gt;<i> &quot;5.1.5.  Unavailable Presence
+</I>&gt;<i>
+</I>&gt;<i> Before ending its session with a server, a client SHOULD gracefully
+</I>&gt;<i> become
+</I>&gt;<i> unavailable by sending a final presence stanza that possesses no 'to'
+</I>&gt;<i> attribute and that possesses a 'type' attribute whose value is
+</I>&gt;<i> &quot;unavailable&quot; (optionally, the final presence stanza MAY contain one or
+</I>&gt;<i>
+</I>&gt;<i> more &lt;status/&gt; elements specifying the reason why the user is no longer
+</I>&gt;<i>
+</I>&gt;<i> available). *However, the user's server MUST NOT depend on receiving
+</I>&gt;<i> final
+</I>&gt;<i> presence from an available resource, since the resource may become
+</I>&gt;<i> unavailable unexpectedly or may be timed out by the server. If one of
+</I>&gt;<i> the
+</I>&gt;<i> user's resources becomes unavailable for any reason (either gracefully
+</I>&gt;<i> or
+</I>&gt;<i> ungracefully), the user's server MUST broadcast unavailable presence to
+</I>&gt;<i>
+</I>&gt;<i> all contacts *(1) that are in the user's roster with a subscription
+</I>&gt;<i> type of
+</I>&gt;<i> &quot;from&quot; or &quot;both&quot;, (2) to whom the user has not blocked outbound
+</I>&gt;<i> presence,
+</I>&gt;<i> and (3) from whom the server has not received a presence error during
+</I>&gt;<i> the
+</I>&gt;<i> user's session; the user's server MUST also send that unavailable
+</I>&gt;<i> presence
+</I>&gt;<i> stanza to any of the user's other available resources, as well as to
+</I>&gt;<i> any
+</I>&gt;<i> entities to which the user has sent directed presence during the user's
+</I>&gt;<i>
+</I>&gt;<i> session for that resource (if the user has not yet sent directed
+</I>&gt;<i> unavailable presence to that entity). Any presence stanza with no
+</I>&gt;<i> 'type'
+</I>&gt;<i> attribute and no 'to' attribute that is sent after sending directed
+</I>&gt;<i> unavailable presence or broadcasted unavailable presence MUST be
+</I>&gt;<i> broadcasted by the server to all subscribers. &quot;
+</I>&gt;<i>
+</I>&gt;<i> Do we interpret that as : &quot;the server will 'somehow' know that the
+</I>&gt;<i> client has crashed and then publish the unavailable stanzas to everyone
+</I>&gt;<i> subscribed to that JID ?
+</I>&gt;<i>
+</I>&gt;<i> Please clarify.. :-)
+</I>&gt;<i>
+</I>&gt;<i> -santhosh
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> santhosh.kulandaiyan
+</I>&gt;<i> ------------------------------------------------------------------------
+</I>&gt;<i> santhosh.kulandaiyan's Profile:
+</I>&gt;<i> <A HREF="http://www.jabberforum.org/member.php?userid=16912">http://www.jabberforum.org/member.php?userid=16912</A>
+</I>&gt;<i> View this thread: <A HREF="http://www.jabberforum.org/showthread.php?t=200">http://www.jabberforum.org/showthread.php?t=200</A>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> FAQ: <A HREF="http://www.jabber.org/discussion-lists/jdev-faq">http://www.jabber.org/discussion-lists/jdev-faq</A>
+</I>&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="057105.html">[jdev] How is a client crash communicated to the XMPP server?
+</A></li>
+	<LI>Next message: <A HREF="057109.html">[jdev] How is a client crash communicated to the XMPP server?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57106">[ date ]</a>
+              <a href="thread.html#57106">[ thread ]</a>
+              <a href="subject.html#57106">[ subject ]</a>
+              <a href="author.html#57106">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

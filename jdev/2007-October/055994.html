@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] sasl help
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sasl%20help&In-Reply-To=%3C7262.1193154396.979898%40peirce.dave.cridland.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="055991.html">
+   <LINK REL="Next"  HREF="056004.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] sasl help</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sasl%20help&In-Reply-To=%3C7262.1193154396.979898%40peirce.dave.cridland.net%3E"
+       TITLE="[jdev] sasl help">dave at cridland.net
+       </A><BR>
+    <I>Tue Oct 23 10:46:36 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="055991.html">[jdev] sasl help
+</A></li>
+        <LI>Next message: <A HREF="056004.html">[jdev] sasl help
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55994">[ date ]</a>
+              <a href="thread.html#55994">[ thread ]</a>
+              <a href="subject.html#55994">[ subject ]</a>
+              <a href="author.html#55994">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tue Oct 23 15:55:43 2007, Jacob Wright wrote:
+&gt;<i> On 10/23/07, Dave Cridland &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A>&gt; wrote:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Tue Oct 23 08:25:59 2007, Jacob Wright wrote:
+</I>&gt;<i> &gt; &gt; I'm working on the DIGEST-MD5 SASL authentication and feel like  
+</I>&gt;<i> I'm
+</I>&gt;<i> &gt; &gt; doing it
+</I>&gt;<i> &gt; &gt; perfectly, but my server is telling me I've got an incorrect  
+</I>&gt;<i> auth
+</I>&gt;<i> &gt; &gt; for the
+</I>&gt;<i> &gt; &gt; right username and password.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Now you know one of the reasons that the IETF is deprecating it.  
+</I>&gt;<i> :-/
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Deprecating it! After all this work I've done!? ;)  What is going  
+</I>&gt;<i> to be the
+</I>&gt;<i> preferred method in the future?
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>Now there's a question... Probably SCRAM, which predates DIGEST-MD5,  
+in fact. Luckily it's much simpler to code, although you need to do a  
+XOR operation over a binary hash string.
+
+&gt;<i> &gt; &gt; var data:Object = stringToObject(dataStr);
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; What does this actually do?
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> This takes the comma-delim string and creates a hash object out of  
+</I>&gt;<i> it.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>Your code? The syntax for DIGEST-MD5's blobs is one of the reasons  
+why it's being dropped - it's just fantastically complex. In the past  
+year, I've seen two implementations with bugs in that area. Spaces  
+are allowed everywhere, for instance. You probably want to do an  
+interop test against a few implementations. ISTR GNU SASL has some  
+oddities here, for instance.
+
+&gt;<i> AH! That was it! You are the best!
+</I>
+I know. ;-)
+
+&gt;<i>  I've spent hours on this. Thank you for
+</I>&gt;<i> your help, seriously.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>I know lots of people who took a while to figure it out, including  
+the author of the original Cyrus SASL plugin for it (Alexey Melnikov,  
+who also wrote the revised specification). You're in good company.
+
+Go get qop=auth-int and fast reauth working, now.
+
+&gt;<i> &gt; And again, what is this doing? Bear in mind that if it's some
+</I>&gt;<i> &gt; convenient built-in that produces output that's similar to
+</I>&gt;<i> &gt; DIGEST-MD5's syntax, this may not be quite right.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> It is a convenience method. It takes the object I've been putting  
+</I>&gt;<i> together
+</I>&gt;<i> and creates a key=&quot;value&quot;,key2=&quot;value2&quot; string out of it. Is that  
+</I>&gt;<i> bad to
+</I>&gt;<i> quote every value? I noticed in examples that several key-value  
+</I>&gt;<i> pairs were
+</I>&gt;<i> not quoted (e.g. charset, nc, etc.) but thought it didn't matter.
+</I>
+That's an interesting question...
+
+You see, in the syntax, qop, for instance, is given as a token - not  
+a quoted-string. Therefore, it cannot be quoted, and if you saw the  
+string qop=&quot;auth&quot;, that indicates a qop value of &quot;auth&quot; - with the  
+quotes, not without. I have to admit I just parse out the quotes, so  
+qop=&quot;auth&quot; means, to me, qop=auth.
+
+But, in the examples, qop is always quoted - qop=&quot;auth&quot; - as well, so  
+the examples would appear to disagree with the syntax.
+
+So, given that, I gave up and asked Alexey:
+
+(16:23:53) <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at jabber.org</A>/Office: Another DIGEST-MD5 question... Is  
+it legal to quote all values?
+(16:27:35) Alexey: I vaguely remember there were some exceptions
+
+So, erm, I hope that settles it for you. ;-)
+
+FWIW, it's always safe to not quote unless you have spaces, and any  
+value which can have spaces can be quoted safely. So I'd say don't  
+quote unless you have to.
+
+Dave.
+-- 
+Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at jabber.org</A>
+  - <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+  - <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="055991.html">[jdev] sasl help
+</A></li>
+	<LI>Next message: <A HREF="056004.html">[jdev] sasl help
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55994">[ date ]</a>
+              <a href="thread.html#55994">[ thread ]</a>
+              <a href="subject.html#55994">[ subject ]</a>
+              <a href="author.html#55994">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

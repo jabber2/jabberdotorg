@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Limiting Registrations
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Limiting%20Registrations&In-Reply-To=%3C20010530175227.9486.qmail%40msg.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="037470.html">
+   <LINK REL="Next"  HREF="037455.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Limiting Registrations</H1>
+    <B>jabber at msg.net</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Limiting%20Registrations&In-Reply-To=%3C20010530175227.9486.qmail%40msg.net%3E"
+       TITLE="[JDEV] Limiting Registrations">jabber at msg.net
+       </A><BR>
+    <I>Wed May 30 12:52:27 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="037470.html">[JDEV] Limiting Registrations
+</A></li>
+        <LI>Next message: <A HREF="037455.html">[JDEV] remove an account
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37475">[ date ]</a>
+              <a href="thread.html#37475">[ thread ]</a>
+              <a href="subject.html#37475">[ subject ]</a>
+              <a href="author.html#37475">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> If you just want to disable that, then you need to remove the register stuff 
+</I>&gt;<i> from your config.  If you want to change code, it should all be in mod_register,
+</I>&gt;<i> what specific problems are you having?
+</I>
+The proble I had was, I can create an account when not logged in, but a lgged
+in user cannot create a new account- I was hoping to have my server set such
+that an 'admin' JID could create new accounts, but not normal users. I've
+taken another approach, see below.
+
+
+
+I have a solution to restricting new account creation. It is not pretty,
+and I'm hoping somebody can suggest a better mechanism than what I have:
+
+
+For my deployment, I need to restrict new account creation. Rather than &quot;cheat&quot;
+by having my account registration CGI build the spool/sitename/username.xml file
+from scratch, I'm trying to &quot;play by the rules&quot;, and instead add an additional
+setting to 'jabber.xml' in &lt;register ...&gt; and the code in 'mod_register.c' to
+prevent random users from registering the JID of their choice.
+
+
+Here's what I have done-
+
+I have a Perl CGI script in a directory for which the user has to authenticate
+to the web server, the script takes the username they used, retrieves their
+full name and other details from LDAP, has the user pick a new password,
+then creates a new account using Net::Jabber.
+
+
+To forbid account creation by any other users, but allow my script to create
+accounts through the Jabber protocol, I have a modified server. In my
+'jabber.xml' I have this line:
+
+	&lt;register notify=&quot;yes&quot; secret=&quot;SECRETSTRINGHERE&quot;&gt;
+
+I have modified 'mod_register.c'- if there is a secret defined, then new
+account creation will only succeed if the secret is sent as the 'misc' field
+of the new account request. This is enough security for my purposes, if somebody
+wants to code this as an official feature of the server, crypto should be used.
+
+I destroy the contents of the 'misc' field before creating the account, so
+the secret doesn't get stored into the xml spool files.
+
+
+If anybody else needs this feature right away, my code is really ugly, it does
+what I need. I can publish the changes to 'mod_register.c', however, under my
+current contract, sharing my original work, (the Perl CGI script) is a problem.
+
+
+BTW, I tried doing this as:
+	&lt;register notify=&quot;yes&quot;&gt;
+	&lt;secret&gt;SECRETSTRINGHERE&lt;/secret&gt;
+	&lt;instructions&gt;
+	Choose a username and password to register with this server.
+	 &lt;/instructions&gt;
+	&lt;name/&gt;
+	&lt;email/&gt;
+	&lt;/register&gt;
+
+Unfortunately, in this case the secret is sent as part of the instructions when
+a client sends a blank register request 'get' message, which is definitely not
+what I wanted :-)
+
+Kevin Kadow
+MSG.Net, Inc.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="037470.html">[JDEV] Limiting Registrations
+</A></li>
+	<LI>Next message: <A HREF="037455.html">[JDEV] remove an account
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37475">[ date ]</a>
+              <a href="thread.html#37475">[ thread ]</a>
+              <a href="subject.html#37475">[ subject ]</a>
+              <a href="author.html#37475">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,222 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] SASL debugging
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SASL%20debugging&In-Reply-To=%3C5b698f5a0512090623q3fc1df90m7547ba449d69f46e%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="082099.html">
+   <LINK REL="Next"  HREF="082102.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] SASL debugging</H1>
+    <B>Norman Rasmussen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SASL%20debugging&In-Reply-To=%3C5b698f5a0512090623q3fc1df90m7547ba449d69f46e%40mail.gmail.com%3E"
+       TITLE="[jdev] SASL debugging">norman at rasmussen.co.za
+       </A><BR>
+    <I>Fri Dec  9 08:23:08 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="082099.html">[jdev] SASL debugging
+</A></li>
+        <LI>Next message: <A HREF="082102.html">[jdev] SASL debugging
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#82100">[ date ]</a>
+              <a href="thread.html#82100">[ thread ]</a>
+              <a href="subject.html#82100">[ subject ]</a>
+              <a href="author.html#82100">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>this is breaking stuff:
+
+foreach (byte b in n)
+    hex += b.ToString(&quot;x2&quot;);
+
+try:
+
+foreach (byte b in n)
+    hex += b.ToString(&quot;x02&quot;);
+
+On 12/9/05, Yves Goergen &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nospam.list at unclassified.de</A>&gt; wrote:
+&gt;<i> On 09.12.2005 10:40 (+0100), Vinod Panicker wrote:
+</I>&gt;<i> &gt; What are you using as your SASL implementation?
+</I>&gt;<i>
+</I>&gt;<i> SASL, mechanism DIGEST-MD5, code: my own.
+</I>&gt;<i>
+</I>&gt;<i> I was pointed to the example at the end of the SASL RFC, so I tried to
+</I>&gt;<i> get to the same results, and I didn't. I have attached my code with some
+</I>&gt;<i> comments on how to use it and what results I had.
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Yves Goergen &quot;LonelyPixel&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nospam.list at unclassified.de</A>&gt;
+</I>&gt;<i> &quot;Does the movement of the trees make the wind blow?&quot;
+</I>&gt;<i> <A HREF="http://newsboard.unclassified.de">http://newsboard.unclassified.de</A> - Unclassified NewsBoard Forum
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> using System;
+</I>&gt;<i> using System.Collections.Generic;
+</I>&gt;<i> using System.Security.Cryptography;
+</I>&gt;<i> using System.Text;
+</I>&gt;<i> using System.Text.RegularExpressions;
+</I>&gt;<i>
+</I>&gt;<i> // SASL specification: <A HREF="ftp://ietf.org//rfc/rfc2831.txt">ftp://ietf.org//rfc/rfc2831.txt</A>
+</I>&gt;<i> //
+</I>&gt;<i> // Demo usage of this class:
+</I>&gt;<i> //
+</I>&gt;<i> // XMPP.Sasl sasl = new XMPP.Sasl();
+</I>&gt;<i> // sasl.Hostname = &quot;elwood.innosoft.com&quot;;
+</I>&gt;<i> // sasl.Mechanism = &quot;DIGEST-MD5&quot;;
+</I>&gt;<i> // sasl.Password = &quot;secret&quot;;
+</I>&gt;<i> // sasl.Username = &quot;chris&quot;;
+</I>&gt;<i> // string challenge = @&quot;realm=&quot;&quot;elwood.innosoft.com&quot;&quot;,nonce=&quot;&quot;OA6MG9tEQGm2hh&quot;&quot;,qop=&quot;&quot;auth&quot;&quot;&quot; +
+</I>&gt;<i> //    &quot;,algorithm=md5-sess,charset=utf-8&quot;;
+</I>&gt;<i> // string response = sasl.GetResponse(challenge);
+</I>&gt;<i>
+</I>&gt;<i> namespace XMPP
+</I>&gt;<i> {
+</I>&gt;<i>         public class Sasl
+</I>&gt;<i>         {
+</I>&gt;<i>                 public string Hostname = &quot;&quot;;
+</I>&gt;<i>                 public string Username = &quot;&quot;;
+</I>&gt;<i>                 public string Password = &quot;&quot;;
+</I>&gt;<i>                 public string Mechanism = &quot;&quot;;
+</I>&gt;<i>
+</I>&gt;<i>                 public string GetResponse(string challenge)
+</I>&gt;<i>                 {
+</I>&gt;<i>                         Regex r;
+</I>&gt;<i>                         Match m;
+</I>&gt;<i>                         string realm = &quot;&quot;;
+</I>&gt;<i>                         string nonce = &quot;&quot;;
+</I>&gt;<i>                         string qop = &quot;auth&quot;;
+</I>&gt;<i>                         string algorithm = &quot;&quot;;
+</I>&gt;<i>
+</I>&gt;<i>                         r = new Regex(@&quot;realm=&quot;&quot;(.*?)(?&lt;!\\)&quot;&quot;&quot;);
+</I>&gt;<i>                         m = r.Match(challenge);
+</I>&gt;<i>                         if (m.Success)
+</I>&gt;<i>                                 realm = m.Groups[1].Value;
+</I>&gt;<i>
+</I>&gt;<i>                         r = new Regex(@&quot;nonce=&quot;&quot;(.*?)(?&lt;!\\)&quot;&quot;&quot;);
+</I>&gt;<i>                         m = r.Match(challenge);
+</I>&gt;<i>                         if (!m.Success)
+</I>&gt;<i>                                 throw new System.Security.Authentication.AuthenticationException(&quot;Invalid SASL protocol&quot;);
+</I>&gt;<i>                         nonce  = m.Groups[1].Value;
+</I>&gt;<i>
+</I>&gt;<i>                         r = new Regex(@&quot;qop=&quot;&quot;(.*?)(?&lt;!\\)&quot;&quot;&quot;);
+</I>&gt;<i>                         m = r.Match(challenge);
+</I>&gt;<i>                         if (m.Success)
+</I>&gt;<i>                                 qop = m.Groups[1].Value;
+</I>&gt;<i>                         if (qop != &quot;auth&quot;)
+</I>&gt;<i>                                 throw new System.Security.Authentication.AuthenticationException(&quot;Unsupported SASL protocol use&quot;);
+</I>&gt;<i>
+</I>&gt;<i>                         r = new Regex(@&quot;algorithm=(.*?)(?=,|$)&quot;);
+</I>&gt;<i>                         m = r.Match(challenge);
+</I>&gt;<i>                         if (!m.Success)
+</I>&gt;<i>                                 throw new System.Security.Authentication.AuthenticationException(&quot;Invalid SASL protocol&quot;);
+</I>&gt;<i>                         algorithm = m.Groups[1].Value;
+</I>&gt;<i>
+</I>&gt;<i>                         RandomNumberGenerator rng = RandomNumberGenerator.Create();
+</I>&gt;<i>                         byte[] bytes = new byte[32];
+</I>&gt;<i>                         rng.GetBytes(bytes);
+</I>&gt;<i>                         string cnonce = HEX(bytes);
+</I>&gt;<i>                         cnonce = &quot;OA6MHXh6VqTrRk&quot;;   // for testing
+</I>&gt;<i>
+</I>&gt;<i>                         string nonce_count = &quot;00000001&quot;;
+</I>&gt;<i>
+</I>&gt;<i>                         string A1 = BytesToString(H(ToUTF8(Username) + &quot;:&quot; + realm + &quot;:&quot; + ToUTF8(Password))) +
+</I>&gt;<i>                                 &quot;:&quot; + nonce + &quot;:&quot; + cnonce;
+</I>&gt;<i>                         string A2 = &quot;AUTHENTICATE:xmpp/&quot; + Hostname;
+</I>&gt;<i>
+</I>&gt;<i>                         //A1 = &quot;a2549853149b0536f01f0b850c643c57&quot;; // for testing -&gt; this produces still no correct response
+</I>&gt;<i>                         A2 = &quot;AUTHENTICATE:imap/&quot; + Hostname;   // for testing
+</I>&gt;<i>
+</I>&gt;<i>                         string response = HEX(KD(
+</I>&gt;<i>                                 HEX(H(A1)),
+</I>&gt;<i>                                 nonce + &quot;:&quot; + nonce_count + &quot;:&quot; + cnonce + &quot;:&quot; + qop + &quot;:&quot; + HEX(H(A2))));
+</I>&gt;<i>
+</I>&gt;<i>                         // for testing:
+</I>&gt;<i>                         string HA1 = HEX(H(A1));
+</I>&gt;<i>                         string HA2 = HEX(H(A2));
+</I>&gt;<i>                         // my HA1:           b797a8d5eeae5f17625ca975f6a8dc2f
+</I>&gt;<i>                         // my response:      db4446e7eedfff854d71882b0266eb80
+</I>&gt;<i>
+</I>&gt;<i>                         // correct HA1:      a2549853149b0536f01f0b850c643c57
+</I>&gt;<i>                         // correct response: d388dad90d4bbd760a152321f2143af7
+</I>&gt;<i>
+</I>&gt;<i>                         if (realm != &quot;&quot;) realm = @&quot;realm=&quot;&quot;&quot; + realm + @&quot;&quot;&quot;,&quot;;
+</I>&gt;<i>                         string ret = realm + &quot;username=\&quot;&quot; + ToUTF8(Username) + &quot;\&quot;,nonce=\&quot;&quot; + nonce + &quot;\&quot;,cnonce=\&quot;&quot; +
+</I>&gt;<i>                                 cnonce + &quot;\&quot;,nc=00000001,qop=&quot; + qop + &quot;,digest-uri=\&quot;xmpp/&quot; + Hostname + &quot;\&quot;,response=&quot; +
+</I>&gt;<i>                                 response + &quot;,charset=utf-8&quot;;
+</I>&gt;<i>
+</I>&gt;<i>                         return ret;
+</I>&gt;<i>                 }
+</I>&gt;<i>
+</I>&gt;<i>                 private byte[] H(string s)
+</I>&gt;<i>                 {
+</I>&gt;<i>                         MD5 md5 = new MD5CryptoServiceProvider();
+</I>&gt;<i>                         byte[] bytes = Encoding.UTF8.GetBytes(s);
+</I>&gt;<i>                         bytes = md5.ComputeHash(bytes);
+</I>&gt;<i>                         return bytes;
+</I>&gt;<i>                         // TODO: optimise after debugging
+</I>&gt;<i>                 }
+</I>&gt;<i>
+</I>&gt;<i>                 private string BytesToString(byte[] bytes)
+</I>&gt;<i>                 {
+</I>&gt;<i>                         return Encoding.GetEncoding(28591).GetString(bytes);
+</I>&gt;<i>                 }
+</I>&gt;<i>
+</I>&gt;<i>                 private byte[] KD(string k, string s)
+</I>&gt;<i>                 {
+</I>&gt;<i>                         return H(k + &quot;:&quot; + s);
+</I>&gt;<i>                 }
+</I>&gt;<i>
+</I>&gt;<i>                 private string HEX(byte[] n)
+</I>&gt;<i>                 {
+</I>&gt;<i>                         string hex = &quot;&quot;;
+</I>&gt;<i>                         foreach (byte b in n)
+</I>&gt;<i>                                 hex += b.ToString(&quot;x2&quot;);
+</I>&gt;<i>                         return hex;
+</I>&gt;<i>                 }
+</I>&gt;<i>
+</I>&gt;<i>                 private string ToUTF8(string data)
+</I>&gt;<i>                 {
+</I>&gt;<i>                         // Codepage 28591 is ISO-8859-1
+</I>&gt;<i>                         return Encoding.GetEncoding(28591).GetString(Encoding.UTF8.GetBytes(data));
+</I>&gt;<i>                 }
+</I>&gt;<i>         }
+</I>&gt;<i> }
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+--
+- Norman Rasmussen
+ - Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>
+ - Home page: <A HREF="http://norman.rasmussen.co.za/">http://norman.rasmussen.co.za/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="082099.html">[jdev] SASL debugging
+</A></li>
+	<LI>Next message: <A HREF="082102.html">[jdev] SASL debugging
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#82100">[ date ]</a>
+              <a href="thread.html#82100">[ thread ]</a>
+              <a href="subject.html#82100">[ subject ]</a>
+              <a href="author.html#82100">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

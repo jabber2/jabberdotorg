@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] about GSOC idea on psi( Jingle RTP Encryption)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20about%20GSOC%20idea%20on%20psi%28%20Jingle%20RTP%20Encryption%29&In-Reply-To=%3C201003311156.05083.justin-keyword-jabber.093179%40affinix.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088181.html">
+   <LINK REL="Next"  HREF="088174.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] about GSOC idea on psi( Jingle RTP Encryption)</H1>
+    <B>Justin Karneges</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20about%20GSOC%20idea%20on%20psi%28%20Jingle%20RTP%20Encryption%29&In-Reply-To=%3C201003311156.05083.justin-keyword-jabber.093179%40affinix.com%3E"
+       TITLE="[jdev] about GSOC idea on psi( Jingle RTP Encryption)">justin-keyword-jabber.093179 at affinix.com
+       </A><BR>
+    <I>Wed Mar 31 13:56:05 CDT 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088181.html">[jdev] about GSOC idea on psi( Jingle RTP Encryption)
+</A></li>
+        <LI>Next message: <A HREF="088174.html">[jdev] Figuring out what a client thinks its JID is
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88182">[ date ]</a>
+              <a href="thread.html#88182">[ thread ]</a>
+              <a href="subject.html#88182">[ subject ]</a>
+              <a href="author.html#88182">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Wednesday 31 March 2010 00:49:15 yu xue wrote:
+&gt;<i> Currently my understanding about this project is just to implement in SRTP
+</I>&gt;<i> in Psi, either in avcall module or in a lower module according to the
+</I>&gt;<i> relationship that SPTP needs with the RTP session.Could some developers
+</I>&gt;<i> please give me some detailed or instructions on how to better understand
+</I>&gt;<i> and prepare this project or suggestions on writing proposal.Thank you!
+</I>
+Psi's Jingle voice calling support spans three modules:
+
+  psimedia: Small wrapper to the GStreamer library.  It handles multimedia 
+device access and device selection, codecs, and RTP processing.  It does not 
+directly access the network.  It is the application's responsibility to 
+obtain RTP packets from the network and feed them to psimedia.  Likewise, RTP 
+packets produced by psimedia must be sent over the network by the 
+application.
+
+  iris: This library provides XMPP and ICE functionality.
+
+  avcall: This is part of Psi itself and contains two subparts:
+
+    jinglertp: Implements XEP-0166 (Jingle), XEP-0167 (Jingle RTP), and 
+XEP-0176 (Jingle ICE-UDP) all at once.  It uses the XMPP and ICE facilities 
+of iris.  Long term we'll want to break this code up so that we can support 
+more Jingle things than just voice calls, like file transfer.  But, for now, 
+this all-in-one blob is what we have, and it offers a simple API: connect to 
+a JID, and you are given an abstract packet pipe that you can read/write RTP 
+packets with.
+
+    main avcall code: bridges the jinglertp and psimedia parts together and 
+offers a user interface.
+
+  Also of note is the qca library, which we use for our security needs and 
+contains most of the common cryptographic primitives.  Probably SRTP can be 
+implemented using qca functions.
+
+Where SRTP fits into this stack depends on what kind of knowledge it needs 
+about the RTP session state.  So you must first read the SRTP specification 
+and fully understand its requirements.  Further, make sure you know how SRTP 
+may be used with sessions involving more than 2 participants (group 
+multimedia conferencing), since that's an area we'd like to explore someday.
+
+If it turns out that SRTP can process arbitrary RTP packets, then probably it 
+can be kept out of the psimedia layer.  SRTP encryption could be applied to 
+packets after they come out of psimedia, and incoming packets from the 
+network could be SRTP decrypted before being fed into psimedia.
+
+Let me know if you have further questions or need more explanation.
+
+-Justin
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088181.html">[jdev] about GSOC idea on psi( Jingle RTP Encryption)
+</A></li>
+	<LI>Next message: <A HREF="088174.html">[jdev] Figuring out what a client thinks its JID is
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88182">[ date ]</a>
+              <a href="thread.html#88182">[ thread ]</a>
+              <a href="subject.html#88182">[ subject ]</a>
+              <a href="author.html#88182">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

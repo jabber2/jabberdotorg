@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] How to handle multiple clients 
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20How%20to%20handle%20multiple%20clients%20&In-Reply-To=Pine.OSF.4.02.9901121313560.3452-100000%40worf.netins.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000101.html">
+   <LINK REL="Next"  HREF="000104.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] How to handle multiple clients </H1>
+    <B>Aron Atkins</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20How%20to%20handle%20multiple%20clients%20&In-Reply-To=Pine.OSF.4.02.9901121313560.3452-100000%40worf.netins.net"
+       TITLE="[JDEV] How to handle multiple clients ">atkins at chrysalis.com
+       </A><BR>
+    <I>Tue Jan 12 14:25:21 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000101.html">[JDEV] How to handle multiple clients 
+</A></li>
+        <LI>Next message: <A HREF="000104.html">[JDEV] How to handle multiple clients 
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#102">[ date ]</a>
+              <a href="thread.html#102">[ thread ]</a>
+              <a href="subject.html#102">[ subject ]</a>
+              <a href="author.html#102">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> &gt;  . client sends jabber message to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">john at doe.org..</A> the message is
+</I>&gt;<i> &gt;    first sent to whatever machine handles jabber queries (jabber.doe.org).
+</I>&gt;<i> &gt;    if that user is not currently running jabber, a deny reply is sent
+</I>&gt;<i> &gt;    back to the client.
+</I>&gt;<i> 
+</I>&gt;<i> Well, firstly, the Jabber server at doe.org _should_ be storing those
+</I>&gt;<i> incoming messages so that when john comes online with Jabber, he gets them
+</I>&gt;<i> presented to him, similiar to how ICQ works when someone isn't online(send
+</I>&gt;<i> through server).
+</I>
+i think this is a bad mode of operation. if the server stores the message,
+then we move away from having the server simply be in charge of funneling
+messages. make jabber ( &amp; its protocol ) simple by design and by intent.
+client sends message. server pushes message to proper receiver. if there
+is no receiver or if the receiver denies the message, then server sends
+a message back to the client announcing the denial. the client is responsible
+for handling all types of errors. we'll avoid quite a few problems in the
+future if we make as little as possible happen at the server.
+
+it seems we have to make a decision -- jabber is just another implementation
+of ICQ and has to behave according to spec OR we improve on some of the parts
+of ICQ we don't like.
+
+&gt;<i> Since Jabber and email can easily step on each others toes, make sure to
+</I>&gt;<i> avoid any crossover when it's not clear and benificial to both.  Right now
+</I>&gt;<i> I see two ways of doing this:  one is to have a module in the Jabber
+</I>&gt;<i> transport, so that a user can have messages sent to their email address
+</I>&gt;<i> when they are offline, and two is to allow for convience purposes only a
+</I>&gt;<i> *simple* way of having a Jabber message be forwarded to a non-Jabber user
+</I>&gt;<i> that does use email, and for them to reply.  Even the second one is
+</I>&gt;<i> questionable and may be too much.
+</I>
+if you have the client receive a deny request from the server, the client
+can then do whatever you want. the deny types could be:
+  . no such user
+  . user not logged into jabber server (no receiving client)
+  . user denied message
+
+in all of the three cases, you can call the same module / external email
+sender to send a mail message to the recepient.
+
+&gt;<i> Probably also the best... BUT, I think it would be cool/good if the mail
+</I>&gt;<i> clients added direct support for Jabber :)
+</I>
+this gets into a chicken-egg contest. i don't think we'll _ever_ convince
+mail clients to add direct support for jabber. we _can_, however, design
+jabber to be extendable so we can plug-in or interface with whatever
+mail reader we want to.
+
+i guess i'm still unchanged in my opinion:
+ . servers should do minimal work.
+ . handling messages for resend or sending as an email message
+   should be done by the client.
+ . jabber (client or server) should not perform email operations,
+   but dispatch then to some user-configurable program for sending
+   email.
+
+another advantage to the first point is that if we maintain that servers
+will do minimal work, it will be easier for us to convince people to 
+install servers at their sites. if jabber is complicated (with either
+setup, security, or other issues), people will not be willing to install
+it so easily.
+
+aron
+-- 
+ aron atkins                                 (atkins@{chrysalis.com,wpi.edu})
+ * j a d e d *               &lt;A HREF=&quot;<A HREF="http://www.gweep.net/~jaded/&quot;">http://www.gweep.net/~jaded/&quot;</A>&gt;jaded&lt;/A&gt;
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000101.html">[JDEV] How to handle multiple clients 
+</A></li>
+	<LI>Next message: <A HREF="000104.html">[JDEV] How to handle multiple clients 
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#102">[ date ]</a>
+              <a href="thread.html#102">[ thread ]</a>
+              <a href="subject.html#102">[ subject ]</a>
+              <a href="author.html#102">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

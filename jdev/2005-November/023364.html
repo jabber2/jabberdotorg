@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Server closing connection early
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Server%20closing%20connection%20early&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="023428.html">
+   <LINK REL="Next"  HREF="023365.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Server closing connection early</H1>
+    <B>Jabber X</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Server%20closing%20connection%20early&In-Reply-To="
+       TITLE="[jdev] Server closing connection early">jabberlists at googlemail.com
+       </A><BR>
+    <I>Sun Nov 20 14:01:40 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="023428.html">[jdev] Open src implemention of Jabber Client, which is best?
+</A></li>
+        <LI>Next message: <A HREF="023365.html">[jdev] Server closing connection early
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23364">[ date ]</a>
+              <a href="thread.html#23364">[ thread ]</a>
+              <a href="subject.html#23364">[ subject ]</a>
+              <a href="author.html#23364">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I have started coding with Jabber but am having problems early on with what
+i suspect in bad formatting in the Xml.
+I send the initial xml to make the stream connection and then try to
+register an account but the server closes the connection. When trying this
+on a telnet client it does give me a stream error which says disconnected.
+Occasionally upon trying other xml such as a login stream it might say
+invalid xml.
+I put together this quick example below to illustrate the problem.
+Any help would be greatly appreciated
+
+Paul
+
+import java.util.*;
+import java.net.*;
+import java.io.*;
+
+public class JabberTest implements Runnable
+{
+private Socket socket;
+private BufferedReader dataIn;
+private PrintWriter dataOut;
+private String line;
+
+public JabberTest()
+{
+new Thread(this).start();
+}
+
+public void run()
+{
+String hostname = &quot;netmindz.net &lt;<A HREF="http://netmindz.net">http://netmindz.net</A>&gt;&quot;;
+String line;
+
+System.out.println(&quot;Connecting..&quot;);
+try
+{
+socket = new Socket(hostname,5222);
+dataIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+dataOut = new PrintWriter(new OutputStreamWriter(socket.getOutputStream
+()),true);
+
+String s1 = &quot;&lt;?xml version='1.0'?&gt;&quot;;
+s1 += &quot;&lt;stream:stream &quot;;
+s1 += &quot;xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> &quot;;
+s1 += &quot;xmlns='jabber:client' &quot;;
+s1 += &quot;to='netmindz.net &lt;<A HREF="http://netmindz.net">http://netmindz.net</A>&gt;'/&gt;&quot;;
+
+send(s1);
+while((line = dataIn.readLine()) != null)
+{
+System.out.println(line);
+}
+
+String s2 = &quot; &lt;iq type='set' id='reg2'&gt; &quot;;
+s2 += &quot; &lt;query xmlns='jabber:iq:register'&gt; &quot;;
+s2 += &quot; &lt;username&gt;test user&lt;/username&gt; &quot;;
+s2 += &quot; &lt;password&gt;test user&lt;/password&gt; &quot;;
+s2 += &quot; &lt;/query&gt; &quot;;
+s2 += &quot; &lt;/iq&gt; &quot;;
+
+send(s2);
+
+while((line = dataIn.readLine()) != null)
+{
+System.out.println(line);
+}
+
+socket.close();
+}
+catch(Exception e)
+{
+e.printStackTrace();
+}
+}
+
+public void send(String message) throws java.io.IOException
+{
+dataOut.println(message);
+dataOut.flush();
+}
+
+public static void main(String[] params)
+{
+new JabberTest();
+}
+
+}
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20051120/0d407c0d/attachment.htm">https://www.jabber.org/jdev/attachments/20051120/0d407c0d/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="023428.html">[jdev] Open src implemention of Jabber Client, which is best?
+</A></li>
+	<LI>Next message: <A HREF="023365.html">[jdev] Server closing connection early
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23364">[ date ]</a>
+              <a href="thread.html#23364">[ thread ]</a>
+              <a href="subject.html#23364">[ subject ]</a>
+              <a href="author.html#23364">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

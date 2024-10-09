@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Groupchat with 1.2 problems continue
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Groupchat%20with%201.2%20problems%20continue&In-Reply-To=%3C2ADA45B8C19AD111BBEA00805FBE134105ADEA72%40exccolorado.co.lsil.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034671.html">
+   <LINK REL="Next"  HREF="034675.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Groupchat with 1.2 problems continue</H1>
+    <B>Malone, Pat</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Groupchat%20with%201.2%20problems%20continue&In-Reply-To=%3C2ADA45B8C19AD111BBEA00805FBE134105ADEA72%40exccolorado.co.lsil.com%3E"
+       TITLE="[JDEV] Groupchat with 1.2 problems continue">pmalone at lsil.com
+       </A><BR>
+    <I>Fri Dec 29 11:31:55 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034671.html">[JDEV] jabberCOM in C++Builder
+</A></li>
+        <LI>Next message: <A HREF="034675.html">[JDEV] Groupchat with 1.2 problems continue
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34674">[ date ]</a>
+              <a href="thread.html#34674">[ thread ]</a>
+              <a href="subject.html#34674">[ subject ]</a>
+              <a href="author.html#34674">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Ok,
+I tried renaming my service to groupchat.co.lsil.com (including the DNS work
+- just an alias pointing to the same IP as jabber.co.lsil.com)
+and still have problems.  Here are the entrys in jabber.xml...
+   &lt;agent jid=&quot;groupchat.co.lsil.com&quot;&gt;
+          &lt;name&gt;Group Conferencing&lt;/name&gt;
+          &lt;description&gt;You can create and participate in private
+chatrooms.&lt;/description&gt;
+          &lt;service&gt;conferencing&lt;/service&gt;
+          &lt;groupchat/&gt;
+          &lt;register/&gt;
+        &lt;/agent&gt;
+  
+&lt;!-- Groupchat service --&gt;
+  &lt;/service&gt;
+   &lt;service id=&quot;conference&quot;&gt;
+   &lt;load&gt;&lt;groupchat&gt;./groupchat.so&lt;/groupchat&gt;&lt;/load&gt;
+  &lt;/service&gt;
+
+This was returning with the message &quot;Could not contact this agent. It is
+possible the agent is not operating&quot;
+after a minute or two.  Debug logs seem to indicate jabber is trying to talk
+with groupchat (including some nice &quot;Dr. Pepper says&quot; messaged in the log!)
+with problems.
+
+For grins, I added &quot;groupchat.co.lsil.com&quot; as a 'host' entry.  This then
+returns an immediate server error 'not found'.
+    &lt;host&gt;jabber.co.lsil.com&lt;/host&gt;
+    &lt;host&gt;groupchat.co.lsil.com&lt;/host&gt;
+
+
+Looking around this morning, I found the jabberd_groupchat.xml file in the
+conferencing source tree that talks about a very different way to integrate
+the groupchat than was explained in the 1.2 'how to' document.  Is this a
+better way to implement this?
+--
+&lt;jabberd&gt; [this jabberd should be run from as an exec'd jabberd]
+    &lt;!--
+        The parent jabberd should have this configured:
+        &lt;service id=&quot;groupchat_transport&quot;&gt;
+            &lt;host&gt;groups.server.com&lt;/host&gt;
+            &lt;exec&gt;jabberd -c this_file.xml&lt;/exec&gt;
+        &lt;/service&gt;
+    --&gt;
+  &lt;service id=&quot;groupchat_transport&quot;&gt;
+    &lt;host&gt;groupchat.co.lsil.com&lt;/host&gt;
+    &lt;load&gt;&lt;groupchat&gt;groupchat.so&lt;/groupchat&gt;&lt;/load&gt;
+  &lt;/service&gt;
+
+  &lt;service id=&quot;out&quot;&gt;
+    &lt;host/&gt;
+    &lt;stdout/&gt;
+  &lt;/service&gt;
+
+  &lt;log id=&quot;groupchat_logs&quot;&gt;
+    &lt;host/&gt;
+    &lt;file&gt;groupchat.log&lt;/file&gt;
+  &lt;/log&gt;
+
+  &lt;xdb id=&quot;Outgoing_xdb&quot;&gt;
+    &lt;host/&gt;
+    &lt;stdout/&gt;
+  &lt;/xdb&gt;
+&lt;/jabberd&gt;
+--
+
+Can someone with a working groupchat under 1.2 send me your jabber.xml?
+That might give me some clues.
+
+Thanks
+
+Pat
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034671.html">[JDEV] jabberCOM in C++Builder
+</A></li>
+	<LI>Next message: <A HREF="034675.html">[JDEV] Groupchat with 1.2 problems continue
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34674">[ date ]</a>
+              <a href="thread.html#34674">[ thread ]</a>
+              <a href="subject.html#34674">[ subject ]</a>
+              <a href="author.html#34674">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

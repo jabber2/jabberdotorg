@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] AIM transport as ICQ transport replacement, away status diff
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20AIM%20transport%20as%20ICQ%20transport%20replacement%2C%20away%20status%20diff&In-Reply-To=%3CPine.LNX.4.21.0111130828290.1750-100000%40bluebox.conspiracy.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="068731.html">
+   <LINK REL="Next"  HREF="068745.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] AIM transport as ICQ transport replacement, away status diff</H1>
+    <B>M.Kiesel</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20AIM%20transport%20as%20ICQ%20transport%20replacement%2C%20away%20status%20diff&In-Reply-To=%3CPine.LNX.4.21.0111130828290.1750-100000%40bluebox.conspiracy.net%3E"
+       TITLE="[JDEV] AIM transport as ICQ transport replacement, away status diff">m.kiesel at iname.com
+       </A><BR>
+    <I>Tue Nov 13 01:39:15 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="068731.html">[JDEV] loop
+</A></li>
+        <LI>Next message: <A HREF="068745.html">[JDEV] AIM transport as ICQ transport replacement, away status	diff
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68740">[ date ]</a>
+              <a href="thread.html#68740">[ thread ]</a>
+              <a href="subject.html#68740">[ subject ]</a>
+              <a href="author.html#68740">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi!
+
+As you probably know the AIM transport can be used as an ICQ transport
+replacement (just use your UIN as screen name when registering). In fact,
+AIM transport is reliable in contrast to ICQ transport. Here, no messages
+were dropped as long as my contacts use newer (= working) ICQ clients (or
+Jabber :-).
+
+One problem was that the away status of ICQ contacts did not show (Away,
+DND, NA were displayed as &quot;Online&quot;) as well as my status was &quot;Online&quot; all
+the time.
+
+This patch partly solves this issue. Own status still is &quot;Online&quot; but
+the status of other ICQ contacts is shown properly. Also status updates
+seem not to work properly.
+
+Perhaps someone improves this further... just a quick hack and I'm no C
+guru ;-).
+
+Regards
+M.Kiesel
+
+--- buddies.c	2001/05/16 21:21:04	1.39
++++ buddies.c	2001/11/13 07:39:48
+@@ -232,6 +232,7 @@
+     char *msg;
+     struct aim_userinfo_s *userinfo;
+     int was_away;
++    int is_icq_user;
+ 
+     va_list ap;
+     va_start(ap, command);
+@@ -265,14 +266,27 @@
+     buddy-&gt;idle_time = userinfo-&gt;idletime;
+ 
+     was_away = buddy-&gt;is_away;
+-    if(userinfo-&gt;flags&amp;AIM_FLAG_AWAY) 
+-        buddy-&gt;is_away = 1;
++    if((userinfo-&gt;flags == 80)&amp;&amp;(userinfo-&gt;icqinfo.status != 0))
++    {
++        is_icq_user = 1;
++        buddy-&gt;is_away = userinfo-&gt;icqinfo.status;
++    }
+     else
+-        buddy-&gt;is_away = 0;
++    {
++        is_icq_user = 0;
++        if(userinfo-&gt;flags&amp;AIM_FLAG_AWAY) 
++            buddy-&gt;is_away = 1;
++        else
++            buddy-&gt;is_away = 0;
++    }
++
++//    log_warn(ZONE, &quot;[AT] userinfo-flags %d for %s&quot;, userinfo-&gt;flags, userinfo-&gt;sn);
++//    log_warn(ZONE, &quot;[AT] userinfo-status %d, is_icq %d&quot;, userinfo-&gt;icqinfo.status, is_icq_user);
+ 
+-    if(buddy-&gt;is_away == 0 &amp;&amp; (buddy-&gt;is_away != was_away))
++    if(((buddy-&gt;is_away == 0) || is_icq_user) &amp;&amp; (buddy-&gt;is_away != was_away))
+     {
+         char *status_msg;
++        char *show;
+ 
+         x = xmlnode_new_tag(&quot;presence&quot;);
+ 	    xmlnode_put_attrib(x, &quot;to&quot;, jid_full(s-&gt;cur));
+@@ -280,9 +294,37 @@
+ 	    jp = jpacket_new(x);
+     	jid_set(jp-&gt;from, at_normalize(userinfo-&gt;sn), JID_USER);
+ 	    xmlnode_put_attrib(jp-&gt;x, &quot;from&quot;, jid_full(jp-&gt;from));
+-        status = xmlnode_insert_tag(x, &quot;status&quot;);
+-        status_msg = pmalloco(xmlnode_pool(x), 30);
+-        sprintf(status_msg, &quot;Online (Idle %d Seconds)&quot;, buddy-&gt;idle_time);
++        if((!is_icq_user) || (is_icq_user &amp;&amp; (buddy-&gt;is_away == 0)))
++        {
++            status = xmlnode_insert_tag(x, &quot;status&quot;);
++            status_msg = pmalloco(xmlnode_pool(x), 30);
++            if(!is_icq_user)
++                sprintf(status_msg, &quot;Online (Idle %d Seconds)&quot;, buddy-&gt;idle_time);
++            else
++                sprintf(status_msg, &quot;Online&quot;);
++        }
++        else
++        {
++            status = xmlnode_insert_tag(x, &quot;show&quot;);
++            show = pmalloco(xmlnode_pool(x), 30);
++            if(buddy-&gt;is_away&amp;16)
++                sprintf(show, &quot;dnd&quot;);
++            else if(buddy-&gt;is_away&amp;4)
++                sprintf(show, &quot;xa&quot;); /* na really */
++            else if(buddy-&gt;is_away&amp;2)
++                sprintf(show, &quot;dnd&quot;);
++            else if(buddy-&gt;is_away&amp;1)
++                sprintf(show, &quot;away&quot;);
++            else
++                sprintf(show, &quot;xa&quot;);
++            xmlnode_insert_cdata(status, show, -1);
++            status = xmlnode_insert_tag(x, &quot;status&quot;);
++            status_msg = pmalloco(xmlnode_pool(x), 30);
++            if(buddy-&gt;is_away&amp;4)
++                sprintf(status_msg, &quot;not available&quot;);
++            else
++                sprintf(status_msg, &quot;%s&quot;, show);
++        }
+         xmlnode_insert_cdata(status, status_msg, -1);
+         deliver(dpacket_new(jp-&gt;x), ti-&gt;i);
+     } 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="068731.html">[JDEV] loop
+</A></li>
+	<LI>Next message: <A HREF="068745.html">[JDEV] AIM transport as ICQ transport replacement, away status	diff
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68740">[ date ]</a>
+              <a href="thread.html#68740">[ thread ]</a>
+              <a href="subject.html#68740">[ subject ]</a>
+              <a href="author.html#68740">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

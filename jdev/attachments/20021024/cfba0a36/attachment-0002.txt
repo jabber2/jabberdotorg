@@ -1,0 +1,272 @@
+/* --------------------------------------------------------------------------
+ *
+ * License
+ *
+ * The contents of this file are subject to the Jabber Open Source License
+ * Version 1.0 (the "License").  You may not copy or use this file, in either
+ * source code or executable form, except in compliance with the License.  You
+ * may obtain a copy of the License at http://www.jabber.com/license/ or at
+ * http://www.opensource.org/.
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright (c) 1999-2000 Schuyler Heath <sheath@jabber.org>
+ *
+ * Acknowledgements
+ *
+ * Special thanks to the Jabber Open Source Contributors for their
+ * suggestions and support of Jabber.
+ *
+ * utils.c - common utils and functions that don't belong anywhere else
+ * --------------------------------------------------------------------------*/
+
+/*
+ * Added modifications for ICQv7-t project (icqv7-t.sf.net) by
+ *  - Alexandre N. Safiullin
+ *
+ * Coryright (c) 2001      Alexandre N. Safiullin <alex_@unis-ru.com>
+ */
+
+#include "icqtransport.h"
+/* #include "tables.h" */
+
+/* int it_bigendian; */
+
+/* void it_check_endian(void) */
+/* { */
+/*     int i; */
+/*     char passwd[10]; */
+
+/*     passwd[0] = 1; */
+/*     passwd[1] = 0; */
+/*     passwd[2] = 0; */
+/*     passwd[3] = 0; */
+/*     passwd[4] = 0; */
+/*     passwd[5] = 0; */
+/*     passwd[6] = 0; */
+/*     passwd[7] = 0; */
+/*     passwd[8] = 0; */
+/*     passwd[9] = 0; */
+
+/*     i = *(icqlong *) passwd; */
+/*     if (i == 1) */
+/*     { */
+/*         log_debug(ZONE,"Little endian"); */
+/*         it_bigendian = 0; */
+/*     } */
+/*     else */
+/*     { */
+/*         log_debug(ZONE,"Big endian"); */
+/*         it_bigendian = 1; */
+/*     } */
+
+    /* initialize random */
+/*     srandom(time(NULL)); */
+/* } */
+
+jid it_xdb_id(pool p, jid id, char *server)
+{
+    return jid_new(p,spools(p,id->user,"%",id->server,"@",server,p));
+}
+
+UIN_t it_strtouin(char *uin)
+{
+    return uin != NULL ? strtoul(uin,NULL,10): 0;
+}
+
+jid it_uin2jid(pool p, UIN_t uin, char *server)
+{
+    jid id;
+    char buffer[16];
+
+    id = (jid) pmalloco(p,sizeof(struct jid_struct));
+
+    id->p = p;
+    id->server = pstrdup(p,server);
+    snprintf(buffer,16,"%lu",uin);
+    id->user = pstrdup(p,buffer);
+
+    return id;
+}
+
+icqstatus it_show2status(const char *show)
+{
+    if (show == NULL)
+        return STATUS_ONLINE;
+
+    if (j_strcmp(show,"away")==0)
+        return STATUS_AWAY;
+    if (j_strcmp(show,"busy")==0)
+        return STATUS_OCCUPIED;
+    if (j_strcmp(show,"chat")==0)
+        return STATUS_FREE_CHAT;
+    if (j_strcmp(show,"dnd")==0)
+        return STATUS_DND;
+    if (j_strcmp(show,"xa")==0)
+        return STATUS_NA;
+
+    return STATUS_ONLINE;
+}
+
+char *it_strrepl(pool p, const char *orig, const char *find, const char
+*replace)
+{
+    const char *loc;
+    char *newstr, *temp, *tempstr;
+    unsigned int olen, flen, rlen, i;
+
+    if (!orig || !find || !replace || !p)
+        return NULL;  /* oops */
+
+    olen = strlen(orig);
+    flen = strlen(find);
+    rlen = strlen(replace);
+
+    temp = strstr(orig,find);
+    if (!temp)
+        return pstrdup(p,orig);
+
+    /* count up any instances of the string we can find */
+    i = 0;
+    while (temp)
+    { /* advance past current instance and get a count */
+        temp += flen;
+        i++;
+        temp = strstr(temp,find);
+    }
+
+    /* allocate a buffer for the new string */
+    newstr = pmalloc(p,(olen + ((rlen - flen) * i) + 1) * sizeof(char));
+    tempstr = newstr;
+    loc = orig;
+
+    while((temp = strstr(loc,find))!=NULL)
+    { /* copy pieces into the new buffer */
+        memcpy(tempstr,loc,(int)(temp - loc));
+        tempstr += (int)(temp - loc);
+
+        memcpy(tempstr,replace,rlen);
+        tempstr += rlen;
+
+        loc = temp + flen;
+    }
+
+    strcpy(tempstr,loc);  /* copy the last piece */
+
+    return newstr;
+}
+
+void it_delay(xmlnode x, char *ts)
+{
+    xmlnode delay;
+
+    delay = xmlnode_insert_tag(x,"x");
+    xmlnode_put_attrib(delay,"xmlns",NS_DELAY);
+    xmlnode_put_attrib(delay,"from",xmlnode_get_attrib(x,"to"));
+    xmlnode_put_attrib(delay,"stamp",ts);
+}
+
+int it_reg_set(session s, xmlnode reg)
+{
+    iti ti = s->ti;
+    jid id;
+    xmlnode x;
+    pool p;
+//    char uin[16];
+
+    p = xmlnode_pool(reg);
+    while ((x = xmlnode_get_tag(reg,"key")) != NULL) xmlnode_hide(x);
+    xmlnode_hide(xmlnode_get_tag(reg,"instructions"));
+//    xmlnode_hide(xmlnode_get_tag(reg,"username"));
+//    snprintf(uin,16,"%lu",s->uin);
+//    xmlnode_insert_cdata(xmlnode_insert_tag(reg,"username"),uin,-1);
+
+    id = it_xdb_id(p,s->id,s->from->server);
+    if (xdb_set(ti->xc,id,NS_REGISTER,reg))
+    {
+        log_error(ZONE,"Failed to updated register settings");
+        return 1;
+    }
+
+    return 0;
+}
+
+jid jid_canonize(jid a)
+{
+    jid ret;
+
+    if(a == NULL) return a;
+
+    ret = pmalloco(a->p,sizeof(struct jid_struct));
+    ret->p = a->p;
+    ret->user = a->user;
+    ret->server = a->server;
+
+    return ret;
+}
+
+
+/**
+ * i have created this function based on the similar function in the
+ * yahoo transport
+ */
+
+int icq_xdb_set(iti ti, char *host, jid owner, xmlnode data)
+{
+    int ret;
+    jid j;
+    char *res;
+
+
+    res = owner->resource;
+
+    jid_set(owner, NULL, JID_RESOURCE);
+
+    //j = jid_new(owner->p, spools(owner->p, shahash(jid_full(owner)), "@", host, owner->p));
+    ret = xdb_act(ti->xc, owner, "icqtrans:data", "insert", "logon", data);
+
+    log_error(ZONE,"the icq query is %s", xmlnode2str(data));
+    xmlnode_free(data);
+
+    jid_set(owner, res, JID_RESOURCE);
+
+    return ret;
+}
+
+
+/**
+ * this function is based on the similar function that exists in yahoo trans.
+ */
+
+xmlnode icq_xdb_get(iti ti, char *host, jid owner, jpacket jp)
+{
+    xmlnode x, query;
+
+    jid j;
+    char *res;
+
+
+    res = owner->resource;
+    jid_set(owner, NULL, JID_RESOURCE);
+
+    query =xmlnode_new_tag("query");
+    xmlnode_put_attrib(query,"xmlns","jabber:iq:register");
+
+
+    x = xdb_get(ti->xc, owner, "icqtrans:data");
+
+
+    xmlnode_insert_tag_node(query,xmlnode_get_tag(x,"username"));
+    xmlnode_insert_tag_node(query,xmlnode_get_tag(x,"password"));
+
+    jid_set(owner, res, JID_RESOURCE);
+
+    log_error(ZONE,"this is part of the icq_xdb_sql %s %s\n", host,
+    xmlnode2str(query));
+    return query;
+}
+
+

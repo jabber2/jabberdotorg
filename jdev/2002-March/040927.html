@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber Transports - New Architecture
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20Transports%20-%20New%20Architecture&In-Reply-To=%3CLingoMAIL.100302004308.0579.llama%40studenten.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="040918.html">
+   <LINK REL="Next"  HREF="040944.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber Transports - New Architecture</H1>
+    <B>Tijl Houtbeckers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20Transports%20-%20New%20Architecture&In-Reply-To=%3CLingoMAIL.100302004308.0579.llama%40studenten.net%3E"
+       TITLE="[JDEV] Jabber Transports - New Architecture">tijl at druppel.nl
+       </A><BR>
+    <I>Sat Mar  9 17:43:09 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="040918.html">[JDEV] RE: jdev digest, Vol 1 #1300 - 2 msgs
+</A></li>
+        <LI>Next message: <A HREF="040944.html">[JDEV] Jabber Transports - New Architecture
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40927">[ date ]</a>
+              <a href="thread.html#40927">[ thread ]</a>
+              <a href="subject.html#40927">[ subject ]</a>
+              <a href="author.html#40927">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i>Proposals:
+</I>&gt;<i>1)  &amp; 2) &amp; 3) &amp; My proposal:
+</I>&gt;<i>...
+</I>&gt;<i>AOL comes over and decides to be a cheater and signs on as a 
+</I>&gt;<i>user/server.  Then it queries the registry directly for the list of servers 
+</I>&gt;<i>and kaboom, all the Smart Forwarders just became Dumb Ignorant Idiots.. 
+</I>&gt;:<i>)  Thus I think a certificate-based authorization is required to connect 
+</I>&gt;<i>to the registry.  The certificates are only issued to those that are 
+</I>&gt;<i>approved.  Bigger overhead, but it will lead to better interoperability.
+</I>&gt;<i>What do you all think?
+</I>
+That would sort of make the Jabber community more &quot;closed&quot;, and even then AOL will 
+still kill it when they see too much traffic coming from one IP adress.. (maybe they'll 
+just do a quick nmap to see if any jabber server is running on it)..
+It's still a lot of effort for something that's basically at the mercy of AOL.
+
+You also forgot to include one proposal, letting the server do the conversion between 
+the xml jabber protocol and the property protocol (like it does now) but then send it 
+back to the client, to let the client send it to the the property format. This however still 
+excludes mobile clients. Maybe a combination of this system and your proposel would 
+work best..
+For example let's say my client wants to comunnicate with AIM, it sends a message 
+to the aim transport like it normally would, then AIMt let's the client choose wether it 
+wants to get the converted binary data back itself (you are the &quot;redirector&quot;) or wether 
+it wants to choose (or let AIMt choose) another (public) &quot;redirector&quot; for this binary 
+data.. (these two steps could be made into one ofcourse)
+
+This requires some work to implement (a bit too much if you ask me) just cause AOL 
+doesn't want to play with us, but it would be the only solution that would hold out for a 
+while (maybe long enough for jabber to grow big). It does need more up to date 
+transport codes, but knowing that all the work you did for it won't be swept away 
+because AOL decides to block server IPs might be a bit more motivating for the 
+developers.
+
+Implementing the streams of binary data etc. is ofcourse a lot of work, but I think 
+manny agree that stuff like OOB data needs some work too (out of band data doesn't 
+always have to be file tranfers, can be a full duplex binary stream as well), wich 
+ofcourse could be used for this. Better specifications and implementations (one good 
+lib could be used by all the transports) of OOB data wouldn't hurt anyone I think :)
+
+Advantages of this method:
+
+- you can choose between privacy &amp; security (the only one who sees your data is you 
+and the server,ofcourse you still need to trust the server, see below) or a client that's 
+not any more complex then todays (for mobiles etc.) that unfortunaly has to trust 
+others with it's property IM sessions.
+
+- these public &quot;redirectors&quot; for the binary streams don't have to be full featured jabber 
+clients (maybe they can be, but they don't have to be). They'll be extremly simple 
+programs. With some options to let it limit CPU and bandwith usage I think you can 
+find a lot of people willing to run something like this.. (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pissoffAOL at home</A> anyone? :)
+
+- almost transparant intergration with todays clients, the redirector program can run 
+seperate from your client on your own machine, so no need for all the clients to 
+implement this on their own.
+
+- it works! AOL can't block *every* IP outthere.. espc if you choose to let your own 
+computer handle all the streams. they simply can't block you on the IP level. Maybe 
+they can still find some things that are wrong with the protocol, but this was always 
+the strenght of Jabber, these things can get adjusted serverside, updating all the 
+clients at once.
+
+- maybe this model can be used for more then just chat transports.. who knows what 
+usefull things will come out of it :) also some good OOB data specs would be 
+welcomed by the community..
+
+Disadvantages:
+
+If you choose to handle your own binary streams (you are the &quot;redirector&quot;):
+
+- adds complexity to the client (a bit), still acceptable for desktop machines though
+
+- Security: you have to trust the server you connect to, the server has control over 
+binary streams that are send from *your* computer. Restricting your &quot;redirector&quot; to 
+connect to only the IP's you want is a requirment, else it's too much open for abuse 
+like DDOS attacks. This requires a Jabber client to know where the AOL server is 
+wich is a bit against the Jabber design philosophy.. still acceptable though IMHO. With 
+this securty measure in place the only thing it could be abused for is a DDOS attack 
+against eg. AOL (if that's what your &quot;redirector' is allowed to connect to) or that your 
+redirector is used for sessions that are not your own (yey appear to come from your 
+IP). Again.. if you trust the server you connect to this is all not a problem..
+
+if you choose to use a public &quot;redirector&quot;:
+
+- Security: your data travels over other peoples redirectors.. 
+However if you trust the server, and the server only connects to trusted redirectors 
+(or you can tell the server to connect to one, for example I could use my desktop 
+machine to &quot;redirect&quot; for my cellphone) this could still be within the limits of 
+reasonable security. 
+You always have to trust your server anyway, and if you thought your IM sessions on 
+ICQ, AIM or MSN were safe in the first place you needed the wakeup call anyway. (If 
+they were they'd use something like SSL and it wouldn't be a problem redirecting 
+them over servers you don't trust anyway)
+
+The biggest disadvantage of this probably is that noone wants to build it.. for now we'll 
+just play cat and mouse with AOL for a while (there's manny manny different IP 
+adresses we can use for our AIM/ICQ transport.. I wonder if they'll really block them 
+all.. :P). Maybe if it doesn't work out that way we'll free some resources for this.. but for 
+now I doubt I can do it on my own.. (not familiar enough with jabbers internal working 
+yet)..
+
+Even though probably noone wants to make something like this for now, it could still 
+be intresting to discuss what the best and most efficiant way of solving this problem 
+is.. :)
+
+-- 
+Tijl Houtbeckers
+GPRS / J2ME programmer
+Druppel Internet Services,
+The Netherlands
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="040918.html">[JDEV] RE: jdev digest, Vol 1 #1300 - 2 msgs
+</A></li>
+	<LI>Next message: <A HREF="040944.html">[JDEV] Jabber Transports - New Architecture
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40927">[ date ]</a>
+              <a href="thread.html#40927">[ thread ]</a>
+              <a href="subject.html#40927">[ subject ]</a>
+              <a href="author.html#40927">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

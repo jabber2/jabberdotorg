@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Cleaning Up The Karma code
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Cleaning%20Up%20The%20Karma%20code&In-Reply-To=%3CNCBBLEGIGJPCAMGPPCIMCEBPJBAA.heg%40sirlabs.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="036808.html">
+   <LINK REL="Next"  HREF="036810.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Cleaning Up The Karma code</H1>
+    <B>Harold E. Gottschalk Jr.</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Cleaning%20Up%20The%20Karma%20code&In-Reply-To=%3CNCBBLEGIGJPCAMGPPCIMCEBPJBAA.heg%40sirlabs.com%3E"
+       TITLE="[JDEV] Cleaning Up The Karma code">heg at sirlabs.com
+       </A><BR>
+    <I>Thu May  3 17:02:01 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="036808.html">[JDEV] server 2 server connections
+</A></li>
+        <LI>Next message: <A HREF="036810.html">[JDEV] Unreliable?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36809">[ date ]</a>
+              <a href="thread.html#36809">[ thread ]</a>
+              <a href="subject.html#36809">[ subject ]</a>
+              <a href="author.html#36809">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I have spent the last day reviewing the karma code and have found that it
+needs some cleaning up.  I would like to propose the following changes and
+get some input from the more experienced jabberd developers.
+
+The code in mio.c regarding karma does not pay attention to most of what you
+place in the &lt;io&gt;&lt;karma&gt; section of the jabber.xml.  Two reasons 1) a
+typical cut and paste coding mistake. 2) Then the information is not even
+used latter just the karma defaults found in lib.h.
+
+Here is a diff of the changes I have made to mio.c so far.
+
+532c532
+&lt;     mio_karma(new, KARMA_INIT, KARMA_MAX, KARMA_INC, KARMA_DEC,
+KARMA_PENALTY, KARMA_RESTORE);
+---
+&gt;<i>     mio_karma(new, KARMA_INIT, KARMA_DEF_MAX, KARMA_DEF_INC,
+</I>KARMA_DEF_DEC, KARMA_DEF_PENALTY, KARMA_DEF_RESTORE);
+770,777c770,777
+&lt;     KARMA_DEF_INIT   = j_atoi(xmlnode_get_tag_data(io, &quot;karma/init&quot;),
+KARMA_INIT);
+&lt;     KARMA_DEF_INIT   = j_atoi(xmlnode_get_tag_data(io, &quot;karma/max&quot;),
+KARMA_MAX);
+&lt;     KARMA_DEF_INIT   = j_atoi(xmlnode_get_tag_data(io, &quot;karma/inc&quot;),
+KARMA_INC);
+&lt;     KARMA_DEF_INIT   = j_atoi(xmlnode_get_tag_data(io, &quot;karma/dec&quot;),
+KARMA_DEC);
+&lt;     KARMA_DEF_INIT   = j_atoi(xmlnode_get_tag_data(io, &quot;karma/penalty&quot;),
+KARMA_PENALTY);
+&lt;     KARMA_DEF_INIT   = j_atoi(xmlnode_get_tag_data(io, &quot;karma/restore&quot;),
+KARMA_RESTORE);
+&lt;     KARMA_DEF_RATE_T = j_atoi(xmlnode_get_attrib(xmlnode_get_tag(io,
+&quot;rate&quot;), &quot;time&quot;), 5);
+&lt;     KARMA_DEF_RATE_P = j_atoi(xmlnode_get_attrib(xmlnode_get_tag(io,
+&quot;rate&quot;), &quot;points&quot;), 25);
+---
+&gt;<i>     KARMA_DEF_INIT    = j_atoi(xmlnode_get_tag_data(io, &quot;karma/init&quot;),
+</I>KARMA_INIT);
+&gt;<i>     KARMA_DEF_MAX     = j_atoi(xmlnode_get_tag_data(io, &quot;karma/max&quot;),
+</I>KARMA_MAX);
+&gt;<i>     KARMA_DEF_INC     = j_atoi(xmlnode_get_tag_data(io, &quot;karma/inc&quot;),
+</I>KARMA_INC);
+&gt;<i>     KARMA_DEF_DEC     = j_atoi(xmlnode_get_tag_data(io, &quot;karma/dec&quot;),
+</I>KARMA_DEC);
+&gt;<i>     KARMA_DEF_PENALTY = j_atoi(xmlnode_get_tag_data(io, &quot;karma/penalty&quot;),
+</I>KARMA_PENALTY);
+&gt;<i>     KARMA_DEF_RESTORE = j_atoi(xmlnode_get_tag_data(io, &quot;karma/restore&quot;),
+</I>KARMA_RESTORE);
+&gt;<i>     KARMA_DEF_RATE_T  = j_atoi(xmlnode_get_attrib(xmlnode_get_tag(io,
+</I>&quot;rate&quot;), &quot;time&quot;), 5);
+&gt;<i>     KARMA_DEF_RATE_P  = j_atoi(xmlnode_get_attrib(xmlnode_get_tag(io,
+</I>&quot;rate&quot;), &quot;points&quot;), 25);
+782c782
+&lt;         register_beat(j_atoi(xmlnode_get_tag_data(io, &quot;heartbeat&quot;),
+KARMA_HEARTBEAT), _karma_heartbeat, NULL);
+---
+&gt;<i>         register_beat(j_atoi(xmlnode_get_tag_data(io, &quot;karma/heartbeat&quot;),
+</I>KARMA_HEARTBEAT), _karma_heartbeat, NULL);
+855c855
+&lt;     mio_karma(new, KARMA_INIT, KARMA_MAX, KARMA_INC, KARMA_DEC,
+KARMA_PENALTY, KARMA_RESTORE);
+---
+&gt;<i>     mio_karma(new, KARMA_INIT, KARMA_DEF_MAX, KARMA_DEF_INC,
+</I>KARMA_DEF_DEC, KARMA_DEF_PENALTY, KARMA_DEF_RESTORE);
+
+I have continued to leave KARMA_INIT as is fore the time being because this
+used in some strange way to indicate it is a new connection.  I will spend
+some more time on completing that transition.
+
+----------------------------------------------
+
+The karma_heartbeat has been adjust for registration, but the default value
+of KARMA_HEARTBEAT is used in karma.c and may or may not reflect the true
+heartbeat setting set in &lt;io&gt;&lt;karma&gt;.
+
+karma.c 66-68
+    /* only increment every KARMA_HEARTBEAT seconds */
+    if( ( k-&gt;last_update + KARMA_HEARTBEAT &gt; cur_time ) &amp;&amp; k-&gt;last_update !=
+0)
+        return;
+
+I propose adding a KARMA_DEF_HEARTBEAT that is set in mio.c and then used as
+an extern in karma.c.
+
+-----------------------------------------------
+
+Also client.c and some others use their own karma settings than those found
+in &lt;io&gt; and as state by a comment in the code that they would first like to
+uses the &lt;io&gt;&lt;karma&gt; setting instead of the defaults found lib.h.
+
+What I propose is adding the externs that point to KARMA_DEF... in client .c
+et.al.
+
+client.c 504-509
+            /* XXX note, this isn't quite what i had in mind for karma
+             * since it's not taking the default from &lt;io/&gt; over the
+             * internal defaults... it should take the c2s config first
+             * any values not there should come from &lt;io/&gt; and any other
+             * non-matched values should use the internal defaults */
+            mio_karma2(m, &amp;k);
+
+----------------------------------------
+
+I would apprciate feedback on the cleanup presented.  Who would I send the
+updates for inclusion into CVS.
+
+heg
+
+&quot;If at first the idea is not absurd, then there is no hope for it.&quot; - Albert
+Einstein
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010503/c77ce888/attachment-0001.htm">https://www.jabber.org/jdev/attachments/20010503/c77ce888/attachment-0001.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="036808.html">[JDEV] server 2 server connections
+</A></li>
+	<LI>Next message: <A HREF="036810.html">[JDEV] Unreliable?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36809">[ date ]</a>
+              <a href="thread.html#36809">[ thread ]</a>
+              <a href="subject.html#36809">[ subject ]</a>
+              <a href="author.html#36809">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

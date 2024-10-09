@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Leak, bug --  fixed -- maybe
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Leak%2C%20bug%20--%20%20fixed%20--%20maybe&In-Reply-To=%3CPine.LNX.4.10.10204020007240.20076-100000%40lor.jeremie.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="070539.html">
+   <LINK REL="Next"  HREF="070568.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Leak, bug --  fixed -- maybe</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Leak%2C%20bug%20--%20%20fixed%20--%20maybe&In-Reply-To=%3CPine.LNX.4.10.10204020007240.20076-100000%40lor.jeremie.com%3E"
+       TITLE="[JDEV] Leak, bug --  fixed -- maybe">jeremie at jabber.org
+       </A><BR>
+    <I>Tue Apr  2 00:44:06 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="070539.html">[JDEV] Leak, bug --  fixed -- maybe
+</A></li>
+        <LI>Next message: <A HREF="070568.html">[JDEV] Leak, bug --  fixed -- maybe
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#70550">[ date ]</a>
+              <a href="thread.html#70550">[ thread ]</a>
+              <a href="subject.html#70550">[ subject ]</a>
+              <a href="author.html#70550">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey Glenn, few questions to clarify here, and following up to the
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabberd at jabberstudio.org</A> list as well.
+
+&gt;<i> jsm/session.c at _js_session_from you will see at line 252 or so that we
+</I>&gt;<i> create a new jid struct using jid_full with the session-&gt;id meaning that the
+</I>&gt;<i> new jid is allocated from the session pool, not good. 
+</I>
+Are you talking about this code? (and the line marked with -&gt;)
+
+    /* if you use to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">yourself at yourhost</A>&quot; it's the same as not having a ... */
+-&gt;  uid = jid_user(s-&gt;id);
+    if(jid_cmp(p-&gt;to,uid) == 0)
+    {
+        /* xmlnode_hide_attrib(p-&gt;x,&quot;to&quot;); */
+        p-&gt;to = NULL;
+    }
+
+Just curious, because yes, that is a leak with using the jid_user()
+function on the session id... but from your wording:
+
+&gt;<i> So we have created a new jid_full function, jid_full_from_pool(pool, jid).
+</I>
+... it sounds like you are saying a call to jid_full(s-&gt;id) would leak,
+and it doesn't because the implementation in jid.c 'caches' the results:
+
+    /* use cached copy */
+    if(id-&gt;full != NULL)
+        return id-&gt;full;
+
+So it is safe to use jid_full() many numbers of times on a &quot;static&quot; jid
+like the one in the session.
+
+&gt;<i> changed much so if the plan was to reuse some of the jsm and jabberd stuff
+</I>&gt;<i> in the 1.5 it maybe good to get it in.
+</I>
+Yes, much of the jsm code is going to be reused, at least initially to get
+1.5 rolling. Since you pointed this out I looked at other suspect uses of
+jid_user, and there are numerous other problems in the modules (my bad)
+that I'll look at and make sure are fixed for 1.5.
+
+If you want to work up a patch without having to figure out where it's
+used incorrectly in jsm, the easiest fix for jid_user might be to make it
+work like jid_full, cache the returned user-only jid in the struct so that
+it is only ever generated once.  Just post it to the jdev and jabberd
+lists, if you plan on having any more patches then cvs access is available
+as well (just ask).
+
+Thanks for finding this, so far 1.5 is getting a pretty serious overhaul
+and it'll be easier for us all to track down and fix some of these
+problems :)
+
+Jer
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="070539.html">[JDEV] Leak, bug --  fixed -- maybe
+</A></li>
+	<LI>Next message: <A HREF="070568.html">[JDEV] Leak, bug --  fixed -- maybe
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#70550">[ date ]</a>
+              <a href="thread.html#70550">[ thread ]</a>
+              <a href="subject.html#70550">[ subject ]</a>
+              <a href="author.html#70550">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

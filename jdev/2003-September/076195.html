@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: Account information storage, plaintext? ...AND JabberD password storage
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Account%20information%20storage%2C%20plaintext%3F%20...AND%20JabberD%20password%0A%20storage&In-Reply-To=%3Cbk74ff%247p0%241%40sea.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="076209.html">
+   <LINK REL="Next"  HREF="076197.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: Account information storage, plaintext? ...AND JabberD password storage</H1>
+    <B>Frank Seesink</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Account%20information%20storage%2C%20plaintext%3F%20...AND%20JabberD%20password%0A%20storage&In-Reply-To=%3Cbk74ff%247p0%241%40sea.gmane.org%3E"
+       TITLE="[JDEV] Re: Account information storage, plaintext? ...AND JabberD password storage">frank at mail.wvnet.edu
+       </A><BR>
+    <I>Tue Sep 16 08:50:29 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="076209.html">[JDEV] Account information storage, plaintext?
+</A></li>
+        <LI>Next message: <A HREF="076197.html">[JDEV] Re: Account information storage, plaintext? ...AND JabberD password storage
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76195">[ date ]</a>
+              <a href="thread.html#76195">[ thread ]</a>
+              <a href="subject.html#76195">[ subject ]</a>
+              <a href="author.html#76195">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>____________________________________________________________
+3rd PARTY ACCOUNT INFORMATION STORED IN PLAINTEXT
+
+Jamin W. Collins wrote:
+
+&gt;<i> Does anyone else see it as a concern that the Jabber server (1.4.2
+</I>&gt;<i> release) and popular transports (aim-t, jit, msn-t, and yahoo-t) save
+</I>&gt;<i> user account information (user name and password) in plaintext for
+</I>&gt;<i> anyone with read access on the Jabber server to see?
+</I>&gt;<i> 
+</I>followed by &quot;He said&quot;...&quot;She said&quot;...
+
+	All I can think is Luke Skywalker's wing commander in the original 
+'Star Wars' movie...&quot;Stay on target&quot;... :-)
+
+	I may be wrong, but this thread is slowly drifting towards another 
+discussion on security, and if we're not careful, it will end up being 
+another flame war and the original question and the point it was seeking 
+will be lost.
+
+	Jamin simply asked a question asking if anyone was concerned, 
+specifically regarding the storage of username/password combos to OTHER 
+systems like AIM, MSN, etc.
+
+	Yes, Jamin, I am concerned.  I do not feel a sysadmin (one of many hats 
+I wear) should have information about a users' usernames/passwords on 
+remote systems, WHENEVER POSSIBLE.  &lt;==NOTE THIS BEFORE RESPONDING.  Why 
+should I know what my users' AIM/ICQ/MSN/Yahoo! account names and 
+passwords are?  Do I have the right to know my users' bank account 
+numbers?  Their ATM PINs?  I think not.
+
+	In fact, I do not like sysadmins (myself included) knowing users' 
+passwords on the systems _I_ manage.  But that's drifting off-topic, so 
+let's hold that thought for a minute.
+
+	As already voiced in this thread, the reasons for storing 3rd party 
+usernames/passwords is due to the needs of transports to have that 
+information in order to properly 'impersonate' a user on that 3rd party 
+system.  But what is really meant is that the transports need to KNOW 
+the actual usernames/passwords in order to plug those in when a user 
+connects to said 3rd party system.
+
+	As suggested, possibilities exist for doing reversible 
+encryption/hashing so that said transports can, in fact, have access to 
+actual usernames/passwords while at the same time protecting such 
+information through basic obfuscation. (ooooh, BIG word)
+
+	The next question along this line might be:  where does the 
+implementation of such a feature, should it be desired, lie?  Does it 
+require a change in any way to Jabber/XMPP that requires the 'designers' 
+of the protocol?  If not, does it lie with the JabberD team?  (Remember, 
+Rob Norris is the guy writing JabberD2, so BE NICE! :-) )  Or does it 
+lie with the transport writers?  When you know the answer to this 
+question, politely ask those responsible if there might be a way to have 
+such a feature.  Or, as always with open source, grab some code and go 
+crazy. :-)
+
+____________________________________________________________
+JABBERD PASSWORD STORAGE
+
+	Now, returning to the drifting topic of sysadmins knowing passwords on 
+their own systems, I would like to ask if anyone is concerned that 
+JabberD itself stores ITS users' passwords in plaintext, because I for 
+one AM.  I understand the argument that services like 
+jabberd/apache/whatnot should be configured to run as a given user and 
+only THAT user should have access to the files, so why do we need to 
+encrypt/hash them?
+
+	Well, let me ask a few questions:
+
+1.  How does *nix (pick your flavor) store users' passwords?
+2.  How does Windows NT/2K/XP store users' passwords?
+3.  How does Apache store users' passwords?
+
+Not ONE uses plaintext passwords, at least by default.  (Not even sure 
+if you could, but that's another topic again).  *nix typically uses some 
+form of encryption, if not outright subverting things more by using 
+yppasswords, NISpasswords, etc.  Windows NT/2K/XP same thing.  Even 
+Apache uses either DES crypt or MD5 hashes.
+
+	And speaking of Apache, that's probably a good comparison to use. 
+Apache offers things like basic HTTP authentication, which requires the 
+user to send plaintext passwords across the wire, where Apache then does 
+its hash and compares the hash against its stored password.  If as a 
+webserver admin you fear plaintext passwords on the wire, you use SSL.
+
+	Regarding Jabber/XMPP, the same holds true.  Rob, you mentioned in one 
+post &quot;Well, I think that plaintext passwords on the wire are more of an 
+issue than plaintext passwords in the data store.&quot;  I'm afraid I have to 
+side with Michael Brown's response.  Plaintext passwords on the wire are 
+not as much of an issue as stored passwords on a system.  Michael Brown 
+covers the points well.
+
+	And in the case of JabberD, it too has clients sending passwords in 
+plaintext, but that's ok, if only because you can subvert that by using 
+SSL-only connections to the Jabber server.  And SSL is built into 
+JabberD, so it's not like it's an add-on or something only a few people 
+have.  However, the storage of passwords ON the Jabber server is still a 
+concern.
+
+	Might I suggest one possibility?  Again, for those reading this, please 
+note Rob Norris is &quot;the man&quot; with regards to JabberD2 development, so be 
+nice.  Would it be possible, Rob, to offer the option to the JabberD 
+admin to store passwords using, say, MD5 hashes?  Passwords would still 
+come from clients as they do now.  The only change required is how 
+JabberD stores them and, if it's configured to use MD5, how it does the 
+comparison; i.e.,
+
+	(plaintext_sent = plaintext_stored)
+vs.
+	(MD5(plaintext_sent) = hash_stored)
+
+As for the original transport question, reversible encryption might be 
+an option (though again, not sure who needs to be buttered up in that 
+regard).
+
+	Personally, I would love to see NO 3rd party passwords stored on the 
+server, but rather have the Jabber client send any 3rd party passwords 
+whenever the client connects (this way the USER is responsible at the 
+client side for securing that information, and jabber admins don't have 
+culpability for compromises passwords of systems they do not manage). 
+However, I understand that would require a fundamental change in the way 
+Jabber works, if only because the user would be required to re-enter all 
+that 3rd party information from EACH client PC they used, as opposed to 
+having the Jabber server store it for them (a la rosters, etc.).
+
+P.S.	Whatever the case, I thank all those involved for all the
+	time/energy/effort they have put into Jabber, be it the original
+	coders, the transport writers, Rob Norris for his rewrite of
+	Jabberd2, and those writing here who help to flesh out a pretty
+	wicked product, etc.  People who don't code do not realize just
+	much how effort goes into these projects.  All I did was figure
+	out how to build JabberD from source, complete with
+	MU-Conference, JUD, XDB_SQL, etc., on Windows, and MAN talk
+	about time flying.  Only because my wife was visiting her folks
+	in Brazil for 6 weeks--and I don't have a life :-)--was I able
+	to get just that minor task done.  (I'm sure part of it is
+	because I suck as a programmer compared to those who do it all
+	the time :-)).
+
+	Thanks everyone, seriously.
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="076209.html">[JDEV] Account information storage, plaintext?
+</A></li>
+	<LI>Next message: <A HREF="076197.html">[JDEV] Re: Account information storage, plaintext? ...AND JabberD password storage
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76195">[ date ]</a>
+              <a href="thread.html#76195">[ thread ]</a>
+              <a href="subject.html#76195">[ subject ]</a>
+              <a href="author.html#76195">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

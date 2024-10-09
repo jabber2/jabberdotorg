@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Subscribe / Unsubscribe users
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Subscribe%20/%20Unsubscribe%20users&In-Reply-To=%3C39CB891D.6000101%40jabber.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="062635.html">
+   <LINK REL="Next"  HREF="062636.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Subscribe / Unsubscribe users</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Subscribe%20/%20Unsubscribe%20users&In-Reply-To=%3C39CB891D.6000101%40jabber.com%3E"
+       TITLE="[JDEV] Subscribe / Unsubscribe users">dwaite at jabber.com
+       </A><BR>
+    <I>Fri Sep 22 11:30:21 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="062635.html">[JDEV] Subscribe / Unsubscribe users
+</A></li>
+        <LI>Next message: <A HREF="062636.html">[JDEV] Offline file attachments etc
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62640">[ date ]</a>
+              <a href="thread.html#62640">[ thread ]</a>
+              <a href="subject.html#62640">[ subject ]</a>
+              <a href="author.html#62640">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>No problem - while the Roster lists the current subscription status of
+your users, you cannot subscribe or unsubscribe using it (both the
+subscription type and the current asking state are read-only).
+
+To add or remove users, user presence:
+
+&lt;psuedocode&gt;
+PresenceBuilder presBuilder=new PresenceBuilder();
+presBuilder.setToAddr(jidOfOtherUser);
+presBuilder.setType(&quot;subscribe&quot;);
+try
+{
+Packet p=presBuilder.build()
+}
+...appropriate error catching...
+connection.send(p);
+
+
+This builds a &lt;presence type=&quot;subscribe&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">whoever at wherever</A>&quot;/&gt;
+
+The response back should be a 'subscribed' message. If the user is
+unable to answer or defers answering, the 'ask' field in the roster
+marks that the subscription request is still outstanding and waiting.
+
+see more details at <A HREF="http://docs.jabber.org/jpg/">http://docs.jabber.org/jpg/</A>
+
+-David Waite
+
+Leon Kwan wrote:
+&gt;<i> 
+</I>&gt;<i> Hello all genius,
+</I>&gt;<i> 
+</I>&gt;<i> I met great problem in subscribing and unsubscribing users
+</I>&gt;<i> when using jabberbeans API.
+</I>&gt;<i> 
+</I>&gt;<i> Below is the code of subscribe and unsubscribe.
+</I>&gt;<i> 
+</I>&gt;<i> In subscribe method, I found that I can put the the
+</I>&gt;<i> subscribed name to the xml of the user profile but I
+</I>&gt;<i> cannot set the waiting state type to &quot;subscribe&quot;.
+</I>&gt;<i> In the packet listener, I can see the packet sent
+</I>&gt;<i> contains this attribute of &quot;waiting state type&quot;.
+</I>&gt;<i> So what is the proper procedure of adding a user?
+</I>&gt;<i> 
+</I>&gt;<i> Moreover, exception occurs when request the roster list if
+</I>&gt;<i> one of the roster element is &quot;ask=subscribe&quot;. How should
+</I>&gt;<i> I handle it?
+</I>&gt;<i> 
+</I>&gt;<i> Unsubscribe is worse. Although I found that the packet
+</I>&gt;<i> sent contains attribute of &quot;waiting state type&quot; and also
+</I>&gt;<i> the &quot;subscription type&quot;, nothing in the xml of the
+</I>&gt;<i> user profile is changed.
+</I>&gt;<i> 
+</I>&gt;<i>  public boolean subscribe(String username)
+</I>&gt;<i>  {
+</I>&gt;<i>   RosterItemBuilder rib=new RosterItemBuilder();
+</I>&gt;<i>   rib.setJID(createJID(username));
+</I>&gt;<i>   rib.setSubscriptionType(&quot;both&quot;);
+</I>&gt;<i>   rib.setWaitingStateType(&quot;subscribe&quot;);
+</I>&gt;<i>   rib.setFriendlyName(username);
+</I>&gt;<i> 
+</I>&gt;<i>   InfoQueryBuilder iqbuild = new InfoQueryBuilder();
+</I>&gt;<i> 
+</I>&gt;<i>   RosterItem ri;
+</I>&gt;<i>   try
+</I>&gt;<i>   {
+</I>&gt;<i>    ri = (RosterItem) rib.build();
+</I>&gt;<i>    RosterExtensionBuilder reb = new RosterExtensionBuilder();
+</I>&gt;<i>    reb.addRosterItem(ri);
+</I>&gt;<i>    reb.setIQRoster(true);
+</I>&gt;<i>    iqbuild.reset();
+</I>&gt;<i>    iqbuild.setType(&quot;set&quot;);
+</I>&gt;<i>    iqbuild.addExtension(reb.build());
+</I>&gt;<i>       //build and send presence
+</I>&gt;<i>       connection.send(iqbuild.build());
+</I>&gt;<i>   }
+</I>&gt;<i>   catch (InstantiationException e)
+</I>&gt;<i>   {
+</I>&gt;<i>    e.printStackTrace(System.err);
+</I>&gt;<i>       return false;
+</I>&gt;<i>   }
+</I>&gt;<i>   return true;
+</I>&gt;<i>  }
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i>  public boolean remove(String username)
+</I>&gt;<i>  {
+</I>&gt;<i>   RosterItemBuilder rib=new RosterItemBuilder();
+</I>&gt;<i>   rib.setJID(createJID(username));
+</I>&gt;<i>   rib.setSubscriptionType(&quot;both&quot;);
+</I>&gt;<i>   rib.setWaitingStateType(&quot;unsubscribe&quot;);
+</I>&gt;<i>   rib.setFriendlyName(username);
+</I>&gt;<i> 
+</I>&gt;<i>   InfoQueryBuilder iqbuild = new InfoQueryBuilder();
+</I>&gt;<i> 
+</I>&gt;<i>   RosterItem ri;
+</I>&gt;<i>   try
+</I>&gt;<i>   {
+</I>&gt;<i>    ri = (RosterItem) rib.build();
+</I>&gt;<i>    RosterExtensionBuilder reb = new RosterExtensionBuilder();
+</I>&gt;<i>    reb.addRosterItem(ri);
+</I>&gt;<i>    reb.setIQRoster(true);
+</I>&gt;<i>    iqbuild.reset();
+</I>&gt;<i>    iqbuild.setType(&quot;set&quot;);
+</I>&gt;<i>    iqbuild.addExtension(reb.build());
+</I>&gt;<i>       //build and send presence
+</I>&gt;<i>       connection.send(iqbuild.build());
+</I>&gt;<i>   }
+</I>&gt;<i>   catch (InstantiationException e)
+</I>&gt;<i>   {
+</I>&gt;<i>    e.printStackTrace(System.err);
+</I>&gt;<i>       return false;
+</I>&gt;<i>   }
+</I>&gt;<i>   return true;
+</I>&gt;<i>  }
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> -Leon Kwan
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="062635.html">[JDEV] Subscribe / Unsubscribe users
+</A></li>
+	<LI>Next message: <A HREF="062636.html">[JDEV] Offline file attachments etc
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62640">[ date ]</a>
+              <a href="thread.html#62640">[ thread ]</a>
+              <a href="subject.html#62640">[ subject ]</a>
+              <a href="author.html#62640">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

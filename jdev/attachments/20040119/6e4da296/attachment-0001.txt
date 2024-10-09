@@ -1,0 +1,67 @@
+diff -u jud-ansi-c/jud.c jud-ansi-c-new/jud.c
+--- jud-ansi-c/jud.c	Thu May  3 14:47:41 2001
++++ jud-ansi-c-new/jud.c	Mon Jan 19 12:14:22 2004
+@@ -66,7 +66,7 @@
+ {
+     char *str;
+     struct utsname un;
+-    xmlnode x;
++    xmlnode x,query,show;
+     int start;
+     time_t t;
+     char nstr[10];
+@@ -136,8 +136,41 @@
+         deliver(dpacket_new(jp->x),NULL);
+         return;
+     }
++    
++    if(NSCHECK(jp->iq,NS_DISCO_INFO)) {
++        jutil_iqresult(jp->x);
++	query = xmlnode_insert_tag(jp->x, "query");
++	xmlnode_put_attrib(query, "xmlns", NS_DISCO_INFO);
+ 
++	show = xmlnode_insert_tag(query, "identity");
++        xmlnode_put_attrib(show, "category", "directory");
++        xmlnode_put_attrib(show, "type", "user");		  
++	xmlnode_put_attrib(show, "name", xmlnode_get_tag_data(j->config,"vCard/FN"));
++
++	show = xmlnode_insert_tag(query, "feature");
++        xmlnode_put_attrib(show, "var", "jabber:iq:register");
++
++	show = xmlnode_insert_tag(query, "feature");
++	xmlnode_put_attrib(show, "var", "jabber:iq:search");
++
++	show = xmlnode_insert_tag(query, "feature");
++        xmlnode_put_attrib(show, "var", "jabber:iq:version");
++
++	show = xmlnode_insert_tag(query, "feature");
++        xmlnode_put_attrib(show, "var", "jabber:iq:time");
++	
++	deliver(dpacket_new(jp->x),NULL);
++	return;
++    }
+ 
++    if(NSCHECK(jp->iq,NS_DISCO_ITEMS)){
++        jutil_iqresult(jp->x);
++        query = xmlnode_insert_tag(jp->x, "query");
++        xmlnode_put_attrib(query, "xmlns", NS_DISCO_ITEMS);
++	deliver(dpacket_new(jp->x),NULL);
++	return;
++    }
++			
+     if(NSCHECK(jp->iq,NS_LAST))
+     {
+         jutil_iqresult(jp->x);
+diff -u jud-ansi-c/jud.h jud-ansi-c-new/jud.h
+--- jud-ansi-c/jud.h	Sat Jul  5 18:18:46 2003
++++ jud-ansi-c-new/jud.h	Fri Jan 16 18:25:30 2004
+@@ -31,6 +31,9 @@
+ #include "jabberd.h"
+ 
+ #define VERSION "0.5"
++#define NS_DISCO_INFO "http://jabber.org/protocol/disco#info"
++#define NS_DISCO_ITEMS "http://jabber.org/protocol/disco#items"
++
+ 
+ /* 
+  NOTICE (from jer): 

@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: Jabber sigs/crypto (fwd)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20Jabber%20sigs/crypto%20%28fwd%29&In-Reply-To=Pine.A41.3.96.990217121206.12318B-100000%40dowager.csc.UVic.CA">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000282.html">
+   <LINK REL="Next"  HREF="000285.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: Jabber sigs/crypto (fwd)</H1>
+    <B>mskala at csc.UVic.CA</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20Jabber%20sigs/crypto%20%28fwd%29&In-Reply-To=Pine.A41.3.96.990217121206.12318B-100000%40dowager.csc.UVic.CA"
+       TITLE="[JDEV] Re: Jabber sigs/crypto (fwd)">mskala at csc.UVic.CA
+       </A><BR>
+    <I>Tue Feb 23 11:52:50 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000282.html">[JDEV] Windows XML classes..
+</A></li>
+        <LI>Next message: <A HREF="000285.html">[JDEV] FIX in io.c
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#283">[ date ]</a>
+              <a href="thread.html#283">[ thread ]</a>
+              <a href="subject.html#283">[ subject ]</a>
+              <a href="author.html#283">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello... Quetzalcoatl Bradley asked me to look at this and comment to the
+list, as I'm a crypto geek too.  I'm not *on* the list (probably will join
+very soon) so ccing responses to me would be appreciated.  (Ideally,
+responses would be cced to the reply-to address above instead of this
+school account that gets checked less frequently, but that may be too much
+to ask.) 
+
+On Wed, 17 Feb 1999 <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">qbradley at csc.UVic.CA</A> wrote:
+&gt;<i> --Identity
+</I>&gt;<i> 	Verifying that the user you received a message from is really them
+</I>&gt;<i> 	(and that the message hasn't been modified)
+</I>&gt;<i> --Privacy
+</I>&gt;<i> 	Encrypting a message so that only the recipient can decode it
+</I>&gt;<i> --Authentication
+</I>&gt;<i> 	Validating a login to the server and granting access to resources
+</I>
+I think authentication in the other direction may be important, too - in
+other words, the client has to know that the server they're talking to is
+really the server they want to be talking to.  I don't know much about how
+Jabber works, but my understanding is that the server, not client, is
+responsible for things like knowing who is on my &quot;friends&quot; list and
+notifying me when one of them logs on.  Well, my &quot;friends&quot; list (or
+whatever you call it) could reveal things about me that I don't want just
+anyone to know - e.g. my wife gets a copy and finds my mistress's name on
+it.  I'd rather have some assurance that the server I'm giving my personal
+data out to is really the server I intend to be giving it out to.
+
+Reading further I see that this is probably something you want to avoid.. 
+you want to treat the server as just a dumb insecure message forwarder. 
+That makes very good sense as far as protocol design is concerned.. it
+does mean, though, that clients have to understand that the server isn't
+trusted in the crypto sense.  In other words, my mistress had better be
+using a meaningless psuedonym everywhere outside the end-to-end encrypted 
+connection between her client and mine.
+
+&gt;<i> &gt; 	- Annoying export bullshit...if I just do digital sigs (which is a
+</I>&gt;<i> &gt; strong possibility, as sigs aren't export controlled, and she'll probably
+</I>&gt;<i> &gt; want me to have an intermediary level (i.e. just sigs instead of
+</I>&gt;<i> &gt; sigs+crypto) deliverable work that can be done by the end of the
+</I>&gt;<i> &gt; semester), it won't be a problem...but where crypto is concerned...how do
+</I>&gt;<i> &gt; we handle that?  Make a 40-bit weak version and a 128-bit one (a la the
+</I>&gt;<i> &gt; browsers)?
+</I>
+IMHO, it is a *really bad idea* to have a &quot;weak&quot; version, because then
+people will use it.  They'll have a false sense of security, and that
+seems to me like a bad thing.  With something like crypto that the general
+public isn't qualified to make judgements about, I think those of us who
+*are* capable of making judgements about it, have a responsibility not to
+give the masses enough rope to hang themselves.  I'd prefer to see a
+protocol with two options: no security, or meaningful security.
+
+As for export control, if you're in the USA, yes, you have a problem. 
+Really, you need an export license (IANAL either, but I'm pretty sure of
+this) *even for 40-bit crypto*... it's just that they're much easier to
+get, for 40-bit crypto.  One reason is that it's possible to make 40-bit
+crypto strong enough to inconvenience the NSA if you, for instance, use a
+really time-consuming key setup that makes brute force difficult.
+
+I think digital signatures can be exported, although I heard something
+about a 1024-bit limit (which is the minimum length of public-key I'd
+consider acceptable).  Or maybe that's just the limit built into DSA.
+
+My opinion on export control:  move.  :-)  Actually, my opinion is that
+you should try to make a good protocol, fully document the protocol, and
+then either do the print-out-and-scan dance like PGP did, or seek
+volunteers outside the USA to implement the protocol.  (You have one here,
+subject to my time availability...)  I think it'd be a real shame to allow
+the US rules to stop you from building the best possible product.
+
+Incidentally, it's worth asking: why not just use the IETF's version of
+SSL (I think it may be called TSA)?  That protocol has the advantage of
+being widely peer-reviewed, and also if Jabber built a library for it that
+could be used in other things, it'd be a significant contribution to the
+community.  OTOH, I don't know how well that protocol would co-exist with
+whatever other protocol stuff you're doing.
+
+&gt;<i> --&gt;	Those wanting to work on crypto for jabber set up completely
+</I>&gt;<i> separate server to host the code(probably best if it's international?) but
+</I>&gt;<i> are free to use this list to discuss it as long as no code snippets are
+</I>&gt;<i> sent to the list :)
+</I>&gt;<i> --&gt;	Jabber.org can point all security/crypto/encryption inquiries and
+</I>&gt;<i> pages/links to the other server, as a separate project(similar to SSL for
+</I>&gt;<i> Apache)
+</I>&gt;<i> --&gt;	All crypto solutions can piggyback ontop of the protocol and
+</I>&gt;<i> modularization of the server, and provide libs or assist client authors in
+</I>&gt;<i> including crypto
+</I>
+This sounds okay to me, although the desire for &quot;no modifications to the
+server&quot; does limit the authentication *of* the server that I mentioned
+before.  The system would still be leaps and bounds ahead of any other I
+know of, even without server authentication, but it does serve to
+underscore the fact that true security is not really something you can add
+on as a separate feature - it really has to be built into a system from
+the ground up.
+
+&gt;<i> &gt; 	- Patent issues...I'm starting to look into this...I think the
+</I>&gt;<i> &gt; strong frontrunner is the El Gamal public key cryptosystem...like RSA, it
+</I>&gt;<i> &gt; can be used for both authentication _and_ encryption...but unlike RSA,
+</I>&gt;<i> &gt; it's totally free of patent baggage (it's the first one to have its patent
+</I>&gt;<i> &gt; expire..I think it's been free since some time in 97).  While RSA gets its
+</I>&gt;<i> &gt; strength from the difficulty of factoring large primes, El Gamal is based
+</I>&gt;<i> &gt; on discrete logs.  I forget, but I think that PGP 5.x and up might use El
+</I>
+I think those facts are correct.  El Gamal is also subject to stronger
+mathematical proof of its security.  It's been proven that if you can
+break El Gamal then you can do discrete logarithms; it is *not* certain
+that you must factor to break RSA (in fact, there was an article about
+this just now in the latest _Science News_).  So the possibility exists
+that RSA could be broken more easily than by factoring; this argues for El
+Gamal being stronger. 
+
+El Gamal is the preferred choice of the several supported by GNU Privacy
+Guard (to which I contributed code).  My own instinctive reaction still
+favors RSA just because it seems simpler to me, and I think any results
+against it would then have to be more general, i.e. less likely to happen.
+But that's not really a very scientific argument; the engineering
+considerations, especially patents, make El Gamal look like the best choice.
+
+&gt;<i> &gt; 	- Architecture changes/extensions?  If a public-key based
+</I>&gt;<i> &gt; cryptosystem is in place, there will have to be some kind of
+</I>&gt;<i> &gt; infrastructure to deal with key distribution/management.  This is not
+</I>&gt;<i> &gt; really too nasty, I think...but the one nasty thing I haven't thought of
+</I>&gt;<i> &gt; how to handle yet is how to totally avoid (or keep to a BARE minimum) the
+</I>&gt;<i> &gt; authentication between client and server...I'd like to keep pretty much
+</I>&gt;<i> &gt; all authentication between client-&gt;client (with the server just acting as
+</I>&gt;<i> &gt; an intermediary)...but I fear that you'll need server-client authetication
+</I>&gt;<i> &gt; at each step to prevent a man-in-the-middle attack...but the problem is,
+</I>
+Not really, if the client-to-client authentication is carried through
+*every single communication between clients*... i.e. in your initial
+signature/handshake/etc., you agree on a secret MAC (message
+authentication check) and you use it on all subsequent messages.  A man in
+the middle can't forge the MAC.  The only problem is knowing that the
+public key you used for the initial handshake really belonged to the right
+person; that requires, as you say, some kind of key authentication
+mechanism.  (I don't like the word &quot;infrastructure&quot; because that seems to
+imply an hierarchical structure.)
+
+I'd prefer to see some kind of web-of-trust similar to PGP.  Ideally, it
+should be easy to transfer trust from existing PGP (and, better, GPG, plug
+plug) trust networks.  For instance, you could spit out a Jabber public
+key as text, sign it with another product, and send it off to a recipient
+who could say, &quot;I trust this signature, so I'll trust that this key is
+real&quot;.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000282.html">[JDEV] Windows XML classes..
+</A></li>
+	<LI>Next message: <A HREF="000285.html">[JDEV] FIX in io.c
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#283">[ date ]</a>
+              <a href="thread.html#283">[ thread ]</a>
+              <a href="subject.html#283">[ subject ]</a>
+              <a href="author.html#283">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

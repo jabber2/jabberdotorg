@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] help with pointer bug
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20help%20with%20pointer%20bug&In-Reply-To=%3CmT/13Vl5L-0008JzT%40mail.airmail.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="062419.html">
+   <LINK REL="Next"  HREF="062423.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] help with pointer bug</H1>
+    <B>mark at mjwilcox.com</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20help%20with%20pointer%20bug&In-Reply-To=%3CmT/13Vl5L-0008JzT%40mail.airmail.net%3E"
+       TITLE="[JDEV] help with pointer bug">mark at mjwilcox.com
+       </A><BR>
+    <I>Sun Sep  3 20:30:53 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="062419.html">[JDEV] formatting in messages
+</A></li>
+        <LI>Next message: <A HREF="062423.html">[JDEV] The information of users in &quot;jserver&quot;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62421">[ date ]</a>
+              <a href="thread.html#62421">[ thread ]</a>
+              <a href="subject.html#62421">[ subject ]</a>
+              <a href="author.html#62421">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+I'm sure in the end this will be something elementary, but I can't 
+figure it out.
+
+I'm working on mapping jabber's registration elements to LDAP 
+attributes.
+
+I have the hashtable map working and I have an array filled with the 
+possible Jabber registration elements.
+
+The LDAP API uses an NULL-terminated array of LDAPMod 
+structures to construct the data to populate an LDAP server.
+
+I'm using a while loop to populate this array, using a generic 
+function to create the LDAPMod structure for each present Jabber 
+element. 
+
+Here's the loop (copied directly from source:)
+i = 0;
+                while (reg_attr[i] != NULL)
+                {
+                   log_debug(&quot;xdb_ldap&quot;,&quot;reg_attr is %s\n&quot;,reg_attr[i]);
+
+                   temp = ghash_get(cfg-&gt;registertab,reg_attr[i]);
+                   if (temp == NULL)
+                   {
+                     log_debug(&quot;xdb_ldap&quot;,&quot;No reg LDAP mapping for %s&quot;,reg_attr[i]);
+                   }
+                   else
+                   {
+                      usermod = xdb_ldap_get_mod(temp,xmlnode_get_tag_data(data,reg_attr[i]));  
+                      log_debug(&quot;xdb_ldap&quot;,&quot;got %s from xdb_ldap_get_mod&quot;,reg_attr[i]);
+                   }
+                   mods[i] = (LDAPMod *)&amp;usermod;
+                   log_debug(&quot;xdb_ldap&quot;,&quot;mod type is %s for 
+%d&quot;,mods[i]-&gt;mod_type,i);
+                   log_debug(&quot;xdb_ldap&quot;,&quot;mod type 2 is %s for 
+0&quot;,mods[0]-&gt;mod_type);
+                 i++;
+              }
+              mods[i] = &amp;ocmod;
+              mods[i++] = NULL;  
+
+but each element overwrites all of the data in mods. For example 
+lets say that the password element is the 4th element we get from 
+jabber. Then mods 0-3 all contain the password attribute data 
+instead of their previous values.
+
+I know it's pointer poison. I'm just not sure how to cure it. After 2 
+weeks of putting a machine back together at work, those brain 
+cells are probably crashed &amp; burning somewhere.
+
+This is in the xdb_ldap.c module.
+
+You can also check out the full source from CVS or browse it on 
+the web at:
+<A HREF="http://xdbldap.tigris.org/source/browse/~checkout~/xdbldap/src/jab">http://xdbldap.tigris.org/source/browse/~checkout~/xdbldap/src/jab</A>
+ber-transport-1.0/src/xdb/ldap/xdb_ldap.c?rev=1.13&amp;content-
+type=text/plain
+
+Mark
+
+
+Mark Wilcox
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A>
+Got LDAP?
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="062419.html">[JDEV] formatting in messages
+</A></li>
+	<LI>Next message: <A HREF="062423.html">[JDEV] The information of users in &quot;jserver&quot;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62421">[ date ]</a>
+              <a href="thread.html#62421">[ thread ]</a>
+              <a href="subject.html#62421">[ subject ]</a>
+              <a href="author.html#62421">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

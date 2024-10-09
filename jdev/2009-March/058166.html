@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Mixing Attribute Namespaces
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Mixing%20Attribute%20Namespaces&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE6101B09A86575E%40zamail01.k2workflow.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058165.html">
+   <LINK REL="Next"  HREF="058143.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Mixing Attribute Namespaces</H1>
+    <B>Jonathan Dickinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Mixing%20Attribute%20Namespaces&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE6101B09A86575E%40zamail01.k2workflow.com%3E"
+       TITLE="[jdev] Mixing Attribute Namespaces">jonathan.dickinson at k2.com
+       </A><BR>
+    <I>Fri Mar  6 07:42:38 CST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058165.html">[jdev] Mixing Attribute Namespaces
+</A></li>
+        <LI>Next message: <A HREF="058143.html">[jdev] Mixing Attribute Namespaces
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58166">[ date ]</a>
+              <a href="thread.html#58166">[ thread ]</a>
+              <a href="subject.html#58166">[ subject ]</a>
+              <a href="author.html#58166">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On
+</I>&gt;<i> Behalf Of Fabio Forno
+</I>&gt;<i> Sent: 06 March 2009 11:24 AM
+</I>&gt;<i> To: Jabber/XMPP software development list
+</I>&gt;<i> Subject: Re: [jdev] Mixing Attribute Namespaces
+</I>&gt;<i> 
+</I>&gt;<i> ...
+</I>&gt;<i> 
+</I>&gt;<i> Taken from the perspective of 4/5 years of XMPP evolution, XEP-72
+</I>&gt;<i> should be superseded by something better, such as io-data. XEP-72 just
+</I>&gt;<i> replicates the typical HTTP request/response message pattern, where
+</I>&gt;<i> XMPP has few advantages.
+</I>
+Wow! Had I known that XEP existed! Thanks for the heads-up. Still you are sending a schema that you *may* not have control over (for example, the CMC schema in the XEP may have attributes with a qualified form). This means that attribute namespaces are still required.
+
+@Everyone:
+
+Looking over that XEP I see a lot of functionality that could be achieved with PubSub - why are we making yet another protocol? 
+
+If I hash my brains out very quickly (it needs a lot of cleaning up):
+
+--&gt; Get latest item from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at company.org</A>/services foo schemata (where schemata is a well-known name)
+
+&lt;--
+&lt;message from='pubsub.shakespeare.lit' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">francisco at denmark.lit</A>'&gt;
+  &lt;event xmlns='<A HREF="http://jabber.org/protocol/pubsub#event'">http://jabber.org/protocol/pubsub#event'</A>&gt;
+    &lt;items node='services foo schemata'&gt;
+      &lt;item id='2008-01-19'&gt;
+        &lt;schemata xmlns=&quot;...&quot;&gt;
+          &lt;header&gt;&lt;!-- header schema --&gt;&lt;/header&gt;
+          &lt;in&gt;&lt;!-- in schema --&gt;&lt;/in&gt;
+          &lt;out&gt;&lt;!-- out schema --&gt;&lt;/out&gt;
+          &lt;status&gt;&lt;!-- status schema --&gt;&lt;/status&gt;
+        &lt;/schemata&gt;
+      &lt;/item&gt;
+    &lt;/items&gt;
+  &lt;/event&gt;
+  &lt;delay xmlns='urn:xmpp:delay' stamp='2003-12-13T23:58:37Z'/&gt;
+&lt;/message&gt;
+
+... Generate proxy code etc.
+
+--&gt; Send request
+&lt;iq type='set'
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">francisco at denmark.lit</A>'
+    to='pubsub.shakespeare.lit'
+    id='create2'&gt;
+    &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+      &lt;create node='services foo 2008-01-19 abc'/&gt; &lt;!-- Note that the node before abc is the name of the item above --&gt;
+      &lt;configure&gt;
+       &lt;!-- Allow me to create, delete, maybe even user x to read as well --&gt;
+      &lt;/configure&gt;
+      &lt;psrpc xmlns=&quot;...&quot;&gt;
+        &lt;header&gt;&lt;!-- header data --&gt;
+        &lt;in&gt;&lt;!-- in data --&gt;
+      &lt;/psrpc&gt;
+    &lt;/pubsub&gt;
+&lt;/iq&gt;
+
+... Verify that ABC is available
+    If not, generate a new one
+... Create node services foo 2008-01-19 abc
+... Create node services foo 2008-01-19 status abc (where status is a well known name)
+... Create subscription automatically to services foo 2008-01-19 abc
+... Start processing
+
+&lt;-- Respond with node id
+&lt;iq type='result'
+    from='pubsub.shakespeare.lit'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">francisco at denmark.lit</A>'
+    id='create2'&gt;
+    &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+      &lt;create node='services foo 2008-01-19 abc'/&gt;
+    &lt;/pubsub&gt;
+&lt;/iq&gt;
+
+Optional: (for status notifications)
+{
+--&gt; Subscribe to services foo 2008-01-19 status abc.
+&lt;-- Subscribe success.
+}
+
+... Process
+
+&lt;-- Done!
+&lt;message from='pubsub.shakespeare.lit' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">francisco at denmark.lit</A>' id='foo'&gt;
+  &lt;event xmlns='<A HREF="http://jabber.org/protocol/pubsub#event'">http://jabber.org/protocol/pubsub#event'</A>&gt;
+    &lt;items node='services foo 2008-01-19 abc'&gt;
+      &lt;item id='ae890ac52d0df67ed7cfdf51b644e901'/&gt;
+    &lt;/items&gt;
+  &lt;/event&gt;
+&lt;/message&gt;
+
+--&gt; Request for services foo 2008-01-19 abc 'ae890ac52d0df67ed7cfdf51b644e901'
+&lt;-- Result
+&lt;message from='pubsub.shakespeare.lit' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">francisco at denmark.lit</A>' id='foo'&gt;
+  &lt;event xmlns='<A HREF="http://jabber.org/protocol/pubsub#event'">http://jabber.org/protocol/pubsub#event'</A>&gt;
+    &lt;items node='services foo 2008-01-19 abc'&gt;
+      &lt;item id='ae890ac52d0df67ed7cfdf51b644e901'&gt;
+        &lt;out xmlns=&quot;...&quot;&gt;&lt;!-- XML out data --&gt;&lt;/out&gt;
+      &lt;/item&gt;
+    &lt;/items&gt;
+  &lt;/event&gt;
+&lt;/message&gt;
+
+&lt;-- Delete node (or keep it, server should have a time-based disposal facility) 
+... Delete services foo 2008-01-19 abc
+... Delete services foo 2008-01-19 status abc
+
+Jonathan
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058165.html">[jdev] Mixing Attribute Namespaces
+</A></li>
+	<LI>Next message: <A HREF="058143.html">[jdev] Mixing Attribute Namespaces
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58166">[ date ]</a>
+              <a href="thread.html#58166">[ thread ]</a>
+              <a href="subject.html#58166">[ subject ]</a>
+              <a href="author.html#58166">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

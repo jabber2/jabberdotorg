@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] UIDs
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20UIDs&In-Reply-To=19990831120606.B3820%40tara.tranzoa.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001376.html">
+   <LINK REL="Next"  HREF="001379.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] UIDs</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20UIDs&In-Reply-To=19990831120606.B3820%40tara.tranzoa.com"
+       TITLE="[JDEV] UIDs">jeremie at jabber.org
+       </A><BR>
+    <I>Tue Aug 31 14:45:07 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001376.html">[JDEV] UIDs
+</A></li>
+        <LI>Next message: <A HREF="001379.html">[JDEV] UIDs
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1378">[ date ]</a>
+              <a href="thread.html#1378">[ thread ]</a>
+              <a href="subject.html#1378">[ subject ]</a>
+              <a href="author.html#1378">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> One good reason to encode transport information is the problem of address
+</I>&gt;<i> domain conflicts and multiple transports.
+</I>
+This is a limitation of the current <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A> simple addressing
+mechanism, but one that can be worked around easily(not pretty) for each
+transport or in a more general sense: embed the routing information in the
+user field such as &quot;user%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">server at ROUTER</A>&quot;.  The ROUTER then decodes the user
+and server fields.  Like I said, not pretty, but it works.  In fact, you
+*used* to be able to route email all over the world this way before spam
+blockers:  jeremie%jabber.org%sun.com%microsoft.com%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aol.com at isp.net</A> would
+be routed through all of the server back to me, in a day or so :)
+
+The only *immediate* needs I can see for this would be for an SMTP and IRC
+transport, where you could gateway to email via email%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">address.com at SMTP</A> or
+IRC via nick%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">server at IRC.</A>
+
+&gt;<i> Example: ICQ has the main ICQ network (we'll call it icq.com because I don't
+</I>&gt;<i> know it's real address) however they've also released a &quot;Workgroup&quot;-esque
+</I>&gt;<i> server package. If we have transports connecting to both places, or better
+</I>&gt;<i> yet, a transport at a different server on my local Jabber network connected
+</I>&gt;<i> to a different ICQ network I'd want a way to specify them. <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">12341234 at ICQ</A>
+</I>&gt;<i> should goto the main network. However, how should I specify the alternative
+</I>&gt;<i> network? <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">12341234 at ROBHOME</A>? Hold on, &quot;robhome&quot; is the name of a server here!
+</I>
+These &quot;workgroup&quot;-esque ICQ servers either have to be completly seperate
+from the rest of the ICQ world, or routed to automagically via the ICQ
+main servers.  ICQ has no built in means of identifying other ICQ servers
+that I know about, it's all just UINs.
+
+If that is the case that they are completely seperate, then how can we
+expect Jabber to magically bridge with just the UIN what ICQ doesn't even
+bridge? All you would have to do is have two instances of the ICQ
+transport installed, each defaulting to a different server, so yes, you
+would have <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">12341234 at ICQ</A> and <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">12341234 at ROBHOME</A> since they are completely
+seperate environments.
+
+&gt;<i> In fact, with the current naming structure we'd have to decide whether a
+</I>&gt;<i> transport &quot;name&quot; had priority over a host name.
+</I>
+Yes, with the current naming structure a local transport can provide
+default names that are resolved to first in a case sensitive way.  This
+allows you the flexibility in naming a large number of private transports,
+without having to create DNS names for each one individually.
+
+Of course, if your domain is foo.com, you can also just give them DNS
+names and use @icq.foo.com and @robhome.foo.com.
+
+&gt;<i> Proposed solution: <A HREF="icq://12341234,">icq://12341234,</A> <A HREF="icq://icq.com/12341234,">icq://icq.com/12341234,</A> or even
+</I>&gt;<i> <A HREF="icq://jabber.localdomain/icq.com/12341234">icq://jabber.localdomain/icq.com/12341234</A> can be used to differenciate
+</I>&gt;<i> between the UIDs. (which one we used depends on how we'll finally end up
+</I>&gt;<i> implementing routing and how abstracted we want UIDs) <A HREF="icq://robhome/12341234">icq://robhome/12341234</A>
+</I>&gt;<i> or <A HREF="icq://jabber.localdomain/robhome/12341234">icq://jabber.localdomain/robhome/12341234</A> should then transport to the
+</I>&gt;<i> independent ICQ network &quot;robhome&quot;.
+</I>
+The &quot;<A HREF="icq://&quot;">icq://&quot;</A> is completly useless information since the transports are
+identified by their name and there is no inherent knowledge of what type
+of transport they are, so all you end up with is the user id and server id
+again.
+
+You could have a scheme such as <A HREF="jabber://foo.com/robhome/userid,">jabber://foo.com/robhome/userid,</A> but to me
+that makes just as little sense as userid%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">robhome at foo.com</A>, neither of
+which I really like.  I'd much rather wait and see how the IETF approaches
+this issue and go from there, for what it's worth we could easily support
+both forms since they represent the same thing just vary in syntax.
+
+Jer
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001376.html">[JDEV] UIDs
+</A></li>
+	<LI>Next message: <A HREF="001379.html">[JDEV] UIDs
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1378">[ date ]</a>
+              <a href="thread.html#1378">[ thread ]</a>
+              <a href="subject.html#1378">[ subject ]</a>
+              <a href="author.html#1378">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

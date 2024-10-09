@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Binary XML useful for Jabber?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Binary%20XML%20useful%20for%20Jabber%3F&In-Reply-To=%3CB7309B3D.3B91%25jens%40mac.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="037244.html">
+   <LINK REL="Next"  HREF="037248.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Binary XML useful for Jabber?</H1>
+    <B>Jens Alfke</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Binary%20XML%20useful%20for%20Jabber%3F&In-Reply-To=%3CB7309B3D.3B91%25jens%40mac.com%3E"
+       TITLE="[JDEV] Binary XML useful for Jabber?">jens at mac.com
+       </A><BR>
+    <I>Wed May 23 00:43:00 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="037244.html">[JDEV] Binary XML useful for Jabber?
+</A></li>
+        <LI>Next message: <A HREF="037248.html">[JDEV] Binary XML useful for Jabber?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37246">[ date ]</a>
+              <a href="thread.html#37246">[ thread ]</a>
+              <a href="subject.html#37246">[ subject ]</a>
+              <a href="author.html#37246">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>David Waite &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwaite at jabber.com</A>&gt; wrote:
+
+&gt;<i> I don't think this last item is there. the LITERAL token (for elements which
+</I>&gt;<i> are not in the DTD) reports an offset in the string table, meaning it needs to
+</I>&gt;<i> be defined beforehand and not inline.
+</I>
+Look at &quot;inline string extension tokens&quot;, the format of which is a magic
+number followed by the string itself. The spec's not organized or written
+very clearly, but it certainly looks to me as though these let you insert
+arbitrary keywords on the fly if they weren't defined upfront.
+
+&gt;<i> I really doubt this would simplify parsing (either in terms of execution speed
+</I>&gt;<i> or in Lines of Code).
+</I>
+Sure it would. Binary XML has basically been lexed in advance, and typical
+parsers spend about 25% of their time lexing. A lot of the code complexity
+is in lexing, as well. It should be really easy to write a BXML parser, and
+you could make it plug-compatible with a regular parser like Expat, which
+would make it easy to drop into existing code. Generating XML is less
+standardized, but hopefully people have modularized their XML generators
+such that generating BXML would require changing very little code (I know I
+have.)
+
+&gt;<i> If you didn't &quot;decompress&quot; the binary format before
+</I>&gt;<i> sending it into Jabber, it would require substantial changes which would
+</I>&gt;<i> pretty
+</I>&gt;<i> much encompass every line of code.
+</I>
+I haven't looked at the server implementation, but if dependence on XML
+syntax is so tightly woven into it, then I have to say it sounds like it's
+badly designed. Please don't tell me the modules of the server communicate
+internally via raw XML... :-O
+
+
+Adam Fritzler &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mid at zigamorph.net</A>&gt; wrote:
+
+&gt;<i> In any case, the utility of widely available, long-used _generic_
+</I>&gt;<i> compression schemes should not be discounted.  Only design/use custom
+</I>&gt;<i> schemes where they provide a fundamental improvement in performance
+</I>
+By &quot;generic&quot; I guess you mean zipping the stream. This might get you
+something like 2::1 compression, I suppose, at the expense of increasing
+code size (have to link in zlib) and slowing down data transfer. But binary
+XML would compress the data a lot further since most of the XML element
+overhead gets scrunched into a few bytes per, and it would save a lot of
+parsing time since the stream has, in effect, already been run through most
+of an XML parser.
+
+BTW, I share your low opinion of WAP. But binary XML looks good to me.
+
+&gt;<i> Most wireless transports do not provide reliable, ordered,
+</I>&gt;<i> stream delivery. 
+</I>&gt;<i> This is why I will probably have AIM on my RIM/Mobitex handheld before I
+</I>&gt;<i> have jabber [1].  Because AIM has strictly defined packet boundries.
+</I>
+Jabber has strictly defined packet boundaries too: they're the boundaries of
+the top level XML elements within the outer &lt;stream&gt; element. You could
+pretty easily break these into individual packets in some hypothetical
+non-stream protocol; the absence of an explicit byte count at the XML level
+doesn't seem like a big obstacle to me. Of course you'd still need reliable
+delivery of the packets, but tell me that AIM doesn't need the same thing as
+well!
+
+--Jens
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="037244.html">[JDEV] Binary XML useful for Jabber?
+</A></li>
+	<LI>Next message: <A HREF="037248.html">[JDEV] Binary XML useful for Jabber?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37246">[ date ]</a>
+              <a href="thread.html#37246">[ thread ]</a>
+              <a href="subject.html#37246">[ subject ]</a>
+              <a href="author.html#37246">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

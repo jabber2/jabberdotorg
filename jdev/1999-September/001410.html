@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Chat/IRC
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Chat/IRC&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006927.html">
+   <LINK REL="Next"  HREF="001411.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Chat/IRC</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Chat/IRC&In-Reply-To="
+       TITLE="[JDEV] Chat/IRC">jeremie at jabber.org
+       </A><BR>
+    <I>Sun Sep  5 16:38:49 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006927.html">[JDEV] Need Jabber Server Consultant in N. VA
+</A></li>
+        <LI>Next message: <A HREF="001411.html">[JDEV] Chat/IRC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1410">[ date ]</a>
+              <a href="thread.html#1410">[ thread ]</a>
+              <a href="subject.html#1410">[ subject ]</a>
+              <a href="author.html#1410">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>[Note: this might be a bit difficult to grok if you are not familiar with
+the protocol, the server/transport architecture, and the concept of user
+sessions within one account]
+
+There are two main types of interfaces for instant messaging: message
+style (popup window per mssage) and chat style (line by line in one
+window).  Jabber doesn't place any restrictions on clients as far as how
+they would display messages, but it might be useful to convey which style
+is in use between clients.  A user may react or approach the conversation
+differently when in chat style versus message style, so it is particularly
+useful to flag that one client is in &quot;chat mode&quot; so that the other client
+may also display the conversation in chat style.
+
+I think it would be safe to utilize the type=&quot;&quot; attribute on the message
+tag for this purpose.  When a user is utilizing the chat interface, the
+message could be sent:
+  &lt;message type=&quot;chat&quot;&gt;
+    &lt;to&gt;joe&lt;/to&gt;
+    &lt;say&gt;Hey joe,&lt;/say&gt;
+  &lt;/message&gt;
+The receiving client could then optionally display the message in a chat
+style interface.
+
+This is just a solution for 2-way chats, no different than normal instant
+messages but simply displayed differently to the user.  There also needs
+to be a solution for group chats which have an interface similiar to
+popular IRC clients (chat window with right sidebar listing participants).
+
+The Jabber protocol doesn't have any concept of a group chat, but that
+doesn't mean it can't be done within the existing protocol/architecture.
+To impliment group chat in the existing architecture, you need to have a
+transport that manages the group chat.  This transport might be just for
+group chats between jabber users, or it might be a gateway to an IRC
+network, but it would technically work the same way.
+
+What happens is that the group is assigned a jabber ID, such as
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">buddies at groups.jabber.org</A>, where the transport &quot;groups.jabber.org&quot; manages
+the chat.  All incoming messages are reflected out by the transport to the
+participants, and every participant in the chat is assigned a nickname
+under that jabber ID.  So, if I join the buddies chat and send a message,
+the participants in the chat might get something like this:
+  &lt;message type=&quot;groupchat&quot;&gt;
+    &lt;from nick=&quot;Jer&quot;&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">buddies at groups.jabber.org</A>&lt;/from&gt;
+    &lt;say&gt;:-)&lt;/say&gt;
+  &lt;/message&gt;
+
+As you can see, the type of the message is &quot;groupchat&quot; which flags the
+client to display it in a group chat interface, and each participant is
+identified as a seperate nickanme under the group ID.  Also, when you join
+a chat or change your status within the chat (away, ops, etc) the
+transport managing the group would send out a status to all of the
+participants.  All clients would receive a status message for each
+participant, and would use that to display the list of chatting users in
+the right sidebar.
+
+There would also be a complimentary set of queries that the transport
+would support for group chats, such as joining, leaving, etc.  These
+queries will need to be determined as we impliment the first IRC or group
+transport and have clients supporting type=&quot;groupchat&quot;.
+
+We don't want to go crazy and try to make this the all-encompasing IRC
+client or add in all the possible features that other systems have, but
+just attempt to find a simple and balanced approach that provides the
+basic functionality for everyone to take advantage of.
+
+Jer
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006927.html">[JDEV] Need Jabber Server Consultant in N. VA
+</A></li>
+	<LI>Next message: <A HREF="001411.html">[JDEV] Chat/IRC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1410">[ date ]</a>
+              <a href="thread.html#1410">[ thread ]</a>
+              <a href="subject.html#1410">[ subject ]</a>
+              <a href="author.html#1410">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

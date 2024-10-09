@@ -1,0 +1,108 @@
+<jabber>
+
+  <service id="sessions">
+
+    <!-- change hostname below!
+	 <host/> -->
+    <host><jabberd:cmdline flag="h">63.227.43.79</jabberd:cmdline></host>
+
+    <load main="jsm">
+      <jsm>./jsm/jsm.so</jsm>
+      <mod_echo>./jsm/jsm.so</mod_echo>
+      <mod_roster>./jsm/jsm.so</mod_roster>
+      <mod_time>./jsm/jsm.so</mod_time>
+      <mod_vcard>./jsm/jsm.so</mod_vcard>
+      <mod_version>./jsm/jsm.so</mod_version>
+      <mod_announce>./jsm/jsm.so</mod_announce>
+      <mod_agents>./jsm/jsm.so</mod_agents>
+      <mod_admin>./jsm/jsm.so</mod_admin>
+      <mod_private>./jsm/jsm.so</mod_private>
+      <mod_filter>./jsm/jsm.so</mod_filter>
+      <mod_presence>./jsm/jsm.so</mod_presence>
+      <mod_auth_plain>./jsm/jsm.so</mod_auth_plain>
+      <mod_auth_digest>./jsm/jsm.so</mod_auth_digest>
+      <mod_auth_0k>./jsm/jsm.so</mod_auth_0k>
+      <mod_register>./jsm/jsm.so</mod_register>
+      <mod_log>./jsm/jsm.so</mod_log>
+    </load>
+    <jsm xmlns="jabber:config:jsm">
+      <maxoffline>100</maxoffline> <!-- limit # of offline msgs allowed -->
+      <agents>
+       <agent jid="users.jabber.org">
+        <name>Jabber User Directory</name>
+        <description>You may register and create a public searchable profile, and search for other registered Jabber users.</description>
+        <service>jud</service>
+        <register/>
+        <search/>
+       </agent>
+      </agents>
+      <register>
+        <instructions>Choose a username and password to register with this server.</instructions>
+        <name/><email/>
+      </register>
+      <log>
+        <file>/tmp/jsession.log</file>
+        <type>session</type>
+      </log>
+    </jsm>
+  </service>
+
+  <!-- All xdb lookups go here -->
+  <xdb id="xdb">
+    <host/>
+    <load><xdb_file>./xdb_file/xdb_file.so</xdb_file></load>
+    <xdb_file xmlns="jabber:config:xdb_file"><spool><jabberd:cmdline flag="s">/var/tmp</jabberd:cmdline></spool></xdb_file>
+  </xdb>
+
+  <!-- Service to manage incoming client socket connections -->
+  <service id="c2s">
+    <host>pth-csock.63.227.43.79</host>
+    <load><pthsock_client>./pthsock/pthsock_client.so</pthsock_client></load>
+    <pthcsock xmlns='jabber:config:pth-csock'>
+      <listen>5222</listen>
+      <authtime/> <!-- unlimited time to auth -->
+      <!-- could be <authtime>10</authtime> for 10 seconds, etc -->
+      <rate time="5" points="25"/> <!-- 25 connects in 5 seconds limit (per IP) -->
+      <karma>
+        <max>10</max>
+        <inc>1</inc>
+        <dec>1</dec>
+        <restore>5</restore>
+        <penalty>-5</penalty>
+      </karma>
+    </pthcsock>
+  </service>
+
+  <!-- Default logging service -->
+  <log id='logger'>
+    <host/>
+    <format>%d: [%t] (%h): %s</format>
+    <file>debug.log</file>
+    <stderr/>
+  </log>
+
+
+  <!-- the following two services are for Server to server packets -->
+  <!-- external resolver, so that dns lookups don't block the server -->
+  <service id="dnsrv">
+    <host/>
+    <load><dnsrv>./dnsrv/dnsrv.so</dnsrv></load>
+    <dnsrv xmlns="jabber:config:dnsrv">
+    	<resend service="_jabber._tcp">s2s-63.227.43.79</resend>
+    	<resend>s2s-63.227.43.79</resend> 
+    </dnsrv>
+  </service>
+  <!-- performs server connections can also perform blocking dns lookups -->
+  <service id="s2s">
+    <host>s2s-63.227.43.79</host>
+    <load><pthsock_server>./pthsock/pthsock_server.so</pthsock_server></load>
+    <pthssock xmlns='jabber:config:pth-ssock'>
+      <legacy/> <!-- allow communication with old 1.0-style servers -->
+      <!-- listen on particular addresses and/or ports 
+      <ip port="7000"/>
+      <ip port="5269">127.0.0.1</ip>
+      -->
+    </pthssock>
+  </service>
+
+</jabber>

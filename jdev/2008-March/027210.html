@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Authentication Process For Jabber.com
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Authentication%20Process%20For%20Jabber.com&In-Reply-To=200803091952.58384.justin-keyword-jabber.093179%40affinix.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="027208.html">
+   <LINK REL="Next"  HREF="027213.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Authentication Process For Jabber.com</H1>
+    <B>Sergei Golovan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Authentication%20Process%20For%20Jabber.com&In-Reply-To=200803091952.58384.justin-keyword-jabber.093179%40affinix.com"
+       TITLE="[jdev] Authentication Process For Jabber.com">sgolovan at nes.ru
+       </A><BR>
+    <I>Mon Mar 10 04:01:06 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="027208.html">[jdev] Authentication Process For Jabber.com
+</A></li>
+        <LI>Next message: <A HREF="027213.html">[jdev] Authentication Process For Jabber.com
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27210">[ date ]</a>
+              <a href="thread.html#27210">[ thread ]</a>
+              <a href="subject.html#27210">[ subject ]</a>
+              <a href="author.html#27210">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 3/10/08, Justin Karneges &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">justin-keyword-jabber.093179 at affinix.com</A>&gt; wrote:
+&gt;<i> On Sunday 09 March 2008 5:49 pm, Peter Saint-Andre wrote:
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; Correct. The spec currently does not say that the server must enforce
+</I>&gt;<i>  &gt; that rule. But naturally the recipient (or the sender's or recipient's
+</I>&gt;<i>  &gt; server) could return a stanza error on receiving it. A &lt;not-acceptable/&gt;
+</I>&gt;<i>  &gt; error seems appropriate:
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; &lt;message type='error'&gt;
+</I>&gt;<i>  &gt;   &lt;error type='modify&gt;
+</I>&gt;<i>  &gt;     &lt;not-acceptable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/&gt;
+</I>&gt;<i>  &gt;   &lt;/error&gt;
+</I>&gt;<i>  &gt;   &lt;gajim:die/&gt;
+</I>&gt;<i>  &gt; &lt;/message&gt;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Hmm, you should probably not send the original XML back in this case, since it
+</I>&gt;<i>  is invalid.
+</I>
+The XML here isn't invalid, but so-called namespace-non-well-formed.
+And it indeed breaks XML parsers, which take into account XMLNS
+prefixes (which they MAY do according to clarified RFC-3290-bis).
+
+&gt;<i>
+</I>&gt;<i>  Further, since some XML parsers throw error when an unrecognized prefix is
+</I>&gt;<i>  encountered, those clients/servers would most likely respond not with a
+</I>&gt;<i>  stanza error, but with an xml-not-well-formed *stream* error and close the
+</I>&gt;<i>  connection.
+</I>&gt;<i>
+</I>&gt;<i>  I think we have to be very careful about how this stuff is routed.  Obviously
+</I>&gt;<i>  clients shouldn't be generating invalid XML, but servers shouldn't be routing
+</I>&gt;<i>  it either.  A good server would disconnect whoever sent gajim:die rather than
+</I>&gt;<i>  routing it and DoS'ing other clients.
+</I>
+I would like to see (probably in a separate section) rules for closing
+streams like the following:
+
+1) If an entity sends non-well-formed XML as defined in
+<A HREF="http://www.w3.org/TR/2006/REC-xml-20060816">http://www.w3.org/TR/2006/REC-xml-20060816</A> then the receiving entity
+MUST close the stream and return xml-not-well-formed error.
+
+2) If an entity sends namespace-non-well-formed XML as defined in
+<A HREF="http://www.w3.org/TR/REC-xml-names">http://www.w3.org/TR/REC-xml-names</A> then the receiving entity MUST
+close the stream and return xml-not-well-formed error (or may be it's
+better to introduce a separate error for this case).
+
+3) IF an entity defines XMLNS prefix in a stream header and use it in
+a stanza (which means that the stanza isn't routable as is) then the
+receiving entity MAY close the stream and return xml-non-well-formed
+error, but SHOULD move namespace definition to a stanza level (or
+convert namespace prefix into xmlns attribute) and process the stanza.
+
+(The third rule is arguable though.) These rules ensure
+namespace-well-formedness of XMPP streams, and no custom XML parsers
+will be necessary to parse XMPP streams. Currently, general XML
+parsers either ignore namespace prefixes at all (which means that
+clients using them will loose some data) or break on unbound prefixes
+(which means disconnections on &lt;gajim:die/&gt;).
+
+-- 
+Sergei Golovan
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="027208.html">[jdev] Authentication Process For Jabber.com
+</A></li>
+	<LI>Next message: <A HREF="027213.html">[jdev] Authentication Process For Jabber.com
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27210">[ date ]</a>
+              <a href="thread.html#27210">[ thread ]</a>
+              <a href="subject.html#27210">[ subject ]</a>
+              <a href="author.html#27210">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

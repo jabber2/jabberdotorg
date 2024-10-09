@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Presence subscription handling bugs in various	Jabbersoftware
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Presence%20subscription%20handling%20bugs%20in%20various%0A%09Jabbersoftware&In-Reply-To=%3C021301c50c79%248885bf90%246401a8c0%40movsoftware.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="079634.html">
+   <LINK REL="Next"  HREF="079638.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Presence subscription handling bugs in various	Jabbersoftware</H1>
+    <B>Stephen Pendleton</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Presence%20subscription%20handling%20bugs%20in%20various%0A%09Jabbersoftware&In-Reply-To=%3C021301c50c79%248885bf90%246401a8c0%40movsoftware.com%3E"
+       TITLE="[jdev] Presence subscription handling bugs in various	Jabbersoftware">spendleton at movsoftware.com
+       </A><BR>
+    <I>Sun Feb  6 12:27:36 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="079634.html">[jdev] Presence subscription handling bugs in various Jabber	software
+</A></li>
+        <LI>Next message: <A HREF="079638.html">[jdev] Presence subscription handling bugs in various	Jabbersoftware
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79637">[ date ]</a>
+              <a href="thread.html#79637">[ thread ]</a>
+              <a href="subject.html#79637">[ subject ]</a>
+              <a href="author.html#79637">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I would think the bug lies at least in client &quot;a&quot; since the client adds &quot;b&quot;
+to its roster even though it was not requested. In defense of the client
+developer, it is a bit complicated to handle this correctly since the client
+would need to &quot;remember&quot;  outstanding subscription requests between runs of
+the client software. I doubt many (or any?) clients do this, and just assume
+any &quot;subscribed&quot; stanzas received are valid reponses from a previous
+subscription request.
+
+However are you also saying that &quot;b&quot; can also correctly see the presence of
+&quot;a&quot;, or does it just pass on the subscribed stanza the client &quot;a&quot; and not do
+anything further? Is client &quot;b&quot; added to the client &quot;a&quot;'s roster on the
+server or does client &quot;a&quot; just add it in the GUI - but when the client
+restarts the client &quot;b&quot; does not reappear in the roster? If it is added to
+the roster on the server, this is a problem with the server implementations.
+I would think the server should remember what outstanding subscription
+requests there are for every user on the system and reject any unsolicited
+subscribed requests that are sent.
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf Of
+Jacek Konieczny
+Sent: Sunday, February 06, 2005 10:12 AM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: [jdev] Presence subscription handling bugs in various
+Jabbersoftware
+
+
+Hello,
+
+Most of us know, that some transports abuse 
+&lt;presence type='subscribed'/&gt; stanzas, in a way which is now forbidden by
+the XMPP-IM specification. That is done because of a very old bug in
+jabberd-1.x based servers, which accept and process this stanza. It is not
+good, when anyone is able to add himself to other's roster.
+
+Now, when more and more servers aim at the XMPP compliance I thought such
+features and abuses are going to die. Unfortunately it seems that I am
+wrong.
+
+Some users of my server complain, that some users of other servers are able
+to add themselves to their rosters. It looks like this:
+
+  a - user of my server
+  A - my server
+  B - the other server
+  b - the other user
+
+  They are connected like this:
+
+  a ----(c2s)---- A ------- (s2s) ------ B ------- b
+  (any        (ejabberd)              (some      (some
+  client)                              server)    client)
+
+  &quot;a&quot; does not have &quot;b&quot; in his roster, then &quot;b&quot; does &quot;something&quot; that
+  add it to &quot;a&quot;'s roster by sending &lt;presence type='subscribed'/&gt;
+  although &quot;a&quot; have never requested it.
+
+Two such cases where reported to me. In the first case, the server &quot;B&quot; was
+jabber.org (jabberd-1.4.x AFAIK), and the client &quot;b&quot; was (most
+probably) Psi.
+
+In the second case &quot;B&quot; was WP Jabber (JSM/JSM version 1.1.5 for pthreaded
+server (Linux 2.6.x)), and &quot;b&quot; Psi (Psi/0.9.3 (SuSE Linux 9.2 (i586))).
+
+Server &quot;A&quot; is always the same: ejabberd/0.7.5 (unix/linux 2.6.7) Client &quot;a&quot;
+doesn't matter.
+
+Please note, that for that scenario to work there must be bugs on both
+servers (&quot;A&quot; which should not accept that stanza and &quot;B&quot;, which should not
+forward it from its client) and a misfeature on the client &quot;b&quot; (I have found
+nothing in the XMPP specs that forbids client to send unsolicited &lt;presence
+type=&quot;subscribed&quot; /&gt;). So we have bugs in at least free server
+implementations (ejabberd, jabberd 1.4.x and WP Jabber) and annoying (for
+users of buggy servers) misfeature of at least one client (I may be wrong
+here if it is not the client which generates the &quot;subscribed&quot; stanza). That
+doesn't look good, as 
+it seems a very big part of global Jabber infrastructure is broken :-(
+
+Or maybe I am wrong and there is only one bug somehere?
+
+I will submit a bug report to the maintainers of the software I use
+(ejabberd). And I ask you to check your software, and submit the bugs
+reports or fix the bugs too.
+
+Greets,
+	Jacek
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="079634.html">[jdev] Presence subscription handling bugs in various Jabber	software
+</A></li>
+	<LI>Next message: <A HREF="079638.html">[jdev] Presence subscription handling bugs in various	Jabbersoftware
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79637">[ date ]</a>
+              <a href="thread.html#79637">[ thread ]</a>
+              <a href="subject.html#79637">[ subject ]</a>
+              <a href="author.html#79637">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

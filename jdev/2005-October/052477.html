@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Incorrect SASL Digest MD5 example in XMPP Core
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Incorrect%20SASL%20Digest%20MD5%20example%20in%20XMPP%20Core&In-Reply-To=%3C20051024210425.GA48440%40ik.nu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="052497.html">
+   <LINK REL="Next"  HREF="052478.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Incorrect SASL Digest MD5 example in XMPP Core</H1>
+    <B>Ralph Meijer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Incorrect%20SASL%20Digest%20MD5%20example%20in%20XMPP%20Core&In-Reply-To=%3C20051024210425.GA48440%40ik.nu%3E"
+       TITLE="[jdev] Incorrect SASL Digest MD5 example in XMPP Core">jabber.org at ralphm.ik.nu
+       </A><BR>
+    <I>Mon Oct 24 16:04:25 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="052497.html">[jdev] Re: Problem Connecting to GoogleTalk using my custom client
+</A></li>
+        <LI>Next message: <A HREF="052478.html">[jdev] Re: [xmppwg] Incorrect SASL Digest MD5 example in XMPP Core
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#52477">[ date ]</a>
+              <a href="thread.html#52477">[ thread ]</a>
+              <a href="subject.html#52477">[ subject ]</a>
+              <a href="author.html#52477">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+While attempting to implement SASL authentication in Twisted, I
+discovered a discrepancy between RFC 2831 (Using Digest Authentication
+as a SASL Mechanism) and the examples 6.5 and 6.6 in RFC 3920 (XMPP
+Core) that do DIGEST-MD5 SASL authentication.
+
+The discrepancy is about Step 3 (section 2.1.3) of RFC 2831. After
+the server having sent a challenge in Step 1 and the client sending a response
+in Step 2, Step 3 is the server checking this response and sending an
+'rspauth'. This is not a challenge, but extra information for subsequent
+authorization, sent along with the affirmation of a succesful authentication.
+
+The ACAP example in section 4 of RFC 2831 shows this. However, the IMAP
+example needs an extra roundtrip because there is no way in IMAP to do
+both an 'OK' and send along this rspauth information. Probably the IMAP
+example was taken to erroneously craft the example in XMPP Core.
+
+Peter Saint-Andre made mention of this error in the notes for
+RFC3920bis. You can find that here:
+<A HREF="http://www.xmpp.org/xmppbis.html#sasl.">http://www.xmpp.org/xmppbis.html#sasl.</A>  For the correct authentication
+sequence of example 6.5, step 7 is changed and steps 8 and 9 removed:
+
+  Step 7: Server informs client of successful authentication and sends
+  the [BASE64] encoded value for subsequent authentication to client:
+
+  &lt;success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;
+  cnNwYXV0aD1lYTQwZjYwMzM1YzQyN2I1NTI3Yjg0ZGJhYmNkZmZmZAo=
+  &lt;/success&gt;
+
+  The decoded value for subsequent authentication is:
+
+  rspauth=ea40f60335c427b5527b84dbabcdfffd
+
+-- 
+Groetjes,
+
+ralphm
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="052497.html">[jdev] Re: Problem Connecting to GoogleTalk using my custom client
+</A></li>
+	<LI>Next message: <A HREF="052478.html">[jdev] Re: [xmppwg] Incorrect SASL Digest MD5 example in XMPP Core
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#52477">[ date ]</a>
+              <a href="thread.html#52477">[ thread ]</a>
+              <a href="subject.html#52477">[ subject ]</a>
+              <a href="author.html#52477">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

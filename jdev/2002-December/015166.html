@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] PATCH: make jud-0.4 module work with Psi
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20PATCH%3A%20make%20jud-0.4%20module%20work%20with%20Psi&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="015165.html">
+   <LINK REL="Next"  HREF="015167.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] PATCH: make jud-0.4 module work with Psi</H1>
+    <B>Aleksander Adamowski</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20PATCH%3A%20make%20jud-0.4%20module%20work%20with%20Psi&In-Reply-To="
+       TITLE="[JDEV] PATCH: make jud-0.4 module work with Psi">olo at altkom.com.pl
+       </A><BR>
+    <I>Mon Dec  9 10:53:24 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="015165.html">[JDEV] Jabber question - JabberBeans User. (sorry might have asked this before..)
+</A></li>
+        <LI>Next message: <A HREF="015167.html">[JDEV] PATCH: make jud-0.4 module work with clienst like Psi (corrected version of patch)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#15166">[ date ]</a>
+              <a href="thread.html#15166">[ thread ]</a>
+              <a href="subject.html#15166">[ subject ]</a>
+              <a href="author.html#15166">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi!
+Recently I've set up a jabberd 1.4.2 server.
+
+I've discovered that with jabberd-1.4.2 and jud-0.4, JUD searches sent from 
+the Psi client don't work while searches from the Exodus client work fine.
+
+I've decided to investigate the problem and found out that Psi sends its 
+query in a form similar to this:
+
+&lt;iq type=&quot;set&quot; id=&quot;aabca&quot; to=&quot;jud.office.altkom.com.pl&quot; &gt;
+&lt;query xmlns=&quot;jabber:iq:search&quot; &gt;
+&lt;name&gt;&lt;/name&gt;
+   &lt;first&gt;&lt;/first&gt;
+   &lt;last&gt;&lt;/last&gt;
+   &lt;nick&gt;d&lt;/nick&gt;
+   &lt;email&gt;&lt;/email&gt; &lt;/query&gt;&lt;/iq&gt;
+
+While Exodus sends its queries with all search terms on one line:
+
+&lt;iq id=&quot;jcl_10&quot; to=&quot;jud.office.altkom.com.pl&quot; type=&quot;set&quot;&gt;&lt;query 
+xmlns=&quot;jabber:iq:search&quot;&gt;&lt;nick&gt;d&lt;/nick&gt;&lt;/qu
+ery&gt;&lt;/iq&gt;
+
+The Psi searches always return 0 results, probably due to a bug in XML 
+parser used in jabber 1.4.2.
+Look at jud_search.c from jud-0.4: for empty query elements, the data that 
+jud_search_walk()  receives from xmlnode_get_data() function contain a 
+newline and 2 spaces when Psi is the source of a query!
+
+Indeed, the query from Psi contains a newline and 2 spaces, but not inside 
+search term elements, but before them!
+
+I've made a workaround patch that causes the jud module to skip any leading 
+spaces, newlines or tabs in the data string received from xmlnode_get_data() 
+function. I've tested my patch - now searching from Psi works fine on my 
+server :)
+
+I'm attaching the patch to this message.
+
+Best Regards,
+-- 
+     Olo
+         GG#: 274614
+         ICQ UIN: 19780575
+	<A HREF="http://olo.office.altkom.com.pl">http://olo.office.altkom.com.pl</A>
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: jud_0.4_expat_workaround.patch
+Url: <A HREF="https://www.jabber.org/jdev/attachments/20021209/4f410385/attachment.txt">https://www.jabber.org/jdev/attachments/20021209/4f410385/attachment.txt</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="015165.html">[JDEV] Jabber question - JabberBeans User. (sorry might have asked this before..)
+</A></li>
+	<LI>Next message: <A HREF="015167.html">[JDEV] PATCH: make jud-0.4 module work with clienst like Psi (corrected version of patch)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#15166">[ date ]</a>
+              <a href="thread.html#15166">[ thread ]</a>
+              <a href="subject.html#15166">[ subject ]</a>
+              <a href="author.html#15166">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

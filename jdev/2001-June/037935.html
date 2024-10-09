@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Strange server behaviour
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Strange%20server%20behaviour&In-Reply-To=%3C3B3C707C.D93ABFA1%40idealx.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="037933.html">
+   <LINK REL="Next"  HREF="037937.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Strange server behaviour</H1>
+    <B>Rodolphe Duge de Bernonville</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Strange%20server%20behaviour&In-Reply-To=%3C3B3C707C.D93ABFA1%40idealx.com%3E"
+       TITLE="[JDEV] Strange server behaviour">rod at idealx.com
+       </A><BR>
+    <I>Fri Jun 29 07:11:40 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="037933.html">[JDEV] Strange server behaviour
+</A></li>
+        <LI>Next message: <A HREF="037937.html">[JDEV] Strange server behaviour
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37935">[ date ]</a>
+              <a href="thread.html#37935">[ thread ]</a>
+              <a href="subject.html#37935">[ subject ]</a>
+              <a href="author.html#37935">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Gerard BUNEL a &#233;crit :
+&gt;<i> 
+</I>&gt;<i> Rodolphe Duge de Bernonville a &#233;crit :
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Gerard BUNEL a &#233;crit :
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Hello,
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I need some help on server side development.
+</I>&gt;<i> &gt; &gt; I've writen a module in replacement to the standard mod_presence
+</I>&gt;<i> &gt; &gt; The objective of this module is to route presence messages to a service
+</I>&gt;<i> &gt; &gt; So I wrote function to route some mesages
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; void route_packet(mapi m) {
+</I>&gt;<i> &gt; &gt;   xmlnode node = xmlnode_dup(m-&gt;packet-&gt;x);
+</I>&gt;<i> &gt; &gt;   node = xmlnode_wrap(node, &quot;route&quot;);
+</I>&gt;<i> &gt; &gt;   xmlnode_put_attrib(node, &quot;to&quot;, packet_to);
+</I>&gt;<i> &gt; &gt;   deliver(dpacket_new(node), m-&gt;si-&gt;i);
+</I>&gt;<i> &gt; &gt; }
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; The result is that sometimes the message is correctly routed, sometimes
+</I>&gt;<i> &gt; &gt; it is not at all and sometimes it
+</I>&gt;<i> &gt; &gt; seems to hang up partially the server (other messages are not sent)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; where do you call your function in mod_presence ?
+</I>&gt;<i> &gt; do you mean the callback in mod_presence are not called anymore ?
+</I>&gt;<i> &gt; which sort of packet do you want to route to your external component ?
+</I>&gt;<i> 
+</I>&gt;<i> It's not mod_presence but a replacement for it.
+</I>&gt;<i> I try to route presence packet and I use globaly  the same scheme than in
+</I>&gt;<i> mod_presence
+</I>&gt;<i> It can be in either in es_IN, es_OUT or es_DELIVER callbacks
+</I>&gt;<i> 
+</I>&gt;<i> I've tried using js_deliver instead of deliver, but the result seems to be
+</I>&gt;<i> the same.
+</I>&gt;<i> 
+</I>&gt;<i> I notably route presence in es_OUT callback when it is a presence to a
+</I>&gt;<i> conference
+</I>&gt;<i> and in this case, the server is seems completely freezed.
+</I>
+if your function is inside mod_presence : check the destination
+to see if it is the name of your module.
+
+maybe you try to deliver your packet whereas the presence packet
+has not been delivered inside the jsm core (maybe due to thread switch
+...), so that could explain why sometimes the module receive the
+presence
+packet and sometimes not.
+
+if you try to implement a new module which will handle presence packet
+take care not to return M_HANDLED when you do stuff with a packet
+and to place your module (in jabber.xml) before mod_presence.
+
+
+thats all I can say for the moment   :p
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="037933.html">[JDEV] Strange server behaviour
+</A></li>
+	<LI>Next message: <A HREF="037937.html">[JDEV] Strange server behaviour
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37935">[ date ]</a>
+              <a href="thread.html#37935">[ thread ]</a>
+              <a href="subject.html#37935">[ subject ]</a>
+              <a href="author.html#37935">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

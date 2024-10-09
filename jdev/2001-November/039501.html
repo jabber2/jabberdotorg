@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Patch for smtp transport
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Patch%20for%20smtp%20transport&In-Reply-To=%3C20011120100601.A6033%40micky.hpl.hp.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039540.html">
+   <LINK REL="Next"  HREF="039502.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Patch for smtp transport</H1>
+    <B>Kevin Smathers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Patch%20for%20smtp%20transport&In-Reply-To=%3C20011120100601.A6033%40micky.hpl.hp.com%3E"
+       TITLE="[JDEV] Patch for smtp transport">ks at micky.hpl.hp.com
+       </A><BR>
+    <I>Tue Nov 20 12:06:01 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039540.html">[JDEV] What ever happened to http transport?
+</A></li>
+        <LI>Next message: <A HREF="039502.html">[JDEV] Time to speed up development
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39501">[ date ]</a>
+              <a href="thread.html#39501">[ thread ]</a>
+              <a href="subject.html#39501">[ subject ]</a>
+              <a href="author.html#39501">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+The SMTP gateway (cvs co smtp) at the top of the trunk insists on a
+'250' reply from the mail server after sending QUIT, but sendmail
+responds to QUIT with a '221' reply.
+
+I've attached a patch that adds 221 as a valid reply.  (Actually
+anything in the 200 range should probably be valid, but this patch
+just enables 221.)
+
+Cheers,
+-kls
+
+
+-- 
+          //                               .--=,
+ .....::://::::::::::::::::::::::::::::.. (o O &amp;   <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kevin_smathers at hp.com</A>
+::::::::<i>//:::://://://:/:://::||_//       / V  K   
+</I> :::::://:::://:/:|//'/' // _,|'         r ,  'qk   
+  :'''/____ // /  //  |_// // ||        .'~.  .~`, 
+                                   kls   \_/-=\_/
+-------------- next part --------------
+? patch.out
+Index: out.c
+===================================================================
+RCS file: /home/cvs/smtp/out.c,v
+retrieving revision 1.5
+diff -u -r1.5 out.c
+--- out.c	2001/08/12 04:32:36	1.5
++++ out.c	2001/11/20 18:26:22
+@@ -95,7 +95,7 @@
+             s-&gt;lastcmd = CMD_QUIT; /* so we know where we are */
+             return;
+         case CMD_QUIT:
+-            if(status != 250) break;
++            if(status != 250 &amp;&amp; status != 221) break;
+             smtp_cmd(s, CMD_QUIT, NULL);
+             return;
+     }
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039540.html">[JDEV] What ever happened to http transport?
+</A></li>
+	<LI>Next message: <A HREF="039502.html">[JDEV] Time to speed up development
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39501">[ date ]</a>
+              <a href="thread.html#39501">[ thread ]</a>
+              <a href="subject.html#39501">[ subject ]</a>
+              <a href="author.html#39501">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

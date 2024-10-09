@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [Protocol 1.0]
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20%5BProtocol%201.0%5D&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000221.html">
+   <LINK REL="Next"  HREF="000223.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [Protocol 1.0]</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20%5BProtocol%201.0%5D&In-Reply-To="
+       TITLE="[JDEV] [Protocol 1.0]">jeremie at jabber.org
+       </A><BR>
+    <I>Wed Feb  3 17:24:15 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000221.html">[JDEV] [Overview 1.0]
+</A></li>
+        <LI>Next message: <A HREF="000223.html">[JDEV] [JabberBox 1.0]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#222">[ date ]</a>
+              <a href="thread.html#222">[ thread ]</a>
+              <a href="subject.html#222">[ subject ]</a>
+              <a href="author.html#222">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+#### Intro
+
+The protocol is currently only half-complete, as many have pointed out. 
+The reason it is currently not implemented &quot;correctly&quot; is simply because
+it was easier to write software to process it on the server side when it
+was done with one common main level tag(&lt;j type='packettype'&gt;&lt;/j&gt;).  I
+thought it might be able to work just fine that way, but after looking at
+it again it's probably worth the effort to write the code and do it the
+right way. 
+
+The proposal here is to model the protocol after a typical XML document. 
+All communications between the clients and the server(Jabber Transport)
+will look like: 
+
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;jabber type=&quot;client&quot; version=&quot;Name/OS version/version&quot; protocol=&quot;19990101&quot;&gt;
+...rest of client communication happens in here
+&lt;/jabber&gt;
+
+Comments should be allowed anywhere, and will be ignored.  When the client
+sends a &lt;/jabber&gt; it will signal a close, but is not necessary(just
+closing the connection will work identically).  The server should respond
+in an identical fashion, with the exception that it will be type=&quot;server&quot;. 
+
+
+#### Example protocol
+
+&lt;login&gt;
+	&lt;user&gt;jeremie&lt;/user&gt;
+	&lt;pass&gt;Ph0niks&lt;/pass&gt;
+	&lt;name&gt;jabalot&lt;/name&gt;
+&lt;/login&gt;
+
+&lt;message&gt;
+	&lt;to&gt;jeremie&lt;/to&gt;
+	&lt;say&gt;test&lt;/say&gt;
+&lt;/message&gt;
+
+&lt;message&gt;
+	&lt;to&gt;someone&lt;/to&gt;
+	&lt;to name='Jenny(work)'&gt;jenny&lt;/to&gt;
+	&lt;to&gt;jeremie&lt;/to&gt;
+	&lt;to name='HAhah!'&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">safdsgh at asdfg.asdfasdf</A>&lt;/to&gt;
+	&lt;thread&gt;sdfa&lt;/thread&gt;
+	&lt;priority&gt;1&lt;/priority&gt;
+	&lt;subject&gt;Did you see that?&lt;/subject&gt;
+	&lt;say&gt;asdgf asdfkjasgoijqwert asdgaldgjkas&lt;/say&gt;
+&lt;/message&gt;
+
+&lt;status&gt;
+	&lt;say type='online'&gt;This is my status&lt;/say&gt;
+	&lt;priority&gt;10&lt;/priority&gt;
+	&lt;icon&gt;normal&lt;/icon&gt;
+&lt;/status&gt;
+
+&lt;roster&gt;
+	&lt;add group='main'&gt;fred&lt;/add&gt;
+	&lt;add group='friends'&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at jabber.server.com</A>&lt;/add&gt;
+	&lt;add group='main'&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">545212 at ICQ</A>&lt;/add&gt;
+	&lt;del group='system'&gt;olduser&lt;/del&gt;
+&lt;/roster&gt;
+
+&lt;roster&gt;
+	&lt;get group='main'/&gt;
+&lt;/roster&gt;
+
+
+#### Server to client
+
+&lt;message&gt;
+	&lt;from name='nickname'&gt;fred&lt;/to&gt;
+	&lt;thread&gt;sdfa&lt;/thread&gt;
+	&lt;priority&gt;1&lt;/priority&gt;
+	&lt;subject&gt;Did you see that?&lt;/subject&gt;
+	&lt;say&gt;asdgf asdfkjasgoijqwert asdgaldgjkas&lt;/say&gt;
+&lt;/message&gt;
+
+&lt;status&gt;
+	&lt;from name='nickname'&gt;jenny&lt;/from&gt;
+	&lt;say type='online'&gt;This is my status&lt;/say&gt;
+	&lt;priority&gt;10&lt;/priority&gt;
+	&lt;icon&gt;normal&lt;/icon&gt;
+&lt;/status&gt;
+
+&lt;roster&gt;
+	&lt;group name='main'&gt;jenny&lt;/group&gt;
+	&lt;group name='friends'&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at jabber.server.com</A>&lt;/group&gt;
+	&lt;group name='main'&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">545212 at ICQ</A>&lt;/group&gt;
+	&lt;group name='system'&gt;olduser&lt;/group&gt;
+&lt;/roster&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000221.html">[JDEV] [Overview 1.0]
+</A></li>
+	<LI>Next message: <A HREF="000223.html">[JDEV] [JabberBox 1.0]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#222">[ date ]</a>
+              <a href="thread.html#222">[ thread ]</a>
+              <a href="subject.html#222">[ subject ]</a>
+              <a href="author.html#222">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

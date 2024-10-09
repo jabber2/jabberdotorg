@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Username-based SASL Mechanisms
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Username-based%20SASL%20Mechanisms&In-Reply-To=%3CE5879F26-7FB1-4D38-81DD-A385711D0F50%40tigase.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="087062.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Username-based SASL Mechanisms</H1>
+    <B>Artur Hefczyc</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Username-based%20SASL%20Mechanisms&In-Reply-To=%3CE5879F26-7FB1-4D38-81DD-A385711D0F50%40tigase.org%3E"
+       TITLE="[jdev] Username-based SASL Mechanisms">ajdev at tigase.org
+       </A><BR>
+    <I>Fri Oct 31 09:52:52 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="087062.html">[jdev] Username-based SASL Mechanisms
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87064">[ date ]</a>
+              <a href="thread.html#87064">[ thread ]</a>
+              <a href="subject.html#87064">[ subject ]</a>
+              <a href="author.html#87064">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>In the original RFC the 'from' attribute is used differently:
+&quot;SHOULD be used only in the XML stream header from the receiving  
+entity to the initiating entity&quot;
+while the bis allows for using the attribute by the initiating entity  
+as well.
+
+This is why most current clients don't put this attribute in the  
+stream opening element
+because they should not have done this before.
+I  still think plain password authentication is the best way to go. Of  
+course you must
+set TLS to 'required' and make sure it is used. Then user passwords  
+are safe.
+
+Google does it this way too...
+
+Artur
+
+On 31 Oct 2008, at 15:38, Jonathan Dickinson wrote:
+
+&gt;<i> Oops, sorry, wrong attribute :). Got my components and users mixed  
+</I>&gt;<i> up. The from was actually in the original spec, so that's why I  
+</I>&gt;<i> think something is awry with the clients.
+</I>&gt;<i>
+</I>&gt;<i> My problem is that some of our clients don't do stuff over SSL  
+</I>&gt;<i> (GASP!), so plain-text is a no-no, but a really good idea none-the- 
+</I>&gt;<i> less. I think I will go on the from attribute, if not there list  
+</I>&gt;<i> everything possible.
+</I>&gt;<i>
+</I>&gt;&gt;<i> -----Original Message-----
+</I>&gt;&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On
+</I>&gt;&gt;<i> Behalf Of Artur Hefczyc
+</I>&gt;&gt;<i> Sent: Friday, October 31, 2008 4:30 PM
+</I>&gt;&gt;<i> To: Jabber/XMPP software development list
+</I>&gt;&gt;<i> Subject: Re: [jdev] Username-based SASL Mechanisms
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Hi,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> The 'to' attribute contains hostname only in the client to server
+</I>&gt;&gt;<i> stream initialization and while
+</I>&gt;&gt;<i> the client SHOULD set it it might not. Even if the client sets the
+</I>&gt;&gt;<i> domain name it is not enough
+</I>&gt;&gt;<i> for you to determine it.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Version bis8 of the RFC introduces 'from' attribute which might be
+</I>&gt;&gt;<i> exactly what you are looking
+</I>&gt;&gt;<i> for assuming it is adopted by all clients soon:
+</I>&gt;&gt;<i> <A HREF="http://xmpp.org/internet-drafts/draft-saintandre-rfc3920bis-08.html">http://xmpp.org/internet-drafts/draft-saintandre-rfc3920bis-08.html</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Otherwise I don't really see how you could do what you want. Maybe
+</I>&gt;&gt;<i> enforcing PLAIN-Text
+</I>&gt;&gt;<i> password authentication either sasl or non-sasl for all users and  
+</I>&gt;&gt;<i> then
+</I>&gt;&gt;<i> using appropriate
+</I>&gt;&gt;<i> authentication back-end by the server based on the user name would be
+</I>&gt;&gt;<i> the best solution.
+</I>&gt;&gt;<i> This is probably what I would do.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Artur
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> On 31 Oct 2008, at 14:38, Jonathan Dickinson wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Hi All,
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> This is a rather strange one. Is there any support for determining
+</I>&gt;&gt;&gt;<i> SASL mechanisms based on the user's name? I [will] have a bunch of
+</I>&gt;&gt;&gt;<i> authentication providers, such as EXTERNAL, SQL, SAP, NTLM,
+</I>&gt;&gt;&gt;<i> Kerberos, Open-Id etc. These can be located on the component itself
+</I>&gt;&gt;&gt;<i> or on another component on the network: it doesn't matter (ooh, you
+</I>&gt;&gt;&gt;<i> should see my framework :)). The thing that I worry about is that
+</I>&gt;&gt;&gt;<i> obviously some components won't support other authentication
+</I>&gt;&gt;&gt;<i> mechanisms (NTLM is a good example of this): so if I just query them
+</I>&gt;&gt;&gt;<i> verbatim for mechanisms there is no guarantee that the client will
+</I>&gt;&gt;&gt;<i> be able to use that mechanism to log in (e.g. Joe might be on the
+</I>&gt;&gt;&gt;<i> domain, but not in the SQL DB, failure if he tries to use DIGEST-MD5
+</I>&gt;&gt;&gt;<i> - his client may even always fail to log in).
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I thought that I could use the &quot;to&quot; attribute on the &lt;stream:stream&gt;
+</I>&gt;&gt;&gt;<i> tag, but another problem arises: most of the blumming client's I
+</I>&gt;&gt;&gt;<i> have analyzed using my server don't put this in the start tag: I am
+</I>&gt;&gt;&gt;<i> sure there is a reason I missed on the mailing list (is there?).
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> I basically want to say to the components, &quot;does anyone know this
+</I>&gt;&gt;&gt;<i> guy? How do I talk to him?&quot; and if they respond I can aggregate the
+</I>&gt;&gt;&gt;<i> results, if not I can use a predefined list of mechanisms (to fool
+</I>&gt;&gt;&gt;<i> harvesters/hackers).
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Maybe I could leave it up to the users to complain to the
+</I>&gt;&gt;&gt;<i> misbehaving client developers?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Thanks guys.
+</I>&gt;&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;&gt;<i> JDev mailing list
+</I>&gt;&gt;&gt;<i> FAQ: <A HREF="http://www.jabber.org/discussion-lists/jdev-faq">http://www.jabber.org/discussion-lists/jdev-faq</A>
+</I>&gt;&gt;&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;&gt;&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;&gt;&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Artur
+</I>&gt;&gt;<i> --
+</I>&gt;&gt;<i> Artur Hefczyc
+</I>&gt;&gt;<i> <A HREF="http://www.tigase.org/">http://www.tigase.org/</A>
+</I>&gt;&gt;<i> <A HREF="http://artur.hefczyc.net/">http://artur.hefczyc.net/</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i> JDev mailing list
+</I>&gt;&gt;<i> FAQ: <A HREF="http://www.jabber.org/discussion-lists/jdev-faq">http://www.jabber.org/discussion-lists/jdev-faq</A>
+</I>&gt;&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> FAQ: <A HREF="http://www.jabber.org/discussion-lists/jdev-faq">http://www.jabber.org/discussion-lists/jdev-faq</A>
+</I>&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>
+Artur
+-- 
+Artur Hefczyc
+<A HREF="http://www.tigase.org/">http://www.tigase.org/</A>
+<A HREF="http://artur.hefczyc.net/">http://artur.hefczyc.net/</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="087062.html">[jdev] Username-based SASL Mechanisms
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87064">[ date ]</a>
+              <a href="thread.html#87064">[ thread ]</a>
+              <a href="subject.html#87064">[ subject ]</a>
+              <a href="author.html#87064">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

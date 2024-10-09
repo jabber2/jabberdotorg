@@ -1,0 +1,283 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: patch for mu-conference. arguments for log_* functions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20patch%20for%20mu-conference.%20arguments%20for%20log_%2A%20functions&In-Reply-To=%3Ccc92710b05011100213112d441%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="050189.html">
+   <LINK REL="Next"  HREF="050225.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: patch for mu-conference. arguments for log_* functions</H1>
+    <B>Ilja Booij</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20patch%20for%20mu-conference.%20arguments%20for%20log_%2A%20functions&In-Reply-To=%3Ccc92710b05011100213112d441%40mail.gmail.com%3E"
+       TITLE="[jdev] Re: patch for mu-conference. arguments for log_* functions">ibooij at gmail.com
+       </A><BR>
+    <I>Tue Jan 11 02:21:53 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="050189.html">[jdev] patch for mu-conference. arguments for log_* functions
+</A></li>
+        <LI>Next message: <A HREF="050225.html">[jdev] Re: patch for mu-conference. arguments for log_* functions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50224">[ date ]</a>
+              <a href="thread.html#50224">[ thread ]</a>
+              <a href="subject.html#50224">[ subject ]</a>
+              <a href="author.html#50224">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+Is there anybody actually maintaining mu-conference? The project page
+on jabberstudio has not been updated since last summer, and there's
+not only my patch, but also the mforssen patch, which IMHO are
+important bugfixes and should be applied.
+
+cheers,
+Ilja
+
+
+On Thu, 6 Jan 2005 16:06:56 +0100, Ilja Booij &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ibooij at gmail.com</A>&gt; wrote:
+&gt;<i> Hi list,
+</I>&gt;<i> 
+</I>&gt;<i> while trying to hunt down bugs that caused our mu-conference server to
+</I>&gt;<i> fall over, I've found the following: quite some calls to the log
+</I>&gt;<i> functions (log_debug, log_warn etc) have wrong arguments, or a wrong
+</I>&gt;<i> number of arguments. I've found this by using gcc's __attribute__
+</I>&gt;<i> macro.
+</I>&gt;<i> 
+</I>&gt;<i> patch is below
+</I>&gt;<i> 
+</I>&gt;<i> cheers,
+</I>&gt;<i> Ilja
+</I>&gt;<i> 
+</I>&gt;<i> diff -Naur mu-conference-0.6.0.orig/src/admin.c mu-conference-0.6.0/src/admin.c
+</I>&gt;<i> --- mu-conference-0.6.0.orig/src/admin.c        2003-11-15 05:19:44.000000000 +0100
+</I>&gt;<i> +++ mu-conference-0.6.0/src/admin.c     2005-01-06 15:21:49.000000000 +0100
+</I>&gt;<i> @@ -34,7 +34,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>      if(result == NULL)
+</I>&gt;<i>      {
+</I>&gt;<i> -        log_warn(NAME, &quot;[%s] Aborting: NULL result - &lt;%s&gt;&quot;, FZONE, key);
+</I>&gt;<i> +        log_warn(NAME, &quot;[%s] Aborting: NULL result - &lt;%s&gt;&quot;, FZONE,
+</I>&gt;<i> (char*) key);
+</I>&gt;<i>          return;
+</I>&gt;<i>      }
+</I>&gt;<i> 
+</I>&gt;<i> @@ -42,7 +42,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>      if(room == NULL)
+</I>&gt;<i>      {
+</I>&gt;<i> -        log_warn(NAME, &quot;[%s] Aborting: NULL room - &lt;%s&gt;&quot;, FZONE, key);
+</I>&gt;<i> +      log_warn(NAME, &quot;[%s] Aborting: NULL room - &lt;%s&gt;&quot;, FZONE, (char*) key);
+</I>&gt;<i>          return;
+</I>&gt;<i>      }
+</I>&gt;<i> 
+</I>&gt;<i> @@ -78,7 +78,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>      if(result == NULL || item == NULL)
+</I>&gt;<i>      {
+</I>&gt;<i> -        log_warn(NAME, &quot;[%s] Aborting: NULL attribute(s) - &lt;%s&gt;&quot;, FZONE, key);
+</I>&gt;<i> +        log_warn(NAME, &quot;[%s] Aborting: NULL attribute(s) - &lt;%s&gt;&quot;,
+</I>&gt;<i> FZONE, (char *) key);
+</I>&gt;<i>          return;
+</I>&gt;<i>      }
+</I>&gt;<i> 
+</I>&gt;<i> diff -Naur mu-conference-0.6.0.orig/src/conference.c
+</I>&gt;<i> mu-conference-0.6.0/src/conference.c
+</I>&gt;<i> --- mu-conference-0.6.0.orig/src/conference.c   2003-11-15
+</I>&gt;<i> 05:19:44.000000000 +0100
+</I>&gt;<i> +++ mu-conference-0.6.0/src/conference.c        2005-01-06 15:49:38.000000000 +0100
+</I>&gt;<i> @@ -31,7 +31,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>      if(room == NULL)
+</I>&gt;<i>      {
+</I>&gt;<i> -        log_warn(NAME, &quot;[%s] Aborting: NULL room %s&quot;, FZONE, key);
+</I>&gt;<i> +        log_warn(NAME, &quot;[%s] Aborting: NULL room %s&quot;, FZONE, (char *) key);
+</I>&gt;<i>         return;
+</I>&gt;<i>      }
+</I>&gt;<i> 
+</I>&gt;<i> @@ -69,7 +69,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>      if(room == NULL)
+</I>&gt;<i>      {
+</I>&gt;<i> -        log_warn(NAME, &quot;[%s] Aborting: NULL room %s&quot;, FZONE, key);
+</I>&gt;<i> +        log_warn(NAME, &quot;[%s] Aborting: NULL room %s&quot;, FZONE, (char *) key);
+</I>&gt;<i>         return;
+</I>&gt;<i>      }
+</I>&gt;<i> 
+</I>&gt;<i> @@ -862,7 +862,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>      if(room == NULL)
+</I>&gt;<i>      {
+</I>&gt;<i> -        log_warn(NAME, &quot;[%s] SHUTDOWN: Aborting attempt to clear %s&quot;,
+</I>&gt;<i> FZONE, key);
+</I>&gt;<i> +        log_warn(NAME, &quot;[%s] SHUTDOWN: Aborting attempt to clear %s&quot;,
+</I>&gt;<i> FZONE, (char *) key);
+</I>&gt;<i>         return;
+</I>&gt;<i>      }
+</I>&gt;<i> 
+</I>&gt;<i> @@ -914,7 +914,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>      if(user == NULL)
+</I>&gt;<i>      {
+</I>&gt;<i> -        log_warn(NAME, &quot;[%s] Aborting : NULL cnu for %s&quot;, FZONE, key);
+</I>&gt;<i> +        log_warn(NAME, &quot;[%s] Aborting : NULL cnu for %s&quot;, FZONE, (char *) key);
+</I>&gt;<i>         return;
+</I>&gt;<i>      }
+</I>&gt;<i> 
+</I>&gt;<i> @@ -934,11 +934,11 @@
+</I>&gt;<i>      xmlnode node;
+</I>&gt;<i>      char *user_name;
+</I>&gt;<i> 
+</I>&gt;<i> -    log_debug(NAME, &quot;[%s] HBTICK: Idle check for &gt;%s&lt;&quot;, FZONE, key);
+</I>&gt;<i> +    log_debug(NAME, &quot;[%s] HBTICK: Idle check for &gt;%s&lt;&quot;, FZONE, (char*) key);
+</I>&gt;<i> 
+</I>&gt;<i>      if(room == NULL)
+</I>&gt;<i>      {
+</I>&gt;<i> -        log_warn(NAME, &quot;[%s] Aborting : NULL cnr for %s&quot;, FZONE, key);
+</I>&gt;<i> +        log_warn(NAME, &quot;[%s] Aborting : NULL cnr for %s&quot;, FZONE, (char*) key);
+</I>&gt;<i>         return;
+</I>&gt;<i>      }
+</I>&gt;<i> 
+</I>&gt;<i> @@ -961,7 +961,7 @@
+</I>&gt;<i>      /* Destroy timed-out dynamic room */
+</I>&gt;<i>      if(room-&gt;persistent == 0 &amp;&amp; room-&gt;count == 0 &amp;&amp; (now - room-&gt;last) &gt; 240)
+</I>&gt;<i>      {
+</I>&gt;<i> -        log_debug(NAME, &quot;[%s] HBTICK: Locking room and adding %s to
+</I>&gt;<i> remove queue&quot;, FZONE, key, now);
+</I>&gt;<i> +        log_debug(NAME, &quot;[%s] HBTICK: Locking room and adding %s to
+</I>&gt;<i> remove queue&quot;, FZONE, (char*) key);
+</I>&gt;<i>          room-&gt;locked = 1;
+</I>&gt;<i>          g_queue_push_tail(room-&gt;master-&gt;queue, g_strdup(jid_full(room-&gt;id)));
+</I>&gt;<i>      }
+</I>&gt;<i> @@ -974,7 +974,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>      if(room == NULL)
+</I>&gt;<i>      {
+</I>&gt;<i> -        log_warn(NAME, &quot;[%s] Aborting : NULL cnr for %s&quot;, FZONE, key);
+</I>&gt;<i> +        log_warn(NAME, &quot;[%s] Aborting : NULL cnr for %s&quot;, FZONE, (char*) key);
+</I>&gt;<i>         return;
+</I>&gt;<i>      }
+</I>&gt;<i> 
+</I>&gt;<i> @@ -995,7 +995,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>      if(room == NULL)
+</I>&gt;<i>      {
+</I>&gt;<i> -        log_warn(NAME, &quot;[%s] Aborting : NULL cnr for %s&quot;, FZONE, key);
+</I>&gt;<i> +        log_warn(NAME, &quot;[%s] Aborting : NULL cnr for %s&quot;, FZONE, (char*) key);
+</I>&gt;<i>         return;
+</I>&gt;<i>      }
+</I>&gt;<i> 
+</I>&gt;<i> diff -Naur mu-conference-0.6.0.orig/src/conference_room.c
+</I>&gt;<i> mu-conference-0.6.0/src/conference_room.c
+</I>&gt;<i> --- mu-conference-0.6.0.orig/src/conference_room.c      2003-11-15
+</I>&gt;<i> 05:19:45.000000000 +0100
+</I>&gt;<i> +++ mu-conference-0.6.0/src/conference_room.c   2005-01-06
+</I>&gt;<i> 15:43:49.000000000 +0100
+</I>&gt;<i> @@ -35,7 +35,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>      if(message == NULL || room == NULL)
+</I>&gt;<i>      {
+</I>&gt;<i> -       log_warn(NAME, &quot;[%s] ERR: Aborting - NULL reference found -
+</I>&gt;<i> [%s][%s]&quot;, FZONE, message, room);
+</I>&gt;<i> +       log_warn(NAME, &quot;[%s] ERR: Aborting - NULL reference found - &quot;, FZONE);
+</I>&gt;<i>         return;
+</I>&gt;<i>      }
+</I>&gt;<i> 
+</I>&gt;<i> @@ -562,7 +562,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>      if(room == NULL)
+</I>&gt;<i>      {
+</I>&gt;<i> -       log_warn(NAME, &quot;[%s] Aborting - NULL attribute found -%s- -%s-&quot;, FZONE, room);
+</I>&gt;<i> +       log_warn(NAME, &quot;[%s] Aborting - NULL attribute found&quot;, FZONE);
+</I>&gt;<i>         return;
+</I>&gt;<i>      }
+</I>&gt;<i> 
+</I>&gt;<i> diff -Naur mu-conference-0.6.0.orig/src/conference_user.c
+</I>&gt;<i> mu-conference-0.6.0/src/conference_user.c
+</I>&gt;<i> --- mu-conference-0.6.0.orig/src/conference_user.c      2003-11-15
+</I>&gt;<i> 05:19:45.000000000 +0100
+</I>&gt;<i> +++ mu-conference-0.6.0/src/conference_user.c   2005-01-06
+</I>&gt;<i> 15:42:34.000000000 +0100
+</I>&gt;<i> @@ -458,7 +458,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>      if(user == NULL || data == NULL)
+</I>&gt;<i>      {
+</I>&gt;<i> -        log_warn(NAME, &quot;Aborting: NULL attribute found&quot;, FZONE);
+</I>&gt;<i> +        log_warn(NAME, &quot;[%s]: Aborting: NULL attribute found&quot;, FZONE);
+</I>&gt;<i> 
+</I>&gt;<i>         if(data != NULL)
+</I>&gt;<i>              xmlnode_free(data);
+</I>&gt;<i> diff -Naur mu-conference-0.6.0.orig/src/hash.c mu-conference-0.6.0/src/hash.c
+</I>&gt;<i> --- mu-conference-0.6.0.orig/src/hash.c 2003-11-15 05:19:45.000000000 +0100
+</I>&gt;<i> +++ mu-conference-0.6.0/src/hash.c      2005-01-06 15:06:11.000000000 +0100
+</I>&gt;<i> @@ -22,7 +22,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>  gboolean remove_key(gpointer key, gpointer data, gpointer arg)
+</I>&gt;<i>  {
+</I>&gt;<i> -   log_debug(NAME, &quot;[%s] Auto-removing key %s&quot;, FZONE, key);
+</I>&gt;<i> +   log_debug(NAME, &quot;[%s] Auto-removing key %s&quot;, FZONE, (char*) key);
+</I>&gt;<i> 
+</I>&gt;<i>     free(key);
+</I>&gt;<i>     free(data);
+</I>&gt;<i> @@ -31,7 +31,7 @@
+</I>&gt;<i> 
+</I>&gt;<i>  void ght_remove_key(gpointer data)
+</I>&gt;<i>  {
+</I>&gt;<i> -   log_debug(NAME, &quot;[%s] Auto-removing key %s&quot;, FZONE, data);
+</I>&gt;<i> +   log_debug(NAME, &quot;[%s] Auto-removing key %s&quot;, FZONE, (char*) data);
+</I>&gt;<i>     free(data);
+</I>&gt;<i>  }
+</I>&gt;<i> 
+</I>&gt;<i> diff -Naur mu-conference-0.6.0.orig/src/xdb.c mu-conference-0.6.0/src/xdb.c
+</I>&gt;<i> --- mu-conference-0.6.0.orig/src/xdb.c  2003-11-15 05:19:46.000000000 +0100
+</I>&gt;<i> +++ mu-conference-0.6.0/src/xdb.c       2005-01-06 15:07:18.000000000 +0100
+</I>&gt;<i> @@ -462,13 +462,13 @@
+</I>&gt;<i> 
+</I>&gt;<i>         if(item)
+</I>&gt;<i>         {
+</I>&gt;<i> -            log_debug(NAME, &quot;[%s] Found (%s) in rooms.xml -
+</I>&gt;<i> removing&quot;, FZONE, jid_full(room-&gt;id), jid_full(jid_fix(store)));
+</I>&gt;<i> +            log_debug(NAME, &quot;[%s] Found (%s) in rooms.xml - removing,
+</I>&gt;<i> %s&quot;, FZONE, jid_full(room-&gt;id), jid_full(jid_fix(store)));
+</I>&gt;<i>             xmlnode_hide(item);
+</I>&gt;<i>             xdb_set(master-&gt;xdbc, fulljid, &quot;muc:room:list&quot;, node);
+</I>&gt;<i>         }
+</I>&gt;<i>         else
+</I>&gt;<i>         {
+</I>&gt;<i> -            log_debug(NAME, &quot;[%s] (%s) not found in rooms.xml -
+</I>&gt;<i> ignoring&quot;, FZONE, jid_full(room-&gt;id), jid_full(jid_fix(store)));
+</I>&gt;<i> +            log_debug(NAME, &quot;[%s] (%s) not found in rooms.xml -
+</I>&gt;<i> ignoring, %s&quot;, FZONE, jid_full(room-&gt;id), jid_full(jid_fix(store)));
+</I>&gt;<i>         }
+</I>&gt;<i>      }
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="050189.html">[jdev] patch for mu-conference. arguments for log_* functions
+</A></li>
+	<LI>Next message: <A HREF="050225.html">[jdev] Re: patch for mu-conference. arguments for log_* functions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50224">[ date ]</a>
+              <a href="thread.html#50224">[ thread ]</a>
+              <a href="subject.html#50224">[ subject ]</a>
+              <a href="author.html#50224">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

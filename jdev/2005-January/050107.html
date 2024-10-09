@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Re: Re: Parsing XMPP/Jabber protocol
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Re%3A%20Re%3A%20Parsing%20XMPP/Jabber%20protocol&In-Reply-To=%3C11D121AB355B69448D3A9F2132D2A3AA4203BA%40niobe.BlueHands.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="050240.html">
+   <LINK REL="Next"  HREF="050110.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Re: Re: Parsing XMPP/Jabber protocol</H1>
+    <B>Heiner Wolf</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Re%3A%20Re%3A%20Parsing%20XMPP/Jabber%20protocol&In-Reply-To=%3C11D121AB355B69448D3A9F2132D2A3AA4203BA%40niobe.BlueHands.de%3E"
+       TITLE="[jdev] Re: Re: Re: Parsing XMPP/Jabber protocol">wolf at bluehands.de
+       </A><BR>
+    <I>Mon Jan  3 12:49:16 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="050240.html">[jdev] Re: Re: Re: Parsing XMPP/Jabber protocol
+</A></li>
+        <LI>Next message: <A HREF="050110.html">[jdev] Re: mu-conference dies on query
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50107">[ date ]</a>
+              <a href="thread.html#50107">[ thread ]</a>
+              <a href="subject.html#50107">[ subject ]</a>
+              <a href="author.html#50107">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+&gt;<i>You still have to manage the buffer/frame coming off the socket while 
+</I>&gt;<i>building the DOM tree. The natural solutions seems to be to layer a 
+</I>&gt;<i>framing mechanism on top of SAX to manage the network i/o possibly 
+</I>&gt;<i>exposing a pull style API. SAX may look like a streaming API but it is 
+</I>&gt;<i>really designed for conserving memory footprint while crunching through 
+</I>&gt;<i>documents that are &quot;to hand&quot; locally. It's not designed for network data 
+</I>&gt;<i>streams. I imagine life would be simpler for your fragment approach if 
+</I>&gt;<i>you were not modeling the entire message stream as a single XML document 
+</I>&gt;<i>and were working with discrete XML documents instead of child nodes. I 
+</I>&gt;<i>definitely would not want to be holding onto full DOM trees or some such 
+</I>&gt;<i>while managing thousands of IM conversations.
+</I>
+In Jabber it is almost guaranteed that stanzas are small relative to the entire stream data volume. My fragment API simply parses all data that comes from the socket. There is no buffering between the socket and the parser. The SAX parser buffers anyway. When I get the SAX callbacks then my fragment parser creates DOM nodes. Once the fragment parser receives endElement() from SAX, it calls the fragment callback with the node. The callback implementation then decides if the node is to be discarded or be added to the node one level higher. In case of Jabber's first level nodes (stanzas), it always decides to discard the data after evaluatiog the node to keep the memory footprint very small. The memory holds: 
+- the initial &lt;stream:stream&gt; as a data structure, 
+- the current stanza as a data structure,
+- the yet unparsed raw XML
+
+The XML flows through, creates small node structures, which are deleted soon after. Nothing remains in memory. Especially nothing that you could call full DOM trees. Nothing that would hurt in case of 1000s of streams. 
+
+SAX is really odd for applications. SAX needs FAX to be useful. I just wondered why teh decision si always between SAX and DOM, although SAX is not exactly what programmers want for stream parsing.  
+
+Regards
+hw
+--
+Dr. Klaus H. Wolf
+bluehands GmbH &amp; Co.mmunication KG
+<A HREF="http://www.bluehands.de/people/hw">http://www.bluehands.de/people/hw</A>
++49 (0721) 16108 75
+--
+Jabber enabled Virtual Presence on the Web: <A HREF="http://www.lluna.de/">http://www.lluna.de/</A>
+Open Source Future History: <A HREF="http://www.galactic-developments.com/">http://www.galactic-developments.com/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="050240.html">[jdev] Re: Re: Re: Parsing XMPP/Jabber protocol
+</A></li>
+	<LI>Next message: <A HREF="050110.html">[jdev] Re: mu-conference dies on query
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50107">[ date ]</a>
+              <a href="thread.html#50107">[ thread ]</a>
+              <a href="subject.html#50107">[ subject ]</a>
+              <a href="author.html#50107">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

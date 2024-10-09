@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber server on HPUX
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20server%20on%20HPUX&In-Reply-To=%3C3C0657F0.70160BD2%40agilent.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="068846.html">
+   <LINK REL="Next"  HREF="068849.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber server on HPUX</H1>
+    <B>Rick Hickerson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20server%20on%20HPUX&In-Reply-To=%3C3C0657F0.70160BD2%40agilent.com%3E"
+       TITLE="[JDEV] Jabber server on HPUX">richard_hickerson at agilent.com
+       </A><BR>
+    <I>Thu Nov 29 09:44:48 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="068846.html">[JDEV] Jabber server on HPUX
+</A></li>
+        <LI>Next message: <A HREF="068849.html">[JDEV] Fix for cygwin 1.4.2-test &amp; jabber2 compile errror re: KARMA_DEF_RATE_T...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68848">[ date ]</a>
+              <a href="thread.html#68848">[ thread ]</a>
+              <a href="subject.html#68848">[ subject ]</a>
+              <a href="author.html#68848">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Many thanks, James.
+
+Now I'm to the point where, at runtime, I'm getting an unresolved on
+&quot;debug_flag&quot;.  It's exactly the same as Vladimirr reported (see
+<A HREF="http://mailman.jabber.org/pipermail/jdev/2000-December/004259.html">http://mailman.jabber.org/pipermail/jdev/2000-December/004259.html</A> ) last
+December. 
+
+To which there was apparently no reply.
+
+Here's the output of jabberd:
+
+Executing jsm() in ./jsm/jsm.so failed: 'Unresolved module for symbol:
+debug_flag (data)  from ./jsm/jsm.so'
+
+(there's also a reference to an &quot;Invalid Configuration in instance 'sessions'&quot;,
+but I'm guessing that the unresolved debug_flag is causing the abort, and the
+latter is a byproduct.)
+
+
+To assist those who follow, here's the totality of what I've done thus far:
+
+On my first `make` attempt I was getting unresolved messages for &quot;dlopen&quot; and
+&quot;dlsym&quot;.  Installing HPUX patch PHSS_24303 fixed that, with a new libdld.sl
+which includes those symbols.
+
+Then, `make` gave an unresolved on &quot;modf&quot; the same as Seeniraj encountered (see
+<A HREF="http://mailman.jabber.org/pipermail/jdev/2001-September/008409.html">http://mailman.jabber.org/pipermail/jdev/2001-September/008409.html</A> ).  I
+departed slightly from Seeniraj's solution by editing the platform-settings file
+and appending &quot; -lm&quot; to LIBS.  I then got to the same point as Seeniraj, with
+the jabberd running, not opening port 5222, and taking 100% of one of the CPUs. 
+
+James' fix below got me part way past this, but after running the pth
+`configure`, `make`, and `make install`, the `make` of jabber gave another
+unresolved on &quot;__builtin_va_start.  A Google search turned up this note from
+Russ Allbery ( 
+<A HREF="http://mail.gnu.org/pipermail/autoconf/2001-August/011460.html">http://mail.gnu.org/pipermail/autoconf/2001-August/011460.html</A> ):
+&quot;... it means that gcc is picking up the system headers rather than its
+own fixed headers.  The most common cause of this problem is that the
+package is including -I/usr/include in the compiler flags; the second most
+common cause is that the fixincludes process got botched somehow.&quot;
+
+So I edited platform-settings again, and removed &quot;-I/usr/include&quot; from CFLAGS. 
+`make` now completes, but jabberd exits as indicated at the top of this message.
+
+I should note that I'm not a developer, just a poor schmuck trying to get jabber
+running on my company's standard *nix platform.  So I don't know much about
+compiler and linker flags and such.  I've gotten other packages going on HP-UX,
+such as apache with php interfaced to the Oracle oci8, but they weren't easy,
+either.
+
+Rick
+
+
+&quot;Brennan, James&quot; wrote:
+&gt;<i> 
+</I>&gt;<i> Hi Rick,
+</I>&gt;<i> 
+</I>&gt;<i> Yes - that's exactly what I experienced!
+</I>&gt;<i> 
+</I>&gt;<i> Although, as you say, pth compiles fine, it's actually
+</I>&gt;<i> the get/set/swapcontext() methods that it uses.
+</I>&gt;<i> 
+</I>&gt;<i> I found that pth just stopped 'switching' to other threads,
+</I>&gt;<i> grinds to a halt, takes up 100%cpu and doesn't get to spawn
+</I>&gt;<i> the other jabber process.
+</I>&gt;<i> 
+</I>&gt;<i> I traced it down to get/set/swapcontext() in the pth.
+</I>&gt;<i> You can force pth to use sigsetjmp/siglongjump instead
+</I>&gt;<i> and the way you do this is with the ./configure switches
+</I>&gt;<i> that I describe in my email at the end.
+</I>&gt;<i> 
+</I>&gt;<i> james
+</I>&gt;<i> 
+</I>&gt;<i> Logica Mobile Networks,
+</I>&gt;<i> Dublin, Ireland.
+</I>&gt;<i> 
+</I>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Rick Hickerson [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">richard_hickerson at agilent.com</A>]
+</I>&gt;<i> Sent: Wednesday, November 28, 2001 7:51 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] Jabber server on HPUX
+</I>&gt;<i> 
+</I>&gt;<i> I get it compiled OK with pth-1.4.0, and can execute:
+</I>&gt;<i> ./jabberd/jabberd -D -h &lt;my.fully.qualified.hostname&gt;
+</I>&gt;<i> 
+</I>&gt;<i> But there everything stops. `top` shows jabberd as using 100% of one of the
+</I>&gt;<i> CPUs, and any attempt to connect to port 5222 is refused.
+</I>&gt;<i> 
+</I>&gt;<i> When running in the foreground, one message comes to the console:
+</I>&gt;<i> Wed Nov 28 13:32:59 2001  mio.c:568 MIO is starting up
+</I>&gt;<i> 
+</I>&gt;<i> It doesn't respond to &lt;ctrl&gt;-c.  I have to login another session and `kill
+</I>&gt;<i> -9`
+</I>&gt;<i> to shut it down.
+</I>&gt;<i> 
+</I>&gt;<i> Rick
+</I>&gt;<i> 
+</I>&gt;<i> &quot;Brennan, James&quot; wrote:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I think this is the same problem that I had.
+</I>&gt;<i> &gt; The problem is the pth component which jabber uses.
+</I>&gt;<i> &gt; This is the thread component part.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; You will find this component in the directory:
+</I>&gt;<i> &gt; jabberd/pth-1.3.7  (I use pth-1.4.0 but this should not matter)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; You need to enter this directory and run configure with
+</I>&gt;<i> &gt; the following flags:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ./configure --with-mctx-mth=sjlj --with-mctx-dsp=sjlj --with-mctx-stk=sas
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; You then need to build the pth component.
+</I>&gt;<i> &gt; Just run make in the pth-1.3.7 directory.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Then go back out to the jabber directory and make the system.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Get in touch with me if this doesn't make sense or work.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; james
+</I>&gt;<i> 
+</I>&gt;<i> This e-mail and any attachment is for authorised use by the intended recipient(s) only.  It may contain proprietary material, confidential information and/or be subject to legal privilege.  It should not be copied, disclosed to, retained or used by, any other party.  If you are not an intended recipient then please promptly delete this e-mail and any attachment and all copies and inform the sender.  Thank you.
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+-- 
+Rick Hickerson        T+1(978)681-2449     Agilent Technologies
+Master IT Engineer     +1(646)452-7668     IT | Information Technology
+40 Shattuck Road       +1(877)868-9829
+Andover, MA  01810
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="068846.html">[JDEV] Jabber server on HPUX
+</A></li>
+	<LI>Next message: <A HREF="068849.html">[JDEV] Fix for cygwin 1.4.2-test &amp; jabber2 compile errror re: KARMA_DEF_RATE_T...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68848">[ date ]</a>
+              <a href="thread.html#68848">[ thread ]</a>
+              <a href="subject.html#68848">[ subject ]</a>
+              <a href="author.html#68848">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

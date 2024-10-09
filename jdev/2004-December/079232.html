@@ -1,0 +1,233 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Gaim and gnomemeeting using jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Gaim%20and%20gnomemeeting%20using%20jabber&In-Reply-To=%3C000701c4d877%249922a970%246600a8c0%40eteach.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="079231.html">
+   <LINK REL="Next"  HREF="079233.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Gaim and gnomemeeting using jabber</H1>
+    <B>Richard Dobson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Gaim%20and%20gnomemeeting%20using%20jabber&In-Reply-To=%3C000701c4d877%249922a970%246600a8c0%40eteach.com%3E"
+       TITLE="[jdev] Gaim and gnomemeeting using jabber">richard at dobson-i.net
+       </A><BR>
+    <I>Thu Dec  2 08:02:43 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="079231.html">[jdev] Gaim and gnomemeeting using jabber
+</A></li>
+        <LI>Next message: <A HREF="079233.html">[jdev] Gaim and gnomemeeting using jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79232">[ date ]</a>
+              <a href="thread.html#79232">[ thread ]</a>
+              <a href="subject.html#79232">[ subject ]</a>
+              <a href="author.html#79232">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> I tried it with:
+</I>&gt;<i> * patched gaim ;
+</I>&gt;<i> * unpatched gaim ;
+</I>&gt;<i> * gossip.
+</I>&gt;<i>
+</I>&gt;<i> My patched gaim didn't seem to give any headache to either of the
+</I>&gt;<i> innocent clients...
+</I>
+Not much of a test, if thats all you tested then you cannot really state 
+that you have tested it and it causes no problems, do those clients even 
+support JEP-0066 anyway? You need to do a proper test testing all clients 
+available to be able to say its tested and doesnt cause any problems, 
+certainly the major ones such as Psi, Exodus, Pandion, Trillian and Gabber. 
+The problem you will create in any clients that already support URIs in the 
+format you are trying to use is that they will probably prompt the user 
+asking them if they want to call you when you log on, which is IMO not a 
+desirable behaviour.
+
+&gt;<i> Notice that I fail to see the huge security gain between:
+</I>&gt;<i> 1) exporting the voip uri right away ;
+</I>&gt;<i> 2) exporting the voip feature, and giving the corresponding uri on
+</I>&gt;<i> request.
+</I>
+Because only people you are specifically accepting calls from will get the 
+URI, whereas with your method just about anybody can yet your URI, including 
+other people in chat rooms, why can you not see that as an obvious huge 
+difference???, its the difference between giving it to one person and giving 
+it to 500, thats a huge difference IMO.
+
+&gt;<i> I don't see very well what should go one way and the other ; could you
+</I>&gt;<i> write a mockup (like I did to show what the patch I have does)?
+</I>
+Have a look at the bottom of this email.
+
+&gt;<i> Why do I always have the impression that you think having the voip uri
+</I>&gt;<i> gives anything to anyone? You know, a typical voip uri is much like a
+</I>&gt;<i> jabber uri: it tells you to which server you have to ask for whom ; for
+</I>&gt;<i> example: &quot;h323:ils.seconix.com/<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">that.user at you.know</A>&quot; . That doesn't
+</I>&gt;<i> generally give you an ip, but just a mean to find it out.
+</I>
+Because they can find it out when they are someone not in a call with you 
+(i.e. someone you have not specifically accepted a call request from) then 
+its the same difference as if you had just put the IP right into the URI, I 
+find this strange that you cannot see this extremely obvious potensially 
+serious security hole which is very easily mitigated.
+
+&gt;<i> Once you have a voip-uri:
+</I>&gt;<i> * your client must ask the server for your ip (and the server can
+</I>&gt;<i> refuse!) ;
+</I>
+It could but in my experience such servers do not refuse and just give the 
+address out to anyone who asks, either that or they just require a logon 
+which once you have it allows you to get the addresses of anyone on that 
+server.
+
+&gt;<i> * your client must connect to your voip-client (and you may refuse!).
+</I>
+As I have already explained (and you seemed to agree to), once you have the 
+IP of the other persons machine the damage is done and no voip client will 
+protect you against people hacking your machine, a very simple and extremely 
+effective defence against this is to not just simply broadcast your IP to 
+everyone and only give it to people when they request to call you, infact 
+the solution after thinking it through properly for your example means that 
+you never reveal you ip, only the caller does which is IMO the correct way 
+around to do it (and even more secure that I have previously mentioned), it 
+also has the major benefit of not having to have your voip client running to 
+be able to accept voip call requests via jabber, also the correct way to do 
+it.
+
+&gt;<i> Yes, a mockup client-client discussion would be nice.
+</I>
+Ok then here you go:
+
+Task 1) Communicating voip capability
+---
+
+1) A client requests your disco info
+
+&lt;iq type='get'
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>/balcony'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.net</A>/orchard'
+    id='info1'&gt;
+  &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'/">http://jabber.org/protocol/disco#info'/</A>&gt;
+&lt;/iq&gt;
+
+2) Your client responds including voip feature in the response
+
+&lt;iq type='result'
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.net</A>/orchard'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>/balcony'
+    id='info1'&gt;
+  &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'">http://jabber.org/protocol/disco#info'</A>&gt;
+    &lt;identity
+        category='client'
+        type='pc'
+        name='Exodus'/&gt;
+    &lt;feature var='<A HREF="http://jabber.org/protocol/disco#info'/">http://jabber.org/protocol/disco#info'/</A>&gt;
+    &lt;feature var='<A HREF="http://jabber.org/protocol/disco#items'/">http://jabber.org/protocol/disco#items'/</A>&gt;
+    &lt;feature var='jabber:iq:time'/&gt;
+    &lt;feature var='jabber:iq:version'/&gt;
+    &lt;feature var='<A HREF="http://jabber.org/protocol/voip'/">http://jabber.org/protocol/voip'/</A>&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+Simple as that now other clients know that your client is voip capable.
+
+Task 2) agreeing on voip protocol and communicating uri
+---
+
+1) Requesting entity starts voip protocol negotiation, sending a list of 
+protocols it supports.
+
+&lt;iq type='get'
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>/balcony'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.net</A>/orchard'
+    id='neg1'&gt;
+  &lt;feature xmlns='<A HREF="http://jabber.org/protocol/feature-neg'">http://jabber.org/protocol/feature-neg'</A>&gt;
+    &lt;x xmlns='jabber:x:data' type='form'&gt;
+      &lt;field type='list-single' var='<A HREF="http://jabber.org/protocol/voip'">http://jabber.org/protocol/voip'</A>&gt;
+         &lt;option&gt;&lt;value&gt;h323&lt;/value&gt;&lt;/option&gt;
+         &lt;option&gt;&lt;value&gt;sip&lt;/value&gt;&lt;/option&gt;
+         &lt;option&gt;&lt;value&gt;callto&lt;/value&gt;&lt;/option&gt;
+      &lt;/field&gt;
+    &lt;/x&gt;
+  &lt;/feature&gt;
+&lt;/iq&gt;
+
+2) Responding entity sends preferred values (this is telling the requestor 
+which uri format to use).
+
+&lt;iq type='result'
+    id='neg1'
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.net</A>/orchard'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at jabber.org</A>/balcony'&gt;
+  &lt;feature xmlns='<A HREF="http://jabber.org/protocol/feature-neg'">http://jabber.org/protocol/feature-neg'</A>&gt;
+    &lt;x xmlns='jabber:x:data' type='submit'&gt;
+      &lt;field var='<A HREF="http://jabber.org/protocol/voip'">http://jabber.org/protocol/voip'</A>&gt;
+        &lt;value&gt;callto&lt;/value&gt;
+      &lt;/field&gt;
+    &lt;/x&gt;
+  &lt;/feature&gt;
+&lt;/iq&gt;
+
+3) Requesting entity then sends the uri for the responding entity to call 
+should it wish to, this is far more secure and works in reverse to the way 
+your scheme does, only the caller reveals their details. It also means voip 
+calling will work if you do not have your voip client running as if its not 
+running you can just start it up, whereas with your solution you have to 
+have it running the whole time, this solution is far more inline with jabber 
+and is far more likely to work with other clients correctly, and possibly 
+work with some clients without modification, i.e. some clients already 
+support callto URIs.
+
+&lt;iq type='set'
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at jabber.org</A>/balcony'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.net</A>/orchard'
+    id='oob1'&gt;
+  &lt;query xmlns='jabber:iq:oob'&gt;
+    &lt;url&gt;callto:192.168.103.77+type=ip&lt;/url&gt;
+    &lt;desc&gt;VoIP call&lt;/desc&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+4) Recipient Informs Sender of Success.
+
+&lt;iq type='result'
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.net</A>/orchard'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at jabber.org</A>/balcony'
+    id='oob1'/&gt;
+
+I would highly urge you to implement voip using this method as it is the 
+most likely method to work correctly and be backwards compatible with other 
+clients.
+
+Richard
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="079231.html">[jdev] Gaim and gnomemeeting using jabber
+</A></li>
+	<LI>Next message: <A HREF="079233.html">[jdev] Gaim and gnomemeeting using jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79232">[ date ]</a>
+              <a href="thread.html#79232">[ thread ]</a>
+              <a href="subject.html#79232">[ subject ]</a>
+              <a href="author.html#79232">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

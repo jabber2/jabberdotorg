@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Q: Has any other threading library been considered?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Q%3A%20Has%20any%20other%20threading%20library%20been%20considered%3F&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002287.html">
+   <LINK REL="Next"  HREF="002289.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Q: Has any other threading library been considered?</H1>
+    <B>Dave Smith</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Q%3A%20Has%20any%20other%20threading%20library%20been%20considered%3F&In-Reply-To="
+       TITLE="[JDEV] Q: Has any other threading library been considered?">dsmith at ai.uwf.edu
+       </A><BR>
+    <I>Wed Dec 15 08:42:07 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002287.html">[JDEV] Q: Has any other threading library been considered?
+</A></li>
+        <LI>Next message: <A HREF="002289.html">[JDEV] Q: Has any other threading library been considered?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2288">[ date ]</a>
+              <a href="thread.html#2288">[ thread ]</a>
+              <a href="subject.html#2288">[ subject ]</a>
+              <a href="author.html#2288">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> I've been messing around with the Jlib stuff on Windows 2000 most of the
+</I>&gt;<i> night trying to come as close as possible to a succesful compile.  I ran
+</I>&gt;<i> into what I believe were several cross-platform issues that just hadn't
+</I>been
+&gt;<i> handled yet.  However, I've never been actively involved in an
+</I>open-source,
+
+You are undoubtedly correct. :) Pth simply won't compile on Win32 -- even
+using cygwin. This is due to the way that Pth handles context switches
+between the threads. At this point, it's due to the fact that the cygwin
+implementation doesn't implement all the necessary POSIX calls that Pth
+uses.
+
+&gt;<i> cross-platform project before, so I could be mistaken (or could have made
+</I>&gt;<i> mistakes during modification), but I've got several modified source files.
+</I>&gt;<i> What should I do with them?
+</I>
+Hmm..what did  you modify and why? You'll probably need to talk to jer if
+you've made any modifications on the Jabber core. At any rate, it would be
+nice to hear what changes you've made as I've also been trying to get Jabber
+over to Win32 (and BeOS -- which is also POSIX deficient).
+
+&gt;<i> Windows platform, at least).  I surfed around and noticed several other
+</I>&gt;<i> freely available cross-platform threading libraries, and I'm wondering if
+</I>&gt;<i> any of these have been considered, or if there are specific reasons that
+</I>PTH
+&gt;<i> is being used and others won't be considered.  I saw several alternatives
+</I>
+The current line of thought on Pth is that it allows us to use asynchronous
+sockets without having to deal with the mess of polling them. Async. sockets
+are especially critical server side as you really don't want to have
+seperate threads for every single connection (which would get out of hand
+after 1000 or so connections, due to the large amount of time which would be
+spent context switching between kernel threads). :) Hence, Pth gives us a
+&quot;lightweight&quot; solution which doesn't require super-efficient threads on the
+part of the O/S
+
+As Jer pointed out fairly early on in the project, Jabber is somewhat unique
+among internet apps in that it requires long-term connections to the server.
+Compare this to the approach utilized by most &quot;modern&quot; IM which use UDP for
+message transfer, or even HTTP which uses a relatively short-lived TCP
+connection for retrieving a single document. Most of the other threading
+libraries you mentioned utilize kernel-level  threads which are simply too
+heavy for the Jabber server (this is not to say that they shouldn't be used
+for the *client* though). :)
+
+Like you, I'm hoping to one day get the Jabber server to other platforms
+(with or without Pth) I'm not sure how it's going to be done yet, but if
+enough of us put our heads together, it should be possible. Unfortunately, I
+don't see it as happening before 1.0. :(
+
+Hope this helps. :)
+
+D.
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002287.html">[JDEV] Q: Has any other threading library been considered?
+</A></li>
+	<LI>Next message: <A HREF="002289.html">[JDEV] Q: Has any other threading library been considered?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2288">[ date ]</a>
+              <a href="thread.html#2288">[ thread ]</a>
+              <a href="subject.html#2288">[ subject ]</a>
+              <a href="author.html#2288">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

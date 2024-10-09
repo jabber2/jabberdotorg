@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] ICQ Transport Weirdness
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20ICQ%20Transport%20Weirdness&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="008182.html">
+   <LINK REL="Next"  HREF="008194.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] ICQ Transport Weirdness</H1>
+    <B>Benjamin Reed</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20ICQ%20Transport%20Weirdness&In-Reply-To="
+       TITLE="[JDEV] ICQ Transport Weirdness">ben at opennms.org
+       </A><BR>
+    <I>Wed May 30 08:53:50 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="008182.html">[JDEV] TCP/IP Extensions
+</A></li>
+        <LI>Next message: <A HREF="008194.html">[JDEV] ICQ Transport Weirdness
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8172">[ date ]</a>
+              <a href="thread.html#8172">[ thread ]</a>
+              <a href="subject.html#8172">[ subject ]</a>
+              <a href="author.html#8172">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm not sure what caused this, but lately ICQ transport has been
+flaking out on me a lot.  The log file makes no sense, but is
+consistent.  Every time it dies, I end up with something like this:
+
+---(snip!)---
+Tue May 29 22:08:09 2001  deliver.c:649 delivering to instance 'icq.opennms.dyndns.org'
+Tue May 29 22:08:09 2001  mtq 80C4438 entering from pth
+Tue May 29 22:08:09 2001  mtq 80C4438 queue call 81D48B8
+Tue May 29 22:08:09 2001  icq_message_out.c:66 New message, 1 parts
+Tue May 29 22:08:09 2001  mtq 80C4438 leaving to pth
+Tue May 29 22:08:09 2001  mio.c:515 calling the connect handler for mio object 81FAC50
+Tue May 29 22:08:09 2001  peer.c:285 Session[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ben at opennms.dyndns.org</A>], sending peer init
+Tue May 29 22:08:09 2001  tcp.c:170 TCP INIT Len 28
+Tue May 29 22:08:09 2001  tcp.c:82 New packet 28
+Tue May 29 22:08:09 2001  tcp.c:32 tcp packet error: 28 26
+Tue May 29 22:08:09 2001  dnsrv.c:143 dnsrv: Read error on coprocess(1): 0 Success
+Tue May 29 22:08:09 2001  dnsrv.c:157 DNSRV CHILD: out of loop.. exiting normal
+---(snip!)---
+
+My ICQ transport is running in a separate process; it's been
+working for a good month up until about a week ago.  Here's the
+icqtrans.xml file I use to start it up:
+
+---(snip!)---
+&lt;jabber&gt;
+ &lt;service id=&quot;icqlinker&quot;&gt;
+  &lt;uplink/&gt;
+  &lt;connect&gt;
+   &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+   &lt;port&gt;5234&lt;/port&gt;
+   &lt;secret&gt;nice try!&lt;/secret&gt;
+  &lt;/connect&gt;
+ &lt;/service&gt;
+ &lt;service id=&quot;icq.opennms.dyndns.org&quot;&gt;
+  &lt;icqtrans xmlns=&quot;jabber:config:icqtrans&quot;&gt;
+   &lt;instructions&gt;Please enter your ICQ number (in the &quot;username&quot; field), nickname,
+    and password.  Leave the &quot;username&quot; field blank to create a new ICQ number.&lt;/instructions&gt;
+ 
+   &lt;search&gt;Search for ICQ users&lt;/search&gt;
+ 
+   &lt;vCard&gt;
+    &lt;FN&gt;ICQ Transport&lt;/FN&gt;
+    &lt;DESC&gt;This is ICQ Transport&lt;/DESC&gt;
+    &lt;URL&gt;<A HREF="http://opennms.dyndns.org/&lt;/URL">http://opennms.dyndns.org/&lt;/URL</A>&gt;
+   &lt;/vCard&gt;
+ 
+   &lt;!-- This should be a prime number close to the amount of concurrent users you expect to have. --&gt;
+   &lt;prime&gt;501&lt;/prime&gt;
+ 
+   &lt;!-- enables full TCP support --&gt;
+   &lt;tcp&gt;&lt;ports/&gt;&lt;/tcp&gt;
+ 
+   &lt;!--   Use the &lt;ports/&gt; to control the port range ICQ will use to listen for
+          incomming TCP connections.  If the ports section is not present,
+          ICQ-t will not listen on any port and make outgoing TCP connections only.
+          Remove the TCP section to disable TCP completely --&gt;
+   &lt;tcp&gt;
+ 
+    &lt;ports&gt;
+     &lt;min&gt;2000&lt;/min&gt;
+     &lt;max&gt;3000&lt;/max&gt;
+    &lt;/ports&gt;
+   &lt;/tcp&gt;
+    --&gt;
+ 
+   &lt;dnsrv&gt;
+     &lt;host&gt;icq.mirabilis.com&lt;/host&gt;
+     &lt;id&gt;icq.dnsrv&lt;/id&gt;
+     &lt;delay&gt;300&lt;/delay&gt;
+   &lt;/dnsrv&gt;
+
+  &lt;/icqtrans&gt;
+ 
+  &lt;load&gt;
+   &lt;icqtrans&gt;./icq-cvs/icqtrans.so&lt;/icqtrans&gt;
+  &lt;/load&gt;
+ 
+ &lt;/service&gt;
+ 
+ &lt;service id=&quot;icq.dnsrv&quot;&gt;
+  &lt;load&gt;
+   &lt;dnsrv&gt;./dnsrv/dnsrv.so&lt;/dnsrv&gt;
+  &lt;/load&gt;
+  &lt;dnsrv xmlns=&quot;jabber:config:dnsrv&quot;&gt;
+   &lt;resend&gt;icq.opennms.dyndns.org&lt;/resend&gt;
+   &lt;cachetimeout&gt;300&lt;/cachetimeout&gt;
+  &lt;/dnsrv&gt;
+ &lt;/service&gt;
+&lt;/jabber&gt;
+---(snip!)---
+
+...it's running on the current CVS version of ICQTrans, but
+switching around on versions doesn't seem to help.  When I
+restart it, everything works again, but it's dead by the next
+day.  Any ideas what's going on?
+
+-- 
+Ben Reed (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ben at opennms.org</A>)
+<A HREF="http://www.opennms.org/">http://www.opennms.org/</A>
+&quot;That's gotta be a JDK issue.  I can tell by the stack pointer.&quot; -- Shane
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="008182.html">[JDEV] TCP/IP Extensions
+</A></li>
+	<LI>Next message: <A HREF="008194.html">[JDEV] ICQ Transport Weirdness
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8172">[ date ]</a>
+              <a href="thread.html#8172">[ thread ]</a>
+              <a href="subject.html#8172">[ subject ]</a>
+              <a href="author.html#8172">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

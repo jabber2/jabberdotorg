@@ -1,0 +1,281 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Flash Patch
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Flash%20Patch&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="020746.html">
+   <LINK REL="Next"  HREF="020743.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Flash Patch</H1>
+    <B>Marcel Bootsma</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Flash%20Patch&In-Reply-To="
+       TITLE="[jdev] Flash Patch">marcel.bootsma at logicacmg.com
+       </A><BR>
+    <I>Thu Dec 16 05:52:11 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="020746.html">[jdev] Check if room exists - MUC
+</A></li>
+        <LI>Next message: <A HREF="020743.html">[jdev] Flash Patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20741">[ date ]</a>
+              <a href="thread.html#20741">[ thread ]</a>
+              <a href="subject.html#20741">[ subject ]</a>
+              <a href="author.html#20741">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello Jabbers,
+
+For our project we use a flash based client for Jabber 2.0
+As most of you know this normally doesn't work because of
+Flash not being 100% compatible with XML streams.
+
+I did read the discussions about this topic (mainly in April)
+And agree that using a patch in jaber is not the nicest solution
+And a proxy would be much better...
+
+But I never build a proxy and didn't have time to learn how to
+Because it had to work fast (as always).
+
+So, I just ported the old 1.4 patch into 2.0 and it worked within 
+a couple of days (hey, I am knew to networking and Jabber)
+
+You don't have to embed it into your code but its just for anyone 
+who can use it.
+
+Grt
+
+Marcel
+
+Here it is:
+
+diff -Naur /home/jabber/jabberd-2.0s6.orig/c2s/c2s.c jabberd-2.0s6/c2s/c2s.c
+--- /home/jabber/jabberd-2.0s6.orig/c2s/c2s.c	2004-12-15
+11:03:08.000000000 +0100
++++ jabberd-2.0s6/c2s/c2s.c	2004-12-16 11:50:42.000000000 +0100
+@@ -20,6 +20,67 @@
+ 
+ #include &quot;c2s.h&quot;
+ 
++
++/*
++ * M.Bootsma, LogicaCMG Hoofddorp, Netherlands
++ * October 2004
++ *
++ * Added a patch for flash:stream support
++ *
++ * Flash is not 100% compatible with the XML stream standard:
++ * 1. it terminates every XML message with a '\0'
++ * 2. it terminates the stream header with a / 
++ *    (this would close the stream)
++ * 3. it starts the stream with a flash:stream header instead of
++ *    a stream:stream header.
++ *
++ * The patch checks the first message of a starting session stream
++ * for any '\0'. If found it flags the session as a Flash session
++ * and replases the complete header with a Jabber compatible
++ * header.
++ * After that every incomming message is filtered from '\0' which
++ * are substuted for ' '
++ * For every outgoing message a '\0' is appended and the response
++ * of the header is replaced for a flash friendly version
++ *
++ * The whole flash patch can be switch off undefining CP2005_FLASH_PATCH
++ * in config.h(.in)
++ */
++
++#ifdef CP2005_FLASH_PATCH
++
++#define FLASH_BUFFER_SIZE 256
++
++static const char caStreamHeader [] = &quot;&lt;?xml version='1.0'?&gt;&lt;stream:stream
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> xmlns='jabber:client'
+to='%s' &gt;&quot;;
++static const char caFlashHeader []  = &quot;&lt;?xml version='1.0'?&gt;&lt;flash:stream
+xmlns:flash='<A HREF="http://www.jabber.com/streams/flash'">http://www.jabber.com/streams/flash'</A>
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> xmlns='jabber:client'
+from='%s' id='%s' /&gt;&quot;;
++
++static void ExtractValue (char *pMessage, char *pVariable, char *pValue)
++{
++int iLen;
++char *p;
++char *pEnd;
++
++    /* 
++     * extract the value of an attribute from a XML message
++     * eg: &lt;.... id='1234567890' ....&gt; returns 1234567890
++     */
++
++    p = strstr (pMessage, pVariable); 
++    if (p != NULL) {
++        p += (strlen (pVariable) + 1);
++        /* find end of value, search for closing ' or &quot; */
++        pEnd = strchr (p, p [-1]);    
++        iLen = pEnd - p;             
++        if (iLen &lt; FLASH_BUFFER_SIZE) {
++            memcpy (pValue, p, iLen);
++            pValue [iLen] = '\0';
++            log_debug (ZONE, &quot;++++ Extracted Var %s: [%s]\n&quot;, pVariable,
+pValue);
++        }
++    }
++}
++#endif
++
++
+ static int _c2s_client_sx_callback(sx_t s, sx_event_t e, void *data, void
+*arg) {
+     sess_t sess = (sess_t) arg;
+     sx_buf_t buf = (sx_buf_t) data;
+@@ -28,6 +89,12 @@
+     nad_t nad;
+     char root[9];
+ 
++#ifdef CP2005_FLASH_PATCH
++    char *p, *pEnd;
++    char caHost [FLASH_BUFFER_SIZE];
++    char caID [FLASH_BUFFER_SIZE];
++#endif
++
+     switch(e) {
+         case event_WANT_READ:
+             log_debug(ZONE, &quot;want read&quot;);
+@@ -94,15 +161,79 @@
+                 return -1;
+             }
+ 
+-            log_debug(ZONE, &quot;read %d bytes&quot;, len);
+-
+             buf-&gt;len = len;
+ 
++#ifdef CP2005_FLASH_PATCH
++             /* check for 0 bytes in the first packet
++             * if found it must be a flash client
++             * remove any 0 in the data and 
++             * the / that ends the &lt;?xml... header
++             */
++
++            pEnd = &amp;buf-&gt;data [len];
++
++            if (sess-&gt;s-&gt;state == state_NONE) { 
++                /* stream is new, look for 0 bytes */
++                p = strchr (buf-&gt;data, '\0');
++                if ((p != NULL) &amp;&amp; (p &lt; pEnd)) {
++                    log_debug (ZONE, &quot;++++ Flash Stream detected\n%.*s&quot;,
+buf-&gt;len, buf-&gt;data);
++
++                    sess-&gt;flash_client = 1; 
++                    /* extract destination host */
++                    ExtractValue (buf-&gt;data, &quot;to=&quot;, caHost);
++                    /* create normal stream:stream header, resize data
+buffer first */
++                    _sx_buffer_alloc_margin (buf, 0, sizeof
+(caStreamHeader) + strlen (caHost) + 8);
++                    sprintf (buf-&gt;data, caStreamHeader, caHost);
++                    buf-&gt;len = strlen (buf-&gt;data);
++
++                    log_debug(ZONE, &quot;++++ Converted to\n%.*s&quot;, buf-&gt;len,
+buf-&gt;data);
++                }
++            } 
++
++            /*
++             * Check all other messages in the stream 
++             * to remove \0's etc
++             */
++            
++            if (sess-&gt;flash_client) {
++                /* remove 0's from flash packets */
++                for (p = buf-&gt;data; p &lt; pEnd; p++) {
++                    if (*p == '\0') {
++                        *p = ' ';
++                    }
++                }
++            }
++#endif
++            log_debug(ZONE, &quot;read %d bytes&quot;, len);
++
+             return len;
+ 
+         case event_WRITE:
+             log_debug(ZONE, &quot;writing to %d&quot;, sess-&gt;fd);
+ 
++#ifdef CP2005_FLASH_PATCH
++            if (sess-&gt;flash_client) {
++                /* look for the header &lt;? xml ...*/
++                if (strncmp (buf-&gt;data, &quot;&lt;?xml &quot;, 6) == 0) {
++                    /* replace normal stream header with flash friendly
+header */
++                    log_debug(ZONE, &quot;++++ Found &lt;?xml..., \n%.*s&quot;,
+buf-&gt;len, buf-&gt;data);
++
++                    /* extract id from id=&quot;123456567778765&quot; or
+id='45454545454' */
++                    ExtractValue (buf-&gt;data, &quot;from=&quot;, caHost);
++                    ExtractValue (buf-&gt;data, &quot;id=&quot;, caID);
++                    /* create flash:stream header, realloc buffer first */
++                    _sx_buffer_alloc_margin (buf, 0, sizeof (caFlashHeader)
++ strlen (caHost) + strlen (caID) + 8);
++                    sprintf (buf-&gt;data, caFlashHeader, caHost, caID);
++                    buf-&gt;len = strlen (buf-&gt;data);
++
++                    log_debug(ZONE, &quot;++++ Converted to %s&quot;, buf-&gt;data);
++                }
++                /* add a 0 to flash packets */
++                buf-&gt;data [buf-&gt;len] = '\0';
++                buf-&gt;len++;
++            }
++#endif
++
+             len = send(sess-&gt;fd, buf-&gt;data, buf-&gt;len, 0);
+             if(len &gt;= 0) {
+                 log_debug(ZONE, &quot;%d bytes written&quot;, len);
+diff -Naur /home/jabber/jabberd-2.0s6.orig/c2s/c2s.h jabberd-2.0s6/c2s/c2s.h
+--- /home/jabber/jabberd-2.0s6.orig/c2s/c2s.h	2004-12-15
+11:03:08.000000000 +0100
++++ jabberd-2.0s6/c2s/c2s.h	2004-12-16 11:55:08.000000000 +0100
+@@ -62,6 +64,10 @@
+     int                 bound;
+     int                 active;
+ 
++#ifdef CP2005_FLASH_PATCH
++    int                 flash_client;
++#endif
++
+     nad_t               result;
+ 
+     int                 sasl_authd;     /* 1 = they did a sasl auth */
+ 
+
+This e-mail and any attachment is for authorised use by the intended recipient(s) only. It may contain proprietary material, confidential information and/or be subject to legal privilege. It should not be copied, disclosed to, retained or used by, any other party. If you are not an intended recipient then please promptly delete this e-mail and any attachment and all copies and inform the sender. Thank you.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="020746.html">[jdev] Check if room exists - MUC
+</A></li>
+	<LI>Next message: <A HREF="020743.html">[jdev] Flash Patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20741">[ date ]</a>
+              <a href="thread.html#20741">[ thread ]</a>
+              <a href="subject.html#20741">[ subject ]</a>
+              <a href="author.html#20741">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

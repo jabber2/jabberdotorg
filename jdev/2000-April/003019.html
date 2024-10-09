@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Performance
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Performance&In-Reply-To=75C9A75D295AD31184E70008C79189D22EA108%40zcard00b.ca.nortel.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003018.html">
+   <LINK REL="Next"  HREF="003021.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Performance</H1>
+    <B>temas</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Performance&In-Reply-To=75C9A75D295AD31184E70008C79189D22EA108%40zcard00b.ca.nortel.com"
+       TITLE="[JDEV] Performance">temas at box5.net
+       </A><BR>
+    <I>Tue Apr 25 13:36:29 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003018.html">[JDEV] Performance
+</A></li>
+        <LI>Next message: <A HREF="003021.html">[JDEV] Performance
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3019">[ date ]</a>
+              <a href="thread.html#3019">[ thread ]</a>
+              <a href="subject.html#3019">[ subject ]</a>
+              <a href="author.html#3019">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Just to throw some notes into this thread.  I'm currently pushing a box up to
+10,000 concurrent sessions while stress testing jabber.  I don't want to reveal
+info on this box until I'm done with all my testing, but I'll give a few hints.
+
+1)  Enable higher inode and file descriptors counts on the system
+
+    echo 32768 &gt; /proc/sys/fs/file-max
+    echo 65536 &gt; /proc/sys/fs/inode-max
+    
+2)  Raise the max sockets 
+    
+    ulimit -n 32768
+
+3)  Have enough ram.  Jabber currently uses 16K per conn and a linux socket is
+    8K (from what I hear).
+
+4)  Turn off the rate limits!  (I'm putting this in as a compile time option for
+    RC and 1.0).
+
+I should be back with some fun number later this week.
+
+--temas
+
+On Tue, Apr 25, 2000 at 10:19:43AM -0400, Michael Petras wrote:
+&gt;<i> One aspect of performance I was wondering how Jabber addresses is the number
+</I>&gt;<i> of open sockets. Does the
+</I>&gt;<i> Jabber server keep a TCP socket open for each logged in client? What
+</I>&gt;<i> determines how many sockets can be open
+</I>&gt;<i> simulatenously using Linux? Does Jabber or Linux do any tricks to increase
+</I>&gt;<i> the number of open sockets (such as
+</I>&gt;<i> transforming open, but quiet sockets into some placeholder objects that use
+</I>&gt;<i> minimal memory until the next message)?
+</I>&gt;<i> Does anyone know of any implementations that do this? Does anyone know how
+</I>&gt;<i> big IM/presence servers like Yahoo, ICQ 
+</I>&gt;<i> or AOL handles this?
+</I>&gt;<i> 
+</I>&gt;<i> Our applications have to communicate with tens to hundreds of thousands of
+</I>&gt;<i> fairly low traffic clients. Our servers run on 
+</I>&gt;<i> Windows NT where the limit on open sockets is a significant issue. Thanks in
+</I>&gt;<i> advance for any info.
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> Thnx,
+</I>&gt;<i>  
+</I>&gt;<i> Mike Petras
+</I>&gt;<i> 
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; From:	David Waite [SMTP:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mass at ufl.edu</A>]
+</I>&gt;<i> &gt; Sent:	Tuesday, April 25, 2000 8:26 AM
+</I>&gt;<i> &gt; To:	jdev
+</I>&gt;<i> &gt; Subject:	RE: [JDEV] Performance
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; It sounds more like the test was throttled due to you sending too many
+</I>&gt;<i> &gt; messages at once, rather than any sort of scalability or other type of
+</I>&gt;<i> &gt; limitation in the Jabber server.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; -David Waite
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; Hi ,
+</I>&gt;<i> &gt;         The real issue which I want to highlight is not spammers but the
+</I>&gt;<i> &gt; Scalability of Jabber . The tests which I performed on Jabber clearly
+</I>&gt;<i> &gt; showed
+</I>&gt;<i> &gt; that it slows down which is definitely not acceptable in real-life
+</I>&gt;<i> &gt; situations . Jabber has to be more scalable than it is now . Any Thoughts
+</I>&gt;<i> &gt; and Ideas ?
+</I>&gt;<i> &gt; Regards ,
+</I>&gt;<i> &gt; chetan s . ithal
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20000425/4615bada/attachment.pgp">https://www.jabber.org/jdev/attachments/20000425/4615bada/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003018.html">[JDEV] Performance
+</A></li>
+	<LI>Next message: <A HREF="003021.html">[JDEV] Performance
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3019">[ date ]</a>
+              <a href="thread.html#3019">[ thread ]</a>
+              <a href="subject.html#3019">[ subject ]</a>
+              <a href="author.html#3019">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

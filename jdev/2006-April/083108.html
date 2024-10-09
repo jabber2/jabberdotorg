@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] How to handle SRV lookups when the root domain is referenced
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20How%20to%20handle%20SRV%20lookups%20when%20the%20root%20domain%20is%20referenced&In-Reply-To=%3CPine.BSO.4.63.0604291706120.61%40zodarblet.zerlargal.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="083107.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] How to handle SRV lookups when the root domain is referenced</H1>
+    <B>Bruce Campbell</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20How%20to%20handle%20SRV%20lookups%20when%20the%20root%20domain%20is%20referenced&In-Reply-To=%3CPine.BSO.4.63.0604291706120.61%40zodarblet.zerlargal.org%3E"
+       TITLE="[jdev] How to handle SRV lookups when the root domain is referenced">list-jdev at vicious.dropbear.id.au
+       </A><BR>
+    <I>Sun Apr 30 08:16:57 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="083107.html">[jdev] ejabberd 1.1.1 released
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83108">[ date ]</a>
+              <a href="thread.html#83108">[ thread ]</a>
+              <a href="subject.html#83108">[ subject ]</a>
+              <a href="author.html#83108">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+In XMPP-IM (rfc3921), the appropriate SRV name to look up for server to 
+server connections is '_xmpp-server._tcp.HOST', followed by 
+'_im._xmpp.HOST' or '_pres._xmpp.HOST', followed by '_jabber._tcp.HOST' 
+(if one wishes compatibility with old records) finally followed by A/AAAA 
+lookups for 'HOST'.
+
+In both XMPP-CORE and XMPP-IM, the wording used is 'if the (previous) 
+address record resolution fails, (continue with the next resolution)'. 
+In DNS terms, 'fails' usually means 'if there was no positive answer'.
+
+Both of these documents also refer to DNS-SRV (rfc2781), which states that 
+if the target of the sole (successful) SRV answer is the root domain 
+('.'), then 'abort'.
+
+Since there appear to be two sides of the fence in what to do after 
+encountering the DNS-SRV 'abort', I'm interested in knowing what have 
+Jabber server implementors done with the following corner case, assuming 
+that they want to deliver a &lt;presence/&gt; and initial &lt;message/&gt; to a JID 
+@example.com :
+
+ 	_xmpp-server._tcp.example.com.	IN SRV 0 0 5269 .
+ 	_im._xmpp.example.com.		IN SRC 0 0 5269 imhandler.example.com.
+ 	_pres._xmpp.example.com.	IN SRC 0 0 5269 presence.example.com.
+ 	_jabber._tcp.example.com.	IN SRV 0 0 5269 jabber.example.com.
+ 	example.com.			IN A		192.168.1.1
+ 	jabber.example.com.		IN A		192.168.2.2
+ 	imhandler.example.com.		IN A		192.168.3.3
+ 	presence.example.com.		IN A		192.168.4.4
+
+Since the lookup of _xmpp-server._tcp.example.com is successful, but 
+returns just one record with a target of '.', have implementors treated 
+this record as:
+
+ 	'stop attempting to look up an address for &quot;example.com&quot;',
+ 	( my personal intrepretation )
+  or
+ 	'fallback to looking up &quot;_im._xmpp.example.com.&quot; or
+ 	 &quot;_pres._xmpp.example.com.&quot; as appropriate',
+ 	( after all, there wasn't anything with an address resulting
+ 	  from the first lookup ).
+  or
+ 	'fallback to looking up &quot;_jabber.example.com.&quot;'
+ 	( the &quot;I haven't read XMPP-IM&quot; response ;) )
+  or
+ 	'stop attempting to look up SRV records and fallback to looking
+ 	 up A/AAAA for &quot;example.com&quot;'
+  ?
+
+Various giggle searches on this topic haven't really answered the 
+question, and I'm not really keen on examining source code ;)
+
+-- 
+   Bruce Campbell.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="083107.html">[jdev] ejabberd 1.1.1 released
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83108">[ date ]</a>
+              <a href="thread.html#83108">[ thread ]</a>
+              <a href="subject.html#83108">[ subject ]</a>
+              <a href="author.html#83108">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

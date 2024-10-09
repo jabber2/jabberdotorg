@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Which to pick, &quot;HTTP proxy passthrough&quot; or JEP-0025?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Which%20to%20pick%2C%20%22HTTP%20proxy%20passthrough%22%20or%20JEP-0025%3F&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="013617.html">
+   <LINK REL="Next"  HREF="013631.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Which to pick, &quot;HTTP proxy passthrough&quot; or JEP-0025?</H1>
+    <B>Hiroaki Nakamura</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Which%20to%20pick%2C%20%22HTTP%20proxy%20passthrough%22%20or%20JEP-0025%3F&In-Reply-To="
+       TITLE="[JDEV] Which to pick, &quot;HTTP proxy passthrough&quot; or JEP-0025?">hnakamur at v003.vaio.ne.jp
+       </A><BR>
+    <I>Sat Jul 27 08:37:31 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="013617.html">[JDEV] Which to pick, &quot;HTTP proxy passthrough&quot; or JEP-0025?
+</A></li>
+        <LI>Next message: <A HREF="013631.html">[JDEV] Ant build.xml for JabberPollingServlet.java
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13619">[ date ]</a>
+              <a href="thread.html#13619">[ thread ]</a>
+              <a href="subject.html#13619">[ subject ]</a>
+              <a href="author.html#13619">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Matthias!
+
+&gt;<i> (Sorry for not being famillar with Japanese names. What part of the name
+</I>&gt;<i> should I use for English internet greetings?)
+</I>
+Hiroaki is my given name and Nakamura is my family name, So &quot;Hi Hiroaki!&quot;
+is perfect. In Japanese, we write a family name followed by a given name.
+In English, most people write a given name followed by a family name, but
+some people write like &quot;NAKAMURA Hiroaki&quot; or &quot;Nakamura, Hiroaki&quot; .
+
+Matthias Wimmer wrote:
+
+&gt;<i> Hiroaki Nakamura wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt;What about performance? I think HTTP proxy passthrough may be faster.
+</I>&gt;<i> &gt;
+</I>&gt;<i> Sure ... with proxy passthrough the server can push you new XML packets
+</I>&gt;<i> when they are available. With JEP-0025 it has to wait for the client
+</I>&gt;<i> polling the information. But it's a real problem that this method is not
+</I>&gt;<i> supported by all proxies (because it violates the RFCs not to send a
+</I>&gt;<i> Content-Length header with a POST or PUT request). E.g. it's not
+</I>&gt;<i> possible to use this with out-of-the-box squish.
+</I>
+If you build the content as a string before sending, you can calculate
+the content length and you can send a Content-Length header?
+As for sending file, you can also precalculate the content length by
+getting the file length.
+
+I read JEP-0025 and understand the real problem is that proxies do
+not allow HTTP Keep-alives. Am I correct?
+
+&gt;<i> &gt;As for security problems, JEP-0025 with https would be no problem?
+</I>&gt;<i> &gt;1.client -&quot;connect jabber.org:443&quot;-&gt; HTTP proxy
+</I>&gt;<i> &gt;2.proxy --&gt; jabber.org:443
+</I>&gt;<i> &gt;3.jabber.org:443 --&gt; jabber.org:5222 or jabber.org:5223
+</I>&gt;<i> &gt;
+</I>&gt;<i> Yes, this would be no problem. But I would layer it up the other way
+</I>&gt;<i> round: Make your polls with http and use a jabber-ssl connection over
+</I>&gt;<i> it. You don't have to reestablish the SSL context with every poll then.
+</I>
+Well, what you are saying is like below?
+1.client --&quot;connect jabber.org:80&quot;_via_http--&gt; HTTP proxy
+2.proxy --via_http--&gt; jabber.org:80
+3.jabber.org:80 --via_https--&gt; jabber.org:5223
+And in 1 and 2, contents are encrypted, and 3 is just forwarding.
+Is this what you are saying?
+
+&gt;<i> With the proxy-connect method you get a plain connection to the server
+</I>&gt;<i> and don't need to modify the jabberd. The only problem with it is that
+</I>&gt;<i> most proxies only accept connections to port 443 (this can be
+</I>&gt;<i> configured, but in most of the cases you don't have control over the proxy).
+</I>&gt;<i> What I'm doing at my Jabber server (<A HREF="http://amessage.info/">http://amessage.info/</A>) is to listen
+</I>&gt;<i> on port 443 for incoming jabber connections (I'm just forwarding
+</I>&gt;<i> connections to port 443 to port 5222). &quot;CONNECT amessage.info:443&quot;
+</I>&gt;<i> should work with nearly any proxy installation that doesn't block &quot;https&quot;.
+</I>
+I now understand the most proxies only allows the port 443 as https.
+In most cases, the port 443 is already used by a web server.
+If it is Apache, then can I use mod_proxy to forward connections from
+port 443?
+
+As for the destination port, I think the forwarding is like
+port 80  -&gt; port 5222
+port 443 -&gt; port 5223
+Am I wrong? Well, I am not sure about that.
+
+(snip)
+&gt;<i> The security problem of JEP-0025 could be fixed. I have written a
+</I>&gt;<i> working extension of JEP-0025 with a protocol that was discussed in this
+</I>&gt;<i> list some weeks ago. But I have never published this because I am not
+</I>&gt;<i> sure if it is right to do that much work to bypass firewalls without
+</I>&gt;<i> being allowed by the admins of these proxies.
+</I>
+Well, in the ideal world, each protocol is assigned to a port number.
+But actually, there are already many protocols which does http tunneling.
+So why not one more? :) Seriously I hope you publish your work.
+Please publish it.
+
+&gt;<i> &gt;PS. At Exodus sourceforge site, I have submitted two patches
+</I>&gt;<i> &gt;<A HREF="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=587361&amp;group_id=2049&amp;atid=202049">http://sourceforge.net/tracker/index.php?func=detail&amp;aid=587361&amp;group_id=2049&amp;atid=202049</A>
+</I>&gt;<i> &gt;<A HREF="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=587373&amp;group_id=2049&amp;atid=202049">http://sourceforge.net/tracker/index.php?func=detail&amp;aid=587373&amp;group_id=2049&amp;atid=202049</A>
+</I>&gt;<i> &gt;and one request.
+</I>&gt;<i> &gt;<A HREF="http://sourceforge.net/forum/forum.php?thread_id=710505&amp;forum_id=5896">http://sourceforge.net/forum/forum.php?thread_id=710505&amp;forum_id=5896</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> And what are they for?
+</I>
+I will write in another mail.
+
+--
+)Hiroaki NAKAMURA) <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hnakamur at v003.vaio.ne.jp</A>
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="013617.html">[JDEV] Which to pick, &quot;HTTP proxy passthrough&quot; or JEP-0025?
+</A></li>
+	<LI>Next message: <A HREF="013631.html">[JDEV] Ant build.xml for JabberPollingServlet.java
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13619">[ date ]</a>
+              <a href="thread.html#13619">[ thread ]</a>
+              <a href="subject.html#13619">[ subject ]</a>
+              <a href="author.html#13619">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

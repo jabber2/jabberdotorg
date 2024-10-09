@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] DSPS
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20DSPS&In-Reply-To=%3C1027450325.10805.125.camel%40fortitude%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="072125.html">
+   <LINK REL="Next"  HREF="072131.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] DSPS</H1>
+    <B>Matthew A. Miller</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20DSPS&In-Reply-To=%3C1027450325.10805.125.camel%40fortitude%3E"
+       TITLE="[JDEV] DSPS">linuxwolf at outer-planes.no-ip.com
+       </A><BR>
+    <I>Tue Jul 23 13:51:56 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="072125.html">[JDEV] DSPS
+</A></li>
+        <LI>Next message: <A HREF="072131.html">[JDEV] DSPS
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72126">[ date ]</a>
+              <a href="thread.html#72126">[ thread ]</a>
+              <a href="subject.html#72126">[ subject ]</a>
+              <a href="author.html#72126">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The original intent of DSPS was to address the problems transferring
+data to/from &quot;firewalled&quot; clients, without introducing new issues (as
+with PASS).
+
+The current spec talks solely about components, although a &quot;stand-alone&quot;
+server could be utilized.  Also, although it is not by design, this
+could handle direct connections, with one of the clients acting as a
+DSPS &quot;server&quot; (for connection-handling only; I know I wouldn't want
+someone trying to tell my client to create a DSPS connection for them
+(-: ).  This (a client-side DSPS &quot;server&quot;) is something I've thought
+about just recently, while looking at how we can &quot;clean up&quot; the current
+specification.
+
+At its core, DSPS is fairly easy to support from a client (as others
+have stated).  Also, it's &quot;required&quot; functionality (which, I admit, is
+not clearly differentiated from &quot;optional&quot; functionality) is not all
+that difficult to implement, and (with modifications, or a new spec)
+could be used in direct, P2P connections.
+
+Personally, I think a single &quot;standardized&quot; method of handling &quot;data
+connections&quot; needs to be defined for Jabber, whether it be via DSPS,
+PASS, or even modifications to the current OOB mechanism.  Currently, I
+can see DSPS as becoming an adequate, maybe even preferred, method of
+doing this.
+
+This is my opinion, although your mileage (and opinions) may (most
+likely) vary.
+
+ 
+
+On Tue, 2002-07-23 at 10:50, Ben Schumacher wrote:
+    (Cross-posting, cause I think it applies to both lists.)
+    
+    I agree, that using a stream layer separate from the file transfer would
+    be preferred, I just think we shouldn't rely on a server as a passthru in
+    all situations. Working around firewall issues is a problem that has been
+    solved by nearly every peer-to-peer network in existence, so I assume
+    there has to be a solution that will work for Jabber. In fact, by keeping
+    the stream layer separate, it should be possible to initiate the connect
+    from either side and then do a data transfer in either direction. This way
+    if I am behind a firewall, but the person I'm communicating with isn't, I
+    can open a connection to them and then push my data across. Perhaps the
+    DSPS spec should be expanded/altered to the point where it doesn't
+    necessarily imply that a proxy is necessary.
+    
+    Currently, the server doesn't have any knowledge of what a user's IP is
+    beyond socket creation, and I would guess that this will stay this way in
+    the open source implementation -- it is a privacy concern, after all. That
+    being said, however, it would be pretty easy to write something that would
+    have this information (a DSPS component?) available if it was necessary.
+    
+    Does any of this make sense? I'm just trying to avoid designing/developing
+    something that will not be used, because servers probably won't want to
+    take the extra bandwidth hit just to provide their users with the ability
+    to do file transfers.
+    
+    bs.
+    
+    On Tue, 23 Jul 2002, Justin Karneges wrote:
+    &gt; The problem is that there is otherwise no real clean way to establish a direct
+    &gt; connection.  Everyone is behind a firewall these days.
+    &gt;
+    &gt; Maybe jabberd should support a way of getting your external IP address, so
+    &gt; that there could be some sort of stream negotiation between two clients.  As
+    &gt; it stands, clients don't even know what their real external address is unless
+    &gt; you were to specify it directly (not exactly user-friendly).
+    &gt;
+    &gt; The &quot;stream&quot; idea IMO makes more sense than just http URLs, because it implies
+    &gt; more possibilities than just file transfer.  It also keeps the stream
+    &gt; handshake as a separate layer, which simplifies things when you consider the
+    &gt; various possible methods of transport (TCP, DSPS, PASS, XML-thru-server??),
+    &gt; SSL, reverse-connections, etc.  I completely agree with Rob about keeping the
+    &gt; stream layer _separate_ from the file transfer.
+    &gt;
+    &gt; DSPS is dead-easy to use from a client perspective.  What we need is something
+    &gt; similar to it, as a standard part of jabberd, that allows clients to ask for
+    &gt; a stream to another JID.  Something very simple like:  &quot;Oh, you want
+    &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">joe at blow.org</A>/Home?  Connect to this IP address.&quot;  This might be through DSPS,
+    &gt; or it might be direct, or whatever.  I'm just saying, we need a simple way
+    &gt; for clients to ask for a stream.  DSPS seems to have a nice interface, but it
+    &gt; assumes we want to route through an external point.  Maybe the real solution
+    &gt; is to have an even smarter component that will hook you up directly to the
+    &gt; other person if possible, otherwise fall back to DSPS (all hiding this from
+    &gt; the client).
+    &gt;
+    &gt; The current situation is not optimal.
+    &gt;
+    &gt; -Justin
+    
+    _______________________________________________
+    jdev mailing list
+    <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+-- 
+
+Matt &quot;Linuxwolf&quot; Miller
+
+- Got &quot;JABBER&quot;? (<A HREF="http://www.jabbercentral.org/">http://www.jabbercentral.org/</A>)
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="072125.html">[JDEV] DSPS
+</A></li>
+	<LI>Next message: <A HREF="072131.html">[JDEV] DSPS
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72126">[ date ]</a>
+              <a href="thread.html#72126">[ thread ]</a>
+              <a href="subject.html#72126">[ subject ]</a>
+              <a href="author.html#72126">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

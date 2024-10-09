@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] That presence problem again
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20That%20presence%20problem%20again&In-Reply-To=20070420215631.GA9100%40elmex">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="026207.html">
+   <LINK REL="Next"  HREF="026209.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] That presence problem again</H1>
+    <B>Nathan Fritz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20That%20presence%20problem%20again&In-Reply-To=20070420215631.GA9100%40elmex"
+       TITLE="[jdev] That presence problem again">nathanfritz at gmail.com
+       </A><BR>
+    <I>Fri Apr 20 17:22:33 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="026207.html">[jdev] That presence problem again
+</A></li>
+        <LI>Next message: <A HREF="026209.html">[jdev] That presence problem again
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26208">[ date ]</a>
+              <a href="thread.html#26208">[ thread ]</a>
+              <a href="subject.html#26208">[ subject ]</a>
+              <a href="author.html#26208">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I don't see this as being the client's job.  Perhaps the protocol could be
+changed to either make more assumptions such as &quot;if the s2s connection is
+closed unexpectedly, then the server SHOULD consider all jids connected to
+it as offline&quot; and perhaps even the suggestion of &quot;If an available jid has
+not sent any presence updates in an hour, the server SHOULD probe for an
+update.&quot; The protocol provides methods to solve this problem on the server
+end.  I don't believe that the client should take it upon itself to nag
+about presence, as presence is high traffic enough as it is.
+
+The problem boils down to s2s not having specific recommendations on what to
+assume about presence, nor what to do when there are connectivity issues.
+
+On 4/20/07, Robin Redeker &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">elmex at x-paste.de</A>&gt; wrote:
+&gt;<i>
+</I>&gt;<i> On Sat, Apr 21, 2007 at 04:38:02AM +1000, Bruce Campbell wrote:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; This more of a 'what are people doing now' question, not a 'what should
+</I>&gt;<i> &gt; the implementations be doing'.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Lets say that my Jabber client has an avid desire to know the accurate
+</I>&gt;<i> &gt; online status of remote JIDs, and the roster subscriptions are 'both'.
+</I>&gt;<i>
+</I>&gt;<i> I don't think there is anything wrong or weird with that desire :-)
+</I>&gt;<i> It seems to me that this is what XMPP (Extensible Messaging and &gt;Presence&lt;
+</I>&gt;<i> Protocol)
+</I>&gt;<i> was invented for...
+</I>&gt;<i>
+</I>&gt;<i> If it is not possible to know a mostly accurate status if anything
+</I>&gt;<i> unexpected
+</I>&gt;<i> happens (even if the TCP connection breaks I at least know that
+</I>&gt;<i> I don't know the presence state), then there is something deeply broken
+</I>&gt;<i> :-)
+</I>&gt;<i>
+</I>&gt;<i> &gt; To that end, my client makes the assumption that if no update to the
+</I>&gt;<i> status
+</I>&gt;<i> &gt; has been received in an hour, then something has possibly happened to
+</I>&gt;<i> the
+</I>&gt;<i> &gt; remote JID that hasn't been properly pushed to my client (remote server
+</I>&gt;<i> &gt; restart normally ).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; How should my Jabber _client_ get the latest news about the remote JID?
+</I>&gt;<i>
+</I>&gt;<i> That is an interesting problem. I'm currently also writing a client
+</I>&gt;<i> but I haven't thought of that problem yet. If the remote server reboots
+</I>&gt;<i> noone will be noticed of any presence changes (eg. client became
+</I>&gt;<i> unavailable).
+</I>&gt;<i>
+</I>&gt;<i> That indeed means clients have to probe on their own. But the
+</I>&gt;<i> RFC unfortunately says: 'probe -- A request for an entity's current
+</I>&gt;<i> presence; SHOULD be generated only by a server on behalf of a user.'
+</I>&gt;<i> (RFC 3921 2.2.1 Types of Presence)
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &gt; The solutions that I've tried to get this information are:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;   A) Presence probes.  Swallowed by some servers.
+</I>&gt;<i> &gt;       &lt;presence to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">remoteJID at some.where</A>' type='probe'/&gt;
+</I>&gt;<i> &gt;       or
+</I>&gt;<i> &gt;       &lt;presence to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">remoteJID at some.where</A>' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">me at my.domain</A>'
+</I>&gt;<i> &gt;       type='probe'/&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;   B) Directed presence saying unavailable then available again.
+</I>&gt;<i> &gt;       &lt;presence to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">remoteJID at some.where</A>' type='unavailable'/&gt;
+</I>&gt;<i> &gt;       &lt;presence to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">remoteJID at some.where</A>'/&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;   C) Subscribe to their presence again.
+</I>&gt;<i> &gt;       &lt;presence to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">remoteJID at some.where</A>' type='subscribe'/&gt;
+</I>&gt;<i>
+</I>&gt;<i> Uh, thats ugly but I like that more than B) or D) :-)
+</I>&gt;<i>
+</I>&gt;<i> &gt;   D) Unavailable then available again to the entire roster.
+</I>&gt;<i> &gt;       &lt;presence type='unavailable/&gt;&lt;presence/&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Of these, the 'subscribe' trick seems to be the most consistent at
+</I>&gt;<i> &gt; returning the desired information.  'probe's seem to get swallowed by a
+</I>&gt;<i> &gt; number of servers, and appearing to go offline and online again just
+</I>&gt;<i> &gt; irritates the remote users.
+</I>&gt;<i>
+</I>&gt;<i> Heh, I agree completly that this is indeed not very nice.
+</I>&gt;<i>
+</I>&gt;<i> &gt; Any other tricks that people use?
+</I>&gt;<i>
+</I>&gt;<i> I would rather see this issue resolved than seeing 'tricks' that
+</I>&gt;<i> 'somehow' work or introduce weird behaviour (like D) or B)).
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Greetings,
+</I>&gt;<i>    Robin
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20070420/9ee371ec/attachment.htm">https://www.jabber.org/jdev/attachments/20070420/9ee371ec/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="026207.html">[jdev] That presence problem again
+</A></li>
+	<LI>Next message: <A HREF="026209.html">[jdev] That presence problem again
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26208">[ date ]</a>
+              <a href="thread.html#26208">[ thread ]</a>
+              <a href="subject.html#26208">[ subject ]</a>
+              <a href="author.html#26208">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: jabberd 1.4.3 release candidate--Windows/CYGWIN Patches (no success with minires yet)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20jabberd%201.4.3%20release%20candidate--Windows/CYGWIN%20Patches%20%28no%20success%0A%20with%20minires%20yet%29&In-Reply-To=%3Cbmijab%24fe2%241%40sea.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="076440.html">
+   <LINK REL="Next"  HREF="076490.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: jabberd 1.4.3 release candidate--Windows/CYGWIN Patches (no success with minires yet)</H1>
+    <B>Frank Seesink</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20jabberd%201.4.3%20release%20candidate--Windows/CYGWIN%20Patches%20%28no%20success%0A%20with%20minires%20yet%29&In-Reply-To=%3Cbmijab%24fe2%241%40sea.gmane.org%3E"
+       TITLE="[JDEV] Re: jabberd 1.4.3 release candidate--Windows/CYGWIN Patches (no success with minires yet)">frank at mail.wvnet.edu
+       </A><BR>
+    <I>Tue Oct 14 23:43:53 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="076440.html">[JDEV] Re: jabberd 1.4.3 release candidate--Windows/CYGWIN Patches
+</A></li>
+        <LI>Next message: <A HREF="076490.html">[JDEV] Re: [jadmin] jabberd 1.4.3 release candidate
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76441">[ date ]</a>
+              <a href="thread.html#76441">[ thread ]</a>
+              <a href="subject.html#76441">[ subject ]</a>
+              <a href="author.html#76441">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>NOTE:  This is just an FYI for those who might be interested.  It has no 
+bearing on the patches I recently submitted.  Those patches stand.  This 
+falls under the &quot;What if&quot; category of development.
+
+I have successfully compiled/linked Jabberd 1.4.3CVS against minires-0.9.7:
+
+     &quot;a simple non caching synchronous resolver library for use by
+     programs running under Cygwin. It partially replaces the bind
+     package.&quot;
+
+[Available at 
+<A HREF="ftp://ftp.uni-erlangen.de/pub/pc/gnuwin32/cygwin/porters/Humblet_Pierre_A/V1.5]">ftp://ftp.uni-erlangen.de/pub/pc/gnuwin32/cygwin/porters/Humblet_Pierre_A/V1.5]</A>
+
+Unfortunately, I have been unable to actually RUN Jabberd, as it 
+segfaults on startup if dnsrv.dll is included (i.e., if you attempt to 
+enable s2s).  All indications point to GNU Pth, and more specifically, 
+to the use of fork(), a notorious beast in the Cygwin world (since 
+Windows knows no such thing).
+
+If I could make this work, Jabberd 1.4.x would compile under Cygwin as 
+it does under any typical *nix environment, without the need for 
+rewriting dnsrv as is required now.  All that would be required of a 
+Cygwin user was the trivial compilation/installation of minires to 
+mimick BIND's libresolv.  The only oddball item left then would be the 
+dllinit.c file, which unfortunately IS necessary to properly build DLL 
+dynamic libraries under Cygwin.
+
+However, all roads do not lead to Rome.  In this case, there is a fork() 
+in the road.  So Jabberd 1.4.3 will simply have to continue using the 
+rewritten dnsrv.
+
+Note I am using minires in my attempts to build Jabberd2 under Cygwin as 
+well, but I'm running into issues with the configure script.  First it 
+was stopping after claiming libresolv did not exist (it does, in the 
+form of symlinks to minires).  But I bypassed that check with an ENV var 
+setting while calling ./configure.
+
+Unfortunately, the second snag had to do with yet more BIND/Cygwin 
+issues I believe, in that checks for inet_ntop and inet_pton failed. 
+These do not appear to be offered in minires' implementation nor Cygwin 
+itself.  Minires only implements the more common functions of libresolv 
+like res_query().  So the hack continues.
+
+P.S.	I believe it is also fork() which causes issues with running
+	Jabberd 1.4.x in debug mode under Cygwin, but need to
+	investigate this further.
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="076440.html">[JDEV] Re: jabberd 1.4.3 release candidate--Windows/CYGWIN Patches
+</A></li>
+	<LI>Next message: <A HREF="076490.html">[JDEV] Re: [jadmin] jabberd 1.4.3 release candidate
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76441">[ date ]</a>
+              <a href="thread.html#76441">[ thread ]</a>
+              <a href="subject.html#76441">[ subject ]</a>
+              <a href="author.html#76441">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

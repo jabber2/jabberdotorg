@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Help with Net::Jabber problem
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Help%20with%20Net%3A%3AJabber%20problem&In-Reply-To=%3C3D88D52D.9070802%40graham.globalcloud.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="072773.html">
+   <LINK REL="Next"  HREF="072775.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Help with Net::Jabber problem</H1>
+    <B>g</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Help%20with%20Net%3A%3AJabber%20problem&In-Reply-To=%3C3D88D52D.9070802%40graham.globalcloud.net%3E"
+       TITLE="[JDEV] Help with Net::Jabber problem">jdev at graham.globalcloud.net
+       </A><BR>
+    <I>Wed Sep 18 14:34:05 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="072773.html">[JDEV] Help with Net::Jabber problem
+</A></li>
+        <LI>Next message: <A HREF="072775.html">[JDEV] Help with Net::Jabber problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72774">[ date ]</a>
+              <a href="thread.html#72774">[ thread ]</a>
+              <a href="subject.html#72774">[ subject ]</a>
+              <a href="author.html#72774">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Here is the directory structure (I installed it via interactive cpan)
+All the files appear to be installed correctly.
+
+-r--r--r--    1 root     root        43913 Jun 11 22:56 
+/usr/lib/perl5/site_perl/5.6.0/Net/Jabber.pm
+
+/usr/lib/perl5/site_perl/5.6.0/Net/Jabber:
+total 536
+-r--r--r--    1 root     root         7739 Jun 11 22:56 Client.pm
+-r--r--r--    1 root     root        15092 Jun 11 22:56 Component.pm
+-r--r--r--    1 root     root        13837 Jun 11 22:56 Data.pm
+-r--r--r--    1 root     root         9526 Jun 11 22:56 Debug.pm
+drwxr-xr-x    2 root     root         4096 Sep 18 11:38 Dialback
+-r--r--r--    1 root     root         3351 Jun 11 22:56 Dialback.pm
+-r--r--r--    1 root     root        11583 Jun 11 22:56 IQ.pm
+-r--r--r--    1 root     root         9707 Jun 11 22:56 JID.pm
+-r--r--r--    1 root     root         5002 Jun 11 22:56 Key.pm
+-r--r--r--    1 root     root         8980 Jun 11 22:56 Log.pm
+-r--r--r--    1 root     root        15885 Jun 11 22:56 Message.pm
+-r--r--r--    1 root     root        17069 May  9  2001 Namespaces.pm
+-r--r--r--    1 root     root        12047 Jun 11 22:56 Presence.pm
+-r--r--r--    1 root     root       114841 Sep 18 12:49 Protocol.pm
+-r--r--r--    1 root     root        78288 Jun 11 22:56 Query.pm
+-r--r--r--    1 root     root         9153 Jun 11 22:56 Server.pm
+-r--r--r--    1 root     root        12785 Jun 11 22:56 XDB.pm
+-r--r--r--    1 root     root        30970 Jun 11 22:56 X.pm
+
+/usr/lib/perl5/site_perl/5.6.0/Net/Jabber/Dialback:
+total 16
+-r-xr-xr-x    1 root     root         6924 Jun 11 22:56 Result.pm
+-r--r--r--    1 root     root         7418 Jun 11 22:56 Verify.pm
+
+
+
+And the example code from DJ Adams &quot;Fun with Jabber:
+A More Sensitive Mail Notifier&quot;
+
+
+from  <A HREF="http://www.pipetree.com/jabber/extended_notify.html">http://www.pipetree.com/jabber/extended_notify.html</A>
+
+I changed Adams'
+
+use Net::Jabber
+
+to
+
+use Net::Jabber::Client;
+use Net::Jabber::Protocol;
+use Net::Jabber::Debug;
+use Net::Jabber::IQ;
+
+because I received the error &quot;Failed to load any schema for
+ Net::Jabber from the use line.&quot;
+(RECIPIENT and SERVER constants were also modified)
+Here's the code
+
+
+#!/usr/bin/perl -w
+# notify.pl
+# Version 2
+# Email notification script to Jabber client
+# Only send notification if recipient is willing to receive
+
+
+use Mail::Internet;
+use Net::Jabber::Client;
+use Net::Jabber::Protocol;
+use Net::Jabber::Debug;
+use Net::Jabber::IQ;
+
+# Hash to hold presence info received from Jabber server
+# ------------------------------------------------------
+use vars qw/%presence/;
+
+# Declare our constants
+# ---------------------
+use constant RECIPIENT =&gt; '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a-user at some.place</A>';      # Jabber ID to be 
+notified
+use constant SERVER    =&gt; 'a.host.name';         # Jabber server to 
+connect to
+use constant PORT      =&gt; 5222;          # Port to connect to
+use constant USER      =&gt; 'notify';      # user this script connects as
+use constant PASSWORD  =&gt; 'notify';      # password associated with USER
+use constant RESOURCE  =&gt; 'perl';
+
+# Read and parse email and extract header info
+# --------------------------------------------
+my $header = Mail::Internet-&gt;new(*STDIN)-&gt;head()-&gt;header_hashref();
+chomp $header-&gt;{$_}[0] foreach keys(%{$header});
+
+# Create a new Jabber client and connect
+# --------------------------------------
+my $connection = Net::Jabber::Client-&gt;new();
+$connection-&gt;Connect( &quot;hostname&quot; =&gt; SERVER,
+                      &quot;port&quot;     =&gt; PORT )
+   or die &quot;Cannot connect ($!)\n&quot;;
+
+# Identify and authenticate with the server
+# -----------------------------------------
+my @result = $connection-&gt;AuthSend( &quot;username&quot; =&gt; USER,
+                                    &quot;password&quot; =&gt; PASSWORD,
+                                    &quot;resource&quot; =&gt; RESOURCE );
+if ($result[0] ne &quot;ok&quot;) {
+  die &quot;Ident/Auth with server failed: $result[0] - $result[1]\n&quot;;
+}
+
+# Set presence callback
+# ---------------------
+$connection-&gt;SetCallBacks( &quot;presence&quot; =&gt; \&amp;handle_presence );
+
+# Send our presence
+# -----------------
+$connection-&gt;PresenceSend();
+
+# Wait for data
+# -------------
+die &quot;Uh-oh - something has gone wrong with the connection\n&quot;
+  unless(defined($connection-&gt;Process(2)));
+
+# Send notification only if appropriate
+# -------------------------------------
+my $r = RECIPIENT;
+if ($presence{$r} =~ /(normal|chat)/) {
+
+  # Create a message and build it up
+  # --------------------------------
+  my $msg = Net::Jabber::Message-&gt;new();
+  $msg-&gt;SetMessage( &quot;to&quot;      =&gt; RECIPIENT,
+                    &quot;subject&quot; =&gt; &quot;Email from $header-&gt;{From}[0]&quot;,
+                    &quot;body&quot;    =&gt; join(&quot;\n&quot;, &quot;Subject: 
+$header-&gt;{Subject}[0]&quot;,
+                                            &quot;Date: $header-&gt;{Date}[0]&quot;) );
+  # Send the message
+  # ----------------
+  $connection-&gt;Send($msg);
+
+}
+
+# Disconnect from the Jabber server
+# ---------------------------------
+$connection-&gt;Disconnect();
+
+exit;
+
+
+
+# Presence data handler
+# ---------------------
+sub handle_presence {
+  my $presence = Net::Jabber::Presence-&gt;new(@_);
+  my $jid = $presence-&gt;GetFrom();
+  $jid =~ s!\/.*$!!;  # remove any resource suffix from JID
+  $presence{$jid} = $presence-&gt;GetShow() || 'normal';
+}
+
+
+
+Chris Wilkes wrote:
+
+&gt;<i>On Wed, Sep 18, 2002 at 01:08:31PM -0400, g wrote:
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>With the follwing files:
+</I>&gt;&gt;<i>Net::Jabber::Protocol VERSION 1.26
+</I>&gt;&gt;<i>Net::Jabber::IQ VERSION 1.26
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>I am getting the following error:
+</I>&gt;&gt;<i>Undefined subroutine &amp;Net::Jabber::IQ called at 
+</I>&gt;&gt;<i>/usr/lib/perl5/site_perl/5.6.0/Net/Jabber/Protocol.pm line 1829.
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>Can you post your code?  Also is there a IQ.pm file in the above
+</I>&gt;<i>directory?
+</I>&gt;<i>
+</I>&gt;<i>Chris
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="072773.html">[JDEV] Help with Net::Jabber problem
+</A></li>
+	<LI>Next message: <A HREF="072775.html">[JDEV] Help with Net::Jabber problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72774">[ date ]</a>
+              <a href="thread.html#72774">[ thread ]</a>
+              <a href="subject.html#72774">[ subject ]</a>
+              <a href="author.html#72774">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] id attr in message packets
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20id%20attr%20in%20message%20packets&In-Reply-To=%3C20020715110433.P93406-100000%40hiro.blahr.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042712.html">
+   <LINK REL="Next"  HREF="042732.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] id attr in message packets</H1>
+    <B>Ben Schumacher</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20id%20attr%20in%20message%20packets&In-Reply-To=%3C20020715110433.P93406-100000%40hiro.blahr.com%3E"
+       TITLE="[JDEV] id attr in message packets">ben at blahr.com
+       </A><BR>
+    <I>Mon Jul 15 12:39:35 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042712.html">[JDEV] id attr in message packets
+</A></li>
+        <LI>Next message: <A HREF="042732.html">[JDEV] id attr in message packets
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42724">[ date ]</a>
+              <a href="thread.html#42724">[ thread ]</a>
+              <a href="subject.html#42724">[ subject ]</a>
+              <a href="author.html#42724">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sun, 14 Jul 2002, Sean Wheeler wrote:
+&gt;<i> On Sun, 14 Jul 2002, Jeremy Nickurak wrote:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The id attribute is intended to be used so that the sender and receiver
+</I>&gt;<i> &gt; can refer to particular messages. For example, someone might implement a
+</I>&gt;<i> &gt; &quot;addendum&quot; message type/namespace that changes some element of the
+</I>&gt;<i> &gt; previous message:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &lt;message id=&quot;3&quot; type=&quot;addendum&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bar at media</A>&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at media</A>&quot;&gt;
+</I>&gt;<i> &gt;    &lt;x xmlns=&quot;jabber:x:addendum&quot;&gt;
+</I>&gt;<i> &gt;       &lt;append id=&quot;1&quot;&gt;
+</I>&gt;<i> &gt;          See also <A HREF="http://somepage.com/">http://somepage.com/</A> for more details.
+</I>&gt;<i> &gt;       &lt;/append&gt;
+</I>&gt;<i> &gt;    &lt;/x&gt;
+</I>&gt;<i> &gt; &lt;/message&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; That way, the &lt;append&gt; tag's &quot;id&quot; attribute can be uniquesly associated
+</I>&gt;<i> &gt; with a particular mesage <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bar at media</A> has already sent to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at media.</A>
+</I>&gt;<i>
+</I>&gt;<i> Thanks!
+</I>&gt;<i>
+</I>&gt;<i> Yes, this is precisely the kind of thing i'm looking for.  I also need the
+</I>&gt;<i> ability to refer to the reply that foo sends, and I can't really figure
+</I>&gt;<i> out how to do this without some non-standard crutch.
+</I>&gt;<i>
+</I>&gt;<i> Maybe a rough ascii diagram helps.
+</I>&gt;<i>
+</I>   [...snip...]
+
+Sean-
+
+I think you are struggling to find a solution to a problem that doesn't
+really exist. Since all Jabber messages arrive in order (at least with
+current server implementations), there is no need to know explicitly that
+a user sends two messages as a reply to a single message from the other
+end. It is implicit that if a message is sent by bar to foo, and then foo
+sends two responses on the same &lt;thread&gt;, they are obviously &quot;replying&quot; to
+the original message by bar. In addition, id numbers used in most clients
+don't relate directly to conversations. Most client libraries will simply
+increase the value of the id each time a packet is sent. id's are
+generally not intended for this purpose. In fact, there is no guarantee
+that other clients will behave in the way you have described, and I would
+even go so far as to venture a guess that very few currently do.
+
+For example, considering the following exchange:
+
+1) foo sends a message to bar with id='1'
+2) bar replies to message from foo without an id
+3) foo sends an iq request in iq:register to component x with id='2'
+4) foo replies to message from bar with id='3'
+5) component x sends iq result to foo with id='2'
+6) bar replies to message from foo without an id
+
+... etc.
+
+You'll notice that bar does not use id's in its message packets. This
+behavior can be expected, because it is considered an optional attribute
+in the spec. (see: <A HREF="http://jabber.org/ietf/draft-miller-xmpp-core-00.txt">http://jabber.org/ietf/draft-miller-xmpp-core-00.txt</A>)
+
+Basically, for the purposes of message threading, the &lt;thread&gt; element is
+the appropriate feature of the protocol to use. If this is insufficient
+for your needs, I suggest you look at JEP-0033. While this JEP is still
+experimental, it would provide you with the functionality you need and
+would save you from trying to overload another feature of the protocol,
+which could cause incompatibilities and issues with some clients.
+
+See JEP-0033: <A HREF="http://jabber.org/jeps/jep-0033.html">http://jabber.org/jeps/jep-0033.html</A>
+
+Cheers,
+
+bs.
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042712.html">[JDEV] id attr in message packets
+</A></li>
+	<LI>Next message: <A HREF="042732.html">[JDEV] id attr in message packets
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42724">[ date ]</a>
+              <a href="thread.html#42724">[ thread ]</a>
+              <a href="subject.html#42724">[ subject ]</a>
+              <a href="author.html#42724">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

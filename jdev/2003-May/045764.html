@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Security in XMPP/Jabber: some questions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Security%20in%20XMPP/Jabber%3A%20some%20questions&In-Reply-To=%3C20030522025404.GW4422%40coders.meta.net.nz%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="045765.html">
+   <LINK REL="Next"  HREF="045767.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Security in XMPP/Jabber: some questions</H1>
+    <B>Perry Lorier</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Security%20in%20XMPP/Jabber%3A%20some%20questions&In-Reply-To=%3C20030522025404.GW4422%40coders.meta.net.nz%3E"
+       TITLE="[JDEV] Security in XMPP/Jabber: some questions">perry at coders.net
+       </A><BR>
+    <I>Wed May 21 21:54:04 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="045765.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+        <LI>Next message: <A HREF="045767.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45764">[ date ]</a>
+              <a href="thread.html#45764">[ thread ]</a>
+              <a href="subject.html#45764">[ subject ]</a>
+              <a href="author.html#45764">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+i'm not sure if I'm the best person to answer these but I'll try and
+give it a go.
+
+&gt;<i> First, I've done some more research myself, but I still have some 
+</I>&gt;<i> questions. From DJ Adams book, I know that there are 3 methodes to 
+</I>&gt;<i> authenticate, namely plaintext, digest and zero knowledge. Is it correct 
+</I>&gt;<i> that most clients use digest by default?
+</I>
+To my knowledge most clients use digest authentication.  Debian
+(errnoeously) ships with the plaintext module disabled, which prevents
+users from creating accounts (as the plain text method is required to
+set your password).  I believe there was some discussion about fixing
+this.
+
+&gt;<i> Then there is SSL (Secure Socket Layer?) that you can use to encrypt the 
+</I>&gt;<i> whole stream, am I correct? Still, I don't see that clients use this by 
+</I>&gt;<i> default. What is the reason for this? I've read somewhere that it could 
+</I>&gt;<i>  be that this causes problems on some proxy servers, is this true? And 
+</I>&gt;<i> does SSL provide end-to-end security or only client-to-my-own-server 
+</I>&gt;<i> security?
+</I>
+SSL is a nasty beasty.  To configure a server with SSL support you need
+to get proper certificates which can be expensive, and just downright
+irritating.  You can't properly vhost SSL for example.  Although, I'm
+not sure how much of this applies to Jabber.
+
+&gt;<i> 
+</I>&gt;<i> Other two known ones are PGP and GnuPG, what's the difference between 
+</I>&gt;<i> those two? Is a client supporting PGP compatible with one supporting 
+</I>&gt;<i> GnuPG? How does this actually work? Is it encrypted at the client side, 
+</I>&gt;<i> decrypted at the server side, to know the to address and then encrypted 
+</I>&gt;<i> again to send it to the &quot;other side&quot;? What if the other side doesn't 
+</I>&gt;<i> know about PGP, how those this side knows about that lack of feature?
+</I>
+The data is encrypted client side, and decrypted on the other client.
+This is called &quot;End to End security&quot;.  The outer header isn't encrypted
+so the source/destination is still known.  But the servers don't know
+(or even care) whats in the payload.
+
+I believe a client knows the other end supports encryption by checking
+if their presence is signed.  After playing around sending encrypted
+messages to a conference room and seeing the message &quot;This message is
+encrypted&quot; it's obvious that you can send encrypted messages to people
+who don't support it (or don't have the decryption keys) if you put
+enough time and effort into it.
+
+&gt;<i> I read in &quot;The Instant Messaging Standards Race: Comparing XMPP/Jabber 
+</I>&gt;<i> and SIP/SIMPLe&quot; from Jabber Inc. sth. about SASL (Simple Authentication 
+</I>&gt;<i> and Security Layer) and TLS (Transport Layer Security). What is the 
+</I>&gt;<i> principle of those two?
+</I>
+TLS is basically SSL version 3.  It got renamed for some reason.
+
+SASL is a library which handles authenticating users.  You can (using
+SASL) write a module which for example does authentication for kerberos,
+or a &quot;SecureID&quot; style card, and then all the programs on the machine
+that use SASL can now authenticate users using these new methods without
+having to support it directly.  
+
+&gt;<i> What is meant by &quot;end-to-end&quot; vs &quot;hop-to-hop&quot; encryption, that with the 
+</I>&gt;<i> first one even the server can't read what is in the message? But how do 
+</I>&gt;<i> they know then where to send the message?
+</I>
+Hop by hop means that each server along the waydecrypts then encrypts
+the message.  Any compromised server along the way can read any message.
+
+End to End is where the sending client encrypts the message, and the
+receiving client decrypts it.
+
+You usually don't encrypt the header (with source/destination
+information) for end to end encryption, just the payload (the actual
+message itself)
+
+&gt;<i> Will jabberd2 support more security than the current jabberd server?
+</I>
+I've not been following jd2 too much, so I don't know sorry.
+
+&gt;<i> I hope sb. has some time to answer these questions (or some of them). I 
+</I>&gt;<i> don't need in-depth information, just enough to understand it :).
+</I>
+:<i>)
+</I>
+- -- 
+Generic Fortune.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.2 (GNU/Linux)
+Comment: Only when you are sure they have you, can you stop being paranoid
+
+iD8DBQE+zDvMcAgRpy8z8UQRAihuAJkBhmyDBYY5BMkZHd+tH2o5dkbYpgCdGX8v
+WJKR88eyNgaR341HzC+kBRk=
+=OFJI
+-----END PGP SIGNATURE-----
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="045765.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+	<LI>Next message: <A HREF="045767.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45764">[ date ]</a>
+              <a href="thread.html#45764">[ thread ]</a>
+              <a href="subject.html#45764">[ subject ]</a>
+              <a href="author.html#45764">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

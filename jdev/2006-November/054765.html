@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] XMPP Ping method?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP%20Ping%20method%3F&In-Reply-To=%3C14025.1162550067.463745%40peirce.dave.cridland.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="054766.html">
+   <LINK REL="Next"  HREF="054734.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] XMPP Ping method?</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP%20Ping%20method%3F&In-Reply-To=%3C14025.1162550067.463745%40peirce.dave.cridland.net%3E"
+       TITLE="[jdev] XMPP Ping method?">dave at cridland.net
+       </A><BR>
+    <I>Fri Nov  3 04:34:26 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="054766.html">[jdev] Re: XMPP Ping method?
+</A></li>
+        <LI>Next message: <A HREF="054734.html">[jdev] XMPP Ping method?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54765">[ date ]</a>
+              <a href="thread.html#54765">[ thread ]</a>
+              <a href="subject.html#54765">[ subject ]</a>
+              <a href="author.html#54765">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu Nov  2 23:24:47 2006, Jesus Cea wrote:
+&gt;<i> I'm a bit worried about CPU/bandwidth explosi&#243;n, nevertheless. And
+</I>&gt;<i> mobile bandwidth, that pay per byte.
+</I>
+Also on mobile, the battery drain for transmission outweighs 
+everything else. The battery drain for receiving data isn't small 
+either. In practise, this means three things:
+
+1) You only generally want to send data when you absolutely have to.
+
+2) You only want to send extra data when you're sending some already.
+
+3) You don't want to recive data you don't need, either.
+
+So for keeping a connection live, whitespace is good - it's a single 
+octet, which translates as about 40 bytes or so including the TCP 
+overhead. On most mobile networks, you'd be needing to send these 
+every N minutes, where N is around 4. Every one of those bytes you 
+send, you pay for.
+
+For ACKs and restarts, you either want to wrap a sequence number into 
+the TLE, or you want to append a new TLE to the end of each TCP 
+packet. The ACK that comes back shouldn't be sent immediately, either 
+- it should be safe to hang onto until the server *needs* to send 
+something, or - for client ACKs to the server - you're going to send 
+anyway.
+
+So a rough logic is that if the connection has been quiet for 4 
+minutes, the client sends an ACK if one is outstanding, or else you 
+send a whitespace character. Ideally, we'd have the server send the 
+whitespace pings, because they cost the device less in terms of 
+battery. I imagine we'd use a stream feature for this negotiation, in 
+which case the ACKs themselves might as well be a new TLE.
+
+Incidentally, the power concerns are true to a reasonable degree for 
+WLAN, too, so this isn't a purely mobile thing.
+
+Dave.
+-- 
+Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at jabber.org</A>
+  - <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+  - <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="054766.html">[jdev] Re: XMPP Ping method?
+</A></li>
+	<LI>Next message: <A HREF="054734.html">[jdev] XMPP Ping method?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54765">[ date ]</a>
+              <a href="thread.html#54765">[ thread ]</a>
+              <a href="subject.html#54765">[ subject ]</a>
+              <a href="author.html#54765">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

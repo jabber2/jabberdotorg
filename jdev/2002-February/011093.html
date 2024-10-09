@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] memory leak in 1.4.1
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20memory%20leak%20in%201.4.1&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="011119.html">
+   <LINK REL="Next"  HREF="011096.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] memory leak in 1.4.1</H1>
+    <B>James Stevens</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20memory%20leak%20in%201.4.1&In-Reply-To="
+       TITLE="[JDEV] memory leak in 1.4.1">james at kyzo.com
+       </A><BR>
+    <I>Thu Feb  7 12:26:39 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="011119.html">[JDEV] server config questions
+</A></li>
+        <LI>Next message: <A HREF="011096.html">[JDEV] MSN Transport Behavior
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11093">[ date ]</a>
+              <a href="thread.html#11093">[ thread ]</a>
+              <a href="subject.html#11093">[ subject ]</a>
+              <a href="author.html#11093">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm getting a memory leak problem with jabber 1.4.1 on Linux. I first noticed
+it because of the message :-
+
+&lt;presence to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">959967024 at update.jabber.com</A>/1.10.0.6&quot;/&gt;
+
+that JIM sends out on start-up, and I was given a work around for this which
+was :-
+
+&lt;service id=&quot;update.jabber.com&quot;&gt;
+  &lt;host&gt;update.jabber.com&lt;/host&gt;
+  &lt;null/&gt;
+&lt;/service&gt;
+
+
+This work around worked fine, for the user I was testing it with. However, I
+noticed that this doesn't solve the memory leak for all users. The problem
+seems to be caused by having users on your roster that are based on another
+jabber server, but where that other jabber server is uncontactable for some
+reason.
+
+We are a two site company and we have a local jabber server at both sites. When
+the two jabber servers can't contact each other, if a user has users in their
+roster that belong to the other site, every time they log on and off there is
+about 100Kb memory leak on the server they are connecting to. That is about
+100Kb per log on &amp; log off cycle.
+
+
+To re-produce, set up two servers (A and B) put a user on each server (Andew
+and Barney) get the users to put each other in their rosters, then break the
+cable between the two servers. Now, every time Andrew logs on and off there
+will be a 100Kb memory leak in the jabber process on server A.
+
+
+Buy setting up a complex roster of users on both sites, then breaking the link
+between the two sites, and gradually removing all the &quot;foreign&quot; users, while
+logging on and off between each removal, I found that by only leaving local
+users in the roster I could reduce the memory leak to zero per log on / log off
+cycle.
+
+
+also installed MSN v1.1, jud v0.4 and conference v0.4.1
+
+James
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="011119.html">[JDEV] server config questions
+</A></li>
+	<LI>Next message: <A HREF="011096.html">[JDEV] MSN Transport Behavior
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11093">[ date ]</a>
+              <a href="thread.html#11093">[ thread ]</a>
+              <a href="subject.html#11093">[ subject ]</a>
+              <a href="author.html#11093">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] jabberSMTP
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20jabberSMTP&In-Reply-To=%3CA45AF6837E93454CB400BA546098A037AF282E%40nmibwkexch2.nexusmgmt.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="082149.html">
+   <LINK REL="Next"  HREF="082151.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] jabberSMTP</H1>
+    <B>Bart Smit</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20jabberSMTP&In-Reply-To=%3CA45AF6837E93454CB400BA546098A037AF282E%40nmibwkexch2.nexusmgmt.com%3E"
+       TITLE="[jdev] jabberSMTP">Bart.Smit at nexusmgmt.com
+       </A><BR>
+    <I>Thu Dec 15 05:22:38 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="082149.html">[jdev] Non-SASL auth twice on same stream
+</A></li>
+        <LI>Next message: <A HREF="082151.html">[jdev] jabberSMTP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#82150">[ date ]</a>
+              <a href="thread.html#82150">[ thread ]</a>
+              <a href="subject.html#82150">[ subject ]</a>
+              <a href="author.html#82150">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Assuming that on the jabber server your MTA is sendmail you can do this:
+
+Edit your sendmail.cf to listen for external connections:
+dnl #  DAEMON_OPTIONS(`Port=smtp,Addr=127.0.0.1, Name=MTA')dnl
+
+Set a catch all for the server or domain in /etc/mail/virtusertable:
+@your.jabber.org		mailerscript
+
+Add an alias for the script in /etc/aliases (don't forget to run
+newaliases as root):
+mailerscript	|smtp2jabber.pl
+
+Manually register a bot user on your jabber server and set the user/pass
+to mailer/password (if you use other credentials, edit the script
+accordingly).
+Save the attached script as smtp2jabber.pl and place it in /etc/smrsh or
+link it from there. Remember to chmod it to be world executable.
+
+Use cpan or your favourite package manager to install the perl modules
+at the top of the script. Restart sendmail and test.
+
+
+Bart...
+
+
+
+#!/usr/bin/perl
+
+use strict;
+use Mail::Message;
+use Mail::Message::Field;
+use Mail::Message::Construct::Read;
+use Mail::Message::Attachment::Stripper;
+use Mail::Message::Body;
+use Net::Jabber;
+
+use constant SERVER   =&gt; &quot;your.jabber.org&quot;;
+use constant PORT     =&gt; 5222;
+use constant USERNAME =&gt; &quot;mailer&quot;;
+use constant PASSWORD =&gt; &quot;password&quot;;
+use constant RESOURCE =&gt; &quot;Perl Script&quot;;
+
+
+# The email message come in on STDIN
+my $msg = Mail::Message-&gt;read(\*STDIN);
+
+# Pick out the recipient, subject and sender
+my $rcpt    = $msg-&gt;head-&gt;get('to');
+my $subject = $msg-&gt;head-&gt;get('subject');
+my $sender  = $msg-&gt;head-&gt;get('from');
+
+# Remove the angle brackets
+$rcpt =~ s/^&lt;//;
+$rcpt =~ s/&gt;$//;
+$sender =~ s/^&lt;//;
+$sender =~ s/&gt;$//;
+
+# Remove the attachment(s) from the message
+my $stripper = Mail::Message::Attachment::Stripper-&gt;new($msg);
+my Mail::Message $textonly  = $stripper-&gt;message;
+my $body = $textonly-&gt;body;
+
+# Connect to jabber
+my $jabber = &amp;setup_Jabber(SERVER, PORT, USERNAME, PASSWORD, RESOURCE,
+&quot;normal/forwarding email&quot;);
+
+# Compose the message
+my $jabmsg-&gt;SetMessage(
+              &quot;to&quot;      =&gt; &quot;$rcpt&quot;,
+              &quot;subject&quot; =&gt; &quot;$sender emailed: $subject&quot;,
+              &quot;body&quot;    =&gt; &quot;$body&quot;);
+
+# And send it
+$jabber-&gt;Send($jabmsg);
+
+# Close the connection and exit
+$jabber-&gt;Disconnect();
+exit(0);
+
+
+sub setup_Jabber {
+  my ($server, $port, $user, $pass, $resource, $initial_status) = @_;
+  my $connection = new Net::Jabber::Client;
+
+  # Connect
+  my $status = $connection-&gt;Connect( hostname =&gt; $server,
+                                     port     =&gt; $port );
+  die &quot;Cannot connect to Jabber server $server on port $port\n&quot;
+    unless $status;
+
+  # Callbacks
+  $connection-&gt;SetCallBacks( presence =&gt; \&amp;InPresence );
+
+  # Ident/Auth
+  my @result = $connection-&gt;AuthSend( username =&gt; $user,
+                                      password =&gt; $pass,
+                                      resource =&gt; $resource );
+  die &quot;Ident/Auth failed: $result[0] - $result[1]\n&quot;
+    if $result[0] ne &quot;ok&quot;;
+
+  # Roster
+  $connection-&gt;RosterGet();
+
+  # Set initial presence
+  &amp;set_presence($connection, $initial_status);
+
+  return $connection;
+}
+
+sub InPresence
+{
+  my $presence = $_[1];
+  my $type = $presence-&gt;GetType();
+
+  if ($type eq &quot;subscribe&quot;) {
+    $jabber-&gt;Send($presence-&gt;Reply(type =&gt; 'subscribed'));
+  }
+  elsif ($type eq &quot;unsubscribe&quot;) {
+    $jabber-&gt;Send($presence-&gt;Reply(type =&gt; 'unsubscribed'));
+  }
+}
+
+sub set_presence {
+  my ($connection, $s) = @_;
+  my $presence = Net::Jabber::Presence-&gt;new();
+  my ($show, $status) = split(&quot;/&quot;, $s, 2);
+  $presence-&gt;SetPresence( show   =&gt; $show,
+                          status =&gt; $status );
+  $connection-&gt;Send($presence);
+}
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf
+Of Peter Saint-Andre
+Sent: 14 December 2005 23:53
+To: Jabber software development list
+Subject: Re: [jdev] jabberSMTP
+
+Jon Scottorn wrote:
+&gt;<i> Hi all,
+</I>&gt;<i> 
+</I>&gt;<i>    I have been trying to locate a jabber smtp transport, does anyone 
+</I>&gt;<i> know of any such thing.  I basically need something that will parse an
+</I>
+&gt;<i> email sent to say <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jonsmel at jabber.org</A> &lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jonsmel at jabber.org</A>&gt; and 
+</I>&gt;<i> reformat it into a xmpp message and send it to the user.  I don't 
+</I>&gt;<i> really care about attachments, it will only be text.
+</I>&gt;<i> 
+</I>&gt;<i> Does anyone know of this type of item?
+</I>
+The old theoretic-smtp project did something like that, but it
+disappeared after the JabberStudio rootkit. I've sent the code to Jon on
+an as-is basis. If anyone else has code like this (more recent than
+theoretic-smtp), feel free to post to the list. :-)
+
+Peter
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="082149.html">[jdev] Non-SASL auth twice on same stream
+</A></li>
+	<LI>Next message: <A HREF="082151.html">[jdev] jabberSMTP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#82150">[ date ]</a>
+              <a href="thread.html#82150">[ thread ]</a>
+              <a href="subject.html#82150">[ subject ]</a>
+              <a href="author.html#82150">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

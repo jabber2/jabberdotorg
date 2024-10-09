@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] 'JCF' IRC transport dumping core on channel change
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%27JCF%27%20IRC%20transport%20dumping%20core%20on%20channel%20change&In-Reply-To=%3C20011113181928.F27869%40server.pizzahut.com.ph%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039460.html">
+   <LINK REL="Next"  HREF="039456.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] 'JCF' IRC transport dumping core on channel change</H1>
+    <B>Migs Paraz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%27JCF%27%20IRC%20transport%20dumping%20core%20on%20channel%20change&In-Reply-To=%3C20011113181928.F27869%40server.pizzahut.com.ph%3E"
+       TITLE="[JDEV] 'JCF' IRC transport dumping core on channel change">map at internet.org.ph
+       </A><BR>
+    <I>Tue Nov 13 04:19:28 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039460.html">[JDEV] AIM transport as ICQ transport replacement, away status	diff
+</A></li>
+        <LI>Next message: <A HREF="039456.html">[JDEV] 'JCF' IRC transport dumping core on channel change
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39448">[ date ]</a>
+              <a href="thread.html#39448">[ thread ]</a>
+              <a href="subject.html#39448">[ subject ]</a>
+              <a href="author.html#39448">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I managed to get the 'JCF' IRC daemon + the patched gabber to work...
+I can go to one channel.  But when I switch to another, a core dump:
+
+#0  0x401eafc7 in irc_parse_phase_two (m=0x81fd170, flag=1, arg=0x81fc118, 
+    buffer=0x80d146c &quot;:zimdude!<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">zimdude at 203.176.75.45</A> JOIN :#plug\r\n:upcm.net 353 zimdude = #plug :zimdude @Triumph \r\n:upcm.net 366 zimdude #plug :End of /NAMES list.\r\n&quot;, bufsz=144) at irc_out.c:347
+
+
+347	            u-&gt;id = jid_new(u-&gt;p, spools(p, channel-&gt;id, &quot;/&quot;, shahash(u-&gt;user), p));
+
+(gdb) p channel-&gt;id
+Cannot access memory at address 0x14
+(gdb) p channel
+$3 = 0x0
+
+Debug output:
+
+Tue Nov 13 18:07:35 2001  init.c:31 [irc_phandler_receive] got &lt;iq id='A7' to='#<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">plug at irc.localhost</A>' type='set' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">baloney at localhost</A>/Gabber'&gt;&lt;enter xmlns='jabber:iq:conference'&gt;&lt;nickname&gt;zimdude&lt;/nickname&gt;&lt;/enter&gt;&lt;/iq&gt;
+Tue Nov 13 18:07:35 2001  init.c:49 [irc_phandler_receive] handing off to mtq
+Tue Nov 13 18:07:35 2001  mtq 8157238 leaving to pth
+Tue Nov 13 18:07:35 2001  mtq 81674D8 entering from pth
+Tue Nov 13 18:07:35 2001  mtq 81674D8 queue call 8201BD8
+Tue Nov 13 18:07:35 2001  irc_in.c:190 [irc_parser] found a session for user <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">baloney at localhost</A>/Gabber
+Tue Nov 13 18:07:35 2001  irc_in.c:284 [irc_parser] starting a new channel for user <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">baloney at localhost</A>/Gabber
+Tue Nov 13 18:07:35 2001  mio.c:1032 mio_write called on x: 0 buffer: JOIN #plug 
+
+Tue Nov 13 18:07:35 2001  mtq 81674D8 leaving to pth
+Tue Nov 13 18:07:35 2001  mio.c:600 mio while loop top
+Tue Nov 13 18:07:35 2001  mio.c:613 mio while loop, working
+Tue Nov 13 18:07:35 2001  mio.c:275 write_dump writing data: JOIN #plug 
+
+Tue Nov 13 18:07:35 2001  mio.c:600 mio while loop top
+Tue Nov 13 18:07:35 2001  mio.c:613 mio while loop, working
+Tue Nov 13 18:07:35 2001  mio.c:750 MIO read from socket 14: :zimdude!<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">zimdude at 203.176.75.45</A> JOIN :#plug
+:<i>upcm.net 353 zimdude = #plug :zimdude @Triumph 
+</I>:<i>upcm.net 366 zimdude #plug :End of /NAMES list.
+</I>
+Tue Nov 13 18:07:35 2001  irc_out.c:279 [irc_parse_phase_two] in phase two: m81FD170 flag:1, arg:81FC118, buffer: :zimdude!<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">zimdude at 203.176.75.45</A> JOIN :#plug
+:<i>upcm.net 353 zimdude = #plug :zimdude @Triumph 
+</I>:<i>upcm.net 366 zimdude #plug :End of /NAMES list.
+</I>, bufsz:144
+Tue Nov 13 18:07:35 2001  log.c:105 &lt;log type='alert' from='irc_out.c:337'&gt;[irc_parse_phase_two] Unable to get channel #plug&lt;/log&gt;
+Tue Nov 13 18:07:35 2001  deliver.c:460 DELIVER 3:337 &lt;log type='alert' from='irc_out.c:337'&gt;[irc_parse_phase_two] Unable to get channel #plug&lt;/log&gt;
+Tue Nov 13 18:07:35 2001  deliver.c:651 delivering to instance 'elogger'
+20011113T10:07:35: [alert] (irc_out.c:337): [irc_parse_phase_two] Unable to get channel #plug
+Tue Nov 13 18:07:35 2001  dnsrv.c:143 dnsrv: Read error on coprocess(1): 2 No such file or directory
+Tue Nov 13 18:07:35 2001  dnsrv.c:157 DNSRV CHILD: out of loop.. exiting normal
+Segmentation fault (core dumped)
+
+
+I looked at the code of irc_out.c:
+
+            channel = xhash_get(s-&gt;channels, make_lowercase(icpr-&gt;next));
+
+            if(icpr-&gt;from == NULL)
+                continue;
+            if (channel == NULL) {
+                log_error(ZONE,&quot;[irc_parse_phase_two] Unable to get channel %s&quot;, icpr-&gt;next);
+            }
+            ptr = strchr(++icpr-&gt;from, '!');
+            ptr[0] = '\0';
+
+            /* someone is joining the channel */
+            p2 = pool_new();
+            u = pmalloco(p2, sizeof(_user));
+            u-&gt;p = p2;
+            u-&gt;user = make_lowercase(pstrdup(u-&gt;p, icpr-&gt;from));
+            u-&gt;id = jid_new(u-&gt;p, spools(p, channel-&gt;id, &quot;/&quot;, shahash(u-&gt;user), p));
+
+
+So, if channel == NULL, the error is printed but jid_new is called just the
+same.  What causes channel to be null?
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039460.html">[JDEV] AIM transport as ICQ transport replacement, away status	diff
+</A></li>
+	<LI>Next message: <A HREF="039456.html">[JDEV] 'JCF' IRC transport dumping core on channel change
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39448">[ date ]</a>
+              <a href="thread.html#39448">[ thread ]</a>
+              <a href="subject.html#39448">[ subject ]</a>
+              <a href="author.html#39448">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

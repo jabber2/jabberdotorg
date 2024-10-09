@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] SSL on FreeBSD
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20SSL%20on%20FreeBSD&In-Reply-To=%3CPine.OSX.4.40.0110101010060.6645-100000%40titatovenaar.sfo.covalent.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039004.html">
+   <LINK REL="Next"  HREF="039128.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] SSL on FreeBSD</H1>
+    <B>Dirk-Willem van Gulik</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20SSL%20on%20FreeBSD&In-Reply-To=%3CPine.OSX.4.40.0110101010060.6645-100000%40titatovenaar.sfo.covalent.net%3E"
+       TITLE="[JDEV] SSL on FreeBSD">dirkx at covalent.net
+       </A><BR>
+    <I>Wed Oct 10 12:11:43 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039004.html">[JDEV] (announcement) mod_auth_jabber v1.02
+</A></li>
+        <LI>Next message: <A HREF="039128.html">[JDEV] SSL on FreeBSD
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39127">[ date ]</a>
+              <a href="thread.html#39127">[ thread ]</a>
+              <a href="subject.html#39127">[ subject ]</a>
+              <a href="author.html#39127">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>To get jabber 1.4.1 to do SSL on FreeBSD I needed to do what is below. It
+seems that the exit code is more subtle than just ok/nok.
+
+Dw.
+
+
+diff -c3 -r jabber-1.4.1/jabberd/mio_ssl.c
+jabber-1.4.1.new/jabberd/mio_ssl.c
+*** jabber-1.4.1/jabberd/mio_ssl.c      Thu Feb  1 12:46:49 2001
+--- jabber-1.4.1.new/jabberd/mio_ssl.c  Mon Oct  1 13:26:17 2001
+***************
+*** 3,8 ****
+--- 3,9 ----
+  #ifdef HAVE_SSL
+  HASHTABLE ssl__ctxs;
+
++ #include &lt;openssl/err.h&gt;
+
+  #ifndef NO_RSA
+  /* This function will generate a temporary key for us */
+***************
+*** 165,183 ****
+      log_debug(ZONE, &quot;SSL accepting socket with new session %x&quot;, ssl);
+      SSL_set_fd(ssl, fd);
+      SSL_set_accept_state(ssl);
+!     if(SSL_accept(ssl) &lt;= 0){
+          unsigned long e;
+          static char *buf;
+
+          e = ERR_get_error();
+          buf = ERR_error_string(e, NULL);
+!         log_debug(ZONE, &quot;Error from SSL: %s&quot;, buf);
+          log_debug(ZONE, &quot;SSL Error in SSL_accept call&quot;);
+          SSL_free(ssl);
+          close(fd);
+          return -1;
+      }
+!
+      m-&gt;ssl = ssl;
+
+      log_debug(ZONE, &quot;Accepted new SSL socket %d for %s&quot;, fd, m-&gt;ip);
+--- 166,191 ----
+      log_debug(ZONE, &quot;SSL accepting socket with new session %x&quot;, ssl);
+      SSL_set_fd(ssl, fd);
+      SSL_set_accept_state(ssl);
+! redo:
+! {    int ex = SSL_accept(ssl);
+!
+!      if (ex &lt; 0) {
+!       /* not right - 0 is controlled shutdown; -1 can have more meanings
+*/
+          unsigned long e;
+          static char *buf;
+
+          e = ERR_get_error();
++       if ((e==0) || (e == SSL_ERROR_WANT_READ) || ( e ==
+SSL_ERROR_WANT_WRITE))
++               goto redo;
++
+          buf = ERR_error_string(e, NULL);
+!         log_debug(ZONE, &quot;Error %d/%d from SSL: %s&quot;, ex,e,buf);
+          log_debug(ZONE, &quot;SSL Error in SSL_accept call&quot;);
+          SSL_free(ssl);
+          close(fd);
+          return -1;
+      }
+! }
+      m-&gt;ssl = ssl;
+
+      log_debug(ZONE, &quot;Accepted new SSL socket %d for %s&quot;, fd, m-&gt;ip);
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039004.html">[JDEV] (announcement) mod_auth_jabber v1.02
+</A></li>
+	<LI>Next message: <A HREF="039128.html">[JDEV] SSL on FreeBSD
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39127">[ date ]</a>
+              <a href="thread.html#39127">[ thread ]</a>
+              <a href="subject.html#39127">[ subject ]</a>
+              <a href="author.html#39127">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

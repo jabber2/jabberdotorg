@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Perl Programming Examples
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Perl%20Programming%20Examples&In-Reply-To=3FF96ADE.4000003%40myrealbox.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="018499.html">
+   <LINK REL="Next"  HREF="018501.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Perl Programming Examples</H1>
+    <B>Tiago Almeida</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Perl%20Programming%20Examples&In-Reply-To=3FF96ADE.4000003%40myrealbox.com"
+       TITLE="[JDEV] Perl Programming Examples">tiago.almeida at co.clix.pt
+       </A><BR>
+    <I>Mon Jan  5 08:13:36 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="018499.html">[JDEV] Perl Programming Examples
+</A></li>
+        <LI>Next message: <A HREF="018501.html">[JDEV] FW: [News] JSF: Membership Application Period
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#18500">[ date ]</a>
+              <a href="thread.html#18500">[ thread ]</a>
+              <a href="subject.html#18500">[ subject ]</a>
+              <a href="author.html#18500">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+you can use Net::Jabber and all of is bundle, it should be
+self-explanatory.
+
+anyway take also a look at :
+<A HREF="http://www.jabberstudio.org/cgi-bin/viewcvs.cgi/*checkout*/chatbot/chatbot?content-type=text%2Fplain&amp;rev=1.51">http://www.jabberstudio.org/cgi-bin/viewcvs.cgi/*checkout*/chatbot/chatbot?content-type=text%2Fplain&amp;rev=1.51</A>
+
+
+or if it is for a simple use try this:
+
+#! /usr/bin/perl
+
+ use Net::Jabber qw (Client);
+ use vars qw/%presence/;
+ use XML::Simple;
+ use strict;
+
+ use constant SERVER    =&gt; 'jabber server';  # Jabber server to connect
+to
+ use constant PORT      =&gt; jabber server port;          # Port to
+connect to
+ use constant USER      =&gt; 'jabber username';      # user this script
+connects as
+ use constant PASSWORD  =&gt; 'jabber pwd';    # password associated with
+USER
+ use constant RESOURCE  =&gt; 'perlscript';
+
+
+ my $Con = new Net::Jabber::Client();
+ $Con -&gt;Connect(&quot;hostname&quot; =&gt; SERVER) or die&quot;\n$@\n&quot;;
+
+ my @result = $Con -&gt;AuthSend(
+       &quot;username&quot; =&gt; USER,
+       &quot;password&quot; =&gt; PASSWORD,
+       &quot;resource&quot; =&gt; RESOURCE
+ );
+
+ $Con-&gt;SetCallBacks(&quot;message&quot; =&gt; \&amp;handle_message);
+ $Con-&gt;PresenceSend();
+
+
+ sub handle_message {
+        shift;
+        my $foo = new Net::Jabber::Message(@_);
+        my $from = $foo-&gt;GetFrom();
+        my $JID = new Net::Jabber::JID($from);
+        my $userid   = $JID-&gt;GetUserID();
+        my $msg_get = shift;
+# if the message is offline it will be ignored 
+        return if(defined($msg_get-&gt;{CHILDREN}-&gt;{x}));
+        my $MSG = $msg_get-&gt;GetBody();
+        my $texto = $MSG;
+        my $clixid;
+        return if(!defined($MSG));
+        print &quot;\n$MSG\n&quot;;
+
+        my $msg = Net::Jabber::Message-&gt;new();
+       $msg-&gt;SetMessage( &quot;to&quot; =&gt; $userid.&quot;\@jabber server hostname&quot;,
+                         &quot;body&quot; =&gt; $texto);
+       $Con-&gt;Send($msg);
+ }
+
+ while (1) { $Con-&gt;Process(1) }
+
+regards,
+
+Tiago Almeida
+
+
+On Mon, 2004-01-05 at 13:47, Rajkumar S wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> Any one with some perl example of how to receive messaged using perl? I 
+</I>&gt;<i> have the send part working nicely.
+</I>&gt;<i> 
+</I>&gt;<i> raj
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="018499.html">[JDEV] Perl Programming Examples
+</A></li>
+	<LI>Next message: <A HREF="018501.html">[JDEV] FW: [News] JSF: Membership Application Period
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#18500">[ date ]</a>
+              <a href="thread.html#18500">[ thread ]</a>
+              <a href="subject.html#18500">[ subject ]</a>
+              <a href="author.html#18500">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

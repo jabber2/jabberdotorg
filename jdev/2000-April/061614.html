@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] encryption
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20encryption&In-Reply-To=%3Cv03130300b52f7ffebd4c%40%5B216.217.178.110%5D%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="061612.html">
+   <LINK REL="Next"  HREF="061613.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] encryption</H1>
+    <B>Duane Maxwell</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20encryption&In-Reply-To=%3Cv03130300b52f7ffebd4c%40%5B216.217.178.110%5D%3E"
+       TITLE="[JDEV] encryption">dmaxwell at entrypoint.com
+       </A><BR>
+    <I>Fri Apr 28 13:23:22 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="061612.html">[JDEV] encryption
+</A></li>
+        <LI>Next message: <A HREF="061613.html">[JDEV] encryption
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61614">[ date ]</a>
+              <a href="thread.html#61614">[ thread ]</a>
+              <a href="subject.html#61614">[ subject ]</a>
+              <a href="author.html#61614">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>You have a couple of problems here, both related to the fact that XML is
+really a text-based scheme, with very specific rules for the encoding of
+data.
+
+What this means is that you have to take special care when you're sending
+non-text data.  In other protocols that sometimes need to carry binary
+data, such as mail, the usual answer is to map the raw binary data to a
+legal textual representation, typically, Base64.  The basic idea is that
+you take three raw 8-bit bytes, which together represent 24 bits, and split
+them up into four 6-bit bytes (64 possible values), and encode them using
+upper and lower case letters (52 values), digits (10 values), and two other
+common ASCII characters, + and / (2 values).  What this means is that your
+data size increases by one-third, but it's valid text and can be safely
+sent within XML with no other special handling.  Another simpler, but more
+inefficient, answer is to dump the raw data as hex digits.
+
+So the other issue is the encoding of characters with the high-bit set.
+The meaning of characters from 0x80 through 0xFF is very platform
+dependent.  XML by default uses a character encoding scheme called 'UTF-8',
+which interprets the high bit as a method for extending the character set
+in a very specific way that precludes you from just including arbitrary
+extended ASCII characters and having them work as you expect.
+
+What you should do, if you plan on embedding such characters in your text,
+is to escape them using a method similar to the one you must use to embed
+things like '&gt;' and '&lt;' (you _are_ doing this, aren't you?).  To encode the
+character at 0x89, for instance, you'd replace it by '&amp;#x89;'.  Keep in
+mind, again, that your characters has no consistent cross-platform meaning.
+You should also encode other non-printable characters in the 7-bit ASCII
+range the same way.
+
+Somebody brought up the idea of using CDATA sections.  This really just
+keeps the parser from interpreting the text as XML, but really doesn't
+solve the extended ASCII problem - also, you still have to be careful that
+the CDATA terminator is not in the text.  I've found them to be of marginal
+value.
+
+Regards -
+
+-- Duane
+
+chandan writes:
+&gt;<i>  Hi all,
+</I>&gt;<i>       I am working in a Internet based project where we are using Instant
+</I>&gt;<i>Messaging
+</I>&gt;<i>       service using Jabber Server. ( Using Win32 COM Object. )
+</I>&gt;<i>       We are implementing security featrure in Jabber IM service at
+</I>&gt;<i>client side.
+</I>&gt;<i>        While sending message, we first encrypt it, send message to
+</I>&gt;<i>server, store it at
+</I>&gt;<i>        server in encrypted form and then decrypt it at client side when
+</I>&gt;<i>he receives
+</I>&gt;<i>        message. But we are facing following problem.
+</I>&gt;<i> 
+</I>&gt;<i>       1.  When we send a message to another client, It goes thr jabber
+</I>&gt;<i>server.
+</I>&gt;<i>             At that time, message is in encrypted form. When jabber
+</I>&gt;<i>server receives
+</I>&gt;<i>             encrypted message, it gives error &quot;Invalid XML received&quot; .
+</I>&gt;<i> 
+</I>&gt;<i>       2. If we remove encryption, and send message which contains characters
+</I>&gt;<i>           like &#166; ( ascii value = 199) or other characters like that ,
+</I>&gt;<i>then jabber server
+</I>&gt;<i>           responds with same error that &quot;Invalid XML received&quot; .
+</I>&gt;<i> 
+</I>&gt;<i>           So message is not forwarded to other client.
+</I>&gt;<i>           Doesn't jabber server support these characters in message body?
+</I>&gt;<i>           If it doesn't support, then how can we encrypt it since while
+</I>&gt;<i>encryption,
+</I>&gt;<i>          these  characters will come in message body.
+</I>&gt;<i>          How can we handle this issue of security?
+</I>&gt;<i>          Can you provide some solution to this or alternative to this ?
+</I>&gt;<i>
+</I>&gt;<i>         Thanking in advance,
+</I>&gt;<i>
+</I>&gt;<i>         chandan .
+</I>&gt;<i> 
+</I>&gt;<i>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i>
+</I>&gt;<i> 
+</I>
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="061612.html">[JDEV] encryption
+</A></li>
+	<LI>Next message: <A HREF="061613.html">[JDEV] encryption
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61614">[ date ]</a>
+              <a href="thread.html#61614">[ thread ]</a>
+              <a href="subject.html#61614">[ subject ]</a>
+              <a href="author.html#61614">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

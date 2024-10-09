@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Dialup and laptop users, lost packets, and faulty presence info
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Dialup%20and%20laptop%20users%2C%20lost%20packets%2C%20and%20faulty%20presence%0A%20info&In-Reply-To=%3C3CE47249.9070302%40phoenix-int.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="071324.html">
+   <LINK REL="Next"  HREF="071325.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Dialup and laptop users, lost packets, and faulty presence info</H1>
+    <B>Nathan Sharp</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Dialup%20and%20laptop%20users%2C%20lost%20packets%2C%20and%20faulty%20presence%0A%20info&In-Reply-To=%3C3CE47249.9070302%40phoenix-int.com%3E"
+       TITLE="[JDEV] Dialup and laptop users, lost packets, and faulty presence info">spamnps+jabber at phoenix-int.com
+       </A><BR>
+    <I>Thu May 16 22:00:25 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="071324.html">[JDEV] Dialup and laptop users, lost packets, and faulty presence info
+</A></li>
+        <LI>Next message: <A HREF="071325.html">[JDEV] Dialup and laptop users, lost packets, and faulty presence info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71326">[ date ]</a>
+              <a href="thread.html#71326">[ thread ]</a>
+              <a href="subject.html#71326">[ subject ]</a>
+              <a href="author.html#71326">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Robert,
+
+Great to hear that 1.5 should be easy (1.4 was pretty easy).  I do have 
+some bad news from preliminary testing, though.  Exodus's receive thread 
+crashes because of this.  The culprit seems to be XMLStream.pas, the 
+function TParseThread.getFullTag has the following code:
+
+    /// find the first tag
+/    p := Pos(*'&lt;'*, sbuff);
+    *if* p &lt;= 0 *then* *raise* EXMLStream.Create(*''*);
+
+There is no code that I can find which catches this exception, hence the 
+thread dying (Exodus stops receiving anything after a heartbeat).  This 
+code needs to be modified to just return '' if the input string is 
+blank.  I experimented a little with having the server send &quot;&lt;iq/&gt;&quot; for 
+a heartbeat instead of &quot; \n&quot;, which works great although is technically 
+a wrong thing to do.  I don't have delphi so either I'm going to need to 
+get someone to compile a fixed version of Exodus 0.6.0.0, or have an 
+option for the server's heartbeat function to send something other than 
+whitespace.  Hopefully other clients won't exhibit this behavior (so far 
+psi and gaim seem o.k.).
+
+Anyhow, not to get ahead of myself, I haven't proven yet that this fixes 
+the original problem.  Once I do I'll certainly post here what I have.
+
+Thanks again!
+  Nathan
+
+Robert Norris wrote:
+
+&gt;<i>1.5 is a complete rewrite. The code is quite clean and it should be a
+</I>&gt;<i>trivial matter to add this. Write a small function that walks c2s-&gt;conns
+</I>&gt;<i>(and possibly c2s-&gt;pending), and calls _write_actual for each one. Hook
+</I>&gt;<i>this into the main loop (jadc2s.c:246). MIO will take care of catching
+</I>&gt;<i>any error condition and running the appropriate callbacks to clean up.
+</I>&gt;<i>
+</I>&gt;<i>Hmm, maybe I'll write it myself :P
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="071324.html">[JDEV] Dialup and laptop users, lost packets, and faulty presence info
+</A></li>
+	<LI>Next message: <A HREF="071325.html">[JDEV] Dialup and laptop users, lost packets, and faulty presence info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71326">[ date ]</a>
+              <a href="thread.html#71326">[ thread ]</a>
+              <a href="subject.html#71326">[ subject ]</a>
+              <a href="author.html#71326">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] sm memory leaks
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sm%20memory%20leaks&In-Reply-To=%3C20040302214317.GA704%40gideon.its.monash.edu.au%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="048172.html">
+   <LINK REL="Next"  HREF="048175.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] sm memory leaks</H1>
+    <B>Robert Norris</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sm%20memory%20leaks&In-Reply-To=%3C20040302214317.GA704%40gideon.its.monash.edu.au%3E"
+       TITLE="[jdev] sm memory leaks">rob at cataclysm.cx
+       </A><BR>
+    <I>Tue Mar  2 15:43:17 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="048172.html">[jdev] sm memory leaks
+</A></li>
+        <LI>Next message: <A HREF="048175.html">[jdev] sm memory leaks
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48174">[ date ]</a>
+              <a href="thread.html#48174">[ thread ]</a>
+              <a href="subject.html#48174">[ subject ]</a>
+              <a href="author.html#48174">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tue, Mar 02, 2004 at 01:08:29PM -0500, Bob Phan wrote:
+&gt;<i> I've been trying to get j2 to scale.  So far, I've been able to get
+</I>&gt;<i> about 8000 connections to the server before sm consumes about 3gigs of
+</I>&gt;<i> memory and then locks up the system.  I'm fairly sure that 8000
+</I>&gt;<i> connections doesn't _require_ 3gigs of ram, so there must be some kind
+</I>&gt;<i> of memory leak in the sm.
+</I>&gt;<i> 
+</I>&gt;<i> I'm curious if this is a known issue.  Also, I'd like to be able to
+</I>&gt;<i> help track down and fix whatever memory leaks may exist in the sm.
+</I>&gt;<i> If anyone could give me any help as to where to begin or how to
+</I>&gt;<i> go about this, it would help out a lot.  I don't think blindly
+</I>&gt;<i> diving into the sm code would be the best approach for this, so if
+</I>&gt;<i> you know any sections of the code that may be linked to the sm
+</I>&gt;<i> leakage, I'll start looking around there and try and patch up the
+</I>&gt;<i> leaks.
+</I>
+j2 is currently pretty lousy when it comes to memory management. It
+generally assumes that it can get as much memory as it wants. Certain
+things (eg the JID cache) are never freed or cleaned up, and can grow
+forever.
+
+A real memory management plan is being developed for the next round of
+server work, which should alleviate this.
+
+As for dicovering real memory leaks, I suggest checking out
+<A HREF="http://valgrind.kde.org/">http://valgrind.kde.org/</A> . I usually run it as:
+
+  valgrind --skin=memcheck --num-callers=8 --leak-check=yes --show-reachable=yes
+
+Run the j2 pieces inside it, do your tests, and take a look at the
+valgrind logs when you're done. It will identify leaked memory.
+
+Rob.
+
+-- 
+Robert Norris                                       GPG: 1024D/FC18E6C2
+Email+Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rob at cataclysm.cx</A>                Web: <A HREF="http://cataclysm.cx/">http://cataclysm.cx/</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: Digital signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20040303/47b2ff55/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20040303/47b2ff55/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="048172.html">[jdev] sm memory leaks
+</A></li>
+	<LI>Next message: <A HREF="048175.html">[jdev] sm memory leaks
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48174">[ date ]</a>
+              <a href="thread.html#48174">[ thread ]</a>
+              <a href="subject.html#48174">[ subject ]</a>
+              <a href="author.html#48174">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

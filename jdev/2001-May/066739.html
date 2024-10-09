@@ -1,0 +1,192 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] scaling with jpolld (was JPOLLD)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20scaling%20with%20jpolld%20%28was%20JPOLLD%29&In-Reply-To=%3C5.1.0.14.2.20010529172356.03092a70%40world.std.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="066704.html">
+   <LINK REL="Next"  HREF="066681.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] scaling with jpolld (was JPOLLD)</H1>
+    <B>Oliver Jones</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20scaling%20with%20jpolld%20%28was%20JPOLLD%29&In-Reply-To=%3C5.1.0.14.2.20010529172356.03092a70%40world.std.com%3E"
+       TITLE="[JDEV] scaling with jpolld (was JPOLLD)">oj at world.std.com
+       </A><BR>
+    <I>Tue May 29 17:16:15 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="066704.html">[JDEV] JPOLLD
+</A></li>
+        <LI>Next message: <A HREF="066681.html">[JDEV] Jabberoo Documentation (fwd)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66739">[ date ]</a>
+              <a href="thread.html#66739">[ thread ]</a>
+              <a href="subject.html#66739">[ subject ]</a>
+              <a href="author.html#66739">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>At 08:00 PM 5/28/01 -0700, Kong Putra Yohanes wrote:
+&gt;<i>I have set jabber server host name as digimon.com
+</I>&gt;<i>(that's my computer name's, before that i set to
+</I>&gt;<i>192.0.0.24) like this :
+</I>&gt;<i>&lt;host&gt;&lt;jabberd:cmdline
+</I>&gt;<i>flag=&quot;h&quot;&gt;digimon.com&lt;/jabberd:cmdline&gt;&lt;/host&gt;
+</I>
+If I understand what you are saying, you want your Jabber users to connect 
+to your server at digimon.com, and you want their Jabber identifiers to be 
+like <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kong at digimon.com.</A>
+
+This means incoming client connect requests will be coming to digimon.com, 
+port 5222.
+
+So you must, as you write above, tell the jabberd server that its hostname 
+is digimon.com.
+
+Next, you have to contrive to get a program to listen to port 5222 on the 
+machine whose IP address comes from looking up digimon.com.  That you can 
+do with jpolld.
+
+Third, if I understand you right, you are attempting to run jpolld and 
+jabberd on the same machine.  That's fine, but you have to prevent jabberd 
+from trying to listen to port 5222, or it will conflict with jpolld.
+
+So, you'll want to run jpolld with a command line like this:
+
+       jpolld -h 127.0.0.1 -d 5225 -n c2s -s test
+
+This tells jpolld to initiate connection to jabberd at host:port 
+127.0.0.1:5225.
+
+Then, in jabber.xml (which needs to be named digmon.com.xml in your 
+installation if you have things set up standard), you need to do two things.
+
+1) make jabberd NOT listen on port 5222 for client connections.
+
+2) make it listen on port 5225 for a jpolld connection.
+
+To do the first of these things, remove this stanza from the XML file.
+   &lt;service id=&quot;c2s&quot;&gt;
+         ... yadda yadda yadda ...
+   &lt;/service&gt;
+
+To do the second thing, add this stanza.  It tells jabberd to listen for a 
+connection from a jpolld at 127.0.0.1:5225.
+
+  &lt;service id=&quot;c2s&quot;&gt;
+   &lt;accept&gt;
+    &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+    &lt;secret&gt;test&lt;/secret&gt;
+    &lt;port&gt;5225&lt;/port&gt;
+   &lt;/accept&gt;
+  &lt;/service&gt;
+
+Note well:  the jabberd software does NOT have to run on the same machine 
+as jpolld, even though this example uses the localhost (127.0.0.1) IP 
+number.  jpolld MUST be running on the machine whose name is digimon.com so 
+users can connect, but jabberd can run anywhere.  Jabberd's configuration 
+file should still tell jabberd that its server name is digimon.com, of course.
+
+--------------------
+
+Now, of course the point of jpolld is to let you run multiple 
+jpollds.  This allows your jabber setup to accept larger number of 
+connections.  You should plan for this I think (otherwise why mess about 
+with jpolld at all? It just makes things more complex.)
+
+The first part of your plan is to allocate a host name for your jabber 
+server.  For example, jabber.digimon.com might be good in your case.
+
+The second part is to get several different IP numbers to run the jpolld 
+server on, and set up round robin DNS or some other load-distribution scheme.
+
+The third part is to set up jabberd to run on a back-end machine; let's 
+call that machine backend.digimon.com.  Suppose also that its IP number is 
+192.168.1.1.
+
+The fourth part is to run a separate jpolld on each server in the 
+round-robin.  Here are the commands you'd use to run the two jpollds (one 
+on each server).
+
+       jpolld -h backend.digimon.com -d 6221 -n c2sa -s test
+       jpolld -h backend.digimon.com -d 6222 -n c2sb -s test
+
+The fifth part is to configure your XML file with these TWO stanzas, one 
+for each jpolld.
+
+  &lt;!--  first jpolld --&gt;
+  &lt;service id=&quot;c2sa&quot;&gt;     &lt;!-- service name matching jpolld's -n param --&gt;
+   &lt;accept&gt;
+    &lt;ip&gt;192.168.1.1&lt;/ip&gt;  &lt;!-- IP matching jpolld's -h param --&gt;
+    &lt;secret&gt;test&lt;/secret&gt; &lt;!-- password matching jpolld's -s param --&gt;
+    &lt;port&gt;6221&lt;/port&gt;     &lt;!-- port matching jpolld's -d param --&gt;
+   &lt;/accept&gt;
+  &lt;/service&gt;
+
+  &lt;!--  second jpolld --&gt;
+  &lt;service id=&quot;c2sb&quot;&gt;     &lt;!-- service name matching jpolld's -n param --&gt;
+   &lt;accept&gt;
+    &lt;ip&gt;192.168.1.1&lt;/ip&gt;  &lt;!-- IP matching jpolld's -h param --&gt;
+    &lt;secret&gt;test&lt;/secret&gt; &lt;!-- password matching jpolld's -s param --&gt;
+    &lt;port&gt;6222&lt;/port&gt;     &lt;!-- port matching jpolld's -d param --&gt;
+   &lt;/accept&gt;
+  &lt;/service&gt;
+
+-------------------------------
+
+Take care that the jabberd starts before the jpollds.  If the jpollds can't 
+find jabberd they will shut down right when they start.
+
+--------------------------------
+
+This should do the trick for you.  I got this working on March 29th, and my 
+jabber setup has been running flawlessly since then and processed about a
+quarter million messages.  I have seven jpollds talking to a single jabberd.
+
+--------------------------------
+You wrote:
+&gt;<i>   &lt;service id=&quot;c2s&quot;&gt;
+</I>&gt;<i>     &lt;host&gt;jpolld.192.0.0.5&lt;/host&gt;
+</I>
+Note your host name isn't valid here.  It isn't either a host name or an IP 
+number.  Plus, you don't want to put a host name here anyhow.
+
+&gt;<i>[1] Adding conn at 2
+</I>&gt;<i>[1] Max PFD: 2
+</I>&gt;<i>[1] Conn gone, mpfd: 1
+</I>
+This means your client connection is getting kicked out as soon as it 
+arrives because of configuration errors.
+
+Good luck!
+
+Oliver Jones
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="066704.html">[JDEV] JPOLLD
+</A></li>
+	<LI>Next message: <A HREF="066681.html">[JDEV] Jabberoo Documentation (fwd)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66739">[ date ]</a>
+              <a href="thread.html#66739">[ thread ]</a>
+              <a href="subject.html#66739">[ subject ]</a>
+              <a href="author.html#66739">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Suggestions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Suggestions&In-Reply-To=199904252126.QAA02744%40hawthorne.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000499.html">
+   <LINK REL="Next"  HREF="000513.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Suggestions</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Suggestions&In-Reply-To=199904252126.QAA02744%40hawthorne.com"
+       TITLE="[JDEV] Suggestions">tcharron at nermail.ups.com
+       </A><BR>
+    <I>Mon Apr 26 10:31:34 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000499.html">[JDEV] Suggestions
+</A></li>
+        <LI>Next message: <A HREF="000513.html">[JDEV] Suggestions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#509">[ date ]</a>
+              <a href="thread.html#509">[ thread ]</a>
+              <a href="subject.html#509">[ subject ]</a>
+              <a href="author.html#509">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">owner-jdev at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">owner-jdev at jabber.org</A>]On Behalf Of
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at raystewart.com</A>
+</I>&gt;<i> Subject: [JDEV] Suggestions
+</I>&gt;<i> I got the jabber source from CVS and have started my examination of it
+</I>&gt;<i> so that I could begin design on a client library. However, I've found
+</I>&gt;<i> some other interesting topics that I believe we should probably
+</I>&gt;<i> address first. It's primarily design issues, and I'm trying to give
+</I>&gt;<i> constructive criticism. :)
+</I>
+	I'm insulted..  I think I shall now have to put on my black trench, grab my
+copy of Doom, and head over to your house..
+
+	(*JOKE!!!!*)
+
+&gt;<i> To begin, let's start with a technique known as &quot;commenting&quot;. :) I
+</I>
+	Never heard of it..  ;-P  Seriously, though, I do have my current code
+commented, but have not checked in to CVS as of yet. (And seeing how this is
+the Win32 code, prob. won't do you much good, beside's, perhaps, a simpler
+example of using xpt_pool..)
+
+&gt;<i> code, so I know how much of a pain it is to put comments in while
+</I>&gt;<i> you're hacking. However, in a project of this size, it is absolutely
+</I>&gt;<i> *critical* that each person submit commented code. Now, before you get
+</I>
+	'Spec with Windows code..  With all of the bloat that Visual C++ has in it,
+good commenting is critical to understand what the hell is going on under
+the hood.  I totally understandwhere your comming from..
+
+&gt;<i> too steamed, let me laud you on the amount of design documents and
+</I>&gt;<i> discussion. Great job! Be aware, though, that in order for the code to
+</I>&gt;<i> be maintainable, people must understand the interactions. For example,
+</I>&gt;<i> I have found little-&gt;no information on any of the lib/ functions or
+</I>&gt;<i> types. What's an xpt_pool? What's it used for? What's a jpair? You
+</I>&gt;<i> follow?
+</I>
+	Sshh..  You want us to give away our secrets??  But then people could
+UNDERSTAND it, and we wouldn't look NEARLY as SMART!!  (ANOTHER JOKE!..
+Jer, put DOWN THAT GUN, RIGHT NOW!!)
+
+&gt;<i> From what I've read of the lib/ functions, it looks like you're using
+</I>&gt;<i> async sockets, with polling, to handle multiple connections. Is there
+</I>&gt;<i> a performance advantage to using this over threads &amp; sync sockets? I'm
+</I>&gt;<i> not all that knowledgeble on async sockets, but I *do* know that
+</I>&gt;<i> polling is Bad News (tm). Furthermore, it tends to make the code more
+</I>&gt;<i> complicated, since each connection must be examined -- even if it's
+</I>&gt;<i> not busy.
+</I>
+	Which is why in the Windows code, I'm not using a bit of their networking
+code.  Microsoft Foundation Classes has a class named, ironically enough,
+CAsyncSocket, which uses callbacks to tell you when you can send/recieve.
+Here's a breif desc. of how it works:
+
+You try to send out using CAsyncSocket::Send().  If it fails, add it to an
+outgoing buffer.  Also set up a timer to call CAsyncSocket::Recieve() a
+couple times a second. If either fails becouse of blocking, when the socket
+is free again, the functions that you override, CJabberSocket::OnSend() and
+CJabberSocket::OnRecieve(), are called.  As much as I don't like Microsoft
+as a company, MFC is pretty damned nice..
+
+Also, when you call Connect(), you can go on your merry way, as OnConnect()
+is called when it connects.  There are several callbacks that allow you to
+thread is and work off of callbacks.
+
+If you KNOW of any non Microsoft classes that do this as well, I'd LOVE to
+get my hands on 'em.  I could then make my libs cross platform vs. tied to
+Microsoft OS's..
+
+--
+Thomas Charron
+United Parcel Service
+Northeast Region
+&quot;Moving at the speed of a T3 Trunk Line!&quot;
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000499.html">[JDEV] Suggestions
+</A></li>
+	<LI>Next message: <A HREF="000513.html">[JDEV] Suggestions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#509">[ date ]</a>
+              <a href="thread.html#509">[ thread ]</a>
+              <a href="subject.html#509">[ subject ]</a>
+              <a href="author.html#509">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

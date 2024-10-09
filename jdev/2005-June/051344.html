@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] using XMPP for discovery of SIP addresses
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20using%20XMPP%20for%20discovery%20of%20SIP%20addresses&In-Reply-To=%3C42AAD976.7060203%40laposte.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="051343.html">
+   <LINK REL="Next"  HREF="051363.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] using XMPP for discovery of SIP addresses</H1>
+    <B>Julien PUYDT</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20using%20XMPP%20for%20discovery%20of%20SIP%20addresses&In-Reply-To=%3C42AAD976.7060203%40laposte.net%3E"
+       TITLE="[jdev] using XMPP for discovery of SIP addresses">julien.puydt at laposte.net
+       </A><BR>
+    <I>Sat Jun 11 07:30:46 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="051343.html">[jdev] using XMPP for discovery of SIP addresses
+</A></li>
+        <LI>Next message: <A HREF="051363.html">[jdev] using XMPP for discovery of SIP addresses
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51344">[ date ]</a>
+              <a href="thread.html#51344">[ thread ]</a>
+              <a href="subject.html#51344">[ subject ]</a>
+              <a href="author.html#51344">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Anthony Baxter a &#233;crit :
+
+&gt;<i> I'm the author of a package called Shtoom, a VoIP software suite
+</I>&gt;<i> written in Python (using Twisted). I'm thinking about adding Jabber
+</I>&gt;<i> support to Shtoom for the purposes of discovering someone else's 
+</I>&gt;<i> SIP address (thus avoiding the need for a SIP registration server,
+</I>&gt;<i> plus people can use their existing Jabber accounts rather than having
+</I>&gt;<i> to create a new identity). I'm at something of a loss as to how to
+</I>&gt;<i> do this - should Shtoom publish the SIP address, or should it instead
+</I>&gt;<i> ask another XMPP client &quot;I want to make a SIP call&quot;, and it can then
+</I>&gt;<i> decide to send back the SIP address. I've not been able to find existing
+</I>&gt;<i> work in this area - TINS looks interesting, but it's not really what 
+</I>&gt;<i> I'm looking for right now.
+</I>
+I already wrote to discuss it some time ago ; the proposed solution was 
+the following:
+1) use disco to know the other end does VoIP ;
+
+2) discuss which VoIP protocol to use with the remote end like this:
+ASK:
+&lt;iq type='get'
+     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">boojum at localhost</A>/JabberHelper'
+     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">snark at localhost</A>/Babili'
+     id='neg1'&gt;
+   &lt;feature xmlns='<A HREF="http://jabber.org/protocol/feature-neg'">http://jabber.org/protocol/feature-neg'</A>&gt;
+     &lt;x xmlns='jabber:x:data' type='form'&gt;
+       &lt;field type='list-single' var='<A HREF="http://jabber.org/protocol/voip'">http://jabber.org/protocol/voip'</A>&gt;
+          &lt;option&gt;&lt;value&gt;h323&lt;/value&gt;&lt;/option&gt;
+          &lt;option&gt;&lt;value&gt;sip&lt;/value&gt;&lt;/option&gt;
+          &lt;option&gt;&lt;value&gt;callto&lt;/value&gt;&lt;/option&gt;
+       &lt;/field&gt;
+     &lt;/x&gt;
+   &lt;/feature&gt;
+&lt;/iq&gt;
+ANSWER:
+&lt;iq type='result'
+     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">boojum at localhost</A>/JabberHelper'
+     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">snark at localhost</A>/Babili'
+     id='msg_2'&gt;
+   &lt;feature xmlns='<A HREF="http://jabber.org/protocol/feature-neg'">http://jabber.org/protocol/feature-neg'</A>&gt;
+     &lt;x type='submit' xmlns='jabber:x:data'&gt;
+       &lt;field var='<A HREF="http://jabber.org/protocol/voip'">http://jabber.org/protocol/voip'</A>&gt;
+         &lt;value&gt;h323&lt;/value&gt;
+       &lt;/field&gt;
+     &lt;/x&gt;
+   &lt;/feature&gt;
+&lt;/iq&gt;
+
+3) Setup a call in the now known protocol:
+ASK:
+&lt;iq type='set'
+     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">boojum at localhost</A>/JabberHelper'
+     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">snark at localhost</A>/Babili'
+     id='neg1'&gt;
+   &lt;query xmlns='jabber:iq:oob'&gt;
+     &lt;url&gt;h323:h323.voxgratia.org&lt;/url&gt;
+     &lt;desc&gt;VoIP call&lt;/desc&gt;
+   &lt;/query&gt;
+&lt;/iq&gt;
+REPLY:
+&lt;iq type='result' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">boojum at localhost</A>/JabberHelper' id='neg1' 
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">snark at localhost</A>/Babili'/&gt;
+
+Notice that &quot;<A HREF="http://jabber.org/protocol/voip&quot;">http://jabber.org/protocol/voip&quot;</A> isn't valid yet, since I 
+didn't write to the registrar about it yet -- now that gossip seems to 
+go forth again, I'll certainly be more interested in doing so.
+
+Snark on #gnomemeeting
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="051343.html">[jdev] using XMPP for discovery of SIP addresses
+</A></li>
+	<LI>Next message: <A HREF="051363.html">[jdev] using XMPP for discovery of SIP addresses
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51344">[ date ]</a>
+              <a href="thread.html#51344">[ thread ]</a>
+              <a href="subject.html#51344">[ subject ]</a>
+              <a href="author.html#51344">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

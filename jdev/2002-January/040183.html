@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] How to create a new protocol?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20How%20to%20create%20a%20new%20protocol%3F&In-Reply-To=%3C5.1.0.14.2.20020117105640.02e745b8%40mail.echomine.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="040176.html">
+   <LINK REL="Next"  HREF="040111.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] How to create a new protocol?</H1>
+    <B>Chris Chen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20How%20to%20create%20a%20new%20protocol%3F&In-Reply-To=%3C5.1.0.14.2.20020117105640.02e745b8%40mail.echomine.com%3E"
+       TITLE="[JDEV] How to create a new protocol?">ckchris at idream.net
+       </A><BR>
+    <I>Thu Jan 17 13:00:45 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="040176.html">[JDEV] How to create a new protocol?
+</A></li>
+        <LI>Next message: <A HREF="040111.html">[JDEV] Jabber Redundancy
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40183">[ date ]</a>
+              <a href="thread.html#40183">[ thread ]</a>
+              <a href="subject.html#40183">[ subject ]</a>
+              <a href="author.html#40183">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Yes, depending on your needs, you can either implement your &quot;new protocol&quot; 
+by sending under a &lt;iq&gt; query message or through the &lt;x&gt; message.
+
+If you're using &lt;x&gt; messages, then all you need to do is send a message 
+that is similar to:
+
+&lt;message to=&quot;blah&quot; type=&quot;normal&quot; id=&quot;id_10001&quot;&gt;
+&lt;x xmlns=&quot;my:own:namespace&quot;&gt;
+&lt;test&gt;data&lt;/test&gt;
+&lt;/x&gt;
+&lt;/message&gt;
+
+
+This should work out ok.. Then you just need to parse the x message out 
+from the message and handle it accordingly.  Clients who do not support 
+this X Message should ignore it by default (since client X Messages are 
+mostly optional).  Thus, only your clients will know how to parse it and 
+will respond to such requests.
+
+WHat you can do is read up more on the other X Messages and you'll see how 
+they are sent.
+
+And remember not to use any namespace that starts out with &quot;jabber&quot; or 
+&quot;jabber:x&quot; as those are reserved.
+
+Thanks,
+Chris
+
+At 09:00 AM 1/16/2002, you wrote:
+&gt;<i>so can something similar to this be done when sending messages.  for
+</I>&gt;<i>instance, can i somehow send data with each messages that only my client will
+</I>&gt;<i>understand?  seems like the &quot;x&quot; child element of the message element is what
+</I>&gt;<i>this is for?  can someone give a simple example of how i would do this?
+</I>&gt;<i>
+</I>&gt;<i>thanks, zak.
+</I>&gt;<i>
+</I>&gt;<i>On Tuesday 15 January 2002 09:54 am, you wrote:
+</I>&gt;<i> &gt; You can create a new &lt;iq&gt; query type.. The problem you're having can be
+</I>&gt;<i> &gt; solved by sending the message to a specific JID, not just the &quot;standard
+</I>&gt;<i> &gt; JID&quot; of the client.  This means that you need to include the resource along
+</I>&gt;<i> &gt; with it.  Otherwise, when you don't, the server intercepts it and actuallyg
+</I>&gt;<i> &gt; vies you back what may be a public XML data.  THe request will not get
+</I>&gt;<i> &gt; received by the client side.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; So try changing your:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; to=&quot;mycomponent.server&quot;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; to:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at mycomponent.server</A>/Server&quot;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; or whatever your call your resource.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Currently, your TO is actually a request to the server.  You need to add
+</I>&gt;<i> &gt; the client's username to it and then the resource at the end.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks,
+</I>&gt;<i> &gt; Chris
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; At 03:03 AM 1/15/2002, you wrote:
+</I>&gt;<i> &gt; &gt;Hello!
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;I want to create my own protocol, but there is no documentation on how to
+</I>&gt;<i> &gt; &gt;do this.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;Client sends:
+</I>&gt;<i> &gt; &gt;&lt;iq type=&quot;get&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at server</A>&quot; to=&quot;mycomponent.server&quot;&gt;
+</I>&gt;<i> &gt; &gt;  &lt;query xmlns=&quot;jabber:mycomponent:party&quot;/&gt;
+</I>&gt;<i> &gt; &gt;&lt;/iq&gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;Server returns:
+</I>&gt;<i> &gt; &gt;&lt;iq type=&quot;result&quot; from=&quot;mycomponent.server&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at server</A>&quot;&gt;
+</I>&gt;<i> &gt; &gt;  &lt;query xmlns=&quot;jabber:mycomponents:party&quot;&gt;
+</I>&gt;<i> &gt; &gt;   &lt;party type=&quot;hacker party&quot;&gt;
+</I>&gt;<i> &gt; &gt;    &lt;participant&gt;
+</I>&gt;<i> &gt; &gt;     &lt;name&gt;John Carmack&lt;/name&gt;
+</I>&gt;<i> &gt; &gt;    &lt;/participant&gt;
+</I>&gt;<i> &gt; &gt;    &lt;participant&gt;
+</I>&gt;<i> &gt; &gt;     &lt;name&gt;Alan Cox&lt;/name&gt;
+</I>&gt;<i> &gt; &gt;    &lt;/participant&gt;
+</I>&gt;<i> &gt; &gt;   &lt;/party&gt;
+</I>&gt;<i> &gt; &gt;  &lt;/query&gt;
+</I>&gt;<i> &gt; &gt;&lt;/iq&gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;But no matter what data I send back to the client, Jabber strips any
+</I>&gt;<i> &gt; &gt;elements (subnodes to query) that are not included in an already existing
+</I>&gt;<i> &gt; &gt;XML name space.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;How do I define my own name space and tell Jabber what data is valid in
+</I>&gt;<i> &gt; &gt;that name space.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;When I test this Jabber returns my query with TWO instances of
+</I>&gt;<i> &gt; &gt;the attribute xmlns=&quot;jabber:mycomponents:party&quot; in the query element and
+</I>&gt;<i> &gt; &gt;none of the subnodes in the query element.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;I can return vcards, time, last and other data in already defined name
+</I>&gt;<i> &gt; &gt;spaces, how do I create my own?
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;/P
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;_______________________________________________
+</I>&gt;<i> &gt; &gt;jdev mailing list
+</I>&gt;<i> &gt; &gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt;<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; PGP at <A HREF="ldap://certserver.pgp.com/">ldap://certserver.pgp.com/</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+PGP at <A HREF="ldap://certserver.pgp.com/">ldap://certserver.pgp.com/</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="040176.html">[JDEV] How to create a new protocol?
+</A></li>
+	<LI>Next message: <A HREF="040111.html">[JDEV] Jabber Redundancy
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40183">[ date ]</a>
+              <a href="thread.html#40183">[ thread ]</a>
+              <a href="subject.html#40183">[ subject ]</a>
+              <a href="author.html#40183">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

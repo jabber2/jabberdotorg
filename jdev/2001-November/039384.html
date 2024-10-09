@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Trouble in making my own JUD component in Jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Trouble%20in%20making%20my%20own%20JUD%20component%20in%20Jabber&In-Reply-To=%3C20011106202532.B1817%40gnu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039381.html">
+   <LINK REL="Next"  HREF="039383.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Trouble in making my own JUD component in Jabber</H1>
+    <B>DJ Adams</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Trouble%20in%20making%20my%20own%20JUD%20component%20in%20Jabber&In-Reply-To=%3C20011106202532.B1817%40gnu%3E"
+       TITLE="[JDEV] Trouble in making my own JUD component in Jabber">dj.adams at pobox.com
+       </A><BR>
+    <I>Tue Nov  6 14:25:32 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039381.html">[JDEV] Trouble in making my own JUD component in Jabber
+</A></li>
+        <LI>Next message: <A HREF="039383.html">[JDEV] IMAP Authentication module?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39384">[ date ]</a>
+              <a href="thread.html#39384">[ thread ]</a>
+              <a href="subject.html#39384">[ subject ]</a>
+              <a href="author.html#39384">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tue, Nov 06, 2001 at 01:53:15PM +0800, Migs Paraz wrote:
+&gt;<i> I resolved the previous problem - it was mismatched secrets - and I'm
+</I>&gt;<i> getting the hang of using Jabber::Nodefactory.  I wrote this little piece
+</I>&gt;<i> of code to start off writing a JUD component/transport; I'm looking into
+</I>&gt;<i> writing other sorts of transports later.
+</I>&gt;<i> 
+</I>&gt;<i> This one is supposed to give the list of search keys to a Jabber client.
+</I>&gt;<i> I followed the jabber-programmers.pdf file.
+</I>&gt;<i> 
+</I>&gt;<i> But, when testing with Gabber, it just waits on the server.  What is wrong?
+</I>&gt;<i> Malformed output?  Thanks.
+</I>
+Hi Migs
+
+The problem is that you're not specifying a to='...' in your reply. It's
+getting dropped by the Jabber server as invalid... 
+
+I've put in a few comments in the code.  By adding the line indicated,
+your script will work as intended. I've also given an alternative way
+of doing things at the end of this mail...
+
+&gt;<i> #!/usr/bin/perl
+</I>&gt;<i> # juday.pl, a JUD component
+</I>&gt;<i> 
+</I>&gt;<i> use Jabber::Connection;
+</I>&gt;<i> use Jabber::NodeFactory;
+</I>&gt;<i> use Jabber::NS qw(:all);
+</I>&gt;<i> 
+</I>&gt;<i> our $c = new Jabber::Connection(
+</I>&gt;<i>   ns =&gt; &quot;jabber:component:accept&quot;,                             
+</I>&gt;<i>   server =&gt; 'localhost:1234',
+</I>&gt;<i>   localname =&gt; &quot;jud.localhost&quot;,
+</I>&gt;<i>   log    =&gt; 1,
+</I>&gt;<i> );
+</I>&gt;<i> 
+</I>&gt;<i> $c-&gt;connect or die &quot;oops: &quot;.$c-&gt;lastError;
+</I>&gt;<i> $c-&gt;register_handler('message', \&amp;message);
+</I>&gt;<i> $c-&gt;register_handler('iq', \&amp;iq);
+</I>&gt;<i> 
+</I>&gt;<i> $c-&gt;auth(&quot;test&quot;);
+</I>&gt;<i> 
+</I>&gt;<i> # I wonder if this is needed for components.
+</I>&gt;<i> $c-&gt;send('&lt;presence/&gt;');
+</I>
+No, it's not. Well, &lt;presence/&gt; as a concept is still valid within
+components, but you have to program for it, and sending it here 
+doesn't make much sense. There is, however, an idiom that involves
+sending presence when connecting as a client; this reflects the 
+difference in that the connection as a client is to the JSM, which
+has the mod_presence handler to handle presence diffusion (love that
+word here :-) for you. 
+
+&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> $c-&gt;start();
+</I>&gt;<i> 
+</I>&gt;<i> $c-&gt;disconnect();
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> sub message {
+</I>&gt;<i>   my $node = shift;
+</I>&gt;<i>   print &quot;Message --&gt; &quot;, $node-&gt;toStr, &quot;\n&quot;;
+</I>&gt;<i> }
+</I>&gt;<i> 
+</I>&gt;<i> sub iq {
+</I>&gt;<i>   my $node = shift;
+</I>&gt;<i> 
+</I>&gt;<i>   print &quot;IQ --&gt; &quot;, $node-&gt;toStr(), &quot;\n&quot;;
+</I>&gt;<i> 
+</I>&gt;<i>   # Different kinds of XML content
+</I>&gt;<i>   if (($node-&gt;attr(&quot;type&quot;) eq &quot;get&quot;) &amp;&amp;
+</I>&gt;<i>       ($node-&gt;getTag(&quot;query&quot;, &quot;jabber:iq:search&quot;))) {
+</I>
+As you've imported all the constants from Jabber:NS, you can use constants
+in the above two lines (and in the one a bit further down), like this:
+
+    if (($node-&gt;attr(&quot;type&quot;) eq IQ_GET) &amp;&amp;
+        ($node-&gt;getTag(&quot;query&quot;, NS_SEARCH))) {
+
+&gt;<i>       my $id = $node-&gt;attr(&quot;id&quot;);
+</I>&gt;<i> 
+</I>&gt;<i>       # Request for search parameters.
+</I>&gt;<i>       my $nf = new Jabber::NodeFactory;
+</I>&gt;<i> 
+</I>&gt;<i>       my $tag = $nf-&gt;newNode(&quot;iq&quot;);
+</I>&gt;<i>       $tag-&gt;attr(&quot;type&quot;, &quot;result&quot;);
+</I>&gt;<i>       $tag-&gt;attr(&quot;from&quot;, &quot;jud.localhost&quot;);
+</I>
+Add this line to make this script work as intended:
+
+        $tag-&gt;attr(&quot;to&quot;, $node-&gt;attr(&quot;from&quot;));
+
+&gt;<i>       $tag-&gt;attr(&quot;id&quot;, $id);
+</I>&gt;<i>       
+</I>&gt;<i>       my $tag2 = $tag-&gt;insertTag(&quot;query&quot;, &quot;jabber:iq:search&quot;);
+</I>&gt;<i>       $tag2-&gt;insertTag(&quot;first&quot;);
+</I>&gt;<i>       $tag2-&gt;insertTag(&quot;last&quot;);
+</I>&gt;<i>       $tag2-&gt;insertTag(&quot;nick&quot;);
+</I>&gt;<i>       $tag2-&gt;insertTag(&quot;email&quot;);
+</I>&gt;<i> 
+</I>&gt;<i>       # I wonder if this key is needed.
+</I>&gt;<i>       $tag2-&gt;insertTag(&quot;key&quot;)-&gt;data(&quot;1&quot;);
+</I>
+Well, only if you're going to test for it when the IQ-set comes back. 
+&lt;key&gt;s are really a throwback to the pre-dialback days ...
+
+&gt;<i> 
+</I>&gt;<i>       $tag2-&gt;insertTag(&quot;instructions&quot;)-&gt;data(&quot;juday is here to help.&quot;);
+</I>&gt;<i> 
+</I>&gt;<i>       # Send back to client
+</I>&gt;<i>       $c-&gt;send($tag);
+</I>&gt;<i>   }
+</I>&gt;<i> }
+</I>&gt;<i> 
+</I>
+Taking a leaf out of the jabber.org server source's book, another way of 
+responding to requests is to just munge the incoming request into your
+desired reply. It depends on what you feel comfortable with doing, but
+here's an example alternative version of the reply bit:
+
+  if (($node-&gt;attr(&quot;type&quot;) eq IQ_GET) &amp;&amp;
+      (my $query = $node-&gt;getTag(&quot;&quot;, NS_SEARCH))) {
+ 
+      $node-&gt;attr(&quot;type&quot;, &quot;result&quot;);
+      my $to = $node-&gt;attr('to');
+      $node-&gt;attr('to', $node-&gt;attr('from'));
+      $node-&gt;attr('from', $to);
+ 
+      $query-&gt;insertTag(&quot;first&quot;);
+      $query-&gt;insertTag(&quot;last&quot;);
+      $query-&gt;insertTag(&quot;nick&quot;);
+      $query-&gt;insertTag(&quot;email&quot;);
+ 
+      $query-&gt;insertTag(&quot;instructions&quot;)-&gt;data(&quot;juday is here to help.&quot;);
+ 
+      # Send back to client
+      $c-&gt;send($node);
+  }
+
+As you can see, here we're turning the incoming tag back around,
+rather than creating a new one with the NodeFactory. Note that 
+we don't have to worry about the id attribute anymore, nor call
+insertTag(), but we do expect the incoming request to be 'clean',
+i.e. not to contain any child elements in the &lt;query/&gt;. As I said,
+it's just another way of looking at doing things ...
+
+Anyway, that's a bit of a long answer, but there you go ;-)
+
+cheers
+dj
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039381.html">[JDEV] Trouble in making my own JUD component in Jabber
+</A></li>
+	<LI>Next message: <A HREF="039383.html">[JDEV] IMAP Authentication module?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39384">[ date ]</a>
+              <a href="thread.html#39384">[ thread ]</a>
+              <a href="subject.html#39384">[ subject ]</a>
+              <a href="author.html#39384">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,323 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Has anyone ever actually TESTED this ?????
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Has%20anyone%20ever%20actually%20TESTED%20this%20%3F%3F%3F%3F%3F&In-Reply-To=%3C01011005294704.00457%40dennis%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034824.html">
+   <LINK REL="Next"  HREF="034826.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Has anyone ever actually TESTED this ?????</H1>
+    <B>Dennis Noordsij</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Has%20anyone%20ever%20actually%20TESTED%20this%20%3F%3F%3F%3F%3F&In-Reply-To=%3C01011005294704.00457%40dennis%3E"
+       TITLE="[JDEV] Has anyone ever actually TESTED this ?????">dennis.noordsij at wiral.com
+       </A><BR>
+    <I>Tue Jan  9 21:29:47 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034824.html">[JDEV] Has anyone ever actually TESTED this ?????
+</A></li>
+        <LI>Next message: <A HREF="034826.html">[JDEV] Has anyone ever actually TESTED this ?????
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34825">[ date ]</a>
+              <a href="thread.html#34825">[ thread ]</a>
+              <a href="subject.html#34825">[ subject ]</a>
+              <a href="author.html#34825">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Also, when trying to register a new account the same thing happens: after 
+receiving the second xdb reply from my DB component jabber segfaults.
+
+I guess something goes screwy in the xdb handling which causes any subsequent 
+(the second one) xdb_get()s to crash the server.
+
+Either way, not what anyone needs :-)
+
+Regards,
+Dennis
+
+PS I know, I can dive into the code and find out what is wrong myself, but 
+even though I have fun writing pretty much anything communicating to jabber 
+through a socket, using nothing but libjabber, libxode and libpthread I do 
+not know a thing about gnupth, and don't like them either :-). Besides, 
+someone who was actually involved in designing the jabber architecture can 
+most likely pretty much straight away determine what is wrong anyway.
+
+Wether it is easy to fix is another question, but just knowing where the 
+logic fails would be a great help.
+
+Would some kind of a wrapper be an idea? Like a loadable module like 
+xdb_file.so but one that simply re-routes the packets to an external 
+component?
+
+If so, do all xdb replies have to be returned in the right order? (ie while 
+one xdb request is taking some time a later one that is already finished can 
+not be returned until the first (slow) one is?
+
+
+
+
+
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> With regard to an external XDB (base_accept) component..
+</I>&gt;<i>
+</I>&gt;<i>    has anyone ever done it before ????????
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> I am following *exactly* the same XML query-results as the normal
+</I>&gt;<i> xdb_file.so but for some reason, because I am connected via base_accept,
+</I>&gt;<i> jabber just crashes *every single time*.
+</I>&gt;<i>
+</I>&gt;<i> When using xdb_file.so:
+</I>&gt;<i>
+</I>&gt;<i> user tries to log in, jabber sends:
+</I>&gt;<i> &lt;xdb type='get' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host</A>/jabber:iq:auth' to='xdb' id='1'/&gt;
+</I>&gt;<i> xdb replies:
+</I>&gt;<i> &lt;xdb type='result' from='xdb' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host</A>/jabber:iq:auth' id='1'&gt;
+</I>&gt;<i>     &lt;password&gt;dapassword&lt;/password&gt;&lt;/xdb&gt;
+</I>&gt;<i>
+</I>&gt;<i> Then, for some reason, jabber repeats the thing with id=2
+</I>&gt;<i> &lt;xdb type='get' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host</A>/jabber:iq:auth' to='xdb' id='2'/&gt;
+</I>&gt;<i> Again, xdb replies with:
+</I>&gt;<i> &lt;xdb type='result' from='xdb' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host</A>/jabber:iq:auth' id='2'&gt;
+</I>&gt;<i>     &lt;password&gt;dapassword&lt;/password&gt;&lt;/xdb&gt;
+</I>&gt;<i>
+</I>&gt;<i> And then everything merrily continues.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> If I replace the standard xdb with an &lt;accept&gt;ing external program, same
+</I>&gt;<i> thing happens.
+</I>&gt;<i>
+</I>&gt;<i> Jabber sends xdb get id 1, components replies with the *exact* same xml as
+</I>&gt;<i> xdb_file.so
+</I>&gt;<i>
+</I>&gt;<i> Jabber sends xdb get id 2, component replies with the *exact* same xml as
+</I>&gt;<i> xdb_file.so
+</I>&gt;<i>
+</I>&gt;<i> ---- Jabber segfaults.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> So, is it actually even POSSIBLE to have xdb components NOT compiled into
+</I>&gt;<i> jabber as loadable modules ?
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> In base_load.c the xdb_get and xdb_set functions block until a reply is
+</I>&gt;<i> received, however that reply comes via base_accept. Does that matter in
+</I>&gt;<i> this case? (it still reports &quot;xdb_get() done waiting&quot;, but does it screw up
+</I>&gt;<i> some mutex/memory/semaphore stuff so badly it just dies after that?)
+</I>&gt;<i>
+</I>&gt;<i> Please don't tell me after all this that xdb components can not be based on
+</I>&gt;<i> base_accept !
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Sorry if I sound peeved off, I had everything lined up to have a DB XDB
+</I>&gt;<i> component tonight but now I'm stuck with this. I appreciate any pointers
+</I>&gt;<i> :-)
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i> Dennis
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> For your enjoyment 2 dumps, spot the differences. One of them segfaults.
+</I>&gt;<i> WHY?
+</I>&gt;<i>
+</I>&gt;<i> ---
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  authreg.c:52 auth request
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  users.c:147
+</I>&gt;<i> js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/gabber,818B2E8)
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  users.c:159 js_user not current
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  deliver.c:472 DELIVER 2:jabber.mydomain.com &lt;xdb
+</I>&gt;<i> type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> from='jabber.mydomain.com'
+</I>&gt;<i> id='1'/&gt;
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  deliver.c:344 delivering to instance 'xdb'
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  base_load.c:323 xdb_get() waiting for
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/gabber jabber:iq:auth
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  mtq 81ECBB0 starting
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  mtq 81ECBB0 leaving to pth
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  mtq 81FCE50 starting
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  mtq 81FCE50 leaving to pth
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  mtq 820D0F0 starting
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  mtq 820D0F0 leaving to pth
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  mtq 821D390 starting
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  mtq 821D390 leaving to pth
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  base_accept.c:341 io incoming message event for
+</I>&gt;<i> 15 Wed Jan 10 05:14:04 2001  base_accept.c:328 io read event for 15
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  base_accept.c:213 base_accept: &lt;xdb id='1'
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth' to='jabber.mydomain.com'
+</I>&gt;<i> type='result'&gt;&lt;password&gt;dapassword&lt;/password&gt;&lt;/xdb&gt;
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  deliver.c:472 DELIVER 1:jabber.mydomain.com &lt;xdb
+</I>&gt;<i> id='1' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> to='jabber.mydomain.com'
+</I>&gt;<i> type='result'&gt;&lt;password&gt;dapassword&lt;/password&gt;&lt;/xdb&gt;
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  deliver.c:344 delivering to instance 'sessions'
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  base_load.c:167 xdb_results checking xdb packet
+</I>&gt;<i> &lt;xdb id='1' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> to='jabber.mydomain.com'
+</I>&gt;<i> type='result'&gt;&lt;password&gt;dapassword&lt;/password&gt;&lt;/xdb&gt; Wed Jan 10 05:14:04
+</I>&gt;<i> 2001  base_load.c:327 xdb_get() done waiting for
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/gabber jabber:iq:auth
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  users.c:179 js_user debug 822D808 822D808
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  modules.c:127 mapi_call 5
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  modules.c:150 MAPI 810B748
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  mod_auth_plain checking
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  modules.c:150 MAPI 810B7A8
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  mod_auth_digest checking
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  deliver.c:472 DELIVER 2:jabber.mydomain.com &lt;xdb
+</I>&gt;<i> type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> from='jabber.mydomain.com'
+</I>&gt;<i> id='2'/&gt;
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  deliver.c:344 delivering to instance 'xdb'
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  base_load.c:323 xdb_get() waiting for
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A> jabber:iq:auth
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  base_accept.c:341 io incoming message event for
+</I>&gt;<i> 15 Wed Jan 10 05:14:04 2001  base_accept.c:328 io read event for 15
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  base_accept.c:213 base_accept: &lt;xdb id='2'
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth' to='jabber.mydomain.com'
+</I>&gt;<i> type='result'&gt;&lt;password&gt;dapassword&lt;/password&gt;&lt;/xdb&gt;
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  deliver.c:472 DELIVER 1:jabber.mydomain.com &lt;xdb
+</I>&gt;<i> id='2' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> to='jabber.mydomain.com'
+</I>&gt;<i> type='result'&gt;&lt;password&gt;dapassword&lt;/password&gt;&lt;/xdb&gt;
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  deliver.c:344 delivering to instance 'sessions'
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  base_load.c:167 xdb_results checking xdb packet
+</I>&gt;<i> &lt;xdb id='2' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> to='jabber.mydomain.com'
+</I>&gt;<i> type='result'&gt;&lt;password&gt;dapassword&lt;/password&gt;&lt;/xdb&gt; Wed Jan 10 05:14:04
+</I>&gt;<i> 2001  base_load.c:327 xdb_get() done waiting for <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>
+</I>&gt;<i> jabber:iq:auth
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  mod_auth_digest Got SID: 3A5BD37C
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  mod_auth_digest comparing
+</I>&gt;<i> 8e27b43170e95ea62396869bd7085f76d214a70e
+</I>&gt;<i> 8e27b43170e95ea62396869bd7085f76d214a70e
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  deliver.c:472 DELIVER 4:c2s &lt;route
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/gabber' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">19 at c2s</A>/8165F98' type='auth'&gt;&lt;iq
+</I>&gt;<i> id='A0' type='result'/&gt;&lt;/route&gt;
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  deliver.c:344 delivering to instance 'c2s'
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  client.c:124 Found the sock for this user
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  client.c:141 auth for user successful
+</I>&gt;<i> Wed Jan 10 05:14:04 2001  deliver.c:472 DELIVER 4:jabber.mydomain.com
+</I>&gt;<i> &lt;route type='session' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/gabber'
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">19 at c2s</A>/8165F98'/&gt; Wed Jan 10 05:14:04 2001  deliver.c:344 delivering
+</I>&gt;<i> to instance 'sessions' Wed Jan 10 05:14:04 2001  deliver.c:84
+</I>&gt;<i> (80D69C8)incoming packet &lt;route type='session'
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/gabber' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">19 at c2s</A>/8165F98'/&gt;
+</I>&gt;<i>
+</I>&gt;<i> SEGFAULTS EITHER HERE OR AFTER THE LAST XDB_GET() DONE WAITING...
+</I>&gt;<i> ---
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> ---
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  authreg.c:52 auth request
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  users.c:147
+</I>&gt;<i> js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/gabber,8159C30)
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  users.c:159 js_user not current
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  deliver.c:472 DELIVER 2:jabber.mydomain.com &lt;xdb
+</I>&gt;<i> type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> from='jabber.mydomain.com'
+</I>&gt;<i> id='1'/&gt;
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  deliver.c:344 delivering to instance 'xdb'
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  xdb_file.c:161 handling xdb request &lt;xdb
+</I>&gt;<i> type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> from='jabber.mydomain.com' id='1'/&gt;
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  xdb_file.c:98 loading
+</I>&gt;<i> ./spool/jabber.mydomain.com/mitja.xml
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  xdb_file.c:118 caching
+</I>&gt;<i> ./spool/jabber.mydomain.com/mitja.xml
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  deliver.c:472 DELIVER 1:jabber.mydomain.com &lt;xdb
+</I>&gt;<i> type='result' to='jabber.mydomain.com'
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> id='1'&gt;&lt;password&gt;dapassword&lt;/password&gt;&lt;/xdb&gt;
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  deliver.c:344 delivering to instance 'sessions'
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  base_load.c:167 xdb_results checking xdb packet
+</I>&gt;<i> &lt;xdb type='result' to='jabber.mydomain.com'
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> id='1'&gt;&lt;password&gt;dapassword&lt;/password&gt;&lt;/xdb&gt;
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  users.c:179 js_user debug 81FC0B8 81FC0B8
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  modules.c:127 mapi_call 5
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  modules.c:150 MAPI 810BAD0
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  mod_auth_plain checking
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  modules.c:150 MAPI 810BB30
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  mod_auth_digest checking
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  deliver.c:472 DELIVER 2:jabber.mydomain.com &lt;xdb
+</I>&gt;<i> type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> from='jabber.mydomain.com'
+</I>&gt;<i> id='2'/&gt;
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  deliver.c:344 delivering to instance 'xdb'
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  xdb_file.c:161 handling xdb request &lt;xdb
+</I>&gt;<i> type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> from='jabber.mydomain.com' id='2'/&gt;
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  xdb_file.c:98 loading
+</I>&gt;<i> ./spool/jabber.mydomain.com/mitja.xml
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  deliver.c:472 DELIVER 1:jabber.mydomain.com &lt;xdb
+</I>&gt;<i> type='result' to='jabber.mydomain.com'
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> id='2'&gt;&lt;password&gt;dapassword&lt;/password&gt;&lt;/xdb&gt;
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  deliver.c:344 delivering to instance 'sessions'
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  base_load.c:167 xdb_results checking xdb packet
+</I>&gt;<i> &lt;xdb type='result' to='jabber.mydomain.com'
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/jabber:iq:auth'
+</I>&gt;<i> id='2'&gt;&lt;password&gt;dapassword&lt;/password&gt;&lt;/xdb&gt;
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  mod_auth_digest Got SID: 3A5BD417
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  mod_auth_digest comparing
+</I>&gt;<i> 732da8fcf49723d897e7767c6627f3a70558ca60
+</I>&gt;<i> 732da8fcf49723d897e7767c6627f3a70558ca60
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  deliver.c:472 DELIVER 4:c2s &lt;route
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/gabber' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">17 at c2s</A>/8158228' type='auth'&gt;&lt;iq
+</I>&gt;<i> id='A0' type='result'/&gt;&lt;/route&gt;
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  deliver.c:344 delivering to instance 'c2s'
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  client.c:124 Found the sock for this user
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  client.c:141 auth for user successful
+</I>&gt;<i> Wed Jan 10 05:16:39 2001  deliver.c:472 DELIVER 4:jabber.mydomain.com
+</I>&gt;<i> &lt;route type='session' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/gabber'
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">17 at c2s</A>/8158228'/&gt; Wed Jan 10 05:16:39 2001  deliver.c:344 delivering
+</I>&gt;<i> to instance 'sessions' Wed Jan 10 05:16:39 2001  deliver.c:84
+</I>&gt;<i> (80D6D50)incoming packet &lt;route type='session'
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mitja at jabber.mydomain.com</A>/gabber' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">17 at c2s</A>/8158228'/&gt;
+</I>&gt;<i>
+</I>&gt;<i> CONTINUES HAPPILY
+</I>&gt;<i> ---
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034824.html">[JDEV] Has anyone ever actually TESTED this ?????
+</A></li>
+	<LI>Next message: <A HREF="034826.html">[JDEV] Has anyone ever actually TESTED this ?????
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34825">[ date ]</a>
+              <a href="thread.html#34825">[ thread ]</a>
+              <a href="subject.html#34825">[ subject ]</a>
+              <a href="author.html#34825">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

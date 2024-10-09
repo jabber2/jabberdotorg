@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] ICQ Transport problem
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20ICQ%20Transport%20problem&In-Reply-To=20010802034936.75813.qmail%40web10105.mail.yahoo.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="008919.html">
+   <LINK REL="Next"  HREF="008922.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] ICQ Transport problem</H1>
+    <B>Fabien Ninoles</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20ICQ%20Transport%20problem&In-Reply-To=20010802034936.75813.qmail%40web10105.mail.yahoo.com"
+       TITLE="[JDEV] ICQ Transport problem">fabien at Nightbird.Dynamic.TZoNE.ORG
+       </A><BR>
+    <I>Thu Aug  2 00:53:00 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="008919.html">[JDEV] ICQ Transport problem
+</A></li>
+        <LI>Next message: <A HREF="008922.html">[JDEV] ICQ Transport problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8921">[ date ]</a>
+              <a href="thread.html#8921">[ thread ]</a>
+              <a href="subject.html#8921">[ subject ]</a>
+              <a href="author.html#8921">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I use a separate dnsrv entry for icq... here my icq file, work
+pretty well (but I use jabber2 and all cvs version).  The jabber.xml
+is mostly identical for the relevant part.  Don't forget to modify the
+id args as well as secret and port number accordingly.
+
+
+---------------8X---------------
+&lt;jabber&gt;
+
+  &lt;service id=&quot;icq.mydomain.com&quot;&gt;
+
+    &lt;icqtrans xmlns=&quot;jabber:config:icqtrans&quot;&gt;
+
+      &lt;!-- This tag contains the message displayed to users at registration time. --&gt;
+      &lt;instructions&gt;Please enter your ICQ number (in the &quot;username&quot; field), nickname, and password.  Leave the &quot;username&quot; field blank to create a new ICQ number.&lt;/instructions&gt;
+
+      &lt;!-- contains the message displayed when users search with ICQ Transport. --&gt;
+      &lt;search&gt;Search for ICQ users&lt;/search&gt;
+
+      &lt;!-- Contains the vCard of this transport. --&gt;
+      &lt;vCard&gt;
+        &lt;FN&gt;ICQ Transport&lt;/FN&gt;
+        &lt;DESC&gt;This is ICQ Transport&lt;/DESC&gt;
+      &lt;/vCard&gt;
+
+      &lt;!-- &lt;chat/&gt; ICQ-t sending normal/single messages by default --&gt;
+
+      &lt;!-- This should be a prime number close to the amount of concurrent users you expect to have. --&gt;
+      &lt;prime&gt;501&lt;/prime&gt;
+
+      &lt;!-- enables full TCP support --&gt;
+      &lt;tcp&gt;&lt;ports/&gt;&lt;/tcp&gt;
+
+      &lt;!--   Use the &lt;ports/&gt; to control the port range ICQ will use to listen for
+	     incomming TCP connections.  If the ports section is not present,
+	     ICQ-t will not listen on any port and make outgoing TCP connections only.
+	     Remove the TCP section to disable TCP completely --&gt;
+      &lt;!--
+      &lt;tcp&gt;
+
+        &lt;ports&gt;
+          &lt;min&gt;2000&lt;/min&gt;
+          &lt;max&gt;3000&lt;/max&gt;
+        &lt;/ports&gt;
+      &lt;/tcp&gt;
+      --&gt;
+
+      &lt;!-- dnsrv section, see below for explanation.
+           This section isn't needed if your using your own ICQ server, Groupware or whatever --&gt;
+      &lt;dnsrv&gt;
+        &lt;host&gt;icq.mirabilis.com&lt;/host&gt;  &lt;!-- ICQ server to resolve --&gt;
+        &lt;id&gt;icq.dnsrv&lt;/id&gt;              &lt;!-- service id of our dnsrv component --&gt;
+        &lt;delay&gt;300&lt;/delay&gt;              &lt;!-- 5 minute delay between updates --&gt;
+      &lt;/dnsrv&gt;
+
+      &lt;!-- This specifies what ICQ server and/or port you want to use.  This isn't needed if you're using dnsrv.
+
+      &lt;server&gt;
+        &lt;ip&gt;205.188.153.104&lt;/ip&gt;
+        &lt;port&gt;4000&lt;/port&gt;
+      &lt;/server&gt;
+       --&gt;
+
+      &lt;!-- only supports &lt;who/&gt; from jabber:iq:admin
+      &lt;admin&gt;
+        &lt;read&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sheath at jabber.org</A>&lt;/read&gt;
+        &lt;read&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">admin at jabber.org</A>&lt;/read&gt;
+      &lt;/admin&gt;
+      --&gt;
+
+    &lt;/icqtrans&gt;
+
+    &lt;load&gt;
+      &lt;icqtrans&gt;./icq-transport/icqtrans.so&lt;/icqtrans&gt;
+    &lt;/load&gt;
+  &lt;/service&gt;
+  
+  &lt;service id=&quot;icq.dnsrv&quot;&gt;
+    &lt;load&gt;
+      &lt;dnsrv&gt;./dnsrv/dnsrv.so&lt;/dnsrv&gt;
+    &lt;/load&gt;
+    &lt;dnsrv xmlns=&quot;jabber:config:dnsrv&quot;&gt;
+      &lt;resend&gt;icq.mydomain.com&lt;/resend&gt;      &lt;!-- Change this to the service id for ICQ-transport --&gt;
+      &lt;cachetimeout&gt;300&lt;/cachetimeout&gt;   &lt;!-- the default is 1 hour, which is too long for our purpose --&gt;
+    &lt;/dnsrv&gt;
+  &lt;/service&gt;
+
+  &lt;service id=&quot;icq-linker&quot;&gt;
+    &lt;connect&gt;
+      &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+      &lt;port&gt;9877&lt;/port&gt;
+      &lt;secret&gt;my_secret&lt;/secret&gt;
+    &lt;/connect&gt;
+    &lt;uplink/&gt;
+  &lt;/service&gt;
+
+  &lt;pidfile&gt;./icq-jabber.pid&lt;/pidfile&gt;
+
+
+&lt;/jabber&gt;
+---------------8X---------------
+
+
+On Thu, Aug 02, 2001 at 04:49:36AM +0100, Dillip Kumar Swain wrote:
+&gt;<i> Hi
+</I>&gt;<i> 
+</I>&gt;<i> I want to configure jabber server with all Transports
+</I>&gt;<i> in separate process but I am not able to configure ICQ
+</I>&gt;<i> transport-0.9 with jabber-1.4/1.4.1.
+</I>&gt;<i> It shows &quot; Time out Error&quot; or &quot;server resolution
+</I>&gt;<i> error&quot; like that....but same time MSN transport is
+</I>&gt;<i> working fine.
+</I>&gt;<i> I am sending two files multiple.xml(jabberd xml file)
+</I>&gt;<i> &amp; icqtrans.xml(icq transport xml file)
+</I>&gt;<i> 
+</I>&gt;<i> what's wrong with my pragrams...?
+</I>&gt;<i> I need some valuable solution.
+</I>&gt;<i> 
+</I>&gt;<i> Thanx in Advance...
+</I>&gt;<i> Dillip
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> ____________________________________________________________
+</I>&gt;<i> Do You Yahoo!?
+</I>&gt;<i> Get your free @yahoo.co.uk address at <A HREF="http://mail.yahoo.co.uk">http://mail.yahoo.co.uk</A>
+</I>&gt;<i> or your free @yahoo.ie address at <A HREF="http://mail.yahoo.ie">http://mail.yahoo.ie</A>
+</I>
+-- 
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">fabien at tzone.org</A>                 <A HREF="http://www.tzone.org/~fabien">http://www.tzone.org/~fabien</A>
+GPG KeyID: C15D FE9E BB35 F596 127F  BF7D 8F1F DFC9 BCE0 9436
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="008919.html">[JDEV] ICQ Transport problem
+</A></li>
+	<LI>Next message: <A HREF="008922.html">[JDEV] ICQ Transport problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8921">[ date ]</a>
+              <a href="thread.html#8921">[ thread ]</a>
+              <a href="subject.html#8921">[ subject ]</a>
+              <a href="author.html#8921">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

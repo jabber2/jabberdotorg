@@ -1,0 +1,190 @@
+<jabber>
+
+
+  <!--
+  This is the Jabber Server configuration file.  
+  The file is broken into different sections based on the services being managed by jabberd, the server daemon.
+  Most of the important sections are commented on and easy to modify, full instructions are contained at http://docs.jabber.org/.
+  When you see a tag like "jabberd:cmdline", it's automatically replaced on startup with the command line flag to jabberd.
+  -->
+
+
+  <!-- This section is for the session manager, the most important component within the server. -->
+  <service id="sessions">
+
+    <!-- 
+    Change hostname below to something other than "localhost", or use the "jabberd -h hostname" command line flag.
+    Multiple <host>...</host> entries are allowed, each one is a seperate virtual server.
+    -->
+    <host>lisper</host>
+
+
+    <!-- This is the custom configuration section for the session manager. -->
+    <jsm xmlns="jabber:config:jsm">
+
+      <info>
+        <name>Jabber Server</name>
+        <description>A Jabber Server!</description>
+        <url>http://foo.bar/</url>
+      </info>
+
+      <register>
+        <instructions>Choose a username and password to register with this server.</instructions>
+        <name/><email/>
+      </register>
+
+      <agents>
+
+        <!-- This is the default agent for the master jabber user directory, this section can be duplicated for additional user custom/company directories. -->
+        <agent jid="users.jabber.org">
+          <name>Jabber User Directory</name>
+          <description>You may register and create a public searchable profile, and search for other registered Jabber users.</description>
+          <service>jud</service>
+          <register/>
+          <search/>
+        </agent>
+
+        <!-- These are just examples, you will receive instructions on what to place here when you install a real agent.
+        <agent jid="aim.jabber.org">
+          <name>AIM Transport</name>
+          <description>This is the AIM Transport</description>
+          <transport>AIM/AOL ScreenName</transport>
+          <service>aim</service>
+          <register/>
+        </agent>
+        <agent jid="icq.jabber.org">
+          <name>ICQ Transport</name>
+          <description>This is the ICQ Transport</description>
+          <transport>ICQ#</transport>
+          <service>icq</service>
+          <register/>
+        </agent>
+        <agent jid="conference.jabber.org">
+          <name>Group Conferencing</name>
+          <description>You can create and participate in private chatrooms.</description>
+          <service>privatechat</service>
+          <groupchat/>
+          <register/>
+        </agent>
+        -->
+
+      </agents>
+
+      <!-- Session log file -->
+      <log>
+        <file>session.log</file>
+        <type>session</type>
+      </log>
+
+      <!-- List of IDs with administrative access, all will receive administrator messages
+      <admin>
+        <read>support@localhost</read>
+        <write>admin@localhost</write>
+      </admin>
+      -->
+
+      <!-- Server version update notification, set to the server name so that all administrators (above) will be notified, or set to any ID -->
+      <!-- <update><jabberd:cmdline flag="h"/></update> -->
+
+    </jsm>
+
+    <!-- This section dynamically loads the session manager, remove or comment out modules to disable them. -->
+    <load main="jsm">
+      <jsm>./jsm/jsm.so</jsm>
+      <mod_echo>./jsm/jsm.so</mod_echo>
+      <mod_roster>./jsm/jsm.so</mod_roster>
+      <mod_time>./jsm/jsm.so</mod_time>
+      <mod_vcard>./jsm/jsm.so</mod_vcard>
+      <mod_version>./jsm/jsm.so</mod_version>
+      <mod_announce>./jsm/jsm.so</mod_announce>
+      <mod_agents>./jsm/jsm.so</mod_agents>
+      <mod_admin>./jsm/jsm.so</mod_admin>
+      <mod_private>./jsm/jsm.so</mod_private>
+      <mod_filter>./jsm/jsm.so</mod_filter>
+      <mod_presence>./jsm/jsm.so</mod_presence>
+      <mod_auth_plain>./jsm/jsm.so</mod_auth_plain>
+      <mod_auth_digest>./jsm/jsm.so</mod_auth_digest>
+      <mod_auth_0k>./jsm/jsm.so</mod_auth_0k>
+      <mod_register>./jsm/jsm.so</mod_register>
+      <mod_log>./jsm/jsm.so</mod_log>
+    </load>
+
+  </service>
+
+
+  <!-- This component handles all data storage, using the filesystem. -->
+  <xdb id="xdb">
+    <host/>
+    <load><xdb_file>./xdb_file/xdb_file.so</xdb_file></load>
+    <xdb_file xmlns="jabber:config:xdb_file"><spool>./spool</spool></xdb_file>
+  </xdb>
+
+
+  <!-- Service to manage incoming client socket connections. -->
+  <service id="c2s">
+    <load><pthsock_client>./pthsock/pthsock_client.so</pthsock_client></load>
+    <pthcsock xmlns='jabber:config:pth-csock'>
+      <authtime/> <!-- unlimited time to auth, could be <authtime>10</authtime> for 10 seconds, etc -->
+      <rate time="5" points="25"/> <!-- 25 connects in 5 seconds limit (per IP) -->
+      <!-- Karma based I/O rate limits, per connection, see http://docs.jabber.org/ for more info. -->
+      <karma>
+        <max>10</max>
+        <inc>1</inc>
+        <dec>1</dec>
+        <restore>5</restore>
+        <penalty>-5</penalty>
+      </karma>
+      <!-- Use these to listen on particular addresses and/or ports.
+      <ip port="5223"/>
+      <ip port="5222">127.0.0.1</ip>
+      -->
+    </pthcsock>
+  </service>
+
+
+  <!-- Default server logging component, copies to a file and STDERR. -->
+  <log id='logger'>
+    <host/>
+    <format>%d: [%t] (%h): %s</format>
+    <file>error.log</file>
+    <stderr/>
+  </log>
+
+
+  <!-- The following two services are for handling server to server traffic. -->
+
+
+  <!-- External asychronous DNS resolver -->
+  <service id="dnsrv">
+    <host/>
+    <load><dnsrv>./dnsrv/dnsrv.so</dnsrv></load>
+    <dnsrv xmlns="jabber:config:dnsrv">
+    	<resend service="_jabber._tcp">s2s</resend> <!-- for supporting SRV records -->
+    	<resend>s2s</resend> 
+    </dnsrv>
+  </service>
+
+
+  <!-- Handles server connections and dialback hostname verification -->
+  <service id="s2s">
+    <load><pthsock_server>./pthsock/pthsock_server.so</pthsock_server></load>
+    <pthssock xmlns='jabber:config:pth-ssock'>
+      <legacy/> <!-- allow communication with old 1.0-style servers -->
+      <rate time="5" points="25"/> <!-- 25 connects in 5 seconds limit (per IP) -->
+      <!-- Karma based I/O rate limits, per connection, set a little higher for server connections -->
+      <karma>
+        <max>30</max>
+        <inc>2</inc>
+        <dec>1</dec>
+        <restore>15</restore>
+        <penalty>-1</penalty>
+      </karma>
+      <!-- Use these to listen on particular addresses and/or ports.
+      <ip port="7000"/>
+      <ip port="5269">127.0.0.1</ip>
+      -->
+    </pthssock>
+  </service>
+
+
+</jabber>

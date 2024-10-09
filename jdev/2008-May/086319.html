@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] In-Band RPC and SOAP discovery
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20In-Band%20RPC%20and%20SOAP%20discovery&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE6129EED7C230%40zamail01.k2workflow.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="086318.html">
+   <LINK REL="Next"  HREF="086322.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] In-Band RPC and SOAP discovery</H1>
+    <B>Jonathan Dickinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20In-Band%20RPC%20and%20SOAP%20discovery&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE6129EED7C230%40zamail01.k2workflow.com%3E"
+       TITLE="[jdev] In-Band RPC and SOAP discovery">jonathanD at k2.com
+       </A><BR>
+    <I>Thu May 22 08:25:26 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="086318.html">[jdev] Something funny with Coccinella
+</A></li>
+        <LI>Next message: <A HREF="086322.html">[jdev] In-Band RPC and SOAP discovery
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86319">[ date ]</a>
+              <a href="thread.html#86319">[ thread ]</a>
+              <a href="subject.html#86319">[ subject ]</a>
+              <a href="author.html#86319">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey all,
+
+What are the options here?
+
+One potentially elegant solution would be (for XMPP-RPC):
+
+C:
+&lt;iq type='get'
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">requester at company-b.com</A>/jrpc-client'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">responder at company-a.com</A>/jrpc-server'
+    id='disco1'&gt;
+  &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'/">http://jabber.org/protocol/disco#info'/</A>&gt;
+&lt;/iq&gt;
+
+S:
+&lt;iq type='result'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">requester at company-b.com</A>/jrpc-client'
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">responder at company-a.com</A>/jrpc-server'
+    id='disco1'&gt;
+  &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'">http://jabber.org/protocol/disco#info'</A>&gt;
+    &lt;identity category='automation' type='rpc'/&gt;
+    &lt;feature var='jabber:iq:rpc'/&gt;
+    &lt;identity category='automation' type='jabber:iq:rpc' /&gt;
+    &lt;feature var='<A HREF="http://www.mycompany.org/xml-rpc/example.ConvertCurrency.php'">http://www.mycompany.org/xml-rpc/example.ConvertCurrency.php'</A> /&gt;
+    &lt;!-- More Services --&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+And for SOAP:
+
+C:
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">requester at example.com</A>/soap-server'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">responder at example.com</A>/soap-client'
+    id='disco1'
+    type='get'&gt;
+  &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'">http://jabber.org/protocol/disco#info'</A>&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+S:
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">responder at example.com</A>/soap-server'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">requester at example.com</A>/soap-client'
+    id='disco1'
+    type='result'&gt;
+  &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'">http://jabber.org/protocol/disco#info'</A>&gt;
+    &lt;identity category='automation' type='soap'/&gt;
+    &lt;feature var='<A HREF="http://jabber.org/protocol/soap'/">http://jabber.org/protocol/soap'/</A>&gt;
+    &lt;identity category='automation' type='<A HREF="http://jabber.org/protocol/soap'">http://jabber.org/protocol/soap'</A> /&gt;
+    &lt;feature var='<A HREF="http://www.myserver.org/soap/someservice'">http://www.myserver.org/soap/someservice'</A> /&gt;
+    &lt;!-- More to follow --&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+And for getting the wsdl:
+
+C:
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">requester at example.com</A>/soap-server'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">responder at example.com</A>/soap-client'
+    id='soap1'
+    type='get'&gt;
+
+&lt;wsdl:definitions name='SomeService'
+  targetNamespace='<A HREF="http://www.myserver.org/soap/someservice'">http://www.myserver.org/soap/someservice'</A>
+  xmlns:wsdl='<A HREF="http://schemas.xmlsoap.org/wsdl/'">http://schemas.xmlsoap.org/wsdl/'</A> /&gt;
+
+&lt;/iq&gt;
+
+S:
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">responder at example.com</A>/soap-client'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">requester at example.com</A>/soap-server'
+    id='soap1'
+    type='result'&gt;
+
+&lt;wsdl:definitions name='SomeService'
+  targetNamespace='<A HREF="http://www.myserver.org/soap/someservice'">http://www.myserver.org/soap/someservice'</A>
+  xmlns:wsdl='<A HREF="http://schemas.xmlsoap.org/wsdl/'">http://schemas.xmlsoap.org/wsdl/'</A>&gt;
+
+  &lt;!-- WSDL definitions --&gt;
+
+&lt;/wsdl:definitions&gt;
+
+&lt;/iq&gt;
+
+Yes/no/good/bad/ugly/scary?
+
+I am implementing this stuff so I need some feedback before I make a home-grown protocol.
+
+Jonathan
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20080522/fd527618/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20080522/fd527618/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="086318.html">[jdev] Something funny with Coccinella
+</A></li>
+	<LI>Next message: <A HREF="086322.html">[jdev] In-Band RPC and SOAP discovery
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86319">[ date ]</a>
+              <a href="thread.html#86319">[ thread ]</a>
+              <a href="subject.html#86319">[ subject ]</a>
+              <a href="author.html#86319">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

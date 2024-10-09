@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] notification server
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20notification%20server&In-Reply-To=%3CCAJt9-x7747AgSLOXLzTpqzzRKiC8SA5L2fr1zN6BE6d_aDQdEA%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088891.html">
+   <LINK REL="Next"  HREF="088894.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] notification server</H1>
+    <B>Matthew Wild</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20notification%20server&In-Reply-To=%3CCAJt9-x7747AgSLOXLzTpqzzRKiC8SA5L2fr1zN6BE6d_aDQdEA%40mail.gmail.com%3E"
+       TITLE="[jdev] notification server">mwild1 at gmail.com
+       </A><BR>
+    <I>Sun Mar  4 18:13:07 UTC 2012</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088891.html">[jdev] notification server
+</A></li>
+        <LI>Next message: <A HREF="088894.html">[jdev] Pivot - looking for a rockstar IM programmer
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88892">[ date ]</a>
+              <a href="thread.html#88892">[ thread ]</a>
+              <a href="subject.html#88892">[ subject ]</a>
+              <a href="author.html#88892">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 4 March 2012 17:27, Roberto Ostinelli &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">roberto at widetag.com</A>&gt; wrote:
+&gt;<i> after digging into this..
+</I>&gt;<i>
+</I>&gt;<i> what would be the advantage into using pubsub instead of a custom written
+</I>&gt;<i> (and much simpler) protocol? it seems that i need to strip out a lot of the
+</I>&gt;<i> functionalities I'd never need (item persistence, complex authorization
+</I>&gt;<i> mechanism, writing to disk,...), not counting bigger payloads and
+</I>&gt;<i> collections often not supported on real servers (ejabberd for instance).
+</I>&gt;<i>
+</I>
+You don't need to &quot;strip out&quot; - you just don't use features you don't need.
+
+Let's consider you not using pubsub. It sounds like, for the use-case
+you have, you just want to broadcast a fixed message to a set of JIDs.
+So there are several problems you need to solve. Something somewhere
+has to actually do the broadcasting, looping through a list of JIDs,
+and sending a message. The second problem is managing the list - it
+has to come from somewhere, and get to the broadcaster. Finally, you
+have to get the message to broadcast to the broadcaster (and if this
+is done over XMPP, ensure the sender has the permission to publish,
+etc.).
+
+XEP-0060 at its heart is built around solving these core problems. It
+also has various other (optional) features that are often also
+required in these kind of situations bolted on top.
+
+It's certainly possible to not use XEP-0060. There was a XEP that
+never really got anywhere that was based around the idea of solving
+the first two of the problems (broadcast and list managing):
+<A HREF="http://xmpp.org/extensions/inbox/repeaters.html">http://xmpp.org/extensions/inbox/repeaters.html</A> .
+
+Finally you could just implement this in a component. If you have the
+list of JIDs already in a database, and your messages are originating
+from outside of XMPP, XEP-0060 doesn't offer much you don't already
+have and this seems like a very decent option. The main concern would
+be if you have a large number of JIDs to send to, it isn't
+spectacularly efficient for the component to send the same message
+over the wire to each one sequentially - it would be better to let the
+server handle the broadcast. <A HREF="http://xmpp.org/extensions/xep-0033.html">http://xmpp.org/extensions/xep-0033.html</A>
+can sort of do this (there are plugins for several servers for it).
+
+Summary:
+  For XEP-0060: Off-the-shelf support in client libraries and servers,
+does everything you need already (and more you might need later on),
+possibly more optimised in the server.
+  Against XEP-0060: Basically a custom approach can be streamlined to
+your workflow and more tightly integrated with your system.
+
+Hope this helps,
+Matthew
+</PRE>
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088891.html">[jdev] notification server
+</A></li>
+	<LI>Next message: <A HREF="088894.html">[jdev] Pivot - looking for a rockstar IM programmer
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88892">[ date ]</a>
+              <a href="thread.html#88892">[ thread ]</a>
+              <a href="subject.html#88892">[ subject ]</a>
+              <a href="author.html#88892">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

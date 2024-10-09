@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Here's how ICQ would work.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Here%27s%20how%20ICQ%20would%20work.&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000158.html">
+   <LINK REL="Next"  HREF="000169.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Here's how ICQ would work.</H1>
+    <B>Dan DeMaggio</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Here%27s%20how%20ICQ%20would%20work.&In-Reply-To="
+       TITLE="[JDEV] Here's how ICQ would work.">dmag at umich.edu
+       </A><BR>
+    <I>Fri Jan 15 13:48:39 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000158.html">[JDEV] Client nicks
+</A></li>
+        <LI>Next message: <A HREF="000169.html">[JDEV] Here's how ICQ would work.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#167">[ date ]</a>
+              <a href="thread.html#167">[ thread ]</a>
+              <a href="subject.html#167">[ subject ]</a>
+              <a href="author.html#167">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Jeremie Miller wrote:
+&gt;<i> If it so happens that one of those ICQ users also uses Jabber, there
+</I>&gt;<i> is nothing in any way being done to associate that. 
+</I>
+Let me expand on that:
+
+Say Alice and Bob both have ICQ accounts, and are on eachother's ICQ buddy
+lists. Alice switches to Jabber (and her server supports ICQ). Alice stops
+using her ICQ client. When Alice logs into Jabber, her jabber server logs
+into ICQ on her behalf.  When Alice (using jabber) sends a message to Bob,
+her server sends an ICQ message from her ICQ account. Alice is using ICQ
+via remote-control! Bob won't ever suspect that Alice has switched to
+Jabber.
+
+Jake, another jabber user, doesn't have and ICQ account or an ICQ-enabled
+server. Jake can now talk to Alice via jabber, but he can't talk to Bob.
+Jake doesn't care, since he's lived his life up to this point without
+getting an ICQ account. ;)
+
+Later, Bob gets Jabber (on an ICQ-enabled server). When Bob logs into
+jabber, his server logs into ICQ on his behalf. Bob can still see Alice
+thru ICQ, and they can send messages back and forth. Alice and Bob see
+eachother on their jabber buddies list, even though it's really their ICQ
+buddies list. Alice and Bob can go on like this forever without realizing
+they both have jabber. When Alice sends a message, it goes like this:
+
+Alice client --&gt; Alice's jabber server -&gt; ICQ transport --&gt; 
+ICQ servers --&gt; ICQ transport -&gt; Bob's jabber server --&gt; Bob's client
+
+In fact, Bob and Alice could be on the SAME jabber server, and still not
+know it. Sure it's inefficient, but I don't see any way to detect jabber on
+either end without being intrusive. (&quot;This message brought to you by
+Jabber(TM), the new XML-enabled personal messaging protocol for good little
+boys and girls!&quot;)
+
+Later, Alice mentions her jabber address, and Bob adds her as a jabber
+buddy. Whenever Alice logs in, two entries appear on Bob's list: One for
+jabber, and one for ICQ. Bob knows it's the same person so he takes Alice
+off his ICQ Buddy list. Problem solved. Alice has to do the same thing too.
+
+[Side note: we could write lots of code to try and detect this, but I don't
+think it's needed. Besides, mabye Bob doesn't know that his friend
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Alice at alice.org</A> is the same person as his friend &quot;DarkAvenger&quot; on ICQ. Why
+spoil it? ]
+
+That's how it should work. Here's my implementation thoughts:
+
+- Adding/removing buddies from the ICQ list should be do-able from the
+client, as normal jabber add/removes. The client must have *NO* code to
+support ICQ, and the transport must do all the work of translation.
+
+- Rosters are stored at the server, since I don't want to re-type my buddy
+list if I borrow a random computer.
+
+- Jake (who doesn't have ICQ) can't talk to ICQ users. Before he got
+jabber, he didn't have an ICQ account. Why should he &quot;suddenly&quot; want one
+now? Let's face it: Jake doesn't care about ICQ users. Or AIM users. He
+uses jabber because his friends are reachable thru jabber. [ Therefore, the
+&quot;ICQ account creation&quot; feature of the ICQ transport is not important enough
+for Version 1.0. It could always be added later. In the mean time, people
+could get their ICQ account the old-fashioned way :]
+
+- Identity strings between client and server will probably be &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">123412 at ICQ</A>&quot;,
+but I don't like that. Imagine Alice giving Bob's ICQ number to Jake. Jake
+types &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">123412 at ICQ</A>&quot; but his server doesn't have an ICQ transport. His server
+will assume that ICQ is another server and try to contact it. Even if a
+computer named 'icq' doesn't exist, Jake's server is confused. Yuck. IMHO,
+there should be some special way to identify transports vs. computer names.
+I don't like requiring a period in the server name because there are many
+intranets (and Micro$oft networks) without name servers or connections to
+the internet. All computers are known on a first-name only basis. Maybe a
+slash (123/ICQ) or a pound-sign (123#ICQ) or combo (1234@#ICQ) ???
+
+- Handling multiple ICQ accounts is going to be tricky. If alice has 2 ICQ
+accounts (one for DarkAvenger and one for Alice), and she sends a message
+to a random ICQ user, how does she specify which ICQ account to send out
+on? If the user is on her buddy list, she can indicate her preference once,
+and everything will be cool. There is still the question of how to name the
+transports: &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1234 at ICQ.DarkAvenger</A>&quot; ? ? ?
+
+[ The client/server division would suggest that the prefrences be stored on
+the server, so the client only sends it to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1234 at ICQ</A>, and the server figures
+it out. But if the server doesn't know your prefrences for a particular
+user, then how would it ask the client for the new prefrence? Shesh, this
+is giving me a headache. ]
+
+- Billy (who only has ICQ) can only message jabber users who have ICQ
+accounts. But he doesn't know them as 'jabber users', only ICQ users. Billy
+cannot talk to Jake and vice-versa. They couldn't before jabber, but we're
+not here to solve the world's problems. :)
+
+Everything I said for ICQ also applies to: e-mail, 2-way pagers, PGPJabber,
+AIM, and smoke signals. None of these protocols should appear anywhere in
+the client source code. (well, except encryption). The point is to be able
+to add these protocols (on the fly) at the server ONLY. As far as the
+client is concerned, roster names are just arbitrary strings that the
+server makes up.
+
+-=Dan=-
+
+P.S. I like the &quot;conversation&quot; idea for configuring jabber transports ;)
+but I don't think it has enough 'navagation ability'. What if the user
+wants to start over? what if they want to skip a section that they've
+already configured?  At least with touch-tones, you've got the # and *
+keys.
+
+P.P.S. Brainstorming new jabber transports (or client features)
+- WinPopup messages (M$ networking) - Totally do-able via Samba.
+- IVR (Computer calls you up and reads your message.)
+- WinAmp messages (dmag is now playing &quot;CJ Bolland - Sugar is Sweeter&quot;)
+- X10 - remote control lights and stuff.
+- Web 'presence' support (see who's on a web page..). Modify NetScrape to
+send http header &quot;X-Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">alice at alice.org</A>&quot;, and server will add an
+&quot;X-Jabber&quot; header with a list of jabber users to who recently visited that
+page. It could work ;).
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000158.html">[JDEV] Client nicks
+</A></li>
+	<LI>Next message: <A HREF="000169.html">[JDEV] Here's how ICQ would work.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#167">[ date ]</a>
+              <a href="thread.html#167">[ thread ]</a>
+              <a href="subject.html#167">[ subject ]</a>
+              <a href="author.html#167">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

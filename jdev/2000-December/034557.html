@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Subscription request when user gets online
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Subscription%20request%20when%20user%20gets%20online&In-Reply-To=%3C3A40FD00.A1A03D60%40jabber.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034453.html">
+   <LINK REL="Next"  HREF="034456.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Subscription request when user gets online</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Subscription%20request%20when%20user%20gets%20online&In-Reply-To=%3C3A40FD00.A1A03D60%40jabber.com%3E"
+       TITLE="[JDEV] Subscription request when user gets online">dwaite at jabber.com
+       </A><BR>
+    <I>Wed Dec 20 12:40:00 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034453.html">[JDEV] Subscription request when user gets online
+</A></li>
+        <LI>Next message: <A HREF="034456.html">[JDEV] Interesting AIM-Transport problem.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34557">[ date ]</a>
+              <a href="thread.html#34557">[ thread ]</a>
+              <a href="subject.html#34557">[ subject ]</a>
+              <a href="author.html#34557">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello, I have investigated this problem and figured out a little bit of additional
+information.
+
+The jabber:iq:roster stored in XDB has extra attributes over the version used by clients
+and published on docs.jabber.org. These are present in the individual roster &lt;item&gt;'s
+
+-hidden: this attribute represents a boolean flag, true if present and not there
+otherwise. This is to represent that there is a user relationship between the two
+parties, but there is no subscription between the two, and the local party (the person
+who owns the roster) has not added the other person to their list.
+
+-subscribe: this attribute holds a string (no apparently length limit), which was
+originally sent in the subscription request from the remote party to the local party. If
+the request is not received directly (if the user is online), the server creates a new
+'hidden' roster entry, and tacks on the subscription request 'reason' into the subscribe
+field. This is removed at the same time as the entry becomes user-visible.
+
+It is very kludgy (outstanding subscription requests probably should be stored in a
+separate log, like offline messages are), but it is implemented, apparently works, and
+would require a migration path to get away from. In other words, not worth touching at
+this time, especially without protective gloves.
+
+Also a FYI for client developers: the way you specify a reason for a subscription
+request is by putting the reason text within the 'status' field. Something else which
+wasn't documented at all (but hopefully is now).
+
+Hope this helps out with your XDB implementation.
+
+-David Waite
+
+Lubos Pochman wrote:
+
+&gt;<i> I am trying to implement XDB using ODBC DB interface (replace xdb_file
+</I>&gt;<i> module),
+</I>&gt;<i> based on xdb_odbc package available as unsupported with Jabber 1.0 server.
+</I>&gt;<i>
+</I>&gt;<i> Almost everything works, but I have a following problem I have trouble
+</I>&gt;<i> solving:
+</I>&gt;<i>
+</I>&gt;<i> If I subscribe to the user who is offline, the subscription doesn't get
+</I>&gt;<i> requested
+</I>&gt;<i> when user gets online.
+</I>&gt;<i>
+</I>&gt;<i> If I try it with xdb_file module it works. When user to be added is offline
+</I>&gt;<i> the following
+</I>&gt;<i> tag is added to jabber:iq:roster items list in user xml file (roger.xml):
+</I>&gt;<i>
+</I>&gt;<i> &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lubosp at dddenim01.dddencs.desktopdollars.com</A>' subscription='none'
+</I>&gt;<i> subscribe='' hidden=''/&gt;
+</I>&gt;<i>
+</I>&gt;<i> I believe, that when this item is send to user (roger) when he gets online,
+</I>&gt;<i> it starts the
+</I>&gt;<i> subscription request.
+</I>&gt;<i>
+</I>&gt;<i> The attributes subscribe='', hidden='' are not documented in Jabber
+</I>&gt;<i> Programmer's file.
+</I>&gt;<i>
+</I>&gt;<i> Anybody can tell me what their meaning is and what are their possible
+</I>&gt;<i> values, so I can put them somehow
+</I>&gt;<i> in roster users table into DB, and send them back to user, as a part of the
+</I>&gt;<i> roster request
+</I>&gt;<i> when users goes online?
+</I>&gt;<i>
+</I>&gt;<i> Thanks, Lubos.
+</I>&gt;<i>
+</I>&gt;<i> _____________________________________________________________________________________
+</I>&gt;<i> Get more from the Web.  FREE MSN Explorer download : <A HREF="http://explorer.msn.com">http://explorer.msn.com</A>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034453.html">[JDEV] Subscription request when user gets online
+</A></li>
+	<LI>Next message: <A HREF="034456.html">[JDEV] Interesting AIM-Transport problem.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34557">[ date ]</a>
+              <a href="thread.html#34557">[ thread ]</a>
+              <a href="subject.html#34557">[ subject ]</a>
+              <a href="author.html#34557">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

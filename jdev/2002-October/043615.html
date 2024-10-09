@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] patch: jabberd-1.4 logfile rotation
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20patch%3A%20jabberd-1.4%20logfile%20rotation&In-Reply-To=%3C3D99FABE.1070306%40blueairnetworks.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="043614.html">
+   <LINK REL="Next"  HREF="043618.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] patch: jabberd-1.4 logfile rotation</H1>
+    <B>Ralph Siemsen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20patch%3A%20jabberd-1.4%20logfile%20rotation&In-Reply-To=%3C3D99FABE.1070306%40blueairnetworks.com%3E"
+       TITLE="[JDEV] patch: jabberd-1.4 logfile rotation">ralphs at blueairnetworks.com
+       </A><BR>
+    <I>Tue Oct  1 14:42:54 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="043614.html">[JDEV] sorry
+</A></li>
+        <LI>Next message: <A HREF="043618.html">[JDEV] patch: jabberd-1.4 logfile rotation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43615">[ date ]</a>
+              <a href="thread.html#43615">[ thread ]</a>
+              <a href="subject.html#43615">[ subject ]</a>
+              <a href="author.html#43615">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Attached is a small patch to make jabberd-1.4 play nice with the 
+logrotate facility.  Actually this is only half the story, I got lost 
+trying to chase down how error.log and record.log actually get written, 
+so those are not yet addressed.  Pointers welcomed!
+
+The patch adds a new command line option to jabberd: &quot;-L filename&quot; 
+specifies the name of a logfile, which will be used instead of stdout 
+and stderr.  Furthermore, if SIGHUP is sent to jabberd, it will close 
+and reopen the logfile.  You'd use this with a logrotate script eg:
+
+/var/log/jabber/jabber.log {
+     daily
+     rotate 7
+     compress
+     postrotate
+         kill -HUP `cat /var/run/jabberd.pid`
+     endscript
+}
+
+To handle SIGHUP there is already existing code, which reloads the 
+jabber.xml file.  However comments in that code indicate that it will 
+leak memory.  So I opted to disable this code, and instead only do the 
+logfile close/reopen.  I prefer to restart my server when jabber.xml 
+changes anyways.  Of course I'm open to better suggestions...
+
+The patch also removes the code that prevents the simultanous use of the 
+jabberd -D and -B options.  This is not required for logging, however I 
+found this combination to be useful.  Any good reasons for not allowing 
+this combination?
+
+-Ralph
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: jabber-logging.patch
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20021001/1e95d2ec/attachment-0001.txt">https://www.jabber.org/jdev/attachments/20021001/1e95d2ec/attachment-0001.txt</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="043614.html">[JDEV] sorry
+</A></li>
+	<LI>Next message: <A HREF="043618.html">[JDEV] patch: jabberd-1.4 logfile rotation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43615">[ date ]</a>
+              <a href="thread.html#43615">[ thread ]</a>
+              <a href="subject.html#43615">[ subject ]</a>
+              <a href="author.html#43615">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

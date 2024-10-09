@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Public Jabber Server with telnet support
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Re%3A%20Public%20Jabber%20Server%20with%20telnet%20support&In-Reply-To=20050105083715.GD2676%40serwis2.beta">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="020855.html">
+   <LINK REL="Next"  HREF="020832.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Public Jabber Server with telnet support</H1>
+    <B>Julien PUYDT</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Re%3A%20Public%20Jabber%20Server%20with%20telnet%20support&In-Reply-To=20050105083715.GD2676%40serwis2.beta"
+       TITLE="[jdev] Re: Public Jabber Server with telnet support">julien.puydt at laposte.net
+       </A><BR>
+    <I>Wed Jan  5 04:56:05 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="020855.html">[jdev] Re: Public Jabber Server with telnet support
+</A></li>
+        <LI>Next message: <A HREF="020832.html">[jdev] Re: Is a Director Lingo connection to Jabber.org from the	web possible?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20858">[ date ]</a>
+              <a href="thread.html#20858">[ thread ]</a>
+              <a href="subject.html#20858">[ subject ]</a>
+              <a href="author.html#20858">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Le mercredi 05 janvier 2005 &#224; 09:37 +0100, Jacek Konieczny a &#233;crit :
+&gt;<i> On Tue, Jan 04, 2005 at 12:54:45PM -0700, Peter Saint-Andre wrote:
+</I>&gt;<i> &gt; You need to type 'telnet jabber.org 5222'. I've used this since 1999 at 
+</I>&gt;<i> &gt; jabber.org and it still comes in handy, such as when I need to 
+</I>&gt;<i> &gt; administer a MUC room.
+</I>&gt;<i> 
+</I>&gt;<i> Wow! Hardcore. 
+</I>&gt;<i> I wonder if you would still use that with XMPP server (SASL
+</I>&gt;<i> authentication)... ;-)
+</I>
+I'm using a (very slightly) more civilized approach to debug my gossip
+patches: a python script which does the authentification for me.
+
+Snark
+
+PS: the script, in case anyone is interested (improvements welcome):
+#!/usr/bin/python
+
+import socket
+
+class VerboseSocket:
+	def __init__ (self, protocol, type):
+		self.socket = socket.socket (protocol, type)
+		
+	def connect (self, host, port):
+		print 'connecting to %s on port %s' % (host, port)
+		self.socket.connect ((host, port))
+		
+	def send (self, data, flags = 0):
+		print 'SEND:'
+		print data
+		self.socket.send (data, flags)
+	
+	def recv (self, size, flags = 0):
+		data = self.socket.recv (size, flags)
+		print 'RECV:'
+		print data
+		return data
+	
+	def fileno (self):
+		return self.socket.fileno ()
+	
+class JabberHelper:
+	
+	def __init__ (self, name, passwd):
+		from sys import stdin
+		import select
+		s = self.get_ready_socket (name, passwd)
+		running = True
+		while running:
+			(r, w, x) = select.select ([stdin, s], [], [])
+			if s in r:
+				data = s.recv (1024)
+				pass # we don't care about the data: VerboseSocket!
+			if stdin in r:
+				s.send (stdin.readline ())
+	
+	def get_ready_socket (self, name, passwd):
+		import sre, sha
+		s = VerboseSocket (socket.AF_INET, socket.SOCK_STREAM)
+		s.connect ('localhost', 5222)
+		s.send (&quot;&quot;&quot;&lt;?xml version='1.0' encoding='UTF-8'?&gt;&quot;&quot;&quot;)
+		s.send (&quot;&quot;&quot;&lt;stream:stream xmlns=&quot;jabber:client&quot;
+xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> to=&quot;localhost&quot;
+id=&quot;msg_1&quot;&gt;&quot;&quot;&quot;)
+		data = s.recv (1024)
+		match = sre.findall (&quot;id='[0-9A-F]+'&quot;, data)[0]
+		id = match[4:-1]
+		s.send (&quot;&quot;&quot;&lt;iq type=&quot;get&quot; id=&quot;msg_2&quot;&gt;  &lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+&lt;username&gt;%s&lt;/username&gt;&lt;/query&gt;&lt;/iq&gt;&quot;&quot;&quot; % name)
+		s.recv (1024) # just eat the question about our password!
+		digest = sha.new (id+passwd).hexdigest ()
+		s.send (&quot;&quot;&quot;&lt;iq type=&quot;set&quot; id=&quot;msg_3&quot;&gt;  &lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+&lt;username&gt;%s&lt;/username&gt;&lt;digest&gt;%
+s&lt;/digest&gt;&lt;resource&gt;JabberHelper&lt;/resource&gt;&lt;/query&gt;&lt;/iq&gt;&quot;&quot;&quot; % (name,
+digest))
+		return s
+
+
+
+if __name__ == '__main__':
+	program = JabberHelper ('snark', 'toto')
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="020855.html">[jdev] Re: Public Jabber Server with telnet support
+</A></li>
+	<LI>Next message: <A HREF="020832.html">[jdev] Re: Is a Director Lingo connection to Jabber.org from the	web possible?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20858">[ date ]</a>
+              <a href="thread.html#20858">[ thread ]</a>
+              <a href="subject.html#20858">[ subject ]</a>
+              <a href="author.html#20858">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

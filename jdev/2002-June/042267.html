@@ -1,0 +1,265 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] File transfers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfers&In-Reply-To=%3COF14C2AD4F.7F0EB123-ON85256BCF.00641163%40pok.ibm.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042264.html">
+   <LINK REL="Next"  HREF="042268.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] File transfers</H1>
+    <B>Michael F Lin</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfers&In-Reply-To=%3COF14C2AD4F.7F0EB123-ON85256BCF.00641163%40pok.ibm.com%3E"
+       TITLE="[JDEV] File transfers">MFLIN at us.ibm.com
+       </A><BR>
+    <I>Wed Jun  5 13:23:28 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042264.html">[JDEV] IQ packets and offline storage
+</A></li>
+        <LI>Next message: <A HREF="042268.html">[JDEV] new user registration with jabberbeans
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42267">[ date ]</a>
+              <a href="thread.html#42267">[ thread ]</a>
+              <a href="subject.html#42267">[ subject ]</a>
+              <a href="author.html#42267">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>When we generalize the Jabber network to thousands of servers, it becomes
+something of a nightmare to transport stuff out of band. This is of course
+why HTTP is not too good for this purpose - too many people are behind
+firewalls. Any direct client-to-client connection with whatever protocol
+will of course have the same problem. Relying on e-mail routing is one
+option, but how do you negotiate what address to send an e-mail to? How do
+you receive it? What if you need a file but don't have access to your
+e-mail?
+
+There are any number of solutions you can set up with WebDAV and so forth,
+but what we would really, really like - particularly when it comes to
+Jabber as a transport for web services - is a way to transport large
+payloads if not directly in-band, then in a band that fully adopts JID
+routing. Jeremie has proposed PASS, which is a step forwards but not
+totally satisfactory.
+
+The only &quot;good solutions&quot; I've been able to think of basically involve
+running a Jabber server that knows how to route s2s on every client
+machine. Which is, not coincidentally, something I'm working towards.
+
+-Mike
+
+
+
+|<i>---------+----------------------------&gt;
+</I>|<i>         |           Mike Oliver      |
+</I>|<i>         |           &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ollie at appsaspeer</A>|
+</I>|<i>         |           s.com&gt;           |
+</I>|<i>         |           Sent by:         |
+</I>|<i>         |           <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber</A>|
+</I>|<i>         |           .org             |
+</I>|<i>         |                            |
+</I>|<i>         |                            |
+</I>|<i>         |           06/05/2002 12:21 |
+</I>|<i>         |           PM               |
+</I>|<i>         |           Please respond to|
+</I>|<i>         |           jdev             |
+</I>|<i>         |                            |
+</I>|<i>---------+----------------------------&gt;
+</I>  &gt;------------------------------------------------------------------------------------------------------------------------------|
+  |                                                                                                                              |
+  |       To:       <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>                                                                                              |
+  |       cc:                                                                                                                    |
+  |       Subject:  Re: [JDEV] File transfers                                                                                    |
+  |                                                                                                                              |
+  |                                                                                                                              |
+  &gt;------------------------------------------------------------------------------------------------------------------------------|
+
+
+
+Why have just one protocol?
+
+SMTP does pretty well at file transfers that are asynch.  The Jabber
+protocol can include a header for the attachments and the user at the other
+
+end can decide if they want to download the file.  The a request can then
+be sent to the originating peer and an SMTP transfer begun and the remote
+client can notify the user when the transaction is complete by asking where
+
+to put the file.  There are SMTP libraries in almost every language you can
+
+name, so this doesn't appear to be a big problem.
+
+FTP is another and offers the ability to transfer files without the base64
+encoding.
+
+Ollie
+
+At 11:45 AM 6/5/2002 -0400, you wrote:
+
+&gt;<i>In-band transport of large payloads is something we and others have been
+</I>&gt;<i>looking at pretty intensely. Obviously it would be a nice thing to have,
+</I>&gt;<i>but it is also very, very difficult to do properly. If you just stick
+</I>&gt;<i>base64 in an X element, you have huge problems because if that takes 10
+</I>&gt;<i>minutes to transmit, you can't send anything else for those 10 minutes.
+</I>You
+&gt;<i>could chunk them, but that hardly makes things simpler for the client
+</I>&gt;<i>software. This also makes it massively more difficult to distinguish
+</I>&gt;<i>legitimate traffic from a denial of service attack. Furthermore, it means
+</I>&gt;<i>the server has to do a whole lot more XML processing (which may already be
+</I>&gt;<i>a bottleneck), because all XML content has to be at least checked for
+</I>&gt;<i>well-formedness. To speak nothing of the bandwidth implications.
+</I>&gt;<i>
+</I>&gt;<i>Ultimately, I don't believe there is a satisfactory way to transport large
+</I>&gt;<i>payloads in-band while keeping things simple for the client. The solution
+</I>&gt;<i>to this problem will involve a more complex system on the client endpoints
+</I>&gt;<i>- though not necessarily in typical client software.
+</I>&gt;<i>
+</I>&gt;<i>-Mike
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;|<i>---------+----------------------------&gt;
+</I>&gt;|<i>         |           Andy Beetz       |
+</I>&gt;|<i>         |           &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">andy.beetz at clear</A>|
+</I>&gt;|<i>         |           swift.com&gt;       |
+</I>&gt;|<i>         |           Sent by:         |
+</I>&gt;|<i>         |           <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber</A>|
+</I>&gt;|<i>         |           .org             |
+</I>&gt;|<i>         |                            |
+</I>&gt;|<i>         |                            |
+</I>&gt;|<i>         |           06/05/2002 10:29 |
+</I>&gt;|<i>         |           AM               |
+</I>&gt;|<i>         |           Please respond to|
+</I>&gt;|<i>         |           jdev             |
+</I>&gt;|<i>         |                            |
+</I>&gt;|<i>---------+----------------------------&gt;
+</I>&gt;<i>
+</I>&gt;<i>  &gt;
+</I>------------------------------------------------------------------------------------------------------------------------------|
+
+&gt;<i>   |
+</I>&gt;<i>                                                         |
+</I>&gt;<i>   |       To:       &quot;'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'&quot;
+</I>&gt;<i> &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> |
+</I>&gt;<i>   |       cc:
+</I>&gt;<i>                                                         |
+</I>&gt;<i>   |       Subject:  [JDEV] File
+</I>&gt;<i> transfers
+</I>&gt;<i> |
+</I>&gt;<i>   |
+</I>&gt;<i>                                                         |
+</I>&gt;<i>   |
+</I>&gt;<i>                                                         |
+</I>&gt;<i>
+</I>&gt;<i>  &gt;
+</I>------------------------------------------------------------------------------------------------------------------------------|
+
+&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>I've set up jabberd and got a couple of clients connecting to it (winjab).
+</I>&gt;<i>I
+</I>&gt;<i>tried a file transfer which worked no problem. What I saw looking at the
+</I>&gt;<i>Winjab source is that the receiver downloads the file from the sender on
+</I>&gt;<i>it's own socket based connection.
+</I>&gt;<i>
+</I>&gt;<i>I'm just thinking that there should be a better way to do this and inside
+</I>&gt;<i>the message. I'm not saying my idea is the best or anything, but I do
+</I>think
+&gt;<i>that it would present the client authors with less headaches. Anyway, my
+</I>&gt;<i>idea is that a message element can have a child, let's say attachment or
+</I>&gt;<i>even an x, which will contain the contents of the file. XML can handle
+</I>this
+&gt;<i>if the file is base64 encoded, as it ends up as plain text.
+</I>&gt;<i>
+</I>&gt;<i>Just some thoughts
+</I>&gt;<i>Andy Beetz
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>---------------------------------------------------------------------------------------------------------------
+
+&gt;<i>
+</I>&gt;<i>Clearswift monitors, controls and protects all its messaging traffic in
+</I>&gt;<i>compliance with its corporate email policy using Clearswift products.
+</I>&gt;<i>Find out more about Clearswift, its solutions and services at
+</I>&gt;<i>www.clearswift.com.
+</I>&gt;<i>
+</I>***********************************************************************************
+
+&gt;<i>
+</I>&gt;<i>This communication is confidential and may contain privileged
+</I>&gt;<i>information intended solely for the named addressee(s). It may not
+</I>&gt;<i>be used or disclosed except for the purpose for which it has been
+</I>&gt;<i>sent. If you are not the intended recipient, you must not copy,
+</I>&gt;<i>distribute or take any action in reliance on it. Unless expressly stated,
+</I>&gt;<i>opinions in this message are those of the individual sender and not of
+</I>&gt;<i>Clearswift. If you have received this communication in error, please
+</I>&gt;<i>notify Clearswift by emailing <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">support at clearswift.com</A> quoting the
+</I>&gt;<i>sender and delete the message and any attached documents. Clearswift
+</I>&gt;<i>accepts no liability or responsibility for any onward transmission or use
+</I>&gt;<i>of
+</I>&gt;<i>emails and attachments having left the Clearswift domain.
+</I>&gt;<i>
+</I>&gt;<i>This footnote confirms that this email message has been swept by
+</I>&gt;<i>MIMEsweeper for Content Security threats, including computer viruses.
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+Michael Oliver
+Chief Technology Officer
+AppsAsPeers.com
+7391 S. Bullrider Ave.
+Tucson, AZ 85747
+520.574.1150
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042264.html">[JDEV] IQ packets and offline storage
+</A></li>
+	<LI>Next message: <A HREF="042268.html">[JDEV] new user registration with jabberbeans
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42267">[ date ]</a>
+              <a href="thread.html#42267">[ thread ]</a>
+              <a href="subject.html#42267">[ subject ]</a>
+              <a href="author.html#42267">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

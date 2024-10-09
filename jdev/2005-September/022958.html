@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Single host,	multi service. -was [ANN] Google Talk engineering manager live chat
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Single%20host%2C%0A%09multi%20service.%20-was%20%5BANN%5D%20Google%20Talk%20engineering%20manager%20live%20chat&In-Reply-To=b13a36870509241435592c6f38%40mail.gmail.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="022956.html">
+   <LINK REL="Next"  HREF="022981.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Single host,	multi service. -was [ANN] Google Talk engineering manager live chat</H1>
+    <B>Kevin Smith</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Single%20host%2C%0A%09multi%20service.%20-was%20%5BANN%5D%20Google%20Talk%20engineering%20manager%20live%20chat&In-Reply-To=b13a36870509241435592c6f38%40mail.gmail.com"
+       TITLE="[jdev] Single host,	multi service. -was [ANN] Google Talk engineering manager live chat">kevin at kismith.co.uk
+       </A><BR>
+    <I>Sat Sep 24 17:31:15 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="022956.html">[jdev] [ANN] Google Talk engineering manager live chat
+</A></li>
+        <LI>Next message: <A HREF="022981.html">[jdev] Single host,	multi service. -was [ANN] Google Talk engineering manager live chat
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#22958">[ date ]</a>
+              <a href="thread.html#22958">[ thread ]</a>
+              <a href="subject.html#22958">[ subject ]</a>
+              <a href="author.html#22958">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 24 Sep 2005, at 22:35, Hal Rottenberg wrote:
+
+
+
+&gt;&gt;<i> If you want to run a MUC service on its own domain then you have  
+</I>&gt;&gt;<i> to setup
+</I>&gt;&gt;<i> the DNS entries, if you dont want to have to setup those entries  
+</I>&gt;&gt;<i> then follow
+</I>&gt;<i>
+</I>&gt;&gt;&gt;<i> So, let's say you have the choice between two IM systems. One you  
+</I>&gt;&gt;&gt;<i> can
+</I>&gt;&gt;&gt;<i> double click an exe, wait 5 minutes and then it all &quot;just works&quot;.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> What IM system would this be?, I find it hard to believe any IM  
+</I>&gt;&gt;<i> system is
+</I>&gt;&gt;<i> going to be externally connectable without some kind of DNS  
+</I>&gt;&gt;<i> entries being
+</I>&gt;&gt;<i> setup.
+</I>&gt;<i>
+</I>&gt;<i> Ooh, ooh I know this one!  Your server or workstation already has an
+</I>&gt;<i> external DNS entry.  The problem is that you've only got ONE.
+</I>
+RD has been saying for the last several mails that he agrees that it  
+should be possible to run your muc services without an extra dns  
+entry, I think. But there's a world of difference between running  
+your muc server on the same dns entry as your jabber server, and  
+pretending you have entries that you don't. For years there have been  
+two different camps of people in the computing world. Those that say  
+&quot;well, this gives the users what they want, there are security  
+implications, but it's unlikely anyone will find/abuse them&quot; and  
+those that have said &quot;we must do this the Right Way(tm)&quot;. I'm firmly  
+of the opinion that we should not be adding features which we know  
+open security holes like this. We *know* that this adaption of the  
+protocol creates a previously non-existent situation where stanzas  
+may be sent to a malicious user. If we're all honest with ourselves,  
+if anyone came up to us and said &quot;I have a feature here that makes  
+sysadmins lives easier and makes no difference to the user, except,  
+by the way, it means that in the case of a temporary dns resolution  
+failure potentially malicious servers can trivially impersonate us.  
+Should I do it?&quot; we'd be saying no faster than most people could draw  
+breath. So I really think we shouldn't do it, any of us. The next  
+question we'd probably ask is &quot;isn't there another way?&quot;.
+
+So...some people find it very difficult to set up a jabber server  
+together with the associated components because of the quantity of  
+dns entries required. What we need to look at (imnsho) is not how to  
+fake the dns entries, but to remove the requirement altogether.
+
+Let's please quickly agree that it's something to address, and that  
+second-guessing dns entries isn't the way to do it. Then lets equally  
+quickly address any problems with doing it such that any server  
+implementors who're interested in providing services without this  
+limitation can do so.
+
+First point of discussion. Is there anything which this dns second- 
+guessing provides us which having all our components on a single host  
+doesn't? I think no, please discuss
+
+Second point of discussion. Is there anything prohibiting us from  
+having multiple components on a single host at the moment? The first  
+few that come to mind are listed below, what others have I missed?
+
+1) Programmers will have to stop making assumptions about jids based  
+upon how they look and instead look at what they can do. Psi assumes  
+that any jid without a user@ part is a service, it's filthy, it's  
+always been filthy and we've always known it's been filthy. We do it  
+because we can. It's not a good reason for not changing. When people  
+start breaking the assumptions the coders have used for these rules,  
+the code will be fixed. This isn't a good reason to not progress.
+
+2) Name collisions. As has previously been noted, this is easily  
+avoided through prefixes and there's probably much nicer methods.
+
+3) Disco. Servers may end up supporting some (a lot) of features that  
+you wouldn't expect. Who is this actually a problem for? If users go  
+browsing the disco entries for the server they may be suprised by  
+some of the entries but realistically how many users go browing the  
+server disco? Sysadmins do and they won't be suprised by their own  
+entries. Is there a technical problem with this? Tijl asked this in  
+the other thread so I'm continuing the asking in this (newly broken)  
+one. If there's no technical problem, there's no problem here.
+
+4) JEP-045. I've just been through the muc jep, and I can't find  
+anything which prohibit it sitting on the main server. The pertinent  
+lines seem to be:
+---
+# Each room is identified as &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">room at service</A>&gt; (e.g.,  
+&lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at conference.jabber.org</A>&gt;), where &quot;room&quot; is the name of the room  
+and &quot;service&quot; is the hostname at which the multi-user chat service is  
+running.
+# Each occupant in a room is identified as &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">room at service</A>/nick&gt;, where  
+&quot;nick&quot; is the room nickname of the occupant as specified on entering  
+the room or subsequently changed during the occupant's visit.
+# A user enters a room (i.e., becomes an occupant) by sending  
+presence to &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">room at service</A>/nick&gt;.
+---
+To me, none of these seem to be an issue beyond the previously  
+mentioned (avoidable) collisions.
+Have I missed anything.
+
+Sorry for the silly length of the email, but it covers one point I  
+feel quite strongly about (implementing known security holes), and  
+another that has previously frustrated me (the multiple dns entries  
+thing) so I'd like to see these things addressed.
+
+/K
+
+
+--
+Kevin Smith
+Psi Jabber client maintainer (<A HREF="http://psi.affinix.com/">http://psi.affinix.com/</A>)
+Taekwon-do club captain (outgoing), University of Exeter
+Postgraduate (PhD) Research Student, Computer Science, University Of  
+Exeter
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="022956.html">[jdev] [ANN] Google Talk engineering manager live chat
+</A></li>
+	<LI>Next message: <A HREF="022981.html">[jdev] Single host,	multi service. -was [ANN] Google Talk engineering manager live chat
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#22958">[ date ]</a>
+              <a href="thread.html#22958">[ thread ]</a>
+              <a href="subject.html#22958">[ subject ]</a>
+              <a href="author.html#22958">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

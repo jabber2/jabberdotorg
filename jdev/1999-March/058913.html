@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Win client, File Transfers, invite tag..
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Win%20client%2C%20File%20Transfers%2C%20invite%20tag..&In-Reply-To=%3C001a01be77de%246530e1e0%2462205e0a%40tarot.telecom.ups.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058912.html">
+   <LINK REL="Next"  HREF="058914.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Win client, File Transfers, invite tag..</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Win%20client%2C%20File%20Transfers%2C%20invite%20tag..&In-Reply-To=%3C001a01be77de%246530e1e0%2462205e0a%40tarot.telecom.ups.com%3E"
+       TITLE="[JDEV] Win client, File Transfers, invite tag..">tcharron at nermail.ups.com
+       </A><BR>
+    <I>Fri Mar 26 17:14:27 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058912.html">[JDEV] jabber.org updated
+</A></li>
+        <LI>Next message: <A HREF="058914.html">[JDEV] Win client, File Transfers, invite tag..
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58913">[ date ]</a>
+              <a href="thread.html#58913">[ thread ]</a>
+              <a href="subject.html#58913">[ subject ]</a>
+              <a href="author.html#58913">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>	I will promise to at least have a Windows test client ready by then.  I've
+been unfortionatly busy as heck, and haven't had any time to have a working
+client with the new protocol complete.  Looks for a big Win32 checkin to the
+source tree sometime early next week.  I'm also disecting using the same
+expat sources you are using for parsing the XML, making it a bit easier to
+look at the client.
+
+	I've also figured out a way to tentativly do file transfers via messages..
+What I've worked out is to have the client UUENCODE the file, then send it
+in chunks of message tags, like this:
+
+&lt;message type='wintransfer'&gt;
+  &lt;to&gt;TwOlf&lt;/to&gt;
+  &lt;ext&gt;
+    &lt;tranfernum&gt;82646&lt;/transfernum&gt;
+    &lt;filename&gt;somefile.txt&lt;/filename&gt;
+    &lt;totalpackets&gt;100&lt;/totalpackets&gt;
+    &lt;packetnumber&gt;10&lt;/packetnumber&gt;
+    &lt;totalfilesize&gt;1074&lt;/totalfilesize&gt;
+    &lt;data&gt;HJFGSHGFSGFHGY67835627T4HGDY5&lt;/data&gt;
+  &lt;/ext&gt;
+&lt;/message&gt;
+
+	Here is a brief rundown of how I'm looking at doing it, and what the tags
+mean:
+
+&lt;message type='wintranfer'&gt;
+Used this to pass thru as a message, but a type of wintranfer.  Used
+wintransfer so it does not interfere with anything anyone else is working
+on, aka, I'm fine as long as no one else uses this type.
+
+&lt;to&gt;TwOlf&lt;/to&gt;
+Obviouse..  Who this packet is going to.
+
+  &lt;ext&gt;
+Storing all of my data in the ext tag..  Good question here, though..  It it
+acceptable to have additional XML tags within the ext tag?
+
+    &lt;tranfernum&gt;82646&lt;/transfernum&gt;
+A Randomly generated number to 'identify' this transfer
+
+    &lt;filename&gt;somefile.txt&lt;/filename&gt;
+Filename being transfered..  (May be saved differently, but this is what it
+WAS called)
+
+    &lt;totalpackets&gt;100&lt;/totalpackets&gt;
+Total packets in this transfer.. Basically, I uuencode the file and split
+the resulting set into X number of chunks, each being a certain size (What
+do you think would be optimal for the servers to handle correctly? I'm
+assuming something smaller, so 10 transfers don't result in one server
+bogging memory wise)
+
+    &lt;packetnumber&gt;10&lt;/packetnumber&gt;
+Current packet number..  This instance is packet #10 of 100 total.
+
+    &lt;totalfilesize&gt;1074&lt;/totalfilesize&gt;
+The total size of the uuencoded data.  Used to validate that it came thru
+OK..
+
+    &lt;data&gt;HJFGSHGFSGFHGY67835627T4HGDY5&lt;/data&gt;
+The uuencoded data.
+
+	Will all this be acceptable via the servers?  I BELIEVE so, but I'm
+stilllooking thru the transport and jabberbox source to ensure so..
+
+	I'm also considering adding a 'response' packet, so 100 packets aren't
+sent, the user get's 50, signs off,and the person who sent them get's 50
+'rejected' messages becouse they couldn;t be delivered, but that would
+require using additional bandwidth.
+
+	The other neat idea would be to be able to send messages as above to
+offline users, which would, in turn, be stored offline, and would allow file
+transfers tooffline users, as the&lt;message&gt;'s would still be stored on the
+server, but it would require turning 'off' the need for a response for each
+packet, which is OK, but it'd mean you'd need some sort of tag in ext to
+tell the server NOT to send a 'This user is offline' message.
+
+	Also, I've noticed the 'invite' that is checked in &lt;ext&gt;.  Should this now
+be moved to &lt;message type='invite'&gt; instead of having jabber.transport check
+the &lt;ext&gt; tag for invite?
+
+	Ideas?  Comments?  People who want me to STOP asking questions and just
+shut the heck up?  ;-P
+
+--
+Thomas Charron
+United Parcel Service
+Northeast Region
+&quot;Moving at the speed of a T3 Trunk Line!&quot;
+
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">owner-jdev at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">owner-jdev at jabber.org</A>]On Behalf Of
+</I>&gt;<i> Jeremie
+</I>&gt;<i> Sent: Friday, March 26, 1999 4:36 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: [JDEV] jabber.org updated
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="http://jabber.org/">http://jabber.org/</A>
+</I>&gt;<i>
+</I>&gt;<i> I just updated a few pages and restructured some other areas of the site.
+</I>&gt;<i> Feel free to take a peak and let me know if there are any glaring
+</I>&gt;<i> problems, spelin mistakes, broken links, etc...
+</I>&gt;<i>
+</I>&gt;<i> Warning: there are quite a few empty pages that I'll be filling in with
+</I>&gt;<i> documentation yet, RSN!
+</I>&gt;<i>
+</I>&gt;<i> DR 0.6 with the new protocol will be out either before the end of March or
+</I>&gt;<i> in very early April, joy!
+</I>&gt;<i>
+</I>&gt;<i> Thanks,
+</I>&gt;<i>
+</I>&gt;<i> Jer
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058912.html">[JDEV] jabber.org updated
+</A></li>
+	<LI>Next message: <A HREF="058914.html">[JDEV] Win client, File Transfers, invite tag..
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58913">[ date ]</a>
+              <a href="thread.html#58913">[ thread ]</a>
+              <a href="subject.html#58913">[ subject ]</a>
+              <a href="author.html#58913">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

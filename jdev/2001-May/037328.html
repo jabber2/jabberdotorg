@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] JabberCOM in C++: The problem ...
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JabberCOM%20in%20C%2B%2B%3A%20The%20problem%20...&In-Reply-To=%3C000001c0e512%24fd4ae590%24c353fea9%40blueairnetworks.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="037326.html">
+   <LINK REL="Next"  HREF="037331.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] JabberCOM in C++: The problem ...</H1>
+    <B>Scott Francis</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JabberCOM%20in%20C%2B%2B%3A%20The%20problem%20...&In-Reply-To=%3C000001c0e512%24fd4ae590%24c353fea9%40blueairnetworks.com%3E"
+       TITLE="[JDEV] JabberCOM in C++: The problem ...">sfrancis at blueairnetworks.com
+       </A><BR>
+    <I>Fri May 25 07:05:27 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="037326.html">[JDEV] Flash development
+</A></li>
+        <LI>Next message: <A HREF="037331.html">[JDEV] Jabber question!!!
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37328">[ date ]</a>
+              <a href="thread.html#37328">[ thread ]</a>
+              <a href="subject.html#37328">[ subject ]</a>
+              <a href="author.html#37328">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I've seen so many posts on this list lately about everyone saying how
+they can't get JabberCOM to work in using Visual C++ ... So I thought
+I'd shed some light on the problem.
+Note that this was done without ATL or MFC, just plain-old C++ (win32).
+
+First of all, the reason why your events aren't being called is an issue
+with the JabberCOM object itself.  If you look through the JabberCOM
+Delphi source, you'll see that after the initial connection is made to
+the Jabber server, a second thread is launched to handle all network
+communications.  It is also this thread that will fire events back to
+the sink.  
+
+The problem?  
+
+Marshalling.  When you pass your sink to JabberCOM, it will work fine
+from the thread that registered the sink, but when it's called from any
+other thread you get the dreaded RPC_E_WRONG_THREAD error (which is what
+is happening in JabberCOM).  When you call CoInitializeEx() make sure
+you pass COINIT_MULTITHREADED to it.  The solution for me, was to
+implement a free threaded marshaller object within my event sink.
+Basically, you need to support some form of marshalling for your event
+sink to work, I found that the free threaded marshaller would be the
+easiest, because:
+
+a) I knew I would be using JabberCOM in-process
+b) it required me to add two lines of code to my source file, and
+c) I didn't have to write my own marshaler.
+
+Now doing these things solved the problem of getting JabberCOM to fire
+my events.  The second thing you have to do is implement IDispatch.  The
+reason you can't use ATL to implement IDispatch for you is because the
+event interfaces in the JabberCOM IDL are not defined as dual (why?).
+Therefore, you basically need to have a massive switch statement in your
+IDispatch::Invoke() method, checking the DISPID's of the method being
+invoked.  Then either call your function directly from IDispatch, or
+hell, make it inline.  But at least it will be called.
+
+Now, the third thing you have to do, is setup a Global Interface Table
+to store your JabberSession IP.  Say you define your JabberSession IP as
+global and you try to access it from your event sink, BOOM,
+RPC_E_WRONG_THREAD, because your method is being called from the worker
+thread in the JabberCOM object.  So what do you do?  Initialize a global
+interface table in the main thread of your application, and upon
+initializing your JabberSession, pass the interface pointer to
+IGlobalInterfaceTable::RegisterInterfaceInGlobal() ... Then you can
+access interface by using the GetInterfaceInGlobal() method.  Then go
+nuts and use your Session object like crazy.
+
+This should do it ... A couple notes as a summary ... I've talked to
+pgmillard (JabberCOM author) about this, and I'm not sure, but I think
+he said that he'd modify JabberCOM, so that events are fired from the
+main thread, which would eliminate the need for almost everything here.
+The only thing you'd then have to do is implement IDispatch.
+
+As far as source code goes ... I'll see what I can do :)
+
+Hope this helps everyone out there that is struggling with JabberCOM in
+C++,
+
+Scott.
+
+--
+Scott Francis
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sfrancis at blueairnetworks.com</A>
+<A HREF="http://www.blueairnetworks.com/">http://www.blueairnetworks.com/</A> 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="037326.html">[JDEV] Flash development
+</A></li>
+	<LI>Next message: <A HREF="037331.html">[JDEV] Jabber question!!!
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37328">[ date ]</a>
+              <a href="thread.html#37328">[ thread ]</a>
+              <a href="subject.html#37328">[ subject ]</a>
+              <a href="author.html#37328">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

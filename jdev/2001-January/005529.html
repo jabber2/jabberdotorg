@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Interesting%20%22service%22%20vs%20%22xdb%22%20vs%20%22agent%22%20thing&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005528.html">
+   <LINK REL="Next"  HREF="005530.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Interesting%20%22service%22%20vs%20%22xdb%22%20vs%20%22agent%22%20thing&In-Reply-To="
+       TITLE="[JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing">dwaite at jabber.com
+       </A><BR>
+    <I>Tue Jan  9 16:49:58 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005528.html">[JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing
+</A></li>
+        <LI>Next message: <A HREF="005530.html">[JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5529">[ date ]</a>
+              <a href="thread.html#5529">[ thread ]</a>
+              <a href="subject.html#5529">[ subject ]</a>
+              <a href="author.html#5529">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Yeah, the difficulty is that xdb and 'default' routing are two separate 
+delivery trees  (so is log). This allows you to define not only a 
+service running for example the Yahoo-transport as yahoo.jabber.com, but 
+also define an XDB component to handle all of its preference data. You 
+could also do something like define jabber:iq:auth to be serviced by a 
+different component (say, LDAP).
+
+It would definately be nice to have the same component subscribe to 
+multiple delivery trees, but I'm unsure if the current jabber.xml can 
+handle the registration.
+
+-David Waite
+
+Dennis Noordsij wrote:
+
+&gt;<i> On Tuesday 09 January 2001 22:51, you wrote:
+</I>&gt;<i> 
+</I>&gt;&gt;<i> Depends on how attached you are to XDB packets, and
+</I>&gt;&gt;<i> if you can build your handler to accept other
+</I>&gt;&gt;<i> types of packets. Put simply, the way a
+</I>&gt;&gt;<i> base_accept service functions is the exact same
+</I>&gt;&gt;<i> way that a base_accept xdb functions. Meaning,
+</I>&gt;&gt;<i> set it up as a service (just change your xdb tags to
+</I>&gt;&gt;<i> service), and direct your user directory requests to it.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Basically, build a second handler to handle iq's or
+</I>&gt;&gt;<i> whatever type of request and have it talk
+</I>&gt;&gt;<i> to the db... You're not bound to using XDB packets
+</I>&gt;&gt;<i> for messages that simply QUERY a database, so set
+</I>&gt;&gt;<i> up a similar handler that will accept &lt;iq&gt; requests.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Matthew D. Diez
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> So basically duplicate all the code into a new handler? I don't want to 
+</I>&gt;<i> divide the system into one program handling xdb requests and one handling 
+</I>&gt;<i> search requests. The handler pools a bunch of threads with connections to the 
+</I>&gt;<i> database, I would like the pools and connections to handle both xdb and 
+</I>&gt;<i> search. (ie more effective pool)
+</I>&gt;<i> 
+</I>&gt;<i> Yes, I can add a service section, and run the exact same program twice. Or I 
+</I>&gt;<i> can add a new send/receive thread in the program that connects to jabber 
+</I>&gt;<i> again on a different port for the search requests and still distribute them 
+</I>&gt;<i> among the same threads. 
+</I>&gt;<i> 
+</I>&gt;<i> Probably best way to do it. 
+</I>&gt;<i> 
+</I>&gt;<i> 2 incoming sockets (to jabber), all xml goes onto the same stack.
+</I>&gt;<i> 
+</I>&gt;<i> Threads grab them, process them, they know about both &lt;iq&gt; and &lt;xdb&gt;, then 
+</I>&gt;<i> put them on an outgoing queue.
+</I>&gt;<i> 
+</I>&gt;<i> Outgoing queue handler knows that &lt;iq&gt; replies to go socket A and &lt;xdb&gt; 
+</I>&gt;<i> replies to go socket B. 
+</I>&gt;<i> 
+</I>&gt;<i> But it would be nicer if I could add 
+</I>&gt;<i> &lt;agent id=&quot;name_of_xdb_component&quot;&gt;
+</I>&gt;<i>  &lt;search/&gt;
+</I>&gt;<i>   &lt;etc../&gt;
+</I>&gt;<i> &lt;/agent&gt;
+</I>&gt;<i>  
+</I>&gt;<i> and have &lt;iq&gt; packets go to the name_of_xdb_component :-)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Regards,
+</I>&gt;<i> Dennis
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005528.html">[JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing
+</A></li>
+	<LI>Next message: <A HREF="005530.html">[JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5529">[ date ]</a>
+              <a href="thread.html#5529">[ thread ]</a>
+              <a href="subject.html#5529">[ subject ]</a>
+              <a href="author.html#5529">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

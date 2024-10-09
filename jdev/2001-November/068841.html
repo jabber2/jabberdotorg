@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabberd as a proper daemon
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%20as%20a%20proper%20daemon&In-Reply-To=%3CPine.OSF.4.10.10111291119360.2513-100000%40myriad.its.unimelb.edu.au%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="068794.html">
+   <LINK REL="Next"  HREF="068795.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabberd as a proper daemon</H1>
+    <B>Edmund Lam</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%20as%20a%20proper%20daemon&In-Reply-To=%3CPine.OSF.4.10.10111291119360.2513-100000%40myriad.its.unimelb.edu.au%3E"
+       TITLE="[JDEV] jabberd as a proper daemon">epl at unimelb.edu.au
+       </A><BR>
+    <I>Wed Nov 28 18:29:20 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="068794.html">[JDEV] jabberd as a proper daemon
+</A></li>
+        <LI>Next message: <A HREF="068795.html">[JDEV] jabbercom with Delphi6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68841">[ date ]</a>
+              <a href="thread.html#68841">[ thread ]</a>
+              <a href="subject.html#68841">[ subject ]</a>
+              <a href="author.html#68841">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, 21 Nov 2001, Brian Lalor wrote:
+
+&gt;<i> I'd like to see jabberd fixed up to run as a proper daemon.  jabberd
+</I>&gt;<i> should fork once the config file's read in (unless told explicitly not to,
+</I>&gt;<i> like apache's -X).
+</I>&gt;<i>
+</I>   Agreed. When I currently run it (jabberd) over ssh, the ssh
+connection doesn't die properly when I logout as jabberd is holding the
+tty open.
+
+&gt;<i> There should be a proper install mechanism that puts jabberd in /usr/sbin,
+</I>&gt;<i> all the .so's in /usr/lib/jabber, the spool in /var/spool/jabber, config
+</I>&gt;<i> in /etc/jabber and log files in /var/log/jabber (all what I'm used to with
+</I>&gt;<i> RedHat).
+</I>&gt;<i>
+</I>   I'd second (or was that third) the idea that jabber should have a
+decent build process. Likewise, the .so files should all go in a single
+directory. The current approach is difficult from a system
+administration perspective.
+
+&gt;<i> I've built my RPM (which I will clean up and make available) to put the
+</I>&gt;<i> files in those places, and it works, but it does complain about not being
+</I>&gt;<i> able to find the directory it was compiled in.  Not forking makes it more
+</I>
+   Easy fix (for jabber-1.4.1 anyway). In &quot;configure&quot; change
+
+&quot;JHOME=`pwd`&quot;
+to
+&quot;JHOME=/usr/local/whatever&quot;
+
+   But again, it shows that the build process is broken.
+
+   A temporary hack would be to use:
+
+if [ -z &quot;$JHOME&quot; ]; then
+    &quot;JHOME=`pwd`&quot;
+fi
+
+or
+
+if [ ! -d &quot;$JHOME&quot; ]; then
+    &quot;JHOME=`pwd`&quot;
+fi
+
+&gt;<i> difficult to write a RH-compliant init.d script.  It would also be nice to
+</I>&gt;<i> have jabberd run as a non-root user; there's no need for it to run as
+</I>&gt;<i> root, and if (God forbid) an exploit was found to exist, this would save
+</I>&gt;<i> some headache.
+</I>&gt;<i>
+</I>   There is no need to run jabber as a root user as it listens on port
+5222. Unless you run other extensions which I don't.
+
+   However, what I'd like to add is an ability for root to run jabber
+chroot'ed as a normal user. Like named's -u and -t options. The best
+I've got now is a normal user in a non-chroot environment. However, if
+jabber gets breached, an attacker could get a user shell-account. If
+jabber runs as nobody in a chroot however...
+
+   And while I admire the abilities of the jabber developers, we *know*
+there are holes in jabber -- right?. Any program this big and a network
+daemon at that -- it's just a matter of time.
+
+&gt;<i> Has anyone already looked into doing these things?  I *might* have some
+</I>&gt;<i> time over the long weekend to hack on this a bit if I know where to start.
+</I>&gt;<i> I guess another appropriate question would be &quot;why hasn't this been done
+</I>&gt;<i> already?&quot;  If there are valid reasons, I'll save myself some coding time,
+</I>&gt;<i> but otherwise, I should be able to dive in and give it a whirl.
+</I>&gt;<i>
+</I>   I'll like to work on something similar. But I'd like to know whose's
+code I'm stepping on. In all probability, there are very good reasons
+why things are being done as they are now. However, I do believe the
+code is too complex to audit from a security perspective. While jabber
+works after a fashion, there are many features/safeguards which I'd
+like for peace-of-mind.
+
+For example:
+- simplified command-line parsing. Is there really a need to allow
+  sysadmin to add command-line parameters by changing the configuration
+  file? Does that mean jabberd will never have a proper man page? Why
+  not just use getopt(). The current jabber also allows for command lines
+  like &quot;jabber -a -b&quot; to be interpreted as &quot;jabber -a \-b&quot;. While this is
+  explained in the FAQ, it is counter-intuitive and the opposite of other
+  programs.
+- add chroot() support.
+- add setuid()/setgid() support.
+
+   I believe I can most of the stuffs. However, like Brian, I'd like to
+hear reasons why I shouldn't dive in and start coding. Furthermore,
+would a decent patch implementing the above ideas be applied?
+
+Thanks
+
+Eddie
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="068794.html">[JDEV] jabberd as a proper daemon
+</A></li>
+	<LI>Next message: <A HREF="068795.html">[JDEV] jabbercom with Delphi6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68841">[ date ]</a>
+              <a href="thread.html#68841">[ thread ]</a>
+              <a href="subject.html#68841">[ subject ]</a>
+              <a href="author.html#68841">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

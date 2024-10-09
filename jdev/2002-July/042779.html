@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] xdb_sql make error.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20xdb_sql%20make%20error.&In-Reply-To=%3C5DB017510818EC468B05BD7BD9EACF83370B6B%40mismail.ena.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042797.html">
+   <LINK REL="Next"  HREF="042784.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] xdb_sql make error.</H1>
+    <B>Joe Breeden</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20xdb_sql%20make%20error.&In-Reply-To=%3C5DB017510818EC468B05BD7BD9EACF83370B6B%40mismail.ena.com%3E"
+       TITLE="[JDEV] xdb_sql make error.">jbreeden at ena.com
+       </A><BR>
+    <I>Thu Jul 18 13:00:40 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042797.html">[JDEV] image help
+</A></li>
+        <LI>Next message: <A HREF="042784.html">[JDEV] xdb_sql make error.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42779">[ date ]</a>
+              <a href="thread.html#42779">[ thread ]</a>
+              <a href="subject.html#42779">[ subject ]</a>
+              <a href="author.html#42779">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>All, here is a little more information to pass on to hopefully help someone help me solve my problem.
+
+
+I made a change to xdb_sql_pgsql.h (see below) to point it to the correct directory containing libpq-fe.h. The output of a diff of that change:
+
+[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jbreeden at shrieker</A> xdb_sql]# diff xdb_sql_pgsql.h.orig xdb_sql_pgsql.h
+20c20
+&lt; #include &lt;pgsql/libpq-fe.h&gt;
+---
+&gt;<i> #include &lt;libpq-fe.h&gt;
+</I>
+
+This change allowed the compile to finish, but when I try to start jabber I get the following:
+[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jbreeden at shrieker</A> jabber-1.4.2]# jabberd/jabberd
+Loading ./xdb_sql/xdb_sql.so failed: 'libpq.so.2: cannot open shared object file: No such file or directory'
+
+Invalid Configuration in instance 'xdb':
+&lt;load&gt;
+      &lt;xdb_sql&gt;./xdb_sql/xdb_sql.so&lt;/xdb_sql&gt;
+    &lt;/load&gt;
+
+
+
+I did a locate to find the file in question (libpq.so.2) and it is in the standard place for it to be as shown below:
+[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jbreeden at shrieker</A> jabber-1.4.2]# locate libpq.so.2
+/usr/local/pgsql/lib/libpq.so.2
+/usr/local/pgsql/lib/libpq.so.2.2
+
+I do have an environment variable POSTGRES_LIB set pointing to the proper directory. I used, what I consider, a fairly common set of options to compile and install postgres:
+
+configure --with-perl --with-tcl --enable-odbc
+make
+make install
+
+So I think my install of Postgres is not unusual and the only thing I did during my RedHat install was to not load the postgres RPM so I could make sure and have a good install. I think one possible solution would be to make a symbolic link to libpq.so.2, but I'm not sure where the link should go. Should it go in the same directory as xdb_sql.so?
+
+Any help would be appreciated. Thanks,
+
+Joe
+
+
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Joe Breeden 
+</I>&gt;<i> Sent: Thursday, July 18, 2002 10:07 AM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: [JDEV] xdb_sql make error.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> I am trying to &quot;make&quot; the xdb_sql and have come across this 
+</I>&gt;<i> error: (I have included the complete output from make as it 
+</I>&gt;<i> is only a few lines). I am compiling on a RedHat 7.3 system. 
+</I>&gt;<i> The standard jabberd server is running ok. I want to use 
+</I>&gt;<i> PostgreSQL as the backend db server. PostgreSQL version 7.2.1 
+</I>&gt;<i> is installed and running properly and in the standard places 
+</I>&gt;<i> on the system I am trying to compile the xdb_sql component. I 
+</I>&gt;<i> hope this is enough info to get an answer, thanks in advance 
+</I>&gt;<i> for the help.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> [<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jbreeden at shrieker</A> xdb_sql]# make
+</I>&gt;<i> gcc -I. -I../jabberd -g -Wall -I. -I.. 
+</I>&gt;<i> -I/usr/local/jabber/jabber-1.4.2/jabberd/pth-1.4.0 -fPIC 
+</I>&gt;<i> -I/usr/local/pgsql/include/   -DPOSTGRESQL_BACKEND   -c -o 
+</I>&gt;<i> xdb_sql.o xdb_sql.c
+</I>&gt;<i> gcc -I. -I../jabberd -g -Wall -I. -I.. 
+</I>&gt;<i> -I/usr/local/jabber/jabber-1.4.2/jabberd/pth-1.4.0 -fPIC 
+</I>&gt;<i> -I/usr/local/pgsql/include/   -DPOSTGRESQL_BACKEND   -c -o 
+</I>&gt;<i> xdb_sql_auth0k.o xdb_sql_auth0k.c
+</I>&gt;<i> xdb_sql_auth0k.c: In function `xdbsql_auth0k_get':
+</I>&gt;<i> xdb_sql_auth0k.c:70: warning: unused variable `rowcount'
+</I>&gt;<i> gcc -I. -I../jabberd -g -Wall -I. -I.. 
+</I>&gt;<i> -I/usr/local/jabber/jabber-1.4.2/jabberd/pth-1.4.0 -fPIC 
+</I>&gt;<i> -I/usr/local/pgsql/include/   -DPOSTGRESQL_BACKEND   -c -o 
+</I>&gt;<i> xdb_sql_auth.o xdb_sql_auth.c
+</I>&gt;<i> xdb_sql_auth.c: In function `xdbsql_auth_get':
+</I>&gt;<i> xdb_sql_auth.c:30: warning: unused variable `rowcount'
+</I>&gt;<i> xdb_sql_auth.c: In function `xdbsql_user_exists':
+</I>&gt;<i> xdb_sql_auth.c:233: warning: unused variable `rowcount'
+</I>&gt;<i> gcc -I. -I../jabberd -g -Wall -I. -I.. 
+</I>&gt;<i> -I/usr/local/jabber/jabber-1.4.2/jabberd/pth-1.4.0 -fPIC 
+</I>&gt;<i> -I/usr/local/pgsql/include/   -DPOSTGRESQL_BACKEND   -c -o 
+</I>&gt;<i> xdb_sql_offline.o xdb_sql_offline.c
+</I>&gt;<i> gcc -I. -I../jabberd -g -Wall -I. -I.. 
+</I>&gt;<i> -I/usr/local/jabber/jabber-1.4.2/jabberd/pth-1.4.0 -fPIC 
+</I>&gt;<i> -I/usr/local/pgsql/include/   -DPOSTGRESQL_BACKEND   -c -o 
+</I>&gt;<i> xdb_sql_register.o xdb_sql_register.c
+</I>&gt;<i> gcc -I. -I../jabberd -g -Wall -I. -I.. 
+</I>&gt;<i> -I/usr/local/jabber/jabber-1.4.2/jabberd/pth-1.4.0 -fPIC 
+</I>&gt;<i> -I/usr/local/pgsql/include/   -DPOSTGRESQL_BACKEND   -c -o 
+</I>&gt;<i> xdb_sql_config.o xdb_sql_config.c
+</I>&gt;<i> gcc -I. -I../jabberd -g -Wall -I. -I.. 
+</I>&gt;<i> -I/usr/local/jabber/jabber-1.4.2/jabberd/pth-1.4.0 -fPIC 
+</I>&gt;<i> -I/usr/local/pgsql/include/   -DPOSTGRESQL_BACKEND   -c -o 
+</I>&gt;<i> xdb_sql_querydef.o xdb_sql_querydef.c
+</I>&gt;<i> gcc -I. -I../jabberd -g -Wall -I. -I.. 
+</I>&gt;<i> -I/usr/local/jabber/jabber-1.4.2/jabberd/pth-1.4.0 -fPIC 
+</I>&gt;<i> -I/usr/local/pgsql/include/   -DPOSTGRESQL_BACKEND   -c -o 
+</I>&gt;<i> xdb_sql_roster.o xdb_sql_roster.c
+</I>&gt;<i> xdb_sql_roster.c: In function `xdbsql_roster_set':
+</I>&gt;<i> xdb_sql_roster.c:435: warning: suggest explicit braces to 
+</I>&gt;<i> avoid ambiguous `else'
+</I>&gt;<i> gcc -I. -I../jabberd -g -Wall -I. -I.. 
+</I>&gt;<i> -I/usr/local/jabber/jabber-1.4.2/jabberd/pth-1.4.0 -fPIC 
+</I>&gt;<i> -I/usr/local/pgsql/include/   -DPOSTGRESQL_BACKEND   -c -o 
+</I>&gt;<i> xdb_sql_last.o xdb_sql_last.c
+</I>&gt;<i> gcc -I. -I../jabberd -g -Wall -I. -I.. 
+</I>&gt;<i> -I/usr/local/jabber/jabber-1.4.2/jabberd/pth-1.4.0 -fPIC 
+</I>&gt;<i> -I/usr/local/pgsql/include/   -DPOSTGRESQL_BACKEND   -c -o 
+</I>&gt;<i> xdb_sql_backend.o xdb_sql_backend.c
+</I>&gt;<i> In file included from xdb_sql_backend.c:29:
+</I>&gt;<i> xdb_sql_pgsql.h:20:28: pgsql/libpq-fe.h: No such file or directory
+</I>&gt;<i> make: *** [xdb_sql_backend.o] Error 1
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> --Joe Breeden
+</I>&gt;<i> 
+</I>&gt;<i> We don't do Extreme Programming here - we prefer Ludicrous Programming
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042797.html">[JDEV] image help
+</A></li>
+	<LI>Next message: <A HREF="042784.html">[JDEV] xdb_sql make error.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42779">[ date ]</a>
+              <a href="thread.html#42779">[ thread ]</a>
+              <a href="subject.html#42779">[ subject ]</a>
+              <a href="author.html#42779">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Claims-based Authentication
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Claims-based%20Authentication&In-Reply-To=%3C4C07B105.3000206%40stpeter.im%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088277.html">
+   <LINK REL="Next"  HREF="088279.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Claims-based Authentication</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Claims-based%20Authentication&In-Reply-To=%3C4C07B105.3000206%40stpeter.im%3E"
+       TITLE="[jdev] Claims-based Authentication">stpeter at stpeter.im
+       </A><BR>
+    <I>Thu Jun  3 08:41:25 CDT 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088277.html">[jdev] Fwd: [Standards] last call on rfc3920bis
+</A></li>
+        <LI>Next message: <A HREF="088279.html">[jdev] Claims-based Authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88278">[ date ]</a>
+              <a href="thread.html#88278">[ thread ]</a>
+              <a href="subject.html#88278">[ subject ]</a>
+              <a href="author.html#88278">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>1. Is there a compelling use case for this?
+
+2. Why wouldn't the WS-* folks define a new SASL mechanism?
+
+On 5/31/10 8:18 AM, Jonathan Dickinson wrote:
+&gt;<i> Hi All,
+</I>&gt;<i>  
+</I>&gt;<i> I have been doing some research lately on claims-based authentication
+</I>&gt;<i> [CBA] (Microsoft implementation - AFAIK based on WS-Federation/WS-Trust
+</I>&gt;<i> &lt;<A HREF="http://en.wikipedia.org/wiki/WS-Federation">http://en.wikipedia.org/wiki/WS-Federation</A>&gt;). The previous discussions
+</I>&gt;<i> about OAuth and its limitations came to mind immediately - CBA seems to
+</I>&gt;<i> resolve the issues that we discussed (it is not tied to the web).
+</I>&gt;<i>  
+</I>&gt;<i> For those who are not familiar with it; it basically is an identity that
+</I>&gt;<i> consists of one or more claims. For example a Jabber claim might look
+</I>&gt;<i> like this:
+</I>&gt;<i>  
+</I>&gt;<i> JID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jonathand at jabber.org</A>
+</I>&gt;<i> UPN: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jonathand at jabber.org</A>
+</I>&gt;<i> Name: Jonathan Dickinson /from VCard/
+</I>&gt;<i> etc.
+</I>&gt;<i>  
+</I>&gt;<i> In this scenario jabber.org is the sole /issuer/. This identity (and
+</I>&gt;<i> it's claims) can be passed to other issuers so that they can fill in the
+</I>&gt;<i> blanks. For instance, if I were to start off with a X509 claim:
+</I>&gt;<i>  
+</I>&gt;<i> Thumbprint: BCF189...
+</I>&gt;<i> Name: CN=jonathand...
+</I>&gt;<i>  
+</I>&gt;<i> I could send it to my internal JID issuer and land up with the following:
+</I>&gt;<i>  
+</I>&gt;<i> Thumbprint: BCF189...
+</I>&gt;<i> Name: CN=jonathand...
+</I>&gt;<i> JID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jonathand at jabber.org</A>
+</I>&gt;<i> UPN: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jonathand at jabber.org</A>
+</I>&gt;<i>  
+</I>&gt;<i> The idea of a claim is that you can use that claim to authenticate with
+</I>&gt;<i> SSO capabilities (this works particularly well with the Microsoft
+</I>&gt;<i> implementation of it). I could authenticate against a server using
+</I>&gt;<i> SQL-orientated credentials (e.g. PLAIN) - with appropriate translation
+</I>&gt;<i> components in place I could pick up my SAP creds, Windows creds and HTTP
+</I>&gt;<i> creds without the user having to enter them in. The whole exchange
+</I>&gt;<i> occurs using XML (primarily SAML).
+</I>&gt;<i>  
+</I>&gt;<i> The XML is where the problem lies - SASL dictates that the contents be
+</I>&gt;<i> base64-encoded. While this is perfectly valid it just feels plain wrong.
+</I>&gt;<i> After thinking about it (less than I should - but here goes):
+</I>&gt;<i>  
+</I>&gt;<i> &lt;stream:features&gt;
+</I>&gt;<i>      &lt;starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'&gt;
+</I>&gt;<i>        &lt;required/&gt;
+</I>&gt;<i>      &lt;/starttls&gt;
+</I>&gt;<i>      &lt;federation xmlns='<A HREF="http://schemas.xmlsoap.org/ws/2006/12/federation'">http://schemas.xmlsoap.org/ws/2006/12/federation'</A> /&gt;
+</I>&gt;<i>      &lt;mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;
+</I>&gt;<i>        &lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;
+</I>&gt;<i>        &lt;mechanism&gt;PLAIN&lt;/mechanism&gt;
+</I>&gt;<i>      &lt;/mechanisms&gt;
+</I>&gt;<i>    &lt;/stream:features&gt;
+</I>&gt;<i>  
+</I>&gt;<i> The WS-Federation SignOn exchange could then be done via &lt;federation&gt;
+</I>&gt;<i> tags. Obviously one would need to be careful around namespace prefix
+</I>&gt;<i> conflicts etc. - but nothing too hairy.
+</I>&gt;<i>  
+</I>&gt;<i> Ideas/thoughts?
+</I>&gt;<i>  
+</I>&gt;<i> -- 
+</I>&gt;<i> Jonathan Dickinson
+</I>&gt;<i> 
+</I>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 6820 bytes
+Desc: S/MIME Cryptographic Signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20100603/78e8e07c/attachment.bin">https://www.jabber.org/jdev/attachments/20100603/78e8e07c/attachment.bin</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088277.html">[jdev] Fwd: [Standards] last call on rfc3920bis
+</A></li>
+	<LI>Next message: <A HREF="088279.html">[jdev] Claims-based Authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88278">[ date ]</a>
+              <a href="thread.html#88278">[ thread ]</a>
+              <a href="subject.html#88278">[ subject ]</a>
+              <a href="author.html#88278">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

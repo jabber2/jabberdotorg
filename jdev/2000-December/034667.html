@@ -1,0 +1,363 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Groupchat with 1.2 problems
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Groupchat%20with%201.2%20problems&In-Reply-To=%3C2ADA45B8C19AD111BBEA00805FBE134105ADEA64%40exccolorado.co.lsil.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034666.html">
+   <LINK REL="Next"  HREF="034669.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Groupchat with 1.2 problems</H1>
+    <B>Malone, Pat</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Groupchat%20with%201.2%20problems&In-Reply-To=%3C2ADA45B8C19AD111BBEA00805FBE134105ADEA64%40exccolorado.co.lsil.com%3E"
+       TITLE="[JDEV] Groupchat with 1.2 problems">pmalone at lsil.com
+       </A><BR>
+    <I>Thu Dec 28 15:17:32 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034666.html">[JDEV] Quickie Yahoo-Transport Question
+</A></li>
+        <LI>Next message: <A HREF="034669.html">[JDEV] Groupchat with 1.2 problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34667">[ date ]</a>
+              <a href="thread.html#34667">[ thread ]</a>
+              <a href="subject.html#34667">[ subject ]</a>
+              <a href="author.html#34667">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I made the big switch to 1.2 today, and I'm quite stumped with groupchat.
+The jabberd server installs clean (I grabbed and built all the parts, not
+the pre-compiled) and works fine for messages and chats.
+I installed the 'conference' groupchat component per the instructions and
+modified my jabber.xml for it.
+However, when I try to do a groupchat (using winjab 0.9.3.5 and/or jabberim
+0.9.6.86), I get nothing but errors.  It seems to be trying to find an
+existing spool file with my target groupname?
+
+Error log and debug output show I *may* be misconfigured somehow, but I
+can't figure it out.  Any help would be appreciated.
+
+Server is Caldera Linux.
+It's pure internal (no cross firewall traffic)
+server is jabber.co.lsil.com
+Below are my jabber.xml and a debug snip of an attempt to join a group
+called 'testgroup'
+
+Thanks
+
+Pat
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pat.malone at lsil.com</A>
+-----
+jabber.xml
+-----
+&lt;jabber&gt;
+  
+  &lt;!-- This section is for the session manager, the most important component
+within the server. --&gt;
+  &lt;service id=&quot;sessions&quot;&gt;
+
+    &lt;!-- 
+    Change hostname below to something other than &quot;localhost&quot;, or use the
+&quot;jabberd -h hostname&quot; command line flag.
+    Multiple &lt;host&gt;...&lt;/host&gt; entries are allowed, each one is a seperate
+virtual server.
+    --&gt;
+    &lt;host&gt;jabber.co.lsil.com&lt;/host&gt;
+
+    &lt;!-- This is the custom configuration section for the session manager.
+--&gt;
+    &lt;jsm xmlns=&quot;jabber:config:jsm&quot;&gt;
+
+      &lt;info&gt;
+        &lt;name&gt;Jabber Server&lt;/name&gt;
+        &lt;description&gt;LSI internal Jabber Server!&lt;/description&gt;
+        &lt;url&gt;<A HREF="http://foo.bar/&lt;/url">http://foo.bar/&lt;/url</A>&gt;
+      &lt;/info&gt;
+
+      &lt;register&gt;
+        &lt;instructions&gt;Choose a username and password to register with this
+server.&lt;/instructions&gt;
+        &lt;name/&gt;&lt;email/&gt;
+      &lt;/register&gt;
+
+      &lt;agents&gt;
+
+        &lt;agent jid=&quot;jabber.co.lsil.com&quot;&gt;
+          &lt;name&gt;Group Conferencing&lt;/name&gt;
+          &lt;description&gt;You can create and participate in private
+chatrooms.&lt;/description&gt;
+          &lt;service&gt;conferencing&lt;/service&gt;
+          &lt;groupchat/&gt;
+          &lt;register/&gt;
+        &lt;/agent&gt;
+
+      &lt;/agents&gt;
+
+      &lt;!-- Session log file --&gt;
+      &lt;log&gt;
+        &lt;file&gt;session.log&lt;/file&gt;
+        &lt;type&gt;session&lt;/type&gt;
+      &lt;/log&gt;
+
+      &lt;!-- List of IDs with administrative access, all will receive
+administrator messages
+      &lt;admin&gt;
+        &lt;read&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">support at localhost</A>&lt;/read&gt;
+        &lt;write&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">admin at localhost</A>&lt;/write&gt;
+      &lt;/admin&gt;
+      --&gt;
+
+      &lt;!-- Server version update notification, set to the server name so
+that all administrators (above) will be notified, or set to any ID --&gt;
+      &lt;!-- 
+      &lt;update&gt;&lt;jabberd:cmdline flag=&quot;h&quot;/&gt;&lt;/update&gt;
+      --&gt;
+
+    &lt;/jsm&gt;
+
+    &lt;!-- This section dynamically loads the session manager, remove or
+comment out modules to disable them. --&gt;
+    &lt;load main=&quot;jsm&quot;&gt;
+      &lt;jsm&gt;./jsm/jsm.so&lt;/jsm&gt;
+      &lt;mod_echo&gt;./jsm/jsm.so&lt;/mod_echo&gt;
+      &lt;mod_roster&gt;./jsm/jsm.so&lt;/mod_roster&gt;
+      &lt;mod_time&gt;./jsm/jsm.so&lt;/mod_time&gt;
+      &lt;mod_vcard&gt;./jsm/jsm.so&lt;/mod_vcard&gt;
+      &lt;mod_version&gt;./jsm/jsm.so&lt;/mod_version&gt;
+      &lt;mod_announce&gt;./jsm/jsm.so&lt;/mod_announce&gt;
+      &lt;mod_agents&gt;./jsm/jsm.so&lt;/mod_agents&gt;
+      &lt;mod_admin&gt;./jsm/jsm.so&lt;/mod_admin&gt;
+      &lt;mod_private&gt;./jsm/jsm.so&lt;/mod_private&gt;
+      &lt;mod_filter&gt;./jsm/jsm.so&lt;/mod_filter&gt;
+      &lt;mod_presence&gt;./jsm/jsm.so&lt;/mod_presence&gt;
+      &lt;mod_auth_plain&gt;./jsm/jsm.so&lt;/mod_auth_plain&gt;
+      &lt;mod_auth_digest&gt;./jsm/jsm.so&lt;/mod_auth_digest&gt;
+      &lt;mod_auth_0k&gt;./jsm/jsm.so&lt;/mod_auth_0k&gt;
+      &lt;mod_register&gt;./jsm/jsm.so&lt;/mod_register&gt;
+      &lt;mod_log&gt;./jsm/jsm.so&lt;/mod_log&gt;
+    &lt;/load&gt;
+
+  &lt;/service&gt;
+
+
+  &lt;!-- This component handles all data storage, using the filesystem. --&gt;
+  &lt;xdb id=&quot;xdb&quot;&gt;
+    &lt;host/&gt;
+    &lt;load&gt;&lt;xdb_file&gt;./xdb_file/xdb_file.so&lt;/xdb_file&gt;&lt;/load&gt;
+    &lt;xdb_file
+xmlns=&quot;jabber:config:xdb_file&quot;&gt;&lt;spool&gt;./spool&lt;/spool&gt;&lt;/xdb_file&gt;
+  &lt;/xdb&gt;
+
+
+  &lt;!-- Service to manage incoming client socket connections. --&gt;
+  &lt;service id=&quot;c2s&quot;&gt;
+ 
+&lt;load&gt;&lt;pthsock_client&gt;./pthsock/pthsock_client.so&lt;/pthsock_client&gt;&lt;/load&gt;
+    &lt;pthcsock xmlns='jabber:config:pth-csock'&gt;
+      &lt;authtime/&gt; &lt;!-- unlimited time to auth, could be
+&lt;authtime&gt;10&lt;/authtime&gt; for 10 seconds, etc --&gt;
+      &lt;rate time=&quot;5&quot; points=&quot;25&quot;/&gt; &lt;!-- 25 connects in 5 seconds limit (per
+IP) --&gt;
+      &lt;!-- Karma based I/O rate limits, per connection, see
+<A HREF="http://docs.jabber.org/">http://docs.jabber.org/</A> for more info. --&gt;
+      &lt;karma&gt;
+        &lt;max&gt;10&lt;/max&gt;
+        &lt;inc&gt;1&lt;/inc&gt;
+        &lt;dec&gt;1&lt;/dec&gt;
+        &lt;restore&gt;5&lt;/restore&gt;
+        &lt;penalty&gt;-5&lt;/penalty&gt;
+      &lt;/karma&gt;
+      &lt;!-- Use these to listen on particular addresses and/or ports.
+      &lt;ip port=&quot;5223&quot;/&gt;
+      &lt;ip port=&quot;5222&quot;&gt;127.0.0.1&lt;/ip&gt;
+      --&gt;
+    &lt;/pthcsock&gt;
+  &lt;/service&gt;
+
+
+  &lt;!-- Default server logging component, copies to a file and STDERR. --&gt;
+  &lt;log id='logger'&gt;
+    &lt;host/&gt;
+    &lt;format&gt;%d: [%t] (%h): %s&lt;/format&gt;
+    &lt;file&gt;error.log&lt;/file&gt;
+    &lt;stderr/&gt;
+  &lt;/log&gt;
+
+
+  &lt;!-- The following two services are for handling server to server traffic.
+--&gt;
+
+
+  &lt;!-- External asychronous DNS resolver --&gt;
+  &lt;service id=&quot;dnsrv&quot;&gt;
+    &lt;host/&gt;
+    &lt;load&gt;&lt;dnsrv&gt;./dnsrv/dnsrv.so&lt;/dnsrv&gt;&lt;/load&gt;
+    &lt;dnsrv xmlns=&quot;jabber:config:dnsrv&quot;&gt;
+    	&lt;resend service=&quot;_jabber._tcp&quot;&gt;s2s&lt;/resend&gt; &lt;!-- for supporting SRV
+records --&gt;
+    	&lt;resend&gt;s2s&lt;/resend&gt; 
+    &lt;/dnsrv&gt;
+  &lt;/service&gt;
+
+
+  &lt;!-- Handles server connections and dialback hostname verification --&gt;
+  &lt;service id=&quot;s2s&quot;&gt;
+ 
+&lt;load&gt;&lt;pthsock_server&gt;./pthsock/pthsock_server.so&lt;/pthsock_server&gt;&lt;/load&gt;
+    &lt;pthssock xmlns='jabber:config:pth-ssock'&gt;
+      &lt;legacy/&gt; &lt;!-- allow communication with old 1.0-style servers --&gt;
+      &lt;rate time=&quot;5&quot; points=&quot;25&quot;/&gt; &lt;!-- 25 connects in 5 seconds limit (per
+IP) --&gt;
+      &lt;!-- Karma based I/O rate limits, per connection, set a little higher
+for server connections --&gt;
+      &lt;karma&gt;
+        &lt;max&gt;30&lt;/max&gt;
+        &lt;inc&gt;2&lt;/inc&gt;
+        &lt;dec&gt;1&lt;/dec&gt;
+        &lt;restore&gt;15&lt;/restore&gt;
+        &lt;penalty&gt;-1&lt;/penalty&gt;
+      &lt;/karma&gt;
+      &lt;!-- Use these to listen on particular addresses and/or ports.
+      &lt;ip port=&quot;7000&quot;/&gt;
+      &lt;ip port=&quot;5269&quot;&gt;127.0.0.1&lt;/ip&gt;
+      --&gt;
+    &lt;/pthssock&gt;
+
+  &lt;!-- Groupchat service --&gt;
+  &lt;/service&gt;
+  &lt;service id=&quot;conference&quot;&gt;
+  &lt;load&gt;&lt;groupchat&gt;./groupchat.so&lt;/groupchat&gt;&lt;/load&gt;
+  &lt;/service&gt;
+
+&lt;/jabber&gt;
+-------
+debug output
+-------
+Thu Dec 28 14:57:52 2000  io_select.c:339 io_main checking sockets
+Thu Dec 28 14:57:52 2000  deliver.c:472 DELIVER 4:jabber.co.lsil.com &lt;route
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pmalone at jabber.co.lsil.com</A>/8192E10' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">11 at c2s</A>/80CB880'&gt;&lt;iq type='get'
+id='wj_14' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>'&gt;&lt;query
+xmlns='jabber:iq:groupchat'/&gt;&lt;/iq&gt;&lt;/route&gt;
+Thu Dec 28 14:57:52 2000  deliver.c:344 delivering to instance 'sessions'
+Thu Dec 28 14:57:52 2000  deliver.c:84 (80820D8)incoming packet &lt;route
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pmalone at jabber.co.lsil.com</A>/8192E10' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">11 at c2s</A>/80CB880'&gt;&lt;iq type='get'
+id='wj_14' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>'&gt;&lt;query
+xmlns='jabber:iq:groupchat'/&gt;&lt;/iq&gt;&lt;/route&gt;
+Thu Dec 28 14:57:52 2000  users.c:147
+js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pmalone at jabber.co.lsil.com</A>/8192E10,80F0248)
+Thu Dec 28 14:57:52 2000  mtq 80F0A60 entering from pth
+Thu Dec 28 14:57:52 2000  mtq 80F0A60 queue call 80EF418
+Thu Dec 28 14:57:52 2000  sessions.c:289 THREAD:SESSION:FROM received a
+packet!
+Thu Dec 28 14:57:52 2000  modules.c:124 mapi_call 1
+Thu Dec 28 14:57:52 2000  modules.c:147 MAPI 8193188
+Thu Dec 28 14:57:52 2000  modules.c:147 MAPI 8193198
+Thu Dec 28 14:57:52 2000  modules.c:147 MAPI 81931B8
+Thu Dec 28 14:57:52 2000  modules.c:147 MAPI 81931C8
+Thu Dec 28 14:57:52 2000  modules.c:163 mapi_call returning unhandled
+Thu Dec 28 14:57:52 2000  deliver.c:262
+deliver(to[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>],from[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pmalone at jabber.co.lsil.com</A>/pma
+lone_350],type[4],packet[&lt;iq type='get' id='wj_14'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pmalone at jabber.co.lsil.com</A>/pmalone_350'&gt;&lt;query
+xmlns='jabber:iq:groupchat'/&gt;&lt;/iq&gt;])
+Thu Dec 28 14:57:52 2000  users.c:147
+js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>,80F0248)
+Thu Dec 28 14:57:52 2000  users.c:159 js_user not current
+Thu Dec 28 14:57:52 2000  deliver.c:472 DELIVER 2:jabber.co.lsil.com &lt;xdb
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>/jabber:iq:auth'
+from='jabber.co.lsil.com' id='36'/&gt;
+Thu Dec 28 14:57:52 2000  deliver.c:344 delivering to instance 'xdb'
+Thu Dec 28 14:57:52 2000  xdb_file.c:161 handling xdb request &lt;xdb
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>/jabber:iq:auth'
+from='jabber.co.lsil.com' id='36'/&gt;
+Thu Dec 28 14:57:52 2000  xdb_file.c:98 loading
+./spool/jabber.co.lsil.com/testgroup.xml
+Thu Dec 28 14:57:52 2000  log.c:105 &lt;log type='warn'
+from='jabber.co.lsil.com'&gt;xdb_file failed to open file
+./spool/jabber.co.lsil.com/testgroup.xml: No such file or directory&lt;/log&gt;
+Thu Dec 28 14:57:52 2000  deliver.c:472 DELIVER 3:jabber.co.lsil.com &lt;log
+type='warn' from='jabber.co.lsil.com'&gt;xdb_file failed to open file
+./spool/jabber.co.lsil.com/testgroup.xml: No such file or directory&lt;/log&gt;
+Thu Dec 28 14:57:52 2000  deliver.c:344 delivering to instance 'logger'
+20001228T21:57:52: [warn] (jabber.co.lsil.com): xdb_file failed to open file
+./spool/jabber.co.lsil.com/testgroup.xml: No such file or directory
+Thu Dec 28 14:57:52 2000  xdb_file.c:118 caching
+./spool/jabber.co.lsil.com/testgroup.xml
+Thu Dec 28 14:57:52 2000  deliver.c:472 DELIVER 1:jabber.co.lsil.com &lt;xdb
+type='result' to='jabber.co.lsil.com'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>/jabber:iq:auth' id='36'/&gt;
+Thu Dec 28 14:57:52 2000  deliver.c:344 delivering to instance 'sessions'
+Thu Dec 28 14:57:52 2000  base_load.c:167 xdb_results checking xdb packet
+&lt;xdb type='result' to='jabber.co.lsil.com'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>/jabber:iq:auth' id='36'/&gt;
+Thu Dec 28 14:57:52 2000  deliver.c:44 delivering locally to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>
+Thu Dec 28 14:57:52 2000  modules.c:124 mapi_call 3
+Thu Dec 28 14:57:52 2000  modules.c:163 mapi_call returning unhandled
+Thu Dec 28 14:57:52 2000  deliver.c:262
+deliver(to[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pmalone at jabber.co.lsil.com</A>/pmalone_350],from[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.</A>
+lsil.com],type[4],packet[&lt;iq type='error' id='wj_14'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pmalone at jabber.co.lsil.com</A>/pmalone_350'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>'&gt;&lt;query
+xmlns='jabber:iq:groupchat'/&gt;&lt;error code='404'&gt;Not Found&lt;/error&gt;&lt;/iq&gt;])
+Thu Dec 28 14:57:52 2000  users.c:147
+js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pmalone at jabber.co.lsil.com</A>/pmalone_350,80F0248)
+Thu Dec 28 14:57:52 2000  deliver.c:44 delivering locally to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pmalone at jabber.co.lsil.com</A>/pmalone_350
+Thu Dec 28 14:57:52 2000  modules.c:124 mapi_call 3
+Thu Dec 28 14:57:52 2000  modules.c:163 mapi_call returning unhandled
+Thu Dec 28 14:57:52 2000  mtqoverflow 0 overflowing 80EFB40
+Thu Dec 28 14:57:52 2000  mtq 80F0A60 queue call 80EFB40
+Thu Dec 28 14:57:52 2000  sessions.c:337 THREAD:SESSION:TO received data
+from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>!
+Thu Dec 28 14:57:52 2000  modules.c:124 mapi_call 0
+Thu Dec 28 14:57:52 2000  modules.c:147 MAPI 81931A8
+Thu Dec 28 14:57:52 2000  modules.c:163 mapi_call returning unhandled
+Thu Dec 28 14:57:52 2000  deliver.c:472 DELIVER 4:c2s &lt;route
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pmalone at jabber.co.lsil.com</A>/8192E10' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">11 at c2s</A>/80CB880'&gt;&lt;iq
+type='error' id='wj_14' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pmalone at jabber.co.lsil.com</A>/pmalone_350'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>'&gt;&lt;query
+xmlns='jabber:iq:groupchat'/&gt;&lt;error code='404'&gt;Not
+Found&lt;/error&gt;&lt;/iq&gt;&lt;/route&gt;
+Thu Dec 28 14:57:52 2000  deliver.c:344 delivering to instance 'c2s'
+Thu Dec 28 14:57:52 2000  client.c:124 Found the sock for this user
+Thu Dec 28 14:57:52 2000  mtq 80F0A60 leaving to pth
+Thu Dec 28 14:57:52 2000  io_select.c:339 io_main checking sockets
+Thu Dec 28 14:57:52 2000  io_select.c:105 WRITE 11 len 184 of &lt;iq
+type='error' id='wj_14' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pmalone at jabber.co.lsil.com</A>/pmalone_350'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testgroup at jabber.co.lsil.com</A>'&gt;&lt;query
+xmlns='jabber:iq:groupchat'/&gt;&lt;error code='404'&gt;Not Found&lt;/error&gt;&lt;/iq&gt;
+
+Thu Dec 28 14:57:52 2000  io_select.c:339 io_main checking sockets
+-----
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034666.html">[JDEV] Quickie Yahoo-Transport Question
+</A></li>
+	<LI>Next message: <A HREF="034669.html">[JDEV] Groupchat with 1.2 problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34667">[ date ]</a>
+              <a href="thread.html#34667">[ thread ]</a>
+              <a href="subject.html#34667">[ subject ]</a>
+              <a href="author.html#34667">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

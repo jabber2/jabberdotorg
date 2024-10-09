@@ -1,0 +1,209 @@
+diff -urN --exclude CVS ../jabberd2/c2s/Makefile.am ./c2s/Makefile.am
+--- ../jabberd2/c2s/Makefile.am	Wed Nov  6 18:25:44 2002
++++ ./c2s/Makefile.am	Fri Nov 15 14:49:19 2002
+@@ -2,7 +2,7 @@
+ 
+ bin_PROGRAMS = c2s
+ 
+-c2s_SOURCES = authreg.c authreg_anon.c authreg_db.c c2s.c main.c
++c2s_SOURCES = authreg.c authreg_anon.c authreg_db.c authreg_ldap.c c2s.c main.c
+ noinst_HEADERS = c2s.h
+ 
+ c2s_LDADD = $(top_builddir)/sx/libsx.a \
+diff -urN --exclude CVS ../jabberd2/c2s/authreg.c ./c2s/authreg.c
+--- ../jabberd2/c2s/authreg.c	Fri Nov 15 06:17:04 2002
++++ ./c2s/authreg.c	Fri Nov 15 15:03:30 2002
+@@ -26,11 +26,13 @@
+ 
+ extern int anon_init(authreg_t);
+ extern int db_init(authreg_t);
++extern int authreg_ldap_init(authreg_t);
+ 
+ char *module_names[] =
+ {
+     "anon",
+     "db",
++    "ldap",
+     NULL
+ };
+ 
+@@ -38,6 +40,7 @@
+ {
+     anon_init,
+     db_init,
++    authreg_ldap_init,
+     NULL
+ };
+ 
+diff -urN --exclude CVS ../jabberd2/c2s/authreg_ldap.c ./c2s/authreg_ldap.c
+--- ../jabberd2/c2s/authreg_ldap.c	Thu Jan  1 01:00:00 1970
++++ ./c2s/authreg_ldap.c	Fri Nov 15 15:35:18 2002
+@@ -0,0 +1,153 @@
++/*
++* jabberd - Jabber Open Source Server
++* Copyright (c) 2002 Jeremie Miller, Thomas Muldowney,
++*                    Ryan Eatmon, Robert Norris
++*
++* LDAP Auth backend
++* Copyright (c) 2002 Jochen Schneider
++*
++* This program is free software; you can redistribute it and/or modify
++* it under the terms of the GNU General Public License as published by
++* the Free Software Foundation; either version 2 of the License, or
++* (at your option) any later version.
++*
++* This program is distributed in the hope that it will be useful,
++* but WITHOUT ANY WARRANTY; without even the implied warranty of
++* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
++* GNU General Public License for more details.
++*
++* You should have received a copy of the GNU General Public License
++* along with this program; if not, write to the Free Software
++* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA02111-1307USA
++*/
++                  
++/* ldap authorization backend  */
++
++#include "c2s.h"
++#include <stdio.h>
++#include "ldap.h"
++#include "lber.h"
++
++typedef struct moddata_st
++{
++	LDAP *conn;
++} *moddata_t;
++
++static int __ldap_user_exists(authreg_t ar, char *username, char *realm)
++{
++	moddata_t data = (moddata_t) ar->private;
++	LDAPMessage *ldap_message;
++	char ldap_filter[256];
++		
++	log_debug(ZONE, "does the user %s exist", username);
++	
++	if (data->conn)
++	{
++		log_debug(ZONE,"connection exists");
++	}
++	else
++	{
++		log_debug(ZONE,"connection does not exists");
++	}
++	
++	snprintf(ldap_filter, 256, "(uid=%s)", username);
++		
++	ldap_search_s(data->conn, "", LDAP_SCOPE_SUBTREE, ldap_filter,  NULL, NULL, &ldap_message);
++	
++	if (ldap_count_entries(data->conn, ldap_message) >0 )
++	{
++		return 1;
++	}
++	else
++	{
++		return 0;
++	}
++}
++
++static int _ldap_user_exists(authreg_t ar, char *username, char *realm)
++{
++	return _ldap_check_password(ar, username, realm, "");
++}
++
++static int _ldap_check_password(authreg_t ar, char *username, char *realm, char password[257])
++{
++	moddata_t data = (moddata_t) ar->private;
++	LDAPMessage *ldap_message, *ldap_entry;
++	char ldap_filter[256], *ldap_bind_dn;
++	int ret;
++	
++	snprintf(ldap_filter, 256, "(uid=%s)", username);
++	
++	ldap_search_s(data->conn, "" , LDAP_SCOPE_SUBTREE, ldap_filter, NULL, NULL, &ldap_message);
++	if (ldap_count_entries(data->conn, ldap_message) != 0 )
++	{
++		 if (strcmp(password, "") == 0)
++		 {
++		 	/* we do ldap_user_exists actually */
++		 	ret = 1;
++		 }
++		 else
++		 {
++		 	/* we do a plaintext password check by binding to the LDAP directory */
++		 	ldap_entry = ldap_first_entry(data->conn, ldap_message);
++		 	ldap_bind_dn = ldap_get_dn(data->conn, ldap_entry);
++		 	log_debug(ZONE, "ldap_bind_dn: %s", ldap_bind_dn);
++		 	if(ldap_simple_bind_s(data->conn, ldap_bind_dn, password) == LDAP_SUCCESS)
++		 	{
++		 		/*ldap_unbind_s(data->conn);*/
++		 		ret = 0;
++		 	}
++		 	else
++		 	{
++		 		ret = 1;
++		 	}
++		 }
++	}
++	else
++	{
++		ret = 1;
++	}
++	return ret;
++}
++
++static int _ldap_get_password(authreg_t ar, char *username, char *realm, char password[257])
++{
++	return 1;
++}
++
++static int _ldap_search_s(LDAP* conn, char *base, int scope, char *filter, char **attrs, int attrsonly, LDAPMessage **res)
++{
++	return ldap_search_s(conn, base, scope, filter, attrs, attrsonly, res);
++}
++
++int authreg_ldap_init (authreg_t ar)
++{
++	LDAP *conn;
++	char *ldap_host;
++	int ldap_port;
++	
++	moddata_t data;
++	
++	data = (moddata_t) malloc(sizeof(struct moddata_st));
++	memset(data, 0, sizeof(struct moddata_st));
++	
++	ldap_host = config_get_one(ar->c2s->config, "authreg.ldap.host", 0);
++	ldap_port = j_atoi(config_get_one(ar->c2s->config, "authreg.ldap.port", 0), LDAP_PORT);
++	
++	conn = (LDAP**)(ldap_init(ldap_host, ldap_port));
++	
++	if(conn == NULL)
++	{
++		log_debug(ZONE, "LDAP connection to %s on port %d failed", ldap_host, ldap_port);
++		return 1;
++	}
++		
++	data->conn = (LDAP*) conn;
++	
++	ar->private = data;
++	
++	ar->user_exists = _ldap_user_exists;
++	ar->get_password = _ldap_get_password;
++	ar->check_password = _ldap_check_password;
++	return 0;
++}
+
+--- ../jabberd2/configure.in	Fri Nov 15 06:47:47 2002
++++ configure.in	Fri Nov 15 15:45:33 2002
+@@ -31,6 +31,11 @@
+ **************************************************
+ * openssl not found.  Please install to continue *
+ **************************************************]))
++AC_CHECK_LIB(ldap, ldap_init,,AC_MSG_ERROR(
++[
++**************************************************
++* libldap not found.  Please install to continue *
++**************************************************]))
+ 
+ dnl db-4 is more complex
+ AC_MSG_CHECKING([for libdb-4])

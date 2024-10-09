@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Moving passwords into LDAP (was Re: Storing passwords on Jabber server)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Moving%20passwords%20into%20LDAP%20%28was%20Re%3A%20Storing%20passwords%20on%0A%20Jabber%20server%29&In-Reply-To=3B6DD9BF.8020401%40jabber.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="008951.html">
+   <LINK REL="Next"  HREF="008967.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Moving passwords into LDAP (was Re: Storing passwords on Jabber server)</H1>
+    <B>jabber at msg.net</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Moving%20passwords%20into%20LDAP%20%28was%20Re%3A%20Storing%20passwords%20on%0A%20Jabber%20server%29&In-Reply-To=3B6DD9BF.8020401%40jabber.com"
+       TITLE="[JDEV] Moving passwords into LDAP (was Re: Storing passwords on Jabber server)">jabber at msg.net
+       </A><BR>
+    <I>Sun Aug  5 18:57:37 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="008951.html">[JDEV] Moving passwords into LDAP (was Re: Storing passwords on Jabber server)
+</A></li>
+        <LI>Next message: <A HREF="008967.html">[JDEV] Moving passwords into LDAP (was Re: Storing passwords on Jabber server)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8952">[ date ]</a>
+              <a href="thread.html#8952">[ thread ]</a>
+              <a href="subject.html#8952">[ subject ]</a>
+              <a href="author.html#8952">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>David Waite writes:
+&gt;<i> beyond all of this, there is still an issue on how authentication works 
+</I>&gt;<i> within the open-source Jabber server, and how it determines if a user 
+</I>&gt;<i> account exists (for instance, to decide if to put a message in offline, 
+</I>&gt;<i> or what to do with a presence subscription when a user is offline). 
+</I>&gt;<i> Currently, this is done doing a jabber:iq:auth request - this means that 
+</I>&gt;<i> if there is nothing to look up using an xdb jabber:iq:auth request, the 
+</I>&gt;<i> account will not work properly.
+</I>
+I gather that is what drove the design decisions of 'xdb_ldap', as a
+xdb module, it will handle the jabber:iq:auth requests itself.
+
+The other LDAP modules just skip over that issue, and assume that the
+fields will have been populated with (real or bogus) data by mod_register.
+ 
+&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber at msg.net</A> wrote:
+</I>&gt;<i> &gt;&gt;&gt;'mod_auth_ldap', and 'xdb_ldap'.  Of these, only 'mod_auth_ldap' appears to
+</I>&gt;<i> &gt;&gt;&gt;be actively developed, and all three have scalability issues.
+</I>&gt;<i> &gt;&gt;&gt;
+</I>&gt;<i> &gt;&gt;What scalability issues? I'm sure I could think of a couple (the auth
+</I>&gt;<i> &gt;&gt;module blocking its single thread being the most obvious), but you sound
+</I>&gt;<i> &gt;&gt;like you've done a bit more investigation into this than I have. If you
+</I>&gt;<i> &gt;&gt;have any suggestions as to how to improve the module, I'd like to hear
+</I>&gt;<i> &gt;&gt;it :)
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;&gt;From xdb_ldap.README:
+</I>&gt;<i> &gt;	jabber makes a lot of authentication request when an
+</I>&gt;<i> &gt;	user logs (4 requests : one auth:get, two auth:0k:get and one
+</I>&gt;<i> &gt;	auth:0k:set) in and binding to the LDAP server takes a lot of time.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;And if you use SSL, then the startTLS mechanism adds even more overhead
+</I>&gt;<i> &gt;to the initial TCP connection, so you need to get into connection management,
+</I>&gt;<i> &gt;or pushing the LDAP connectivity to a separate thread or a standalone app,
+</I>&gt;<i> &gt;to work around the connection startup and blocking issues.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;&gt;&gt;OTOH, while 'mod_auth_ldap' never retrieves the user's plaintext password
+</I>&gt;<i> &gt;&gt;&gt;from the server, and works without priviledged access to the LDAP server,
+</I>&gt;<i> &gt;&gt;&gt;it only supports Jabber's password (no Digest, no 0K) authentication, where
+</I>&gt;<i> &gt;&gt;&gt;the client sends their password in the clear. This isn't so bad if you can
+</I>&gt;<i> &gt;&gt;&gt;ensure that your clients always use SSL to connect to the server.
+</I>&gt;<i> &gt;&gt;&gt;
+</I>&gt;<i> &gt;&gt;Though _any_ not-SSL LDAP client suffers from this problem. I beleive
+</I>&gt;<i> &gt;&gt;someone has a patch in the works to SSL-enable mod_auth_ldap. The LDAP
+</I>&gt;<i> &gt;&gt;administrator at my organisation has a project underway to make
+</I>&gt;<i> &gt;&gt;LDAP-over-SSL available. Once this exists, I will probably look at
+</I>&gt;<i> &gt;&gt;adding SSL support to the module, which should fix the Jabber server &lt;-&gt;
+</I>&gt;<i> &gt;&gt;LDAP server side, at least.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;I believe xdb_ldap went this road, including using SSL/TLS for authentication
+</I>&gt;<i> &gt;to the LDAP server instead of storing the jabber server's LDAP credentials
+</I>&gt;<i> &gt;in the xml configurations. The xdb_ldap package was forced to take into
+</I>&gt;<i> &gt;accounts ome of the scalability issues due to the high overhead of SSL
+</I>&gt;<i> &gt;session startup.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;If you take a look at xdb_ldap, it is _not_ using the user's existing LDAP
+</I>&gt;<i> &gt;credentials for authentication, instead it is simply using LDAP as an XDB
+</I>&gt;<i> &gt;backend for the authentication token, hash and the VCARD-temp data, by
+</I>&gt;<i> &gt;using a custom objectClass derived from inetOrgPerson.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;&gt;Though there's still the plaintext password being handed from the Jabber
+</I>&gt;<i> &gt;&gt;client to the server, which unfortunately, isn't quite so easy to fix.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;Actually, what I was thinking about was turning off port 5222 and mandating
+</I>&gt;<i> &gt;users to connect with SSL-enabled jabber clients (port 5223), which improves
+</I>&gt;<i> &gt;the client-to-server plaintext password issue, though there are still some
+</I>&gt;<i> &gt;concerns (due to weak SSL implementations in clients).
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;Kevin Kadow
+</I>&gt;<i> &gt;MSG.Net, Inc.
+</I>&gt;<i> &gt;_______________________________________________
+</I>&gt;<i> &gt;jdev mailing list
+</I>&gt;<i> &gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt;<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="008951.html">[JDEV] Moving passwords into LDAP (was Re: Storing passwords on Jabber server)
+</A></li>
+	<LI>Next message: <A HREF="008967.html">[JDEV] Moving passwords into LDAP (was Re: Storing passwords on Jabber server)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8952">[ date ]</a>
+              <a href="thread.html#8952">[ thread ]</a>
+              <a href="subject.html#8952">[ subject ]</a>
+              <a href="author.html#8952">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

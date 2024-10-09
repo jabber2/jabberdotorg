@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Extended error handling
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Extended%20error%20handling&In-Reply-To=%3C3A2EEE47.8052D72C%40jabber.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034311.html">
+   <LINK REL="Next"  HREF="034314.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Extended error handling</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Extended%20error%20handling&In-Reply-To=%3C3A2EEE47.8052D72C%40jabber.com%3E"
+       TITLE="[JDEV] Extended error handling">dwaite at jabber.com
+       </A><BR>
+    <I>Wed Dec  6 19:56:23 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034311.html">[JDEV] Extended error handling
+</A></li>
+        <LI>Next message: <A HREF="034314.html">[JDEV] Jabber on HPUX
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34313">[ date ]</a>
+              <a href="thread.html#34313">[ thread ]</a>
+              <a href="subject.html#34313">[ subject ]</a>
+              <a href="author.html#34313">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Two comments:
+First, you would probably want to have the field errors be handled
+client-logic side as much as possible. There is no need for a round-trip
+with the server if you can adequately set additional information on
+fields.
+
+Ryan Eatmon and Peter Millard were both working on a more sophisticated
+method for form entry (for registration and searches). You may with to
+contact them for additional information, and to see what would needed to
+wedge as much client side logic as possible in. These would be made
+available within newer namespaces (something like a jabber:iq:form)
+
+For instance, you could change
+
+&lt;firstname&gt;&lt;/firstname&gt; within the jabber:iq:register response with
+
+&lt;field type='text' mask='no' required='yes' label=&quot;firstname'/&gt;
+
+Then in a user interface you could indicate something similar to 'fields
+with stars (*) next to them are required for registration', and grey out
+the 'Register' button until the '*firstname' field was entered. This
+would allow for much more intuitive UI design.
+
+Second is the issue of error reporting. I wish I could recommend a way
+to do this that wouldn't hurt existing clients, but that is difficult.
+Within the (imaginary) DTD of the Jabber protocol, error does not
+contain mixed content. Attempting to do this would at very least break
+my library (JabberBeans) so that incorrect data was returned.
+
+It would be better to attach a new xmlns to the error so at least
+clients could filter and expect that erroneous content.
+
+Also, within the (imaginary) XML Schema for the Jabber Protocol, more
+than one XML namespace embedded within a query tag is not allowed (as
+Keith recommended, I believe.)
+
+I would probably propose something like the following:
+
+&lt;erroneous iq ommited&gt;
+
+&lt;iq type='error' id='whatever123' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">whoever at wherever</A>'&gt;&lt;error
+code=&quot;409&quot;&gt;Not Acceptable&lt;/error&gt;&lt;regerr
+xmlns=&quot;custom:reg:error&quot;&gt;&lt;message&gt;Field 'first name' was left
+blank.&lt;/message&gt;&lt;message&gt;Field 'last name' was left
+blank&lt;/message&gt;&lt;/regerr&gt;&lt;/iq&gt;
+
+The original data isn't really needed as this same client just sent it
+and is probably waiting on the response. So just substitute the xml
+namespace data with extended error reporting, and match up the response
+by the id attribute.
+
+-David Waite
+
+Colin Madere wrote:
+
+&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Hello JDEV,
+</I>&gt;<i>
+</I>&gt;<i> My group is currently extending the error reporting (and field
+</I>&gt;<i> requirements) of the registration process in the Jabberd code.  We're
+</I>&gt;<i> implementing a server and client that requires more fields than the
+</I>&gt;<i> default (username/password) and we need to report more detailed errors
+</I>&gt;<i> for these added fields.
+</I>&gt;<i>
+</I>&gt;<i> Basically, we have something working but I don't think it's clean
+</I>&gt;<i> enough.  If there's suggestions, I'd like to hear them (on tag naming
+</I>&gt;<i> and hierarchy, mainly).
+</I>&gt;<i>
+</I>&gt;<i> Here's an example of a registration request error returned to the
+</I>&gt;<i> client containing extended error codes for multiple fields:
+</I>&gt;<i>
+</I>&gt;<i> &lt;iq type='error' id='1002'&gt;
+</I>&gt;<i>    &lt;query xmlns='jabber:iq:register'&gt;
+</I>&gt;<i>       &lt;username&gt;newuser&lt;/username&gt;
+</I>&gt;<i>       &lt;email&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">spoon at fed.com</A>&lt;/email&gt;
+</I>&gt;<i>       &lt;password&gt;babyfood&lt;/password&gt;
+</I>&gt;<i>         ....possibly more fields here....
+</I>&gt;<i>       &lt;key&gt;3be0ed5fa106e18761cb22baec2715baa60b217c&lt;/key&gt;
+</I>&gt;<i>    &lt;/query&gt;
+</I>&gt;<i>    &lt;error code='xxx'&gt;
+</I>&gt;<i>       &lt;field_error&gt;
+</I>&gt;<i>          &lt;name&gt;firstname&lt;/name&gt;
+</I>&gt;<i>          &lt;errortype&gt;nodata&lt;/errortype&gt;
+</I>&gt;<i>          &lt;description&gt;First name may not be left blank&lt;/description&gt;
+</I>&gt;<i>       &lt;/field_error&gt;
+</I>&gt;<i>       &lt;field_error&gt;
+</I>&gt;<i>          &lt;name&gt;lastname&lt;/name&gt;
+</I>&gt;<i>          &lt;errortype&gt;nodata&lt;/errortype&gt;
+</I>&gt;<i>          &lt;description&gt;Last name may not be left blank&lt;/description&gt;
+</I>&gt;<i>       &lt;/field_error&gt;
+</I>&gt;<i>    &lt;/error&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i> A standard error code looks like:
+</I>&gt;<i>
+</I>&gt;<i> &lt;error code='xxx'&gt;Username not available&lt;/error&gt;
+</I>&gt;<i>
+</I>&gt;<i> What mainly bugs me is the &lt;field_error/&gt; section...
+</I>&gt;<i>
+</I>&gt;<i> ** Also, any suggestions or resources for error codes?  Currently
+</I>&gt;<i> we're just using arbitrarily chosen unused codes.
+</I>&gt;<i>
+</I>&gt;<i> Colin Madere
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="http://mail.jabber.org/pipermail/jdev/attachments/20001206/efca5401/attachment-0001.htm">http://mail.jabber.org/pipermail/jdev/attachments/20001206/efca5401/attachment-0001.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034311.html">[JDEV] Extended error handling
+</A></li>
+	<LI>Next message: <A HREF="034314.html">[JDEV] Jabber on HPUX
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34313">[ date ]</a>
+              <a href="thread.html#34313">[ thread ]</a>
+              <a href="subject.html#34313">[ subject ]</a>
+              <a href="author.html#34313">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

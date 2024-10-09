@@ -1,0 +1,77 @@
+
+On Sunday, April 22, 2001, at 09:52 AM, Rob Kooper wrote:
+
+
+<excerpt>Since we already have the whole connection system in jabber I
+was thinking
+
+of when I want to transfer a file, I'll send it to the server that I am
+
+connected to and send the file as chunks (size and rate depending on
+
+flowcontrol parameters).
+
+</excerpt>
+
+In-band file transfer seems to be a somewhat controversial topic. I
+brought it up a few weeks ago and several people objected to sending
+all that data through the server. It is, however, by far the most
+straightforward solution to firewall and NAT issues.
+
+
+<excerpt>The server can then either collect the chunks till
+
+all data is received, and then send the chunks to the receiving user
+(after
+
+first asking for its flow control parameters).
+
+[...] The flowcontrol I am talking about will contain the size of the
+packet to
+
+send and the time between packets.
+
+</excerpt>
+
+I think it would be a lot simpler if the transfer were driven by the
+<italic>recipient</italic>. First off, because that user should be
+able to decide whether to receive any of the file at all. Then, if
+desired, the receiving client can send <<iq> queries to the sender's
+client to receive chunks of the file data; each query includes the
+file/resource name, possibly an authenticating 'cookie' provided by
+the sender, and a byte range to receive. There's no need for explicit
+flow control because the receiving client only requests chunks as fast
+as it can receive them.
+
+
+There's no need for any special server support at all. All that's
+going on is two clients sending special <<iq> queries and responses to
+each other. Purely a matter for client developers to standardize and
+implement.
+
+
+Other notes:
+
+• File <italic>sharing</italic> can be an extension of this, where the
+provider advertises (via a namespace in its public server-side
+storage?) what files are available, then other clients use the same
+queries to request chunks.
+
+• The chunk size should be limited to some reasonable amount like 32k
+since each chunk locks up the sender's/receiver's connection. Plus,
+XML parsers may barf on huge elements.
+
+•  This also allows for out-of-order downloads: for example, some
+older QuickTime movies include the header info at the
+<italic>end</italic>, so to stream such a movie the receiving client
+might want to ask for the last few kbytes of the file first.
+
+• It would still be nice if the sender/receiver could negotiate
+whether a direct P2P file transfer is possible, since this will always
+be more efficient.
+
+
+Thoughts?
+
+
+--Jens

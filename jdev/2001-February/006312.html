@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [patch mod_presence.c]
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20%5Bpatch%20mod_presence.c%5D&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006311.html">
+   <LINK REL="Next"  HREF="006313.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [patch mod_presence.c]</H1>
+    <B>Rodolphe Duge de Bernonville</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20%5Bpatch%20mod_presence.c%5D&In-Reply-To="
+       TITLE="[JDEV] [patch mod_presence.c]">rod at idealx.com
+       </A><BR>
+    <I>Tue Feb 20 04:41:42 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006311.html">[JDEV] [patch users.c]
+</A></li>
+        <LI>Next message: <A HREF="006313.html">[JDEV] Bug in base_accpet?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6312">[ date ]</a>
+              <a href="thread.html#6312">[ thread ]</a>
+              <a href="subject.html#6312">[ subject ]</a>
+              <a href="author.html#6312">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Under heavy load and for an unknow reason (for the moment :)
+
+_js_session_end may be call before a last call to mod_presence.
+
+this will free the pres field in the session struct via
+xmlnode_free(s-&gt;presence)
+which will cause many problems in the mod_presence module in 
+the mod_presence_out call. 
+
+I think it is because of the xdb_get call to have the roster.
+So, for the moment, (it works but not very nice), after each xdb call 
+in this function, I recommend to do that :
+
+
+/* push to roster subscriptions */
+    roster = xdb_get(m-&gt;si-&gt;xc, m-&gt;user-&gt;id, NS_ROSTER);
+/*  WARNING : possible to have s-&gt;presence modify by js_session_end  */
+    if (m-&gt;s-&gt;exit_flag == 1){
+	xmlnode_free(m-&gt;packet-&gt;x);
+	xmlnode_free(roster);
+	return M_HANDLED;
+    }
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006311.html">[JDEV] [patch users.c]
+</A></li>
+	<LI>Next message: <A HREF="006313.html">[JDEV] Bug in base_accpet?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6312">[ date ]</a>
+              <a href="thread.html#6312">[ thread ]</a>
+              <a href="subject.html#6312">[ subject ]</a>
+              <a href="author.html#6312">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

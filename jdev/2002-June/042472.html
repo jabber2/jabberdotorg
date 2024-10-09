@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Does Muse support encrypted messaging?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Does%20Muse%20support%20encrypted%20messaging%3F&In-Reply-To=%3C5.1.1.6.0.20020621121231.04ac3e90%40mail.echomine.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042471.html">
+   <LINK REL="Next"  HREF="042473.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Does Muse support encrypted messaging?</H1>
+    <B>Chris Chen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Does%20Muse%20support%20encrypted%20messaging%3F&In-Reply-To=%3C5.1.1.6.0.20020621121231.04ac3e90%40mail.echomine.com%3E"
+       TITLE="[JDEV] Does Muse support encrypted messaging?">ckchris at idream.net
+       </A><BR>
+    <I>Fri Jun 21 14:36:05 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042471.html">[JDEV] Does Muse support encrypted messaging?
+</A></li>
+        <LI>Next message: <A HREF="042473.html">[JDEV] Does Muse support encrypted messaging?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42472">[ date ]</a>
+              <a href="thread.html#42472">[ thread ]</a>
+              <a href="subject.html#42472">[ subject ]</a>
+              <a href="author.html#42472">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Yes, Muse has support for &quot;working&quot; with encrypted messages.  However, it 
+does not support the &quot;encryption&quot; of the message.
+
+What does this mean?  It means that you can call some method like:
+
+It means that there is a message class you can use to attach the encrypted 
+data to the message you want to send and also a way to retrieve the 
+encrypted message.  However, the message class itself will not do the 
+actually encryption of the data for you.  The reasoning behind that is that 
+different people use different libraries to do encryption.  Rather than try 
+to make everyone conform to a specific library that Muse uses, Muse lets 
+you, the developer, decide which encryption library to use.  Once you have 
+encrypted the data, it's easy to add it as an XMessage to be sent to the 
+remote server and also easy to retrieve it.
+
+Specifically, if you want to send PGP messages, you should instantiate an 
+object from PGPEncryptedXMessage.  Once you create it, you can add it to 
+the main message (since all X Messages must be inside another message) ... 
+a sample code will look something like this.
+
+Jabber jabber = new Jabber();
+JabberSession session = jabber.createSession(...);
+session.connect(...);
+...
+...
+JabberChatMessage msg = new JabberChatMessage();
+msg.setSubject(&quot;Test Subject&quot;);
+msg.setBody(&quot;Test Body&quot;);
+PGPEncryptedXMessage pgpmsg = new PGPEncryptedXMessage();
+...
+...do you data encryption here...
+...
+pgpmsg.setPGPMessage(&quot;JKLFWIERUOSJKX237492378965&lt;PGP ENCRYPTED DATA&gt;&quot;);
+msg.addXMessage(JabberCode.XMLNS_X_PGP_ENCRYPTED, pgpmsg);
+session.sendMessage(msg);
+
+
+Hope that helps.  I did put up a beginner's tutorial as well as a 
+intermediate user's tutorial for working with the Jabber API.  So you 
+should take a look at it.  Also, you should use alpha versions (ie. 0.73a1) 
+rather than the stable version.  The alpha version is only there to 
+indicate that the Gnutella module is going through some API changes.  The 
+Jabber module is not affected at all at this point, so it's safe to use the 
+newest version.
+
+If you have any questions and problems regarding Muse, you should contact 
+me directly rather than go through JDEV in consideration of the other 
+people on this list.
+
+Thanks,
+Chris
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ckchris at echomine.com</A>
+
+
+At 06:48 AM 06/21/2002, you wrote:
+&gt;<i>Does Muse support encrypted messaging and, if so, is there a sample somewhere?
+</I>&gt;<i>
+</I>&gt;<i>-----Original Message-----
+</I>&gt;<i>From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A>]
+</I>&gt;<i>Sent: Thursday, June 20, 2002 5:07 PM
+</I>&gt;<i>To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>Subject: Re: [JDEV] JabberBeans encryption sample
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>I suggest jettisioning jabberbeans and going with Muse at
+</I>&gt;<i>echomine.org. Much easier and active development.
+</I>&gt;<i>
+</I>&gt;<i>Mark
+</I>&gt;<i>On 20 Jun 02, at 12:55, Richard Clippard wrote:
+</I>&gt;<i>
+</I>&gt;<i> &gt; Anyone got a sample of how to encrypt Jabber messages using
+</I>&gt;<i> &gt; JabberBeans. I looked in the &quot;swagger&quot; sample and they did not seem to
+</I>&gt;<i> &gt; address this (or I just missed it). I am interested in encrypting all
+</I>&gt;<i> &gt; the message/chat content (not just the password (although I am
+</I>&gt;<i> &gt; interested in encrypting passwords too)).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanx. RL Clippard
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>Mark Wilcox
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A>
+</I>&gt;<i>Got LDAP?
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+PGP at <A HREF="ldap://pgpkeys.mit.edu/">ldap://pgpkeys.mit.edu/</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042471.html">[JDEV] Does Muse support encrypted messaging?
+</A></li>
+	<LI>Next message: <A HREF="042473.html">[JDEV] Does Muse support encrypted messaging?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42472">[ date ]</a>
+              <a href="thread.html#42472">[ thread ]</a>
+              <a href="subject.html#42472">[ subject ]</a>
+              <a href="author.html#42472">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] sasl help
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20sasl%20help&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="026697.html">
+   <LINK REL="Next"  HREF="026700.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] sasl help</H1>
+    <B>Jacob Wright</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20sasl%20help&In-Reply-To="
+       TITLE="[jdev] sasl help">jacwright at gmail.com
+       </A><BR>
+    <I>Tue Oct 23 02:25:59 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="026697.html">[jdev] Managing Subscriptions
+</A></li>
+        <LI>Next message: <A HREF="026700.html">[jdev] sasl help
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26699">[ date ]</a>
+              <a href="thread.html#26699">[ thread ]</a>
+              <a href="subject.html#26699">[ subject ]</a>
+              <a href="author.html#26699">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm working on the DIGEST-MD5 SASL authentication and feel like I'm doing it
+perfectly, but my server is telling me I've got an incorrect auth for the
+right username and password. This is in Flash's ActionScript. Can you spot
+anything obvious I'm doing wrong?
+I really appreciate it. Thanks!
+
+Jacob Wright
+
+base64decoder.decode(packet.toString());
+
+bytes = base64decoder.flush();
+
+var dataStr:String = bytes.readUTFBytes(bytes.bytesAvailable);
+
+// transcode the string into an object
+
+var data:Object = stringToObject(dataStr);
+
+
+// set up the return object which will be transcoded into a string later
+
+var obj:Object = {};
+
+
+obj.username = username;
+
+obj.realm = data.realm;
+
+obj.nonce = data.nonce;
+
+obj.charset = &quot;utf-8&quot;;
+
+obj[&quot;digest-uri&quot;] = &quot;xmpp/&quot; + (conn.domain || conn.host);
+
+if (data.algorithm)
+
+obj.algorithm = data.algorithm;
+
+obj.nc = &quot;00000001&quot;;
+
+if (data.qop)
+
+obj.qop = &quot;auth&quot;;
+
+obj.cnonce = conn.generateId();
+
+var a1:String, a2:String;
+
+
+a1 = MD5.hash(obj.username + &quot;:&quot; + obj.realm + &quot;:&quot; + password) + &quot;:&quot; +
+obj.nonce + &quot;:&quot; + obj.cnonce;
+
+a2 = &quot;AUTHENTICATE:&quot; + obj[&quot;digest-uri&quot;];
+
+
+var response:String;
+
+
+if (obj.qop)
+
+response = MD5.hash(MD5.hash(a1) + &quot;:&quot; + obj.nonce + &quot;:&quot; + obj.nc + &quot;:&quot; +
+obj.cnonce + &quot;:&quot; + obj.qop + &quot;:&quot; + MD5.hash(a2));
+
+else
+
+response = MD5.hash(MD5.hash(a1) + &quot;:&quot; + obj.nonce + &quot;:&quot; + MD5.hash(a2));
+
+
+obj.response = response;
+
+
+var resultStr:String = objectToString(obj);
+
+base64encoder.encode(resultStr);
+
+resultStr = base64encoder.flush();
+
+
+var result:XML = &lt;response xmlns={saslNS}&gt;{resultStr}&lt;/response&gt;;
+
+
+conn.send(result);
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20071023/fc73498a/attachment.htm">https://www.jabber.org/jdev/attachments/20071023/fc73498a/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="026697.html">[jdev] Managing Subscriptions
+</A></li>
+	<LI>Next message: <A HREF="026700.html">[jdev] sasl help
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26699">[ date ]</a>
+              <a href="thread.html#26699">[ thread ]</a>
+              <a href="subject.html#26699">[ subject ]</a>
+              <a href="author.html#26699">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

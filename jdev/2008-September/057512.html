@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] [Standards] Using Jabber in a KDE game
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%5BStandards%5D%20Using%20Jabber%20in%20a%20KDE%20game&In-Reply-To=%3C20080905020918.095ea389%40alban-hp.cbg.collabora.co.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="057510.html">
+   <LINK REL="Next"  HREF="057513.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] [Standards] Using Jabber in a KDE game</H1>
+    <B>Alban Crequy</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%5BStandards%5D%20Using%20Jabber%20in%20a%20KDE%20game&In-Reply-To=%3C20080905020918.095ea389%40alban-hp.cbg.collabora.co.uk%3E"
+       TITLE="[jdev] [Standards] Using Jabber in a KDE game">alban.crequy at collabora.co.uk
+       </A><BR>
+    <I>Thu Sep  4 20:09:18 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="057510.html">[jdev] [Standards] Using Jabber in a KDE game
+</A></li>
+        <LI>Next message: <A HREF="057513.html">[jdev] [Standards] Using Jabber in a KDE game
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57512">[ date ]</a>
+              <a href="thread.html#57512">[ thread ]</a>
+              <a href="subject.html#57512">[ subject ]</a>
+              <a href="author.html#57512">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Le Fri, 5 Sep 2008 00:50:42 +0200,
+Kleag &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kleag at free.fr</A>&gt; a &#233;crit :
+
+&gt;<i> Guillaume, Alban,
+</I>&gt;<i> 
+</I>&gt;<i> The telepathy solution seems quite fine, at least with an &quot;invitation
+</I>&gt;<i> use case&quot;. But for KsirK I think more to a solution where games
+</I>&gt;<i> (wanting to run the game or connect to a waiting one) connect to a
+</I>&gt;<i> room (viewed as a whiteboard) and discuss there to find their peers.
+</I>&gt;<i> 
+</I>&gt;<i> Do you think that telepathy can be used in such a way ?
+</I>
+Yes: you can offer a stream tube either to a specific contact, or to a
+chatroom. When a tube is offered to the chatroom, every member of the
+chatroom receives the offer (it uses the presence stanza). The tube can
+be accepted and then used by several member of the chatroom.
+
+player 1:
+       unix socket
+KsirK &lt;============     Telepathy       &lt;------\
+                    Connection Manager         |
+                            ^                  |
+player 2:                   | (through the     | (through the
+       unix socket          |   chatroom)      |  chatroom)
+KsirK ------------&gt;     Telepathy              |
+                    Connection Manager         |
+player 3:                                      |
+       unix socket                             |
+KsirK -------------------------------&gt;     Telepathy
+                                       Connection Manager
+
+The player 1 offer a stream tube on the chatroom. All members receive
+the offer. The player 2 and 3 accepts the tube. At this moment,
+connections made by players 2 and 3's KsirK to the Connection Manager
+will be relayed to player 1's KsirK.
+
+A chatroom can host several tubes and of course text messages can
+still be sent on the chatroom. There is only one tube per game on the
+chatroom. A stream tube can have several streams. In the previous
+example, there is 1 stream tube containing 1 stream between player 1 and
+player 2, and another stream between player 1 and player 3.
+
+If the protocol of KsirK was not based on TCP/IP but based on D-Bus,
+you could use D-Bus tubes on a chatroom. In this case, Telepathy routes
+the D-Bus messages between contacts' applications in a private session
+as dbus-daemon does between applications on a single desktop:
+
+
+      /----------&gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">room at conference.jabber.org</A> &lt;---\
+      |                     ^                     |
+      |                     |                     | XMPP     
+      |                     |                     |               
+   Telepathy             Telepathy             Telepathy          
+Connection Manager    Connection Manager    Connection Manager    
+      ^                     ^                     ^               
+      | D-Bus conn.         | D-Bus conn.         | D-Bus conn.   
+      |                     |                     |               
+    KsirK                 KsirK                 KsirK             
+    :1.0                  :1.1                  :1.2
+
+   player 1              player 2              player 3
+
+Telepathy tubes (stream or D-Bus) on a chatroom can be used on any
+chatroom: it does not require the chatroom server to have any knowledge
+of Telepathy or the game. Telepathy tubes on a chatroom just use normal
+messages and presence stanza.
+
+&gt;<i> In fact, I have finished implementing a first Jabber only version
+</I>&gt;<i> doing the first step as described in my initial mail. I will now
+</I>&gt;<i> start to work on the second step and if telepathy is really a
+</I>&gt;<i> possibility I'll look to it in more details.
+</I>
+Maybe it is possible to have different backends: Telepathy and the
+Multi-User Gaming XEP? Abiword has a plugin for collaborative editing
+(Abicollab) and this plugin has a backend for XMPP and another backend
+that uses Telepathy.
+
+Alban
+
+&gt;<i> Ga&#235;l
+</I>&gt;<i> On Thursday 04 September 2008 14:48:13 Guillaume Desmottes wrote:
+</I>&gt;<i> &gt; Le jeudi 04 septembre 2008 &#224; 12:31 +0100, Alban Crequy a &#233;crit :
+</I>&gt;<i> &gt; &gt; The advantages would be that your users do not need to setup the
+</I>&gt;<i> &gt; &gt; jabber (server name, password) in your game because it reuses the
+</I>&gt;<i> &gt; &gt; connection of the desktop. And that you keep your current
+</I>&gt;<i> &gt; &gt; protocol, the Telepathy framework will be responsible to reach
+</I>&gt;<i> &gt; &gt; the contact, avoid NAT problems, etc.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Furthermore, the Telepathy framework provides a much deeper desktop
+</I>&gt;<i> &gt; integration. For example, your contact can receive a notification
+</I>&gt;<i> &gt; &quot;Alice wants to play foo game with you. &lt;accept&gt; &lt;decline&gt;&quot; and if
+</I>&gt;<i> &gt; he accepts the game is automatically launched and connected to you.
+</I>&gt;<i> &gt; See
+</I>&gt;<i> &gt; <A HREF="http://cass.no-ip.com/~cassidy/blog/index.php/post/2007/10/21/GTetrinet-thr">http://cass.no-ip.com/~cassidy/blog/index.php/post/2007/10/21/GTetrinet-thr</A>
+</I>&gt;<i> &gt;ough-tubes for a similar demo using Gtetrinet.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Last but not least, by using the Telepathy framework you are not
+</I>&gt;<i> &gt; protocol specific. Tubes are currently implemented in our XMPP
+</I>&gt;<i> &gt; (Gabble) and XMPP link-local (Salut) backends but we could imagine
+</I>&gt;<i> &gt; an implementation using, say, MSN. You won't have to change
+</I>&gt;<i> &gt; anything and your application will gain new protocol support
+</I>&gt;<i> &gt; automagically when a new backend gains tubes support.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; 	G.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; JDev mailing list
+</I>&gt;<i> &gt; FAQ: <A HREF="http://www.jabber.org/discussion-lists/jdev-faq">http://www.jabber.org/discussion-lists/jdev-faq</A>
+</I>&gt;<i> &gt; Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> &gt; Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> &gt; Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="057510.html">[jdev] [Standards] Using Jabber in a KDE game
+</A></li>
+	<LI>Next message: <A HREF="057513.html">[jdev] [Standards] Using Jabber in a KDE game
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57512">[ date ]</a>
+              <a href="thread.html#57512">[ thread ]</a>
+              <a href="subject.html#57512">[ subject ]</a>
+              <a href="author.html#57512">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

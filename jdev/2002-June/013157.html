@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: xdb_sql problem on mac osx
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20xdb_sql%20problem%20on%20mac%20osx&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="013158.html">
+   <LINK REL="Next"  HREF="013160.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: xdb_sql problem on mac osx</H1>
+    <B>Duncan Hoyle</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20xdb_sql%20problem%20on%20mac%20osx&In-Reply-To="
+       TITLE="[JDEV] Re: xdb_sql problem on mac osx">duncanh at granada-learning.com
+       </A><BR>
+    <I>Tue Jun 18 07:32:02 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="013158.html">[JDEV] Problems with Win32 JabberD (v1.4.2 &amp; v1.4.2CVS)
+</A></li>
+        <LI>Next message: <A HREF="013160.html">[JDEV] Problems with Win32 JabberD (v1.4.2 &amp; v1.4.2CVS)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13157">[ date ]</a>
+              <a href="thread.html#13157">[ thread ]</a>
+              <a href="subject.html#13157">[ subject ]</a>
+              <a href="author.html#13157">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I've tracked down where the problem was occurring and I can
+fix it. Not sure though why it was occurring and if I should
+fix it as I have.
+
+When a new user registered they were added to the sql db but
+no entry was added to the users0k table and the server
+crashed. When the server was restarted the user still didn't
+have a 0k entry so couldn't log on, but logging on as an
+existing user added a 0k entry for the newly registered
+user. The server was falling over at mod_auth_0k line 217.
+To see what would happen I commented out lines 215 - 217
+
+//    /* if the password is to be changed, just remove the
+old 0k auth vars, they'll get reset on next auth get */
+//    if(xmlnode_get_tag_data(m-&gt;packet-&gt;iq,&quot;password&quot;) !=
+NULL)
+//        xdb_set(m-&gt;si-&gt;xc, id, NS_AUTH_0K, NULL);
+
+and I was able to register new users and log them in without
+server crashes. 0k entries get added into the sql db
+immediately on registration. The code I commented out says
+it's for changing passwords but I tried changing some after
+the comment out and was able to.
+
+Anyone know what's going on?
+
+Duncan
+
+
+Duncan Hoyle wrote:
+&gt;<i> 
+</I>&gt;<i> Hi all
+</I>&gt;<i> 
+</I>&gt;<i> I'm trying to get xdb_sql 1.2 working on an osx server
+</I>&gt;<i> connecting to a mysql database running on a windows xp
+</I>&gt;<i> machine and have the following problem...
+</I>&gt;<i> 
+</I>&gt;<i> The server starts ok without complaining about settings and
+</I>&gt;<i> sql connections. I'm starting it logged in as me, and I own
+</I>&gt;<i> everything within the jabberd directory. When I try to
+</I>&gt;<i> create a new jabberd user (with winjab or exodus) the server
+</I>&gt;<i> crashes with the messages below. The strange thing is that
+</I>&gt;<i> the user does get added to the database, and if I restart
+</I>&gt;<i> the server I can log in as that user.
+</I>&gt;<i> I've tried starting a server on the same machine as the
+</I>&gt;<i> database and on a winNT machine using the same remote
+</I>&gt;<i> database and it works ok - new users can create accounts and
+</I>&gt;<i> reconnect without the crash.
+</I>&gt;<i> The xdb_sql.xml files for the pc and mac are the same,
+</I>&gt;<i> they're trying to use the same user to access the database.
+</I>&gt;<i> 
+</I>&gt;<i> Can anyone offer any suggestions. I've only recently stated
+</I>&gt;<i> using MacOSX/Linux and may the problem lies in how I'm
+</I>&gt;<i> running the server/user permissions.
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="013158.html">[JDEV] Problems with Win32 JabberD (v1.4.2 &amp; v1.4.2CVS)
+</A></li>
+	<LI>Next message: <A HREF="013160.html">[JDEV] Problems with Win32 JabberD (v1.4.2 &amp; v1.4.2CVS)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13157">[ date ]</a>
+              <a href="thread.html#13157">[ thread ]</a>
+              <a href="subject.html#13157">[ subject ]</a>
+              <a href="author.html#13157">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

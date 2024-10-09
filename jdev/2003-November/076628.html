@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: Chatting with the correct resource
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Chatting%20with%20the%20correct%20resource&In-Reply-To=%3Cboeqo1%24fg1%241%40sea.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="076621.html">
+   <LINK REL="Next"  HREF="076617.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: Chatting with the correct resource</H1>
+    <B>Tony Cheung</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Chatting%20with%20the%20correct%20resource&In-Reply-To=%3Cboeqo1%24fg1%241%40sea.gmane.org%3E"
+       TITLE="[JDEV] Re: Chatting with the correct resource">tony.cheung at asiayeah.com
+       </A><BR>
+    <I>Thu Nov  6 18:58:26 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="076621.html">[JDEV] Chatting with the correct resource
+</A></li>
+        <LI>Next message: <A HREF="076617.html">[JDEV] Chatting with the correct resource
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76628">[ date ]</a>
+              <a href="thread.html#76628">[ thread ]</a>
+              <a href="subject.html#76628">[ subject ]</a>
+              <a href="author.html#76628">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Mikael and others,
+
+This thread is certainly interesting and is exactly the same problem I 
+have right now while developing a Palm Jabber client, 
+<A HREF="http://www.chatopus.com">http://www.chatopus.com</A>
+
+While I am still trying to digest every thoughts in this thread, I just 
+want to share my own experience first.
+
+Mikael Hallendal wrote:
+&gt;<i> ons 2003-11-05 klockan 19.14 skrev Joe Hildebrand:
+</I>&gt;<i> 
+</I>&gt;&gt;<i>This is one of those things that is a little counter-intuitive.  The
+</I>&gt;&gt;<i>language that's in the spec is correct, particularly when combined with 
+</I>&gt;&gt;<i>the rule that if a message is sent to a non-existent resource, it gets
+</I>&gt;&gt;<i>delivered as if it has no resource.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>There have been clients in the past that always sent to the <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host</A> jid
+</I>&gt;&gt;<i>(which is what you are suggesting), and user-experience-wise, they aren't
+</I>&gt;&gt;<i>great, since some of the messages in a conversation end up going to the 
+</I>&gt;&gt;<i>two different resources, as auto-away priority changes happen.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Any pointers to these clients and a discussion on what wasn't great
+</I>&gt;<i> about them?
+</I>
+Chatopus (current beta stage) always send messages to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host</A> without 
+considering the particular resource. It also always send messages using 
+the type chat, without using any thread ID.
+
+My original assumption is Jabber wants most intelligence in the server 
+side. As a client, especially a mobile PDA client, I suppose it does not 
+need to dealing with the resources. However, it does not seem to be the 
+case.
+
+To simply things further, the roster list of Chatpus also only display a 
+single presence indicator for each user, no matter if a user has logged 
+on with multiple resources. Basically the highest online status will be 
+shown. For example, if a user is online with resource A and away with 
+resource B, the online indicator for that user is online.
+
+So far, everything seems easy to deal with and understand.
+
+Now, the problem comes. A user logs in with resource A and then resource 
+B. Chatopus receives a message from resource B. When it tries to reply, 
+it sends the message to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host.</A> Now, the message may be routed to the 
+client on resource A, while the user with resource B is waiting 
+deperately for the reply...
+
+As a mobile client, Chatopus cannot afford to have multiple windows open 
+at the same time. So basically it maintains a message history for each 
+user, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host.</A> When a user clicks on a jid, the message history window 
+is always opened and a previous message is always there. One way is to 
+always send messages to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jid at host</A>/resource of the previous message, but 
+then it does not take into account of the priority of different resources.
+
+I don't easy an easy answer and perfect implementation yet...
+
+What about the following?
+
+One suggestion is to have some feedback from users acknowledging the 
+recipient of messages.
+
+In this scheme, the client always send messages to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jid at host.</A> When a 
+particular resource (highest priority) receive the message, an 
+acknowledgement should be sent back to the server, only if the real 
+human user is really there, read the message and confirm by clicking 
+something. If the user acknowledgement isn't received within a certan 
+duration, the server detects the user may not really at resource B and 
+would then try to route the message to resource A as a backup. This does 
+not involve the sender side, but the receiver side needs to provide a 
+feedback confirmation. Also, most intelligence is now on the server side.
+
+Anyone agreeing this little scheme? Is it something available now?
+
+Tony Cheung
+
+P.S. BTW, please feel free to try my Chatopus client, as it is near the 
+1.0 phase. I would appreciate if more experienced Jabber 
+users/developers try it.
+
+&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;&gt;<i>The rules that are in the spec are our based on our best practices based
+</I>&gt;&gt;<i>on real use patterns that we've seen.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Hmm .. so someone (Jabber Inc.?) has made real user testing regarding
+</I>&gt;<i> this and come up with the fact that trying to send to the client where
+</I>&gt;<i> the user is is a bad idea? 
+</I>&gt;<i> 
+</I>&gt;<i> And then the spec. enforces the client author to conform with these
+</I>&gt;<i> findings? I think it's a bit weird that the spec. should enforce how the
+</I>&gt;<i> UI that implements it should behave. 
+</I>&gt;<i> 
+</I>&gt;<i> Any suggestions on how to handle this then? For example, I change
+</I>&gt;<i> computers and goes to my laptop, my desktop client is set to away (by
+</I>&gt;<i> autoaway or manually setting it to away), I log into my laptop. My
+</I>&gt;<i> friend who I where chatting with before writes me an important question,
+</I>&gt;<i> which goes to my desktop since he happened to chat with that resource. A
+</I>&gt;<i> few hours later I go back to my desktop and see that he has written the
+</I>&gt;<i> question.
+</I>&gt;<i> 
+</I>&gt;<i> If the message followed the client where I actually is, this wouldn't
+</I>&gt;<i> have happened. Is there any solution to this with the current spec?
+</I>&gt;<i> 
+</I>&gt;<i> Regards,
+</I>&gt;<i>   Mikael Hallendal
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="076621.html">[JDEV] Chatting with the correct resource
+</A></li>
+	<LI>Next message: <A HREF="076617.html">[JDEV] Chatting with the correct resource
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76628">[ date ]</a>
+              <a href="thread.html#76628">[ thread ]</a>
+              <a href="subject.html#76628">[ subject ]</a>
+              <a href="author.html#76628">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

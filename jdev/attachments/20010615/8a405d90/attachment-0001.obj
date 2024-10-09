@@ -1,0 +1,51 @@
+--- mio.c	Tue Mar 27 23:33:38 2001
++++ /usr/local/jabber/jabberd/mio.c	Fri Jun 15 10:47:37 2001
+@@ -82,6 +82,26 @@
+ int KARMA_DEF_RATE_T  = 5;
+ int KARMA_DEF_RATE_P  = 25;
+ 
++/* INFODUC : Bypass karma for the server */
++int _mio_bypass_karma_check(const char *address)
++{
++	xmlnode karma = xmlnode_get_tag(greymatter__, "io/karma");
++	char* ip;
++	struct in_addr in_address, in_ip;
++	
++	if (karma == NULL)
++		return 0;
++
++	ip = xmlnode_get_tag_data(karma, "bypass");
++	if (ip == NULL)
++		return 0;
++
++	inet_aton(address, &in_address);
++	inet_aton(address, &in_ip);
++
++	return in_address.s_addr==in_ip.s_addr;
++}
++
+ int _mio_allow_check(const char *address)
+ {
+     xmlnode io = xmlnode_get_tag(greymatter__, "io");
+@@ -385,12 +405,15 @@
+     }
+ 
+     /* make sure that we aren't rate limiting this IP */
+-    if(m->rated && jlimit_check(m->rate, inet_ntoa(serv_addr.sin_addr), 1))
+-    {
+-        log_warn("io_select", "%s is being connection rate limited", inet_ntoa(serv_addr.sin_addr));
+-        close(fd);
+-        return NULL;
+-    }
++	/* INFODUC : Bypass karma for server */
++	if (!_mio_bypass_karma_check(inet_ntoa(serv_addr.sin_addr))) {
++    	if(m->rated && jlimit_check(m->rate, inet_ntoa(serv_addr.sin_addr), 1))
++	    {
++    	    log_warn("io_select", "%s is being connection rate limited", inet_ntoa(serv_addr.sin_addr));
++        	close(fd);
++	        return NULL;
++    	}
++	}
+ 
+     log_debug(ZONE, "new socket accepted (fd: %d, ip: %s, port: %d)", fd, inet_ntoa(serv_addr.sin_addr), ntohs(serv_addr.sin_port));
+ 

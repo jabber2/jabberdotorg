@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] jabberd's question: how to run MySQL Server on another host?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20jabberd%27s%20question%3A%20how%20to%20run%20MySQL%20Server%20on%20another%20host%3F&In-Reply-To=%3C20050525114147.9F15E21A526%40atlas.jabber.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="051280.html">
+   <LINK REL="Next"  HREF="051267.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] jabberd's question: how to run MySQL Server on another host?</H1>
+    <B>&#24352;&#36798;&#26469;</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20jabberd%27s%20question%3A%20how%20to%20run%20MySQL%20Server%20on%20another%20host%3F&In-Reply-To=%3C20050525114147.9F15E21A526%40atlas.jabber.org%3E"
+       TITLE="[jdev] jabberd's question: how to run MySQL Server on another host?">bowlong at sztelecom.com
+       </A><BR>
+    <I>Wed May 25 06:41:37 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="051280.html">[jdev] Re: CAs
+</A></li>
+        <LI>Next message: <A HREF="051267.html">[jdev] CAs (was: s2s doubts)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51287">[ date ]</a>
+              <a href="thread.html#51287">[ thread ]</a>
+              <a href="subject.html#51287">[ subject ]</a>
+              <a href="author.html#51287">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+AS Jabberd2's Documentation say, it is possible to run the jabberd server
+and the MySQL server on two different servers. I have configured the sm.xml
+and the c2s.xml as following:
+&lt;!-- MySQL driver configuration --&gt;
+      &lt;mysql&gt;
+        &lt;!-- Database server host and port --&gt;
+        &lt;host&gt;10.1.11.17&lt;/host&gt; &lt;!--the host where mysql server is
+running--&gt;
+        &lt;port&gt;3306&lt;/port&gt;
+
+        &lt;!-- Database name --&gt;
+        &lt;dbname&gt;jabberd2&lt;/dbname&gt;
+
+        &lt;!-- Database username and password --&gt;
+        &lt;user&gt;jabberd2&lt;/user&gt;
+        &lt;pass&gt;secret&lt;/pass&gt;
+
+        &lt;!-- Transaction support. If this is commented out, transactions
+             will be disabled. This might make database accesses faster,
+             but data may be lost if jabberd crashes.
+
+             This will need to be disabled if you are using a MySQL
+             earlier than v3.23.xx, as transaction support did not appear
+             until this version. --&gt;
+        &lt;transactions/&gt;
+      &lt;/mysql&gt;
+
+I can access the mysql server's data via command line like:
+&gt;<i>mysql -h 10.1.11.17 -u jabberd2 -p 
+</I>
+But when I start the jabberd, the following debug info will show:
+ [<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at szjabber</A> jabberd]# ../../bin/jabberd -D
+JBRD: debug on
+JBRD: version(2.0s4)
+JBRD: config_dir(/usr/local/etc/jabberd)
+JBRD: LaunchJob: router -&gt; /usr/local/bin/router -c
+/usr/local/etc/jabberd/rout
+r.xml -D
+JBRD: LaunchJob: resolver -&gt; /usr/local/bin/resolver -c
+/usr/local/etc/jabberd/
+esolver.xml -D
+JBRD: LaunchJob: sm -&gt; /usr/local/bin/sm -c /usr/local/etc/jabberd/sm.xml -D
+JBRD: LaunchJob: s2s -&gt; /usr/local/bin/s2s -c /usr/local/etc/jabberd/s2s.xml
+-D
+JBRD: LaunchJob: c2s -&gt; /usr/local/bin/c2s -c /usr/local/etc/jabberd/c2s.xml
+-D
+SM  : WARN: Debugging not enabled.  Ignoring -D.
+ERROR: sm died.  Shutting down server.
+JBRD: Got a signal... pass it on.
+JBRD: It was a TERM.  Shut it all down!
+[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at szjabber</A> jabberd]#
+
+And when I change the mysql host back to &quot;localhost&quot;, it can works very
+well. And the database on 10.1.11.17 was migrated from &quot;locahost&quot;, so it
+couldn't be the matter.
+
+I found the following information on
+<A HREF="http://jabberd.jabberstudio.org/2/docs/section04_4.html,">http://jabberd.jabberstudio.org/2/docs/section04_4.html,</A>
+It says,
+N Note: Default MySQL Socket 
+Jabberd 2 stable 3 connects to the MySQL server socket at /tmp/mysql.sock.
+The default socket when installing MySQL from source is
+/var/lib/mysql/mysql.sock. You will need to create a symlink to
+/tmp/mysql.sock if it does not exist: 
+      ln -s /var/lib/mysql/mysql.sock /tmp/mysql.sock   
+
+If you are unsure as to where your MySQL server socket is, consult your
+MySQL configuration file (usually located in /etc/my.cnf or
+/etc/mysql/my.cnf). 
+
+I'm puzzled that when the MySQL server is running on a remote host, how can
+the jabberd find the &quot;mysql.sock&quot; to connect&#65311; So I think it may be the
+reason why jabberd can't work. Is there anybody who can tell me how the
+solved the problem? Is there any ways to create a &quot;mysql.sock&quot; on the
+&quot;localhost&quot; which points to the mysql server running on a remote machine?
+
+Thanks a lot.
+
+
+
+
+
+
+
+...
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="051280.html">[jdev] Re: CAs
+</A></li>
+	<LI>Next message: <A HREF="051267.html">[jdev] CAs (was: s2s doubts)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51287">[ date ]</a>
+              <a href="thread.html#51287">[ thread ]</a>
+              <a href="subject.html#51287">[ subject ]</a>
+              <a href="author.html#51287">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

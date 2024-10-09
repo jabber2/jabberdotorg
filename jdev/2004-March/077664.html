@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Help parsing incremental XML
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Help%20parsing%20incremental%20XML&In-Reply-To=%3C6899A159-81B2-11D8-A5F2-0003934D3E1E%40jivesoftware.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="077647.html">
+   <LINK REL="Next"  HREF="077666.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Help parsing incremental XML</H1>
+    <B>Iain Shigeoka</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Help%20parsing%20incremental%20XML&In-Reply-To=%3C6899A159-81B2-11D8-A5F2-0003934D3E1E%40jivesoftware.com%3E"
+       TITLE="[jdev] Help parsing incremental XML">iain at jivesoftware.com
+       </A><BR>
+    <I>Mon Mar 29 12:53:46 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="077647.html">[jdev] Help parsing incremental XML
+</A></li>
+        <LI>Next message: <A HREF="077666.html">[jdev] Help parsing incremental XML
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77664">[ date ]</a>
+              <a href="thread.html#77664">[ thread ]</a>
+              <a href="subject.html#77664">[ subject ]</a>
+              <a href="author.html#77664">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Mar 27, 2004, at 9:07 AM, Craig Hollabaugh wrote:
+
+&gt;<i> Having intermediate callbacks is the main reason why people
+</I>&gt;<i> use a SAX parser. So that is an implementation issue with
+</I>&gt;<i> .NET's SAX parser.
+</I>
+It's actually an implementation &quot;feature&quot; of most SAX parsers. Java's 
+most popular SAX parsers follow the same pattern; crimson, xerces, and 
+the built in sax parser in 1.4+ (which is crimson isn't it?). In any 
+case, for efficiency, most SAX parsers read in a buffer load of input 
+before parsing it and generating events. until the buffer is filled, 
+the sax parser blocks, even if there are complete event tokens already 
+in the buffer. With XMPP this is obviously a problem. The buffers are 
+almost always bigger than the packet size of XMPP which relies on each 
+packet being processed before the next is sent. So you get 'stuck' 
+parsers.
+
+On open source parsers, you can dig into the source code and modify the 
+parser to use a 1 character buffer. You'll probably want to buffer the 
+reader before handing it to such a parser or your performance will go 
+through the floor.
+
+Java has pull parsers available that get around the problem and I find 
+are much better suited for streaming XML found in XMPP. Pull parsers 
+are the mirror opposite of push parsers like SAX; in pull parsing 
+events are pulled from the parser by calling methods on the parser when 
+you're ready for the next token - as opposed to SAX where the events 
+are pushed to you in callbacks. For XMPP, you can simplify your logic 
+by handing the parser over to specialized event consumers based on the 
+first tag (e.g. see iq tag, give parser to iq handler to read and 
+handle, etc). The pull parser I've used quite a lot is: 
+<A HREF="http://www.xmlpull.org">http://www.xmlpull.org</A> which has the benefit of being open source, 
+small, and wicked fast. BEA is chairing a JCP committee to establish a 
+Java pull parsing standard (named stax). You can find it at BEA's site, 
+or the JCP site (search for stax).
+
+Finally, since you're working with Java, I have to push Smack. Java, 
+open source, simple, extensible, small, and uses xml pull parsing under 
+the covers. You may want to check it out. Makes working with XMPP in 
+Java a breeze: <A HREF="http://www.jivesoftware.com/xmpp/smack">http://www.jivesoftware.com/xmpp/smack</A>
+
+-iain
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="077647.html">[jdev] Help parsing incremental XML
+</A></li>
+	<LI>Next message: <A HREF="077666.html">[jdev] Help parsing incremental XML
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77664">[ date ]</a>
+              <a href="thread.html#77664">[ thread ]</a>
+              <a href="subject.html#77664">[ subject ]</a>
+              <a href="author.html#77664">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

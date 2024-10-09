@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] XEP-0100 and roster/legacy contact list sync
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XEP-0100%20and%20roster/legacy%20contact%20list%20sync&In-Reply-To=%3C19786-45005%40sneakemail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085382.html">
+   <LINK REL="Next"  HREF="085390.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] XEP-0100 and roster/legacy contact list sync</H1>
+    <B>Massimiliano Mirra</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XEP-0100%20and%20roster/legacy%20contact%20list%20sync&In-Reply-To=%3C19786-45005%40sneakemail.com%3E"
+       TITLE="[jdev] XEP-0100 and roster/legacy contact list sync">iolgzc102 at sneakemail.com
+       </A><BR>
+    <I>Mon Dec  3 21:14:43 CST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085382.html">[jdev] XEP-0100 and roster/legacy contact list sync
+</A></li>
+        <LI>Next message: <A HREF="085390.html">[jdev] XEP-0100 and roster/legacy contact list sync
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85388">[ date ]</a>
+              <a href="thread.html#85388">[ thread ]</a>
+              <a href="subject.html#85388">[ subject ]</a>
+              <a href="author.html#85388">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks everyone for your insights.  I finally settled on allowing the
+component to perform roster manipulation on its own.  It doesn't
+modify the server-stored roster, rather the server forwards roster
+queries to a transport depending on the domain part of the &quot;jid&quot;
+attribute contained in &lt;item&gt; elements.  For example, when the client
+sends:
+
+  &lt;iq type='set' to='server.com' id='rost01'&gt;
+    &lt;query xmlns='jabber:iq:roster'&gt;
+      &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at transport.server.com</A>'/&gt;
+    &lt;/query&gt;
+  &lt;iq&gt;
+
+Server forwards it to transport.server.com, transport.server.com saves
+it in its roster and, if necessary, changes remote contact list
+accordingly.  Upon roster request, server queries individual
+transports for roster fragments belonging to users, and merges them
+with its reply.
+
+Obviously this means that 1) roster retrieval is delayed by login to
+remote services, 2) server can only brute-query local transports,
+unless it inspects user's roster and finds the transports via disco
+(my implementation hasn't).  My use case is very ad-hoc and limited,
+so this limitations are acceptable.
+
+I thought such forwarding of roster actions to be somewhat innovative,
+but of course it turns out it's been already described and in a better
+way: <A HREF="http://antecipate.blogspot.com/2006/06/roster-remoting.html">http://antecipate.blogspot.com/2006/06/roster-remoting.html</A>
+
+I'm curious as to whether this has been considered by transport and
+server authors.  The fact that it's transparent to the client looks
+attractive.
+
+Massimiliano
+
+
+
+
+
+-- 
+Massimiliano Mirra
+<A HREF="http://sameplace.cc">http://sameplace.cc</A>
+<A HREF="http://hyperstruct.net">http://hyperstruct.net</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085382.html">[jdev] XEP-0100 and roster/legacy contact list sync
+</A></li>
+	<LI>Next message: <A HREF="085390.html">[jdev] XEP-0100 and roster/legacy contact list sync
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85388">[ date ]</a>
+              <a href="thread.html#85388">[ thread ]</a>
+              <a href="subject.html#85388">[ subject ]</a>
+              <a href="author.html#85388">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

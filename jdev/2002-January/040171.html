@@ -1,0 +1,287 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Bug in the SSL I/O layer + fix
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Bug%20in%20the%20SSL%20I/O%20layer%20%2B%20fix&In-Reply-To=%3C20020117090024.G18912%40redhat.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="040193.html">
+   <LINK REL="Next"  HREF="040175.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Bug in the SSL I/O layer + fix</H1>
+    <B>Daniel Veillard</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Bug%20in%20the%20SSL%20I/O%20layer%20%2B%20fix&In-Reply-To=%3C20020117090024.G18912%40redhat.com%3E"
+       TITLE="[JDEV] Bug in the SSL I/O layer + fix">veillard at redhat.com
+       </A><BR>
+    <I>Thu Jan 17 08:00:24 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="040193.html">[JDEV] Jabber Transport for WebServices Platform
+</A></li>
+        <LI>Next message: <A HREF="040175.html">[JDEV] Bug in the SSL I/O layer + fix
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40171">[ date ]</a>
+              <a href="thread.html#40171">[ thread ]</a>
+              <a href="subject.html#40171">[ subject ]</a>
+              <a href="author.html#40171">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Symptoms:
+   a large write from an SSL client gets blocked/delayed for
+   a long time in jabberd. 
+
+Bug:
+   the select() mechanism is not able to detect that there is some
+   data left in the SSL buffers
+
+Explanation:
+   The client sends a really large chunk of data (anything &gt; 8KB will do)
+   The SSL decryption layer ends up generating an input buffer which
+   is larger than the read done by the mail loop following the select
+   (the read is limited to 8K and usually less due to the karma computing.
+   The main loop does the read which fills up the buffer, is then 
+   passed to the parser, and return in select(). The fact that the
+   read() may not consume all data is usually not a problem because
+   the leftovers will retrigger the exit from select. But for SSL
+   (and any layer with an intermediate buffer) there may be data left,
+   and select won't detect it. The data simply stalls in the buffer
+   until something else triggers the read on that selector again.
+
+Fix:
+   The enclosed patch provides an approximation of the correct solution.
+   The SSL read simply checks that SSL_read() filled the input buffer
+   and if yes request the main loop to iterate over the read on that 
+   selector. It might not be a complete solution since the read may 
+   be exactly the size of the buffer. The best is to ask the SSL layer
+   if there is some data left at the end of SSL_read() but I didn't
+   found the right API for this. This should be fixed at the end of 
+   _mio_ssl_read() by replacing &quot;if (ret == count) {&quot; with code asking
+   the SSL layer.
+
+Extra question:
+   Is there an easy way to simply disable all Karma checks ? Or change
+   them all to something more in line for distributed computing needs.
+
+Daniel
+
+-- 
+Daniel Veillard      | Red Hat Network <A HREF="https://rhn.redhat.com/">https://rhn.redhat.com/</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">veillard at redhat.com</A>  | libxml Gnome XML XSLT toolkit  <A HREF="http://xmlsoft.org/">http://xmlsoft.org/</A>
+<A HREF="http://veillard.com/">http://veillard.com/</A> | Rpmfind RPM search engine <A HREF="http://rpmfind.net/">http://rpmfind.net/</A>
+-------------- next part --------------
+Index: jabberd/mio.c
+===================================================================
+RCS file: /home/cvs/jabberd/mio.c,v
+retrieving revision 1.60
+diff -c -r1.60 mio.c
+*** jabberd/mio.c	2002/01/10 22:06:29	1.60
+--- jabberd/mio.c	2002/01/17 13:40:00
+***************
+*** 74,79 ****
+--- 74,80 ----
+  
+  /* global object */
+  int mio__errno = 0;
++ int mio__ssl_reread = 0;
+  ios mio__data = NULL;
+  extern xmlnode greymatter__;
+  
+***************
+*** 706,751 ****
+                      continue;
+                  }
+  
+!                 maxlen = KARMA_READ_MAX(cur-&gt;k.val);
+  
+!                 if(maxlen &gt; 8191) maxlen = 8191;
+  
+!                 len = (*(cur-&gt;mh-&gt;read))(cur, buf, maxlen);
+  
+!                 /* if we had a bad read */
+!                 if(len == 0 &amp;&amp; maxlen &gt; 0)
+!                 { 
+!                     mio_close(cur);
+!                     continue; /* loop on the same socket to kill it for real */
+!                 }
+!                 else if(len &lt; 0)
+!                 {
+!                     if(errno != EWOULDBLOCK &amp;&amp; errno != EINTR &amp;&amp; 
+!                        errno != EAGAIN &amp;&amp; mio__errno != EAGAIN) 
+!                     {
+!                         /* kill this socket and move on */
+!                         mio_close(cur);
+!                         continue;  /* loop on the same socket to kill it for real */
+!                     }
+!                 }
+!                 else 
+!                 {
+!                     if(cur-&gt;k.dec != 0)
+!                     { /* karma is enabled */
+!                         karma_decrement(&amp;cur-&gt;k, len);
+!                         /* Check if that socket ran out of karma */
+!                         if(cur-&gt;k.val &lt;= 0)
+!                         { /* ran out of karma */
+!                             log_notice(&quot;MIO_XML_READ&quot;, &quot;socket from %s is out of karma&quot;, cur-&gt;ip);
+!                             FD_CLR(cur-&gt;fd, &amp;all_rfds); /* this fd is being punished */
+!                         }
+!                     }
+! 
+!                     buf[len] = '\0';
+! 
+!                     log_debug(ZONE, &quot;MIO read from socket %d: %s&quot;, cur-&gt;fd, buf);
+!                     (*cur-&gt;mh-&gt;parser)(cur, buf, len);
+!                 }
+              } 
+  
+              /* we could have gotten a bad parse, and want to close */
+--- 707,755 ----
+                      continue;
+                  }
+  
+! 		do {
+! 		    maxlen = KARMA_READ_MAX(cur-&gt;k.val);
+  
+! 		    if(maxlen &gt; 8191) maxlen = 8191;
+  
+! 		    mio__ssl_reread = 0;
+! 		    len = (*(cur-&gt;mh-&gt;read))(cur, buf, maxlen);
+  
+! 		    /* if we had a bad read */
+! 		    if(len == 0 &amp;&amp; maxlen &gt; 0)
+! 		    { 
+! 			mio_close(cur);
+! 			continue; /* loop on the same socket to kill it for real */
+! 		    }
+! 		    else if(len &lt; 0)
+! 		    {
+! 			if(errno != EWOULDBLOCK &amp;&amp; errno != EINTR &amp;&amp; 
+! 			   errno != EAGAIN &amp;&amp; mio__errno != EAGAIN) 
+! 			{
+! 			    /* kill this socket and move on */
+! 			    mio_close(cur);
+! 			    continue;  /* loop on the same socket to kill it for real */
+! 			}
+! 		    }
+! 		    else 
+! 		    {
+! 			if(cur-&gt;k.dec != 0)
+! 			{ /* karma is enabled */
+! 			    karma_decrement(&amp;cur-&gt;k, len);
+! 			    /* Check if that socket ran out of karma */
+! 			    if(cur-&gt;k.val &lt;= 0)
+! 			    { /* ran out of karma */
+! 				log_notice(&quot;MIO_XML_READ&quot;, &quot;socket from %s is out of karma&quot;, cur-&gt;ip);
+! 				FD_CLR(cur-&gt;fd, &amp;all_rfds); /* this fd is being punished */
+! 			    }
+! 			}
+! 
+! 			buf[len] = '\0';
+! 
+! 			log_debug(ZONE, &quot;MIO read from socket %d: %s&quot;, cur-&gt;fd, buf);
+! 			(*cur-&gt;mh-&gt;parser)(cur, buf, len);
+! 		    }
+! 		} while (mio__ssl_reread == 1);
+              } 
+  
+              /* we could have gotten a bad parse, and want to close */
+Index: jabberd/mio_ssl.c
+===================================================================
+RCS file: /home/cvs/jabberd/mio_ssl.c,v
+retrieving revision 1.10
+diff -c -r1.10 mio_ssl.c
+*** jabberd/mio_ssl.c	2001/10/02 20:43:06	1.10
+--- jabberd/mio_ssl.c	2002/01/17 13:40:00
+***************
+*** 4,9 ****
+--- 4,10 ----
+  
+  HASHTABLE ssl__ctxs;
+  extern int mio__errno;
++ extern int mio__ssl_reread;
+  
+  
+  #ifndef NO_RSA
+***************
+*** 136,141 ****
+--- 137,144 ----
+  ssize_t _mio_ssl_read(mio m, void *buf, size_t count)
+  {
+      SSL *ssl;
++     ssize_t ret;
++     int sret; 
+  
+      ssl = m-&gt;ssl;
+      
+***************
+*** 143,152 ****
+          return 0;
+  
+      log_debug(ZONE, &quot;Asked to read %d bytes from %d&quot;, count, m-&gt;fd);
+      if(SSL_get_state(ssl) != SSL_ST_OK)
+      {
+-         int sret; 
+- 
+          sret = SSL_accept(ssl);
+          if(sret &lt;= 0)
+          {
+--- 146,154 ----
+          return 0;
+  
+      log_debug(ZONE, &quot;Asked to read %d bytes from %d&quot;, count, m-&gt;fd);
++     mio__ssl_reread = 0;
+      if(SSL_get_state(ssl) != SSL_ST_OK)
+      {
+          sret = SSL_accept(ssl);
+          if(sret &lt;= 0)
+          {
+***************
+*** 168,175 ****
+              close(m-&gt;fd);
+              return -1;
+          }       
+      }
+!     return SSL_read(ssl, (char *)buf, count);
+  }
+  
+  ssize_t _mio_ssl_write(mio m, const void *buf, size_t count)
+--- 170,182 ----
+              close(m-&gt;fd);
+              return -1;
+          }       
++     }
++     ret = SSL_read(ssl, (char *)buf, count);
++     if (ret == count) {
++ 	mio__ssl_reread = 1;
++ 	log_debug(ZONE, &quot;SSL Asked to reread from %d&quot;, m-&gt;fd);
+      }
+!     return ret;
+  }
+  
+  ssize_t _mio_ssl_write(mio m, const void *buf, size_t count)
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="040193.html">[JDEV] Jabber Transport for WebServices Platform
+</A></li>
+	<LI>Next message: <A HREF="040175.html">[JDEV] Bug in the SSL I/O layer + fix
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40171">[ date ]</a>
+              <a href="thread.html#40171">[ thread ]</a>
+              <a href="subject.html#40171">[ subject ]</a>
+              <a href="author.html#40171">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

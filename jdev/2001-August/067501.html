@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jsm mod_example entry point question
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jsm%20mod_example%20entry%20point%20question&In-Reply-To=%3C996765305.3b696e79d0e50%40www.ductape.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="067498.html">
+   <LINK REL="Next"  HREF="067503.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jsm mod_example entry point question</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jsm%20mod_example%20entry%20point%20question&In-Reply-To=%3C996765305.3b696e79d0e50%40www.ductape.net%3E"
+       TITLE="[JDEV] jsm mod_example entry point question">tcharron at ductape.net
+       </A><BR>
+    <I>Thu Aug  2 10:15:05 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="067498.html">[JDEV] jsm mod_example entry point question
+</A></li>
+        <LI>Next message: <A HREF="067503.html">[JDEV] jsm mod_example entry point question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67501">[ date ]</a>
+              <a href="thread.html#67501">[ thread ]</a>
+              <a href="subject.html#67501">[ subject ]</a>
+              <a href="author.html#67501">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Quoting &quot;Alexander N. Spitzer&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aspitzer at 3plex.com</A>&gt;:
+&gt;<i> void mod_transcript(jsmi si)
+</I>&gt;<i> {
+</I>&gt;<i>   printf(&quot;----&gt; TEST: in mod_transcript\n&quot;);
+</I>&gt;<i>   js_mapi_register(si,e_SERVER,mod_transcript_server,NULL);
+</I>&gt;<i> }
+</I>&gt;<i> QUESTION:
+</I>&gt;<i> How do I get it so that mod_transcript is instantiated upon all
+</I>&gt;<i> message
+</I>&gt;<i> arrivals... I thought (and CLEARLY I AM WRONG) that all messages pass
+</I>&gt;<i> through all the jsm modules, and each module decides whether or not to
+</I>&gt;<i> act
+</I>&gt;<i> on it... This does not appear to be the case, because I never see
+</I>&gt;<i> &quot;----&gt; TEST: in mod_transcript_server&quot; in any transactions...
+</I>&gt;<i> What do I have to do to register mod_transcript with all traffic (or
+</I>&gt;<i> at
+</I>&gt;<i> least &quot;chat&quot; traffic?)
+</I>
+  Registering with e_SERVER will mean you will only get messages specifically 
+targeted AT the server, aka, jabber.org/something, or just plain jabber.org.  
+To test it, go ahead and send a message to yourserver/something, and sure 
+enough, you'll see it.  I belive, IIRC, that two others are needed to do what 
+you need to do:
+
+    js_mapi_register(si,e_DELIVER, mod_filter_handler, NULL);
+
+  Will be called before message delivery (Incoming)
+
+    js_mapi_register(si,e_OFFLINE, mod_filter_handler, NULL);
+
+  Will be called when user is offline.  Offline equiv to e_DELIVER (Incoming)
+
+    js_mapi_register(si,e_SESSION, mod_filter_session, NULL);
+
+  Will be called when logical sessions are created.  In this case, mod_filter 
+session then does this:
+
+    js_mapi_session(es_OUT,m-&gt;s,mod_filter_out,NULL);
+
+  This will then call the mod_filter_out function when that session sends an 
+outgoing message.
+
+  These examples are taken from mod_filter, simply becouse its the first one I 
+saw that I knew related to your question.
+
+
+--- 
+Thomas Charron
+&lt;&lt; Wanted: One decent sig &gt;&gt;
+&lt;&lt; Preferably litle used  &gt;&gt;
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="067498.html">[JDEV] jsm mod_example entry point question
+</A></li>
+	<LI>Next message: <A HREF="067503.html">[JDEV] jsm mod_example entry point question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67501">[ date ]</a>
+              <a href="thread.html#67501">[ thread ]</a>
+              <a href="subject.html#67501">[ subject ]</a>
+              <a href="author.html#67501">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,397 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Cancelling an iq query
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Cancelling%20an%20iq%20query&In-Reply-To=%3C42F86D85009B180C%40lpdnpm06.laposte.net%3E%20%28added%20by%0A%09postmaster%40laposte.net%29">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="081254.html">
+   <LINK REL="Next"  HREF="081266.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Cancelling an iq query</H1>
+    <B>Jean-Louis Seguineau</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Cancelling%20an%20iq%20query&In-Reply-To=%3C42F86D85009B180C%40lpdnpm06.laposte.net%3E%20%28added%20by%0A%09postmaster%40laposte.net%29"
+       TITLE="[jdev] Cancelling an iq query">jean-louis.seguineau at laposte.net
+       </A><BR>
+    <I>Mon Aug 29 12:29:32 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="081254.html">[jdev] Error while trying to login into talk.google.com
+</A></li>
+        <LI>Next message: <A HREF="081266.html">[jdev] Cancelling an iq query
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81265">[ date ]</a>
+              <a href="thread.html#81265">[ thread ]</a>
+              <a href="subject.html#81265">[ subject ]</a>
+              <a href="author.html#81265">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Why not use the JEP-050 commands adapted to this case? Better than creating
+a new IQ extension.
+
+Jean-Louis
+
+
+-----Original Message-----
+Message: 3
+Date: Mon, 29 Aug 2005 13:30:55 +0200
+From: Ralph Meijer &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber.org at ralphm.ik.nu</A>&gt;
+Subject: Re: [jdev] Cancelling an iq query
+To: Jabber software development list &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Message-ID: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">20050829113055.GA58556 at ik.nu</A>&gt;
+Content-Type: text/plain; charset=us-ascii
+
+On Mon, Aug 29, 2005 at 08:12:09PM +1000, Trejkaz wrote:
+&gt;<i> On Mon, 29 Aug 2005 19:31, Ralph Meijer wrote:
+</I>&gt;<i> &gt; On Sun, Aug 28, 2005 at 11:42:25AM -0700, Ralph Giles wrote:
+</I>&gt;<i> &gt; &gt; I'd like to collect suggestions for &quot;cancelling&quot; an in-process iq
+</I>&gt;<i> &gt; &gt; transaction.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I would also go with a similar approach as yours. An &lt;iq/&gt; for the
+</I>&gt;<i> &gt; transaction request and a &lt;message/&gt; with the results when the
+</I>&gt;<i> &gt; transaction is completed. The two then matched up by a application
+</I>&gt;<i> &gt; specific handle. There is no generic solution to the pattern you
+</I>&gt;<i> &gt; describe, yet.
+</I>&gt;<i> 
+</I>&gt;<i> The difficulty with that approach, of course, is that it can't possibly
+</I>with 
+&gt;<i> with existing, standard IQ queries.  I don't suppose we need some kind of
+</I>&lt;iq 
+&gt;<i> type='cancel'/&gt; where you pass the same ID of the query you want to
+</I>cancel...
+
+Ehm, yes, that's what Ralph en Ralph said. There is no generic solution,
+so far, but you could do this like:
+
+Client sends request:
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at example.com</A>/client'
+    to='service.example.com'
+    type='set' id='H_2'&gt;
+  &lt;transaction xmlns='<A HREF="http://example.com/transaction'">http://example.com/transaction'</A>&gt;
+    &lt;query id='query_5'&gt;
+      ...
+    &lt;/query&gt;
+  &lt;/transaction&gt;
+&lt;/iq&gt;
+
+Service responds with &quot;Ok, I'm doing this&quot;:
+
+&lt;iq from='service.example.com'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at example.com</A>/client'
+    type='result' id='H_2'/&gt;
+
+And, then when the result is done:
+
+&lt;message from='service.example.com'
+         to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at example.com</A>/client'&gt;
+  &lt;results xmlns='<A HREF="http://example.com/transaction#results'">http://example.com/transaction#results'</A> id='query_5'&gt;
+    ...
+  &lt;/results&gt;
+&lt;/message&gt;
+
+If you want to cancel in the middle of processing you can just send:
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at example.com</A>/client'
+    to='service.example.com'
+    type='set' id='H_3'&gt;
+  &lt;transaction xmlns='<A HREF="http://example.com/transaction'">http://example.com/transaction'</A>&gt;
+    &lt;cancel id='query_5'/&gt;
+  &lt;/transaction&gt;
+&lt;/iq&gt;
+
+Yielding:
+
+&lt;iq from='service.example.com'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at example.com</A>/client'
+    type='result' id='H_3'/&gt;
+
+or in case of an error (nicely annotated with a machine readable
+construct and a diagnostic text for humans):
+
+&lt;iq from='service.example.com'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at example.com</A>/client'
+    type='error' id='H_3'&gt;
+  &lt;transaction xmlns='<A HREF="http://example.com/transaction'">http://example.com/transaction'</A>&gt;
+    &lt;cancel id='query_5'/&gt;
+  &lt;/transaction&gt;
+  &lt;error type='cancel'&gt;
+    &lt;item-not-found xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/&gt;
+    &lt;completed xmlns='<A HREF="http://example.com/transaction#error'/">http://example.com/transaction#error'/</A>&gt;
+    &lt;text xmlns='urn:ietf:params:xml:ns:xmpp-stanzas' xml:lang='en'&gt;
+      The referenced query has already been completed and cannot be
+      cancelled.
+    &lt;/text&gt;
+  &lt;/error&gt;
+&lt;/iq&gt;
+
+-- 
+Groetjes,
+
+ralphm
+
+
+------------------------------
+
+Message: 4
+Date: Mon, 29 Aug 2005 14:31:14 +0200
+From: Ben Turner &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ext.ben.turner at siemens.be</A>&gt;
+Subject: [jdev] S2S
+To: Jabber software development list &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Message-ID: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">20050829123114.GE32357 at bturner</A>&gt;
+Content-Type: text/plain; charset=us-ascii
+
+
+Hi,
+
+Are there any libraries one would recommend for setting up server-to-server
+communications (preferably in java)? I have been taking a look at Smack, but
+it
+appears to be client-to-server oriented.
+
+Thanks in advance,
+
+Ben
+
+--
+Ben Turner
+SIEMENS - COM D MN B
+tel: +32 14 252326
+
+~ Scientia Vincere Tenebras ~
+
+
+
+------------------------------
+
+Message: 5
+Date: Mon, 29 Aug 2005 06:49:05 -0700
+From: Chris Chen &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ckchris at idream.net</A>&gt;
+Subject: Re: [jdev] Error while trying to login into talk.google.com
+To: Jabber software development list &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Message-ID: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">8A527201-D4FF-4868-84D8-728A38544FBF at idream.net</A>&gt;
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+
+Hi,
+
+Just to clarify, Muse does not support SASL and TLS.  Thus, you  
+cannot use Muse to connect to Google, neither now nor the future.
+
+However, Feridian, the next generation XMPP API that will replace  
+Muse, fully supports SASL and TLS.  In fact, I have used it to  
+connect successfully to Google's IM service.  Unfortunately, it does  
+not support the X-GOOGLE-TOKEN SASL authentication.  But it does  
+support PLAIN.
+
+I am in the stages of writing the documentation for Feridian.  The  
+web pages are not yet ready so that's why you don't see anything on  
+Echomine about Feridian (except for news).  But as of now, CVS code  
+is actually stable and usable.
+
+you can download Feridian's latest SVN codebase off echomine.berlios.de:
+
+<A HREF="http://developer.berlios.de/projects/echomine">http://developer.berlios.de/projects/echomine</A>
+
+I have not yet released an alpha version of Feridian yet, but that  
+will be soon.  However, current Feridian code already supports about  
+90% of all XMPP required features.  I am just adding a few more  
+additional features before I release it.
+
+Download the latest code base and just run the following ant tasks to  
+get the proper libraries:
+
+ant jar-xmpp jar-xmpp-examples jar-jabber-compat
+
+The only example file is the SimpleXMPPClient that is located in the  
+feridian-xmpp-examples.jar file.  You can read the source file to see  
+how to do some connect and login procedures.  Unfortunately, the  
+documentation is not ready yet.
+
+Let me know if you have any questions.
+
+SVN checkout instructions are located on the berlios web, but I will  
+provide it here.
+
+svn co <A HREF="svn://svn.berlios.de/echomine/feridian/trunk">svn://svn.berlios.de/echomine/feridian/trunk</A>
+
+You will need to have SVN installed.  SVN can be downloaded from:
+
+<A HREF="http://subversion.tigris.org/">http://subversion.tigris.org/</A>
+
+Thanks,
+Chris
+
+
+
+On Aug 28, 2005, at 10:37 PM, Ashutosh wrote:
+
+&gt;<i> I am using muse 0.81 apis to write a jabber/xmpp client.
+</I>&gt;<i> I am tring to connect talk.google.com &lt;<A HREF="http://talk.google.com/">http://talk.google.com/</A>&gt;
+</I>&gt;<i> I am getting follwing error while trying to authenticate.
+</I>&gt;<i> Here is my code.
+</I>&gt;<i> Pls tell me what is missing.
+</I>&gt;<i>  Thanks
+</I>&gt;<i> Ashutosh Lawania
+</I>&gt;<i>
+</I>&gt;<i> *package com.xmppcore;
+</I>&gt;<i> import com.echomine.jabber.Jabber;
+</I>&gt;<i> import com.echomine.jabber.JabberContext;
+</I>&gt;<i> import com.echomine.jabber.JabberSession;
+</I>&gt;<i> import com.echomine.jabber.JabberServerService ;
+</I>&gt;<i> public class XMPPConsoleClient {
+</I>&gt;<i>
+</I>&gt;<i> public static void main(String args[])
+</I>&gt;<i> {
+</I>&gt;<i> JabberSession session = null ;
+</I>&gt;<i> try
+</I>&gt;<i> {
+</I>&gt;<i> Jabber jabber = new Jabber();
+</I>&gt;<i> JabberContext context = new JabberContext(&quot;username&quot;, &quot;password&quot;, &quot;
+</I>&gt;<i> talk.google.com &lt;<A HREF="http://talk.google.com/">http://talk.google.com/</A>&gt;&quot;);
+</I>&gt;<i>
+</I>&gt;<i> session = jabber.createSession(context);
+</I>&gt;<i> session.connect(&quot;talk.google.com &lt;<A HREF="http://talk.google.com/">http://talk.google.com/</A>&gt;&quot;,5222);
+</I>&gt;<i> session.getUserService ().login();
+</I>&gt;<i>
+</I>&gt;<i> }
+</I>&gt;<i> catch(Exception ex)
+</I>&gt;<i> {
+</I>&gt;<i> System.out.println(&quot;Exception occured&quot;);
+</I>&gt;<i> ex.printStackTrace();
+</I>&gt;<i> }
+</I>&gt;<i> finally
+</I>&gt;<i> {
+</I>&gt;<i> session.disconnect();
+</I>&gt;<i> }
+</I>&gt;<i> }*
+</I>&gt;<i>
+</I>&gt;<i> *}
+</I>&gt;<i> *
+</I>&gt;<i> **
+</I>&gt;<i>  DEBUG [jabber/msg/outgoing] - &lt;?xml version='1.0' encoding='UTF-8'
+</I>&gt;<i> ?&gt;&lt;stream:stream to=' talk.google.com &lt;<A HREF="http://talk.google.com/">http://talk.google.com/</A>&gt;'  
+</I>&gt;<i> version='
+</I>&gt;<i> 1.0' xmlns='jabber:client' xmlns:stream=' <A HREF="http://etherx.jabber.org/">http://etherx.jabber.org/</A> 
+</I>&gt;<i> streams'&gt;
+</I>&gt;<i>
+</I>&gt;<i> DEBUG [jabber/msg/incoming] - &lt;stream:stream
+</I>&gt;<i> from=&quot;talk.google.com&lt;<A HREF="http://talk.google.com/">http://talk.google.com/</A>&gt;&quot;
+</I>&gt;<i> id=&quot;EC5BB1B5&quot;&gt;
+</I>&gt;<i>
+</I>&gt;<i> DEBUG [jabber/msg/incoming] - &lt;stream:features xmlns:stream=&quot;
+</I>&gt;<i> <A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> id=&quot;id_10003&quot;&gt;&lt;starttls
+</I>&gt;<i> xmlns=&quot;urn:ietf:params:xml:ns:xmpp-tls&quot; /&gt;&lt;/stream:features&gt;
+</I>&gt;<i>
+</I>&gt;<i> DEBUG [jabber/msg/outgoing] - &lt;iq xmlns=&quot;jabber:client&quot; id=&quot;id_10004&quot;
+</I>&gt;<i> type=&quot;get&quot;&gt;&lt;query
+</I>&gt;<i> xmlns=&quot;jabber:iq:auth&quot;&gt;&lt;username&gt;ashutosh.lawania&lt;/username&gt;&lt;/ 
+</I>&gt;<i> query&gt;&lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i> DEBUG [jabber/msg/incoming] - &lt;iq xmlns=&quot;jabber:client&quot; id=&quot;id_10004&quot;
+</I>&gt;<i> type=&quot;error&quot;&gt;&lt;query
+</I>&gt;<i> xmlns=&quot;jabber:iq:auth&quot;&gt;&lt;username&gt;ashutosh.lawania&lt;/username&gt;&lt;/ 
+</I>&gt;<i> query&gt;&lt;error
+</I>&gt;<i> code=&quot;405&quot; type=&quot;cancel&quot;&gt;&lt;not-allowed
+</I>&gt;<i> xmlns=&quot;urn:ietf:params:xml:ns:xmpp-stanzas&quot; /&gt;&lt;text
+</I>&gt;<i> xmlns=&quot;urn:ietf:params:xml:ns:xmpp-stanzas&quot;&gt;Server does not support
+</I>&gt;<i> PLAIN&lt;/text&gt;&lt;/error&gt;&lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i> INFO [com.echomine.jabber.parser.JabberJAXPParser] -
+</I>&gt;<i> *IOException*: socket closed
+</I>&gt;<i>
+</I>&gt;<i> at com.echomine.jabber.JabberUserS ervice.login(
+</I>&gt;<i> *JabberUserService.java:45*)
+</I>&gt;<i>
+</I>&gt;<i> at com.xmppcore.XMPPConsoleClient.main(
+</I>&gt;<i> *XMPPConsoleClient.java:23*)
+</I>&gt;<i>
+</I>&gt;<i> Exception occured
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+
+
+------------------------------
+
+Message: 6
+Date: Sun, 28 Aug 2005 16:01:23 -0600
+From: Peter Saint-Andre &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at jabber.org</A>&gt;
+Subject: Re: R: R: R: [jdev] about spim techniques
+To: Jabber software development list &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Message-ID: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">43123433.2010202 at jabber.org</A>&gt;
+Content-Type: text/plain; charset=&quot;iso-8859-1&quot;
+
+Ian Paterson wrote:
+&gt;&gt;<i>(I should be able to specify the error  message that's
+</I>&gt;&gt;<i>returned to you when your message to me is blocked 
+</I>&gt;&gt;<i>because you're not in my roster -- at this point we have 
+</I>&gt;&gt;<i>something like a challenge-response system
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Yes. IMHO this will be one of the most important anti-SPIM techniques
+</I>&gt;<i> (along with the others discussed earlier - regarding registration, s2s,
+</I>&gt;<i> etc...).
+</I>
+Hmm, well, I looked at RFC 3921 and it says:
+
+    If a blocked entity attempts to send message or presence stanzas
+    to the user, the user's server SHOULD silently drop the stanza
+    and MUST NOT return an error to the sending entity.
+
+That seems counter-productive. There might be different reasons to block 
+communications, some more personal than others -- I might block the 
+message because I don't like you as an individual (in which case I might 
+not want you to receive an error, I'm just blowing you off) or I might 
+block the message because the sender isn't yet in my roster and in 
+general I block all such messages. So I think we might want to adjust 
+that in rfc3921bis.
+
+Peter
+
+-- 
+Peter Saint-Andre
+Jabber Software Foundation
+<A HREF="http://www.jabber.org/people/stpeter.shtml">http://www.jabber.org/people/stpeter.shtml</A>
+
+------------------------------
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+
+
+End of jdev Digest, Vol 19, Issue 48
+************************************
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="081254.html">[jdev] Error while trying to login into talk.google.com
+</A></li>
+	<LI>Next message: <A HREF="081266.html">[jdev] Cancelling an iq query
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81265">[ date ]</a>
+              <a href="thread.html#81265">[ thread ]</a>
+              <a href="subject.html#81265">[ subject ]</a>
+              <a href="author.html#81265">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

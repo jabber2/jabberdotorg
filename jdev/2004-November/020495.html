@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] TCP Packet Construction
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20TCP%20Packet%20Construction&In-Reply-To=418B3471.8070209%40rejon.org">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="020493.html">
+   <LINK REL="Next"  HREF="020496.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] TCP Packet Construction</H1>
+    <B>aliban at gmx.net</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20TCP%20Packet%20Construction&In-Reply-To=418B3471.8070209%40rejon.org"
+       TITLE="[jdev] TCP Packet Construction">aliban at gmx.net
+       </A><BR>
+    <I>Fri Nov  5 02:29:34 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="020493.html">[jdev] TCP Packet Construction
+</A></li>
+        <LI>Next message: <A HREF="020496.html">[jdev] TCP Packet Construction
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20495">[ date ]</a>
+              <a href="thread.html#20495">[ thread ]</a>
+              <a href="subject.html#20495">[ subject ]</a>
+              <a href="author.html#20495">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>yes, expat is good.
+
+you may look in my code, i did it this way
+with
+winsock /vc++
+expat
+
+my source is under GPL! available at
+xcd.jabberstudio.org
+
+Edrin
+
+On 5 Nov 2004 at 17:06, Jon Phillips wrote:
+
+&gt;<i> First of all thanks for your wonderful insight!
+</I>&gt;<i> 
+</I>&gt;<i> Heiner Wolf wrote:
+</I>&gt;<i> &gt; Hi,
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;&gt;I interested to know if there are any good resources, documents, or 
+</I>&gt;<i> &gt;&gt;source code I could look at to see how to properly receive 
+</I>&gt;<i> &gt;&gt;packets from a jabber server like jabberd (which I am using) via TCP and 
+</I>&gt;<i> &gt;&gt;then how to receive and reconstruct the entire packet.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; When you deal with TCP as in the case of Jabber, then you must not think in terms of 'packets'. Both parties will receive a stream of bytes. While they send chunks of data on the connection, there is no guarantee that the receiver gets the data in the original chunks. The only guarantees that TCP gives are 1. that the data will arrive or you get an error 2. the byte order will be retained. Again: the receiver might get the data in totally different 'packets'. 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;&gt;I'm using Visual Studio .net and WINSOCK to do connection and 
+</I>&gt;<i> &gt;&gt;receiving. Right now I have a working client that receive packets that 
+</I>&gt;<i> &gt;&gt;are 8129 bytes, but these packets might not contain the full message. 
+</I>&gt;<i> &gt;&gt;This problem gets worse with more traffic.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; What you must do is: forward every piece of data to the protocol parser. In this case it is an XML parser. The XML parser must be able to parse 'incomplete' XML and tell you about the structure before the main wrapper tag is closed. People call it a SAX parser as opposed to DOM parsers. You need a SAX parser. You feed it with every byte that comes from the connection. There is virtually nothing between the read() system call where you get data from the connection and the parse() where you forward the data to 
+</I>the parser. The parser will consume the bytes. The parser will tell you when a first order tag is finished. That would be something like a &lt;message/&gt; or &lt;presence/&gt; inside a &lt;stream:stream&gt;. If this happens then you can analyze the first order tag. That's then called a stanza in Jabber terms. In XML terms it is just the first order sub tag of the XML wrapper tag.
+&gt;<i> 
+</I>&gt;<i> What parser would you recommend? I'm looking into expat. I was using 
+</I>&gt;<i> tinyXML, but it doesn't seem to fit the bill you are describing...
+</I>&gt;<i> 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;&gt;What is the best way to construct entire jabber server packets into 
+</I>&gt;<i> &gt;&gt;comlete packets/message. For example, the server might send a user's 
+</I>&gt;<i> &gt;&gt;message in xml, and because of web traffic the complete message might 
+</I>&gt;<i> &gt;&gt;not arrive in teh received 8192 bytes...
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I reiterate, because this is important: this is TCP. There are no messages. Your network API will give you multiple bytes at once. This looks like a message. You don't care. You handle all data to the XML parser. The parser will tell you when stanzas are complete. You are probably testing in your lab. Over the wide internet you might even get smaller pieces of data at once (like 500 bytes). Stanzas might be split badly. There might be even the last '&gt;' missing. Don't look at the data directly. Let the XML 
+</I>parser look. It will tell you when a stanza is complete. 
+&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;&gt;Other than this problem, my custom jabber client for this game, 
+</I>&gt;<i> &gt;&gt;gopetslive.com is going pretty well.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt;Any help or code sample or pointers would be much appreciated.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; hw
+</I>&gt;<i> &gt; --
+</I>&gt;<i> &gt; Dr. Klaus H. Wolf
+</I>&gt;<i> &gt; bluehands GmbH &amp; Co.mmunication KG
+</I>&gt;<i> &gt; <A HREF="http://www.bluehands.de/people/hw">http://www.bluehands.de/people/hw</A>
+</I>&gt;<i> &gt; +49 (0721) 16108 75
+</I>&gt;<i> &gt; --
+</I>&gt;<i> &gt; Jabber enabled Virtual Presence on the Web: <A HREF="http://www.lluna.de/">http://www.lluna.de/</A>
+</I>&gt;<i> &gt; Open Source Future History: <A HREF="http://www.galactic-developments.com/">http://www.galactic-developments.com/</A>
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> 
+</I>&gt;<i> -- 
+</I>&gt;<i> Jon Phillips
+</I>&gt;<i> 
+</I>&gt;<i> KOREA.PH.010.3140.7483
+</I>&gt;<i> USA.PH.858.361.2811
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jon at rejon.org</A>
+</I>&gt;<i> <A HREF="http://www.rejon.org">http://www.rejon.org</A>
+</I>&gt;<i> 
+</I>&gt;<i> Inkscape (<A HREF="http://inkscape.org">http://inkscape.org</A>)
+</I>&gt;<i> Open Clip Art Library (www.openclipart.org)
+</I>&gt;<i> CVS Book (<A HREF="http://cvsbook.ucsd.edu">http://cvsbook.ucsd.edu</A>)
+</I>&gt;<i> Scale Journal (<A HREF="http://scale.ucsd.edu">http://scale.ucsd.edu</A>)
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="020493.html">[jdev] TCP Packet Construction
+</A></li>
+	<LI>Next message: <A HREF="020496.html">[jdev] TCP Packet Construction
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20495">[ date ]</a>
+              <a href="thread.html#20495">[ thread ]</a>
+              <a href="subject.html#20495">[ subject ]</a>
+              <a href="author.html#20495">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Integrating XMPP with enterprise applications
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Integrating%20XMPP%20with%20enterprise%20applications&In-Reply-To=%3CE1F190DAC247C64FAA46B38316FA151D02107C68%40EX-101.mail.navisite.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="081445.html">
+   <LINK REL="Next"  HREF="081435.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Integrating XMPP with enterprise applications</H1>
+    <B>Matt Tucker</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Integrating%20XMPP%20with%20enterprise%20applications&In-Reply-To=%3CE1F190DAC247C64FAA46B38316FA151D02107C68%40EX-101.mail.navisite.com%3E"
+       TITLE="[jdev] Integrating XMPP with enterprise applications">matt at jivesoftware.com
+       </A><BR>
+    <I>Wed Sep 14 00:55:24 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="081445.html">[jdev] Integrating XMPP with enterprise applications
+</A></li>
+        <LI>Next message: <A HREF="081435.html">[jdev] Component basics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81432">[ date ]</a>
+              <a href="thread.html#81432">[ thread ]</a>
+              <a href="subject.html#81432">[ subject ]</a>
+              <a href="author.html#81432">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Raffaele,
+
+First, I would firgure out the max number of concurrent users of your
+application. If it's not more than a couple hundred, you should just use
+Smack or JSO (one client per connection) and not worry about it further.
+However, there are certainly cases where one connection per client in
+the app-server just won't cut it. We've run into this problem when
+trying to make our web-based group chat client scale to a large number
+of users.
+
+To address this exact problem, we've started up Project Pampero:
+<A HREF="http://www.jivesoftware.org/forums/forum.jspa?forumID=48.">http://www.jivesoftware.org/forums/forum.jspa?forumID=48.</A> The overall
+theme is to bring a much higher level of scalability to Jive Messenger.
+As part of that effort we'll define an extension to the component JEP to
+make it possible to aggregate multiple clients on a single TCP/IP
+connection (which makes it possible to to have a two-tier connection
+manager architecture). Once we've created that protocol and support it
+in Jive Messenger, we'd also like to support it in Smack. That should
+accomplish exactly what you're looking for.
+
+There's no schedule on when any of this will be done, but you're more
+than welcome to join our effort. :)
+
+As another (partial) approach -- you can get presence information for
+users over HTTP when using the Jive Messenger presence service plugin.
+You can either get a user's presence as an image for easy integration
+into existing pages, or get it as XML (REST style web service). I know
+that other servers have similar functionality. Download of the plugin is
+at: <A HREF="http://www.jivesoftware.org/messenger/plugins.jsp">http://www.jivesoftware.org/messenger/plugins.jsp</A>
+
+Regards,
+Matt
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> 
+</I>&gt;<i> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf Of Raffaele Sena
+</I>&gt;<i> Sent: Tuesday, September 13, 2005 8:51 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: [jdev] Integrating XMPP with enterprise applications
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Hello,
+</I>&gt;<i> 
+</I>&gt;<i> I am struggling with a problem and I thought of asking your opinion.
+</I>&gt;<i> 
+</I>&gt;<i> I want to use a Jabber/XMPP server for an enterprise 
+</I>&gt;<i> application but I want a much stricter integration that 
+</I>&gt;<i> simply hosting an IM server on the same network with my application.
+</I>&gt;<i> 
+</I>&gt;<i> I want to add presence and possibly chat and other messanging 
+</I>&gt;<i> capabilities to my application so that information and 
+</I>&gt;<i> conversations can be shared between the application and the 
+</I>&gt;<i> XMPP server.
+</I>&gt;<i> 
+</I>&gt;<i> These are some of the use cases:
+</I>&gt;<i> 
+</I>&gt;<i> - a user is accessing the application via a rich internet client.
+</I>&gt;<i>   - The application should send presence information to the 
+</I>&gt;<i> XMPP server.
+</I>&gt;<i>   - The application should send presence information from the 
+</I>&gt;<i> XMPP server to the rich internet client
+</I>&gt;<i> 
+</I>&gt;<i> - the application or the rich internet client offer some sort 
+</I>&gt;<i> of chat capabilities (peer to peer and multichat)
+</I>&gt;<i>   - Users in the chat should appear as users in the XMPP server
+</I>&gt;<i>   - The application should send chat messages to the XMPP server
+</I>&gt;<i>   - The application should forward messages (sent by regular 
+</I>&gt;<i> XMPP clients) from the XMPP server to the rich internet clients
+</I>&gt;<i> 
+</I>&gt;<i> The &quot;standard&quot; (and easy way) of doing this is by either 
+</I>&gt;<i> embedding an XMPP client in my rich internet clients (but my 
+</I>&gt;<i> application server will have no visibility of the XMPP 
+</I>&gt;<i> traffic) or by using one of the available client libraries 
+</I>&gt;<i> and have the application server open one XMPP connection to 
+</I>&gt;<i> the XMPP server for each one of the  rich internet clients. 
+</I>&gt;<i> Both these solutions seems pretty heavy to me.
+</I>&gt;<i> 
+</I>&gt;<i> What I would really like to do is have a single connection 
+</I>&gt;<i> between the application server and the XMPP server and some 
+</I>&gt;<i> state information in the application server for the connected 
+</I>&gt;<i> clients. I thought that I could use the server-to-server 
+</I>&gt;<i> protocol to talk between the application server and the XMPP 
+</I>&gt;<i> server but there is no standard &quot;server&quot; library available 
+</I>&gt;<i> (JSO seems to support have some support for s2s but there are 
+</I>&gt;<i> no examples of how to use it).
+</I>&gt;<i> 
+</I>&gt;<i> I may just bite the bullet and write my own library or 
+</I>&gt;<i> dissect an XMPP server and take some code for there but first 
+</I>&gt;<i> I thought I would ask on this forum if this seems to be a 
+</I>&gt;<i> valuable solution (or there is some better or more &quot;standard&quot;
+</I>&gt;<i> way of doing this ?).
+</I>&gt;<i> 
+</I>&gt;<i> Any comment is appreciated.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks!
+</I>&gt;<i> 
+</I>&gt;<i> -- Raffaele Sena
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="081445.html">[jdev] Integrating XMPP with enterprise applications
+</A></li>
+	<LI>Next message: <A HREF="081435.html">[jdev] Component basics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81432">[ date ]</a>
+              <a href="thread.html#81432">[ thread ]</a>
+              <a href="subject.html#81432">[ subject ]</a>
+              <a href="author.html#81432">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

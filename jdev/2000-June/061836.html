@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Stress testing and connection limits
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Stress%20testing%20and%20connection%20limits&In-Reply-To=%3CPine.BSF.4.20.0006141559170.71100-100000%40eng.cybersites.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="061832.html">
+   <LINK REL="Next"  HREF="061837.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Stress testing and connection limits</H1>
+    <B>Benjamin Kahn</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Stress%20testing%20and%20connection%20limits&In-Reply-To=%3CPine.BSF.4.20.0006141559170.71100-100000%40eng.cybersites.com%3E"
+       TITLE="[JDEV] Stress testing and connection limits">xkahn at cybersites.com
+       </A><BR>
+    <I>Wed Jun 14 15:09:05 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="061832.html">[JDEV] Stress testing and connection limits
+</A></li>
+        <LI>Next message: <A HREF="061837.html">[JDEV] The http transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61836">[ date ]</a>
+              <a href="thread.html#61836">[ thread ]</a>
+              <a href="subject.html#61836">[ subject ]</a>
+              <a href="author.html#61836">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>	There are two things at issue here.  On my Linux box, the
+FD_SETSIZE macro is set to 1024 -- so that's all the FDs that select will
+take.  You can check your machine by looking at:
+
+	/usr/include/bits/types.h
+
+	But also, each process is limited to 1024 file descriptors.  This
+is a list by OS: (old)
+
+	<A HREF="http://www.nightmare.com/medusa/descriptor_limits.html">http://www.nightmare.com/medusa/descriptor_limits.html</A>
+
+	For more information on the select trouble, you can look at: 
+
+	<A HREF="http://www.gnu.org/manual/glibc-2.0.6/html_chapter/libc_8.html">http://www.gnu.org/manual/glibc-2.0.6/html_chapter/libc_8.html</A>
+
+	An interesting note from that page is:
+	
+Macro: int FD_SETSIZE 
+        The value of this macro is the maximum number of file descriptors
+	that a fd_set object can hold information about. On systems with a
+	fixed maximum number, FD_SETSIZE is at least that number. On some
+	systems, including GNU, there is no absolute limit on the number
+	of descriptors open, but this macro still has a constant value
+	which controls the number of bits in an fd_set; if you get a file
+	descriptor with a value as high as FD_SETSIZE, you cannot put that
+	descriptor into an fd_set.
+
+	In other words, yes, it is limited, but no...  It doens't look
+like it needs to be.
+
+	As a side note, I seem to recall a conversation on the kernel list
+about a limit of 64k sockets in the select list!
+
+On Wed, 14 Jun 2000, Eric Bowersox wrote:
+
+&gt;<i> Date: Wed, 14 Jun 2000 13:38:24 -0600
+</I>&gt;<i> From: Eric Bowersox &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ebowersox at jabber.com</A>&gt;
+</I>&gt;<i> Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: RE: [JDEV] Stress testing and connection limits
+</I>&gt;<i> 
+</I>&gt;<i> &gt; ulimit on my Linux server that jserver is running on reports 
+</I>&gt;<i> &gt; 1024 open file
+</I>&gt;<i> &gt; handles. I've tried changing that number with ulimit but I'm 
+</I>&gt;<i> &gt; not sure if the
+</I>&gt;<i> &gt; number of handles really changes. I don't think so.
+</I>&gt;<i> 
+</I>&gt;<i> It's not the number of open file handles that is set with ulimit that
+</I>&gt;<i> matters, it's the maximum number of file handles in a select() call.  This
+</I>&gt;<i> is limited by factors which are set at compile time and difficult to change
+</I>&gt;<i> (see below).
+</I>&gt;<i> 
+</I>&gt;<i> &gt; The 
+</I>&gt;<i> &gt; implication from
+</I>&gt;<i> &gt; what you've said is that the max number of jabber users 
+</I>&gt;<i> &gt; connected at one
+</I>&gt;<i> &gt; point is limited. In my case, 1024. Is that true? Isn't that as fairly
+</I>&gt;<i> &gt; serious restriction? I was expecting to have a powerful 
+</I>&gt;<i> &gt; server with 10's
+</I>&gt;<i> &gt; maybe 100's of thousands of connected users.
+</I>&gt;<i> 
+</I>&gt;<i> I agree, it's serious.  That's why the server developers (Jer and temas,
+</I>&gt;<i> namely) are working their asses off to develop the &quot;mux&quot; solution.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Can the kernel 
+</I>&gt;<i> &gt; be rebuilt with
+</I>&gt;<i> &gt; a larger size? If I change the limit to 100,000 or 200,000, 
+</I>&gt;<i> &gt; will Linux still
+</I>&gt;<i> &gt; run?
+</I>&gt;<i> 
+</I>&gt;<i> Again, the number of file handles the kernel has is *not relevant* here,
+</I>&gt;<i> because the kernel has way more handles available already than a single
+</I>&gt;<i> select() can use.  The problem is with the size of the FD_SET structure that
+</I>&gt;<i> select() uses.  This structure's size is fixed at compile time, and almost
+</I>&gt;<i> certainly cannot be changed without severe breakage in many places (such as
+</I>&gt;<i> the C library).
+</I>&gt;<i> 
+</I>&gt;<i> I have a feeling this is why poll() was introduced, to get around the
+</I>&gt;<i> restrictions of select(). However, that doesn't help us, as pth uses
+</I>&gt;<i> select() as part of the very core of its event-handling system, and pth is
+</I>&gt;<i> some heavy hoodoo-voodoo at the center of the Jabber server, so attempting
+</I>&gt;<i> to modify it would be &quot;Not Recommended.&quot;
+</I>&gt;<i> 
+</I>&gt;<i> 					Eric
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+						-Ben
+
+------------------------------------ |\      _,,,--,,_  ,) ----------
+Benjamin Kahn                        /,`.-'`'   -,  ;-;;'
+(212) 924 - 2220 ext 201            |,4-  ) )-,_ ) /\
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ben at cybersites.com</A> --------------- '---''(_/--' (_/-' ---------------
+   I just want to make the world a better place for me to live in.
+			-Lucy in a Peanuts comic
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="061832.html">[JDEV] Stress testing and connection limits
+</A></li>
+	<LI>Next message: <A HREF="061837.html">[JDEV] The http transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61836">[ date ]</a>
+              <a href="thread.html#61836">[ thread ]</a>
+              <a href="subject.html#61836">[ subject ]</a>
+              <a href="author.html#61836">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

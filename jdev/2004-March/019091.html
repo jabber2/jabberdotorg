@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Help parsing incremental XML
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Help%20parsing%20incremental%20XML&In-Reply-To=6899A159-81B2-11D8-A5F2-0003934D3E1E%40jivesoftware.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="019089.html">
+   <LINK REL="Next"  HREF="019095.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Help parsing incremental XML</H1>
+    <B>Dr. Craig Hollabaugh</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Help%20parsing%20incremental%20XML&In-Reply-To=6899A159-81B2-11D8-A5F2-0003934D3E1E%40jivesoftware.com"
+       TITLE="[jdev] Help parsing incremental XML">craig at hollabaugh.com
+       </A><BR>
+    <I>Mon Mar 29 13:03:27 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="019089.html">[jdev] Help parsing incremental XML
+</A></li>
+        <LI>Next message: <A HREF="019095.html">[jdev] Help parsing incremental XML
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19091">[ date ]</a>
+              <a href="thread.html#19091">[ thread ]</a>
+              <a href="subject.html#19091">[ subject ]</a>
+              <a href="author.html#19091">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Iain,
+
+Thanks for the implementation/real world explaination of SAX parser
+operation. From what you've said here, the SAX implementation is far
+from the simplistic coverage in many XML books.
+
+Learned something new today, thanks!
+Craig
+ 
+
+
+
+On Mon, 2004-03-29 at 11:53, Iain Shigeoka wrote:
+&gt;<i> On Mar 27, 2004, at 9:07 AM, Craig Hollabaugh wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Having intermediate callbacks is the main reason why people
+</I>&gt;<i> &gt; use a SAX parser. So that is an implementation issue with
+</I>&gt;<i> &gt; .NET's SAX parser.
+</I>&gt;<i> 
+</I>&gt;<i> It's actually an implementation &quot;feature&quot; of most SAX parsers. Java's 
+</I>&gt;<i> most popular SAX parsers follow the same pattern; crimson, xerces, and 
+</I>&gt;<i> the built in sax parser in 1.4+ (which is crimson isn't it?). In any 
+</I>&gt;<i> case, for efficiency, most SAX parsers read in a buffer load of input 
+</I>&gt;<i> before parsing it and generating events. until the buffer is filled, 
+</I>&gt;<i> the sax parser blocks, even if there are complete event tokens already 
+</I>&gt;<i> in the buffer. With XMPP this is obviously a problem. The buffers are 
+</I>&gt;<i> almost always bigger than the packet size of XMPP which relies on each 
+</I>&gt;<i> packet being processed before the next is sent. So you get 'stuck' 
+</I>&gt;<i> parsers.
+</I>&gt;<i> 
+</I>&gt;<i> On open source parsers, you can dig into the source code and modify the 
+</I>&gt;<i> parser to use a 1 character buffer. You'll probably want to buffer the 
+</I>&gt;<i> reader before handing it to such a parser or your performance will go 
+</I>&gt;<i> through the floor.
+</I>&gt;<i> 
+</I>&gt;<i> Java has pull parsers available that get around the problem and I find 
+</I>&gt;<i> are much better suited for streaming XML found in XMPP. Pull parsers 
+</I>&gt;<i> are the mirror opposite of push parsers like SAX; in pull parsing 
+</I>&gt;<i> events are pulled from the parser by calling methods on the parser when 
+</I>&gt;<i> you're ready for the next token - as opposed to SAX where the events 
+</I>&gt;<i> are pushed to you in callbacks. For XMPP, you can simplify your logic 
+</I>&gt;<i> by handing the parser over to specialized event consumers based on the 
+</I>&gt;<i> first tag (e.g. see iq tag, give parser to iq handler to read and 
+</I>&gt;<i> handle, etc). The pull parser I've used quite a lot is: 
+</I>&gt;<i> <A HREF="http://www.xmlpull.org">http://www.xmlpull.org</A> which has the benefit of being open source, 
+</I>&gt;<i> small, and wicked fast. BEA is chairing a JCP committee to establish a 
+</I>&gt;<i> Java pull parsing standard (named stax). You can find it at BEA's site, 
+</I>&gt;<i> or the JCP site (search for stax).
+</I>&gt;<i> 
+</I>&gt;<i> Finally, since you're working with Java, I have to push Smack. Java, 
+</I>&gt;<i> open source, simple, extensible, small, and uses xml pull parsing under 
+</I>&gt;<i> the covers. You may want to check it out. Makes working with XMPP in 
+</I>&gt;<i> Java a breeze: <A HREF="http://www.jivesoftware.com/xmpp/smack">http://www.jivesoftware.com/xmpp/smack</A>
+</I>&gt;<i> 
+</I>&gt;<i> -iain
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>-- 
+------------------------------------------------------------
+Dr. Craig Hollabaugh, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">craig at hollabaugh.com</A>
+Author of Embedded Linux: Hardware, Software and Interfacing
+www.embeddedlinuxinterfacing.com
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="019089.html">[jdev] Help parsing incremental XML
+</A></li>
+	<LI>Next message: <A HREF="019095.html">[jdev] Help parsing incremental XML
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19091">[ date ]</a>
+              <a href="thread.html#19091">[ thread ]</a>
+              <a href="subject.html#19091">[ subject ]</a>
+              <a href="author.html#19091">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

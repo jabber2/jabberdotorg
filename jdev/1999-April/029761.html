@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] First cut at a DTD
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20First%20cut%20at%20a%20DTD&In-Reply-To=%3CPine.LNX.4.04.9904182305110.17003-100000%40ziggy.jeremie.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="029758.html">
+   <LINK REL="Next"  HREF="029771.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] First cut at a DTD</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20First%20cut%20at%20a%20DTD&In-Reply-To=%3CPine.LNX.4.04.9904182305110.17003-100000%40ziggy.jeremie.com%3E"
+       TITLE="[JDEV] First cut at a DTD">jer at jeremie.com
+       </A><BR>
+    <I>Sun Apr 18 23:24:54 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="029758.html">[JDEV] First cut at a DTD
+</A></li>
+        <LI>Next message: <A HREF="029771.html">[JDEV] First cut at a DTD
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29761">[ date ]</a>
+              <a href="thread.html#29761">[ thread ]</a>
+              <a href="subject.html#29761">[ subject ]</a>
+              <a href="author.html#29761">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> Particular issues:
+</I>&gt;<i> Is &quot;nick&quot; required for a login packet, or optional?
+</I>
+Optional, actually, they are all optional, you can send a login with just
+a nick and it will create an anonymous session if the server config allows
+it.
+
+&gt;<i> Which, if any, fields in a message packet are required?  Right now,
+</I>&gt;<i> this shows only &quot;to&quot; and &quot;say&quot; as required.
+</I>
+To is required, but there's nothing stopping a client from sending a
+message with just a to and an ext, so say wouldn't really be required
+either...
+
+&gt;<i> Notice how many elements have #PCDATA for content and no attributes.  
+</I>&gt;<i> This usually indicates that the DTD cannot capture complete knowledge
+</I>&gt;<i> about the data.  (Typically resulting in extra work for the XML
+</I>&gt;<i> application.)  For instance, my instinct tells me that there are only
+</I>&gt;<i> certain allowed values for &quot;icon&quot; tags.  This might better be captured
+</I>&gt;<i> as
+</I>&gt;<i> 
+</I>&gt;<i> &lt;!ENTITY %iconTypes &quot;(online|away|happy|sad|hungry)&quot;&gt;
+</I>&gt;<i> &lt;!ELEMENT icon EMPTY&gt;
+</I>&gt;<i> &lt;!ATTLIST icon
+</I>&gt;<i>   type  %iconTypes  #REQUIRED
+</I>&gt;<i> &gt;
+</I>
+I'd like to leave icons open to user definition, but have a base set of
+standard ones.  So that in the future you might be able to do an &lt;icon
+href=&quot;<A HREF="http://asdf/suprise.gif&quot;">http://asdf/suprise.gif&quot;</A>&gt;golly gee&lt;/icon&gt; and have a custom icon
+appear in clients that support it, would be great for transports that want
+to supply the custom icons from their heritage(ICQ for instance).
+
+&gt;<i> This would require the icon type to be one of those in the list.  
+</I>&gt;<i> (Priorities might be another good example of this.)
+</I>
+Priority will always be an integer, it's what the server uses to guage
+which connected session for a user will be the default recipient for
+incoming messages. (highest wins)
+
+&gt;<i> Is a &quot;say&quot; required for a status packet?  (Currently shows as required.)
+</I>
+Probably not, so that a client could connect and set their priority to the
+highest so that it's the default, but not alert anyone to their presence.
+
+&gt;<i> Can a roster packet include multiple &quot;get&quot; elements?  Can they be
+</I>&gt;<i> mixed with multiple &quot;del&quot; and &quot;add&quot; elements?
+</I>
+Sure, why not :)  It all gets processed the same way on the server.
+
+&gt;<i> jabber.dtd
+</I>&gt;<i> ----------Cut here-----------
+</I>&gt;<i> &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+</I>&gt;<i> ......
+</I>
+Looks very nice!  Thanks, I've been wanting something like that for some
+time but I just can't figure out the strange syntax and can't find the
+spec defining it(EBNF or something ;-)
+
+As far as I understand it though, with reguard to XML and DTDs, they are
+really most useful in special applications requiring &quot;pure&quot; strict data
+and in XML editors providing the user rules when composing a document,
+right?
+
+With how the server is designed, they wouldn't work at all by defualt,
+since the server is as future-proof as I can make it.  It allows
+_anything_ for the XML, and only extracts what it needs from the parsed
+XML, ignoring the rest.  This way the protocol can grow and adapt and not
+disturb the old servers installed, they might just miss out on a few newer
+features. Adding a strict DTD check into the server would pretty much put
+an end to that, but it might be very useful for a client.  Actually, it
+might be an excellent option for testing minimal adherence to the spec
+from clients and servers, or as a debugging option on the server for the
+paranoid :)
+
+I really do like having the DTD though, it provides a clear and automated
+understanding of the protocol, it's the definition of the protocol.
+
+Thanks!
+
+Jer
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="029758.html">[JDEV] First cut at a DTD
+</A></li>
+	<LI>Next message: <A HREF="029771.html">[JDEV] First cut at a DTD
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29761">[ date ]</a>
+              <a href="thread.html#29761">[ thread ]</a>
+              <a href="subject.html#29761">[ subject ]</a>
+              <a href="author.html#29761">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

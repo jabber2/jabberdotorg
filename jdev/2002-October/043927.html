@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Flash MX XMLsocket to Jabberd Help Needed.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Flash%20MX%20XMLsocket%20to%20Jabberd%20Help%20Needed.&In-Reply-To=%3C20021024223039.13362.qmail%40web9306.mail.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="043907.html">
+   <LINK REL="Next"  HREF="043945.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Flash MX XMLsocket to Jabberd Help Needed.</H1>
+    <B>Mooner Entertainment</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Flash%20MX%20XMLsocket%20to%20Jabberd%20Help%20Needed.&In-Reply-To=%3C20021024223039.13362.qmail%40web9306.mail.yahoo.com%3E"
+       TITLE="[JDEV] Flash MX XMLsocket to Jabberd Help Needed.">moonerent at yahoo.com
+       </A><BR>
+    <I>Thu Oct 24 17:30:39 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="043907.html">[JDEV] Net::Jabber::Component
+</A></li>
+        <LI>Next message: <A HREF="043945.html">[JDEV] Flash MX XMLsocket to Jabberd Help Needed.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43927">[ date ]</a>
+              <a href="thread.html#43927">[ thread ]</a>
+              <a href="subject.html#43927">[ subject ]</a>
+              <a href="author.html#43927">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+Lovin' Flash MX however I'm having a tough time
+getting it to work as a Jabber client. I'm running
+Jabberd server 1.42 on Win2K Server.
+
+Below the .as script (it's fla is simply a connect and
+disconnect button with a text field) has two bugs,
+please let me know what you think...
+
+1) When I comment out 
+//_root.jabberSocket.send(this.node_stream); 
+
+then click connect there is a successful connection to
+the server. However if I click disconnect the close()
+function does not activate _root.jabberSocket.onClose.
+
+My current workaround is to add
+delete {_root.jabberSocket);
+
+2) With 
+_root.jabberSocket.send(this.node_stream); 
+
+active I click on connect and immediately
+_root.jabberSocket.onClose is called and now the
+client is disconnected from the server. 
+
+Mind you I haven't called close(), why is the jabber
+server closing the socket on it's own?
+
+Thank you in advance.
+
+Rick
+
+
+function connect() {
+	if(!_root.jabberSocket){
+		// Create new XMLSocket object
+		_root.jabberSocket = new XMLSocket();
+		_root.myVars = new Object();
+		_root.myVars.serverName = &quot;myServer.com&quot;;
+		_root.myVars.serverPort = 5222;
+		
+		_root.jabberSocket.connect(_root.myVars.serverName,
+_root.myVars.serverPort);
+	
+		_root.jabberSocket.onXML = newXML;
+		_root.jabberSocket.onConnect = newConnection;
+		_root.jabberSocket.onClose = disconnectedConnection;
+		_root.status.text = &quot;waiting&quot;;
+		
+	}else{
+		_root.status.text = &quot;still connected&quot;;
+	}
+}
+
+function newConnection (success) {
+	if (success) {
+		_root.status.text = &quot;connected!&quot;;
+		
+		// prepare and send in log in info
+ 		this.node_stream = new XML();
+		this.node_stream.xmlDecl = '&lt;?xml version=&quot;1.0&quot;
+encoding=&quot;UTF-8&quot;?&gt;';
+        this.node_stream =
+this.node_stream.createTextNode('&lt;flash:stream
+to=&quot;'+_root.myVars.serverName+'&quot; xmlns=&quot;jabber:client&quot;
+xmlns:flash=&quot;<A HREF="http://www.jabber.com/streams/flash&quot;">http://www.jabber.com/streams/flash&quot;</A>
+/&gt;');
+        _root.jabberSocket.send(this.node_stream);
+			
+	}
+	else {
+		_root.status.text = &quot;error connecting&quot;;
+	}
+}
+
+function closeConnection(){
+	_root.jabberSocket.send(&quot;&lt;/flash:stream&gt;&quot;);
+	_root.jabberSocket.close();
+	delete(_root.jabberSocket);
+}
+
+function disconnectedConnection () {
+	_root.status.text = &quot;disconnected&quot;;
+}
+
+THE END
+
+
+
+function newXML (input) {
+	// convert XML object to string
+	_root.status.text = input.toString();
+}
+
+stop();
+
+
+
+__________________________________________________
+Do you Yahoo!?
+Y! Web Hosting - Let the expert host your web site
+<A HREF="http://webhosting.yahoo.com/">http://webhosting.yahoo.com/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="043907.html">[JDEV] Net::Jabber::Component
+</A></li>
+	<LI>Next message: <A HREF="043945.html">[JDEV] Flash MX XMLsocket to Jabberd Help Needed.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43927">[ date ]</a>
+              <a href="thread.html#43927">[ thread ]</a>
+              <a href="subject.html#43927">[ subject ]</a>
+              <a href="author.html#43927">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

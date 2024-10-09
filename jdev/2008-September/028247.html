@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] GEOLOC Support
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20GEOLOC%20Support&In-Reply-To=BAY138-W2063F65CB796D727D73610DD540%40phx.gbl">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="028241.html">
+   <LINK REL="Next"  HREF="028238.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] GEOLOC Support</H1>
+    <B>Joe Hildebrand</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20GEOLOC%20Support&In-Reply-To=BAY138-W2063F65CB796D727D73610DD540%40phx.gbl"
+       TITLE="[jdev] GEOLOC Support">hildjj at gmail.com
+       </A><BR>
+    <I>Thu Sep 11 17:26:44 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="028241.html">[jdev] GEOLOC Support
+</A></li>
+        <LI>Next message: <A HREF="028238.html">[jdev] Jabber - Core banking (ISO-8583)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#28247">[ date ]</a>
+              <a href="thread.html#28247">[ thread ]</a>
+              <a href="subject.html#28247">[ subject ]</a>
+              <a href="author.html#28247">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+On Sep 9, 2008, at 10:24 AM, Stephen Pendleton wrote:
+
+&gt;<i> Hi, I thought I would put together a simple &quot;cookbook&quot; on how to add  
+</I>&gt;<i> GEOLOC XEP-0080 support to a client. Hopefully it will help someone  
+</I>&gt;<i> else out. If anyone sees any problems with the steps below, please  
+</I>&gt;<i> let me know. BTW, I am not sure why Step 1 is needed since Step 2  
+</I>&gt;<i> advertises the same capabilities.
+</I>
+Step 1 is required, because when someone asks what your caps hash  
+means, you have to be able to answer.  It's important that the results  
+from step 1 match the stuff that is hashed in step 2.
+
+&gt;<i> STEPS TO ADD GEOLOC SUPPORT:
+</I>&gt;<i> 1) Client should respond to iq query <A HREF="http://jabber.org/protocol/disco#info">http://jabber.org/protocol/disco#info</A> 
+</I>&gt;<i>  with a stanza like:
+</I>&gt;<i> &lt;iq type='result'...&gt;
+</I>&gt;<i> &lt;&lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'">http://jabber.org/protocol/disco#info'</A>&gt;
+</I>&gt;<i> &lt;feature var='<A HREF="http://jabber.org/geoloc'/">http://jabber.org/geoloc'/</A>&gt;
+</I>&gt;<i> &lt;feature var='<A HREF="http://jabber.org/geoloc+notify'/">http://jabber.org/geoloc+notify'/</A>&gt;
+</I>
+Only include <A HREF="http://jabber.org/geoloc">http://jabber.org/geoloc</A> if you expect people to send you  
+iq's in the geoloc namespace directly.  That would be pretty rare.
+
+&gt;<i> 2) Client should add &lt;c&gt; stanza to presence stanza with the proper  
+</I>&gt;<i> &quot;ver&quot; attribute indicating geoloc support.
+</I>&gt;<i> The &quot;ver&quot; attribute is a SHA-1 hash of a string like:
+</I>&gt;<i> &quot;client/pc//fooclient 1.0&lt;<A HREF="http://jabber.org/protcol/geoloc&lt;http://jabber.org/protcol/geoloc+notify">http://jabber.org/protcol/geoloc&lt;http://jabber.org/protcol/geoloc+notify</A> 
+</I>&gt;<i> &lt;&quot;
+</I>&gt;<i>
+</I>&gt;<i> The stanza looks something like:
+</I>&gt;<i> &lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.lit</A>/orchard'&gt;
+</I>&gt;<i>   &lt;c xmlns='<A HREF="http://jabber.org/protocol/caps'">http://jabber.org/protocol/caps'</A>
+</I>&gt;<i>      hash='sha-1'
+</I>&gt;<i>      node='<A HREF="http://www.chatopus.com'">http://www.chatopus.com'</A>
+</I>&gt;<i>      ver='zHyEOgxTrkpSdGcQKH8EFPLsriY='/&gt;
+</I>&gt;<i> &lt;/presence&gt;
+</I>&gt;<i>
+</I>&gt;<i> 3) When location changes the client publishes its new location:
+</I>&gt;<i> &lt;iq type='set' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">portia at merchantofvenice.lit</A>/pda' id='publish1'&gt;
+</I>&gt;<i>   &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+</I>&gt;<i>     &lt;publish node='<A HREF="http://jabber.org/protocol/geoloc'">http://jabber.org/protocol/geoloc'</A>&gt;
+</I>&gt;<i>       &lt;item&gt;
+</I>&gt;<i>         &lt;geoloc xmlns='<A HREF="http://jabber.org/protocol/geoloc'">http://jabber.org/protocol/geoloc'</A>  
+</I>&gt;<i> xml:lang='en'&gt;
+</I>&gt;<i>           &lt;country&gt;Italy&lt;/country&gt;
+</I>&gt;<i>           &lt;lat&gt;45.44&lt;/lat&gt;
+</I>&gt;<i>           &lt;locality&gt;Venice&lt;/locality&gt;
+</I>&gt;<i>           &lt;lon&gt;12.33&lt;/lon&gt;
+</I>&gt;<i>         &lt;/geoloc&gt;
+</I>&gt;<i>       &lt;/item&gt;
+</I>&gt;<i>     &lt;/publish&gt;
+</I>&gt;<i>   &lt;/pubsub&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>
+If you just want to publish, you don't need to do steps 1 and 2.  They  
+take care of the subscribe side.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="028241.html">[jdev] GEOLOC Support
+</A></li>
+	<LI>Next message: <A HREF="028238.html">[jdev] Jabber - Core banking (ISO-8583)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#28247">[ date ]</a>
+              <a href="thread.html#28247">[ thread ]</a>
+              <a href="subject.html#28247">[ subject ]</a>
+              <a href="author.html#28247">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

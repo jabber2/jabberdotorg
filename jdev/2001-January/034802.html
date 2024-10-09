@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Is this bug fixed after 1.2 ?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Is%20this%20bug%20fixed%20after%201.2%20%3F&In-Reply-To=%3C20010108182220.M21826%40Flint.digix.dyndns.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034797.html">
+   <LINK REL="Next"  HREF="034804.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Is this bug fixed after 1.2 ?</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Is%20this%20bug%20fixed%20after%201.2%20%3F&In-Reply-To=%3C20010108182220.M21826%40Flint.digix.dyndns.org%3E"
+       TITLE="[JDEV] Is this bug fixed after 1.2 ?">keith at digix.dyndns.org
+       </A><BR>
+    <I>Mon Jan  8 17:22:20 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034797.html">[JDEV] Is this bug fixed after 1.2 ? / workaround
+</A></li>
+        <LI>Next message: <A HREF="034804.html">[JDEV] Is this bug fixed after 1.2 ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34802">[ date ]</a>
+              <a href="thread.html#34802">[ thread ]</a>
+              <a href="subject.html#34802">[ subject ]</a>
+              <a href="author.html#34802">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>perhaps I can offer some assistance...
+
+In versions of the jabber server, pre 1.4pre1, the &lt;ns/&gt; tag has been broken... the deliver logic fell short when it came to flags like this, and the &lt;warn/&gt; &lt;notice/&gt; &lt;alert/&gt; flags... the 1.4pre1 server has had its deliver() logic changed, and this should be fixed now.. from what you said in this post, it looks like the xdb packet was infact delivered to BOTH of your xdb componenets.. (both xdb_file, and your external handler)... 
+
+I haven't had a chance to fully look over the new deliver code, (it was written when i was on vacation, and i haven't quite caught up yet) =[, but this was supposed to be fixed in the new deliver logic.. 
+
+What version of the server were you using for this xdb test, btw?
+
+
+&lt;snip/&gt;
+&gt;<i>  REPLIED:
+</I>&gt;<i>  &lt;xdb type='result' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at host</A>/jabber:x:offline' 
+</I>&gt;<i>      to='host' id='4'&gt;&lt;offline xmlns='jabber:x:offline'/&gt;&lt;/xdb&gt;
+</I>&gt;<i> 
+</I>&gt;<i>  CONNECTION TO JABBER LOST
+</I>
+not sure why you lost connection here... this should really only happen when you send bad xml... how are you connecting to jabberd? by base_accept?
+
+&lt;snip/&gt;
+&gt;<i> Mon Jan  8 19:13:50 2001  deliver.c:344 delivering to instance 'offlineagent'
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  deliver.c:344 delivering to instance 'xdb'
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  deliver.c:278 delivery failed (Server Configuration Error)
+</I>
+server configuration errors are used when all components return r_PASS... your component, if using base_accept will not return r_PASS (base_accept always returns r_DONE, or r_ERR)
+
+&lt;snip/&gt;
+&gt;<i> - Even though jabber claims to deliver the xdb_get to instance 'xdb' I have 
+</I>&gt;<i> patched the xdb_file.c file to log a notice when a jabber:x:offline request 
+</I>&gt;<i> is received; in this case it never sees one. (as hoped :-)
+</I>
+hrmm.. this is curious.. xdb should probably still be getting this packet.. (well, shouldn't, but in older versions of the server, it would)
+
+&lt;snip/&gt;
+&gt;<i> Also, when I don't put in the &lt;ns&gt; tags in the jabber.xml file my external 
+</I>&gt;<i> component receives all jabber:x:offline messages, even replies to them, but 
+</I>&gt;<i> the xdb_file.so module seems to 'win'. No crashes, but no point in my program 
+</I>&gt;<i> either :-) 
+</I>
+well, both components will get a copy of the packet here, each component doesn't really know the other has handled it or not... so xdb_file will handle it, and the result returned is the &quot;best&quot; result of all the components.. (for more info, see my jabberd API document for the deliver() function: <A HREF="http://docs.jabber.org/server">http://docs.jabber.org/server</A>)
+
+&gt;<i> If I patch the xdb_file.so module to ignore jabber:x:offline messages, there 
+</I>&gt;<i> is no Server Configuration Error when sending the get request, the rest of 
+</I>&gt;<i> the events are the same, ie the get is received and responded to properly, 
+</I>&gt;<i> then a set is sent but jabber segfaults (external program never sees the set 
+</I>&gt;<i> though).
+</I>
+Not sure where this segfault is coming from... if you havent' already, see if you can get this to work under the 1.4pre1 server..
+
+&lt;snip/&gt;
+&gt;<i> Does it help if I go to 1.4 ? :-)
+</I>
+    hehe, not sure, but it's worth a try.. 
+
+
+Keith Minkler
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010108/edb57b39/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20010108/edb57b39/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034797.html">[JDEV] Is this bug fixed after 1.2 ? / workaround
+</A></li>
+	<LI>Next message: <A HREF="034804.html">[JDEV] Is this bug fixed after 1.2 ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34802">[ date ]</a>
+              <a href="thread.html#34802">[ thread ]</a>
+              <a href="subject.html#34802">[ subject ]</a>
+              <a href="author.html#34802">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

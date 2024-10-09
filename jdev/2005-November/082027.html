@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Namespace IRI handling when forwarding stanzas between c2s	and s2s links
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Namespace%20IRI%20handling%20when%20forwarding%20stanzas%20between%20c2s%0A%09and%20s2s%20links&In-Reply-To=%3C5b698f5a0511300453y4a8b6ed3u1a1199e9aadfd93%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="082026.html">
+   <LINK REL="Next"  HREF="082028.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Namespace IRI handling when forwarding stanzas between c2s	and s2s links</H1>
+    <B>Norman Rasmussen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Namespace%20IRI%20handling%20when%20forwarding%20stanzas%20between%20c2s%0A%09and%20s2s%20links&In-Reply-To=%3C5b698f5a0511300453y4a8b6ed3u1a1199e9aadfd93%40mail.gmail.com%3E"
+       TITLE="[jdev] Namespace IRI handling when forwarding stanzas between c2s	and s2s links">norman at rasmussen.co.za
+       </A><BR>
+    <I>Wed Nov 30 06:53:16 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="082026.html">[jdev] Namespace IRI handling when forwarding stanzas between c2s and s2s links
+</A></li>
+        <LI>Next message: <A HREF="082028.html">AW: Re: [jdev] Namespace IRI handling when forwarding stanzas betw	een c2s	and s2s links
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#82027">[ date ]</a>
+              <a href="thread.html#82027">[ thread ]</a>
+              <a href="subject.html#82027">[ subject ]</a>
+              <a href="author.html#82027">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hrm, testing on an internal jabberd2, and then from jabberd2 to
+ejabberd - the presence element keeps it's jabber:server namespace.
+
+I think that when the stanza goes from s2s to c2s, and visa vera, you
+should only be changing the namespace on the stanza's root node - and
+not on all the subnodes inside the stanza too.
+
+On 11/30/05, Matthias Wimmer &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">m at tthias.net</A>&gt; wrote:
+&gt;<i> Hi!
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> I am currently finishing namespace support for the next release of
+</I>&gt;<i> jabberd14. One remaining thing that is not completely clear to me is the
+</I>&gt;<i> handling of the different namespace IRIs on c2s- and s2s-links.
+</I>&gt;<i> Currently I am just mapping all three namespaces 'jabber:client',
+</I>&gt;<i> 'jabber:server', and 'jabber:component:accept' to the same jabberd14
+</I>&gt;<i> internal namespace. When I am serializing the stanzas, I check which
+</I>&gt;<i> type of connection the stanza is serialized on and use the standard
+</I>&gt;<i> namespace IRI for this type of connection.
+</I>&gt;<i>
+</I>&gt;<i> The problem I have with that is the following:
+</I>&gt;<i>
+</I>&gt;<i> Assume a client sends the following stanza:
+</I>&gt;<i>
+</I>&gt;<i> &lt;message xmlns='jabber:client' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user1 at example.com</A>'
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user2 at example.com</A>'&gt;
+</I>&gt;<i>     &lt;body&gt;Some example stanza, that is not very useful, but should
+</I>&gt;<i> demonstrate my problem&lt;/body&gt;
+</I>&gt;<i>     &lt;x xmlns='<A HREF="http://example.com/someStrangeExtension'">http://example.com/someStrangeExtension'</A>&gt;
+</I>&gt;<i>         &lt;presence xmlns='jabber:server'/&gt;
+</I>&gt;<i>     &lt;/x&gt;
+</I>&gt;<i> &lt;/message&gt;
+</I>&gt;<i>
+</I>&gt;<i> This stanza gets delivered to user2 as:
+</I>&gt;<i>
+</I>&gt;<i> &lt;message xmlns='jabber:client' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user1 at example.com</A>'
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user2 at example.com</A>'&gt;
+</I>&gt;<i>     &lt;body&gt;Some example stanza, that is not very useful, but should
+</I>&gt;<i> demonstrate my problem&lt;/body&gt;
+</I>&gt;<i>     &lt;x xmlns='<A HREF="http://example.com/someStrangeExtension'">http://example.com/someStrangeExtension'</A>&gt;
+</I>&gt;<i>         &lt;presence xmlns='jabber:client'/&gt;
+</I>&gt;<i>     &lt;/x&gt;
+</I>&gt;<i> &lt;/message&gt;
+</I>&gt;<i>
+</I>&gt;<i> (Note the namespace switch for the &lt;presence/&gt; element.)
+</I>&gt;<i> Is this namespace change allowed, or is this an error?
+</I>&gt;<i>
+</I>&gt;<i> In that simple case I could keep the namespace of the presence element
+</I>&gt;<i> intact very easily by just switching namespaces, when resending from one
+</I>&gt;<i> connection type to another. But it gets more complicated when user2 is
+</I>&gt;<i> on another server and I have to use s2s. In that case &lt;message/&gt; and
+</I>&gt;<i> &lt;presence/&gt; for sure are send as 'jabber:server' to the other server.
+</I>&gt;<i> But how does the other server know, that only the namespace of the
+</I>&gt;<i> &lt;message/&gt; element has to be mapped back to 'jabber:client' before delivery?
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Tot kijk
+</I>&gt;<i>       Matthias
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+--
+- Norman Rasmussen
+ - Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>
+ - Home page: <A HREF="http://norman.rasmussen.co.za/">http://norman.rasmussen.co.za/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="082026.html">[jdev] Namespace IRI handling when forwarding stanzas between c2s and s2s links
+</A></li>
+	<LI>Next message: <A HREF="082028.html">AW: Re: [jdev] Namespace IRI handling when forwarding stanzas betw	een c2s	and s2s links
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#82027">[ date ]</a>
+              <a href="thread.html#82027">[ thread ]</a>
+              <a href="subject.html#82027">[ subject ]</a>
+              <a href="author.html#82027">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

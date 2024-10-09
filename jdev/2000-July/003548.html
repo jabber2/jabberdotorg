@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] digest and ldap and authentication
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20digest%20and%20ldap%20and%20authentication&In-Reply-To=mT/13Igwk-0008X8T%40mail.airmail.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003546.html">
+   <LINK REL="Next"  HREF="003559.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] digest and ldap and authentication</H1>
+    <B>Benjamin Kahn</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20digest%20and%20ldap%20and%20authentication&In-Reply-To=mT/13Igwk-0008X8T%40mail.airmail.net"
+       TITLE="[JDEV] digest and ldap and authentication">xkahn at cybersites.com
+       </A><BR>
+    <I>Sun Jul 30 21:22:51 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003546.html">[JDEV] digest and ldap and authentication
+</A></li>
+        <LI>Next message: <A HREF="003559.html">[JDEV] digest and ldap and authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3548">[ date ]</a>
+              <a href="thread.html#3548">[ thread ]</a>
+              <a href="subject.html#3548">[ subject ]</a>
+              <a href="author.html#3548">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>	I've had the same problem with the PAM authentication system I
+installed.  (Which WILL authenticate LDAP users, but not store or retrieve
+any other user information from LDAP.)  It seems to me (as I stated in my
+email archived here: <A HREF="http://eng.cybersites.com/~xkahn/jabber/pam.txt">http://eng.cybersites.com/~xkahn/jabber/pam.txt</A>)  
+that Jabber's authentication system is a mess:
+
+	Jabber has two seperate encoding systems for authtication.  
+(&lt;password/&gt; and &lt;digest/&gt;) Both send the same basic information: the
+user's password.  But the server does not recognize them as identical
+information.  
+
+	As you pointed out, many clients, because digest is considered
+secure and plain text considered insecure, default to digest without
+explaining to the user what it is.  (Others such as Gabber will try digest
+first and will fall back if the password isn't accepted.)
+
+	However, alternative authentication schemes such as those used by
+LDAP can not support non-reversible passwords.  This is addressed at this
+URL: <A HREF="http://core.jabber.org/summer.html#anchor17">http://core.jabber.org/summer.html#anchor17</A>
+
+	Does that help any?
+
+On Sat, 29 Jul 2000 <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A> wrote:
+
+&gt;<i> Date: Sat, 29 Jul 2000 19:28:00 -0500
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A>
+</I>&gt;<i> Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">project25 at lists.sourcexchange.com</A>
+</I>&gt;<i> Cc: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">subbarao at computer.org</A>
+</I>&gt;<i> Subject: [JDEV] digest and ldap and authentication
+</I>&gt;<i> 
+</I>&gt;<i> Hi,
+</I>&gt;<i> sheath and I have been talking about the LDAP-Jabber integration 
+</I>&gt;<i> project.
+</I>&gt;<i> 
+</I>&gt;<i> What I failed to realize was that authentication happens in 
+</I>&gt;<i> mod_auth* (e.g. mod_auth, mod_auth_sha1). I thought it all 
+</I>&gt;<i> happened in xdb.
+</I>&gt;<i> 
+</I>&gt;<i> What sheath failed to realize was that most LDAP servers don't 
+</I>&gt;<i> store passwords in plaintext.
+</I>&gt;<i> 
+</I>&gt;<i> There's nobody to blame on this because this is still foreign 
+</I>&gt;<i> territory :). 
+</I>&gt;<i> 
+</I>&gt;<i> This isn't a problem when we're dealing with plaintext Jabber 
+</I>&gt;<i> authentication (we can use the method described in the current 
+</I>&gt;<i> design document). 
+</I>&gt;<i> 
+</I>&gt;<i> It is a problem for Jabber's digest mode. 
+</I>&gt;<i> 
+</I>&gt;<i> The way Jabber's digest mode works is :
+</I>&gt;<i> client sends SHA-1 digested password 
+</I>&gt;<i> server gets plaintext password from database (via an xdb module) 
+</I>&gt;<i> server creates its own SHA-1 digest using the same mechanism 
+</I>&gt;<i> as the client (by concating the SID and password together first and 
+</I>&gt;<i> then creating the digest). 
+</I>&gt;<i> 
+</I>&gt;<i> This can't work with LDAP because most LDAP servers store their 
+</I>&gt;<i> passwords pre-encrypted via DES, SHA-1 or some other 
+</I>&gt;<i> mechanism.
+</I>&gt;<i> 
+</I>&gt;<i> What sheath and I have thought for now (but we're very open to 
+</I>&gt;<i> suggestions) is that we could create a new objectclass and 
+</I>&gt;<i> attribute for Jabber to be added to the LDAP server for sites that 
+</I>&gt;<i> wished to use Jabber's digest mode. We could ship the schema 
+</I>&gt;<i> with the code &amp; user's could add the Jabber schema to their 
+</I>&gt;<i> server's schema before setting up xdbldap. 
+</I>&gt;<i> 
+</I>&gt;<i> This new schema would be;
+</I>&gt;<i> objectclass: jabberuserobject
+</I>&gt;<i> attribute:jabberpassword
+</I>&gt;<i> 
+</I>&gt;<i> Then when an user wanted to activate Jabber, they would send 
+</I>&gt;<i> their password to the server during registration. The necessary 
+</I>&gt;<i> objectclass would be added to the user's account &amp; their plaintext 
+</I>&gt;<i> password would be stored to the server. We would have to 
+</I>&gt;<i> authenticate them to the LDAP server first, unless it was a new 
+</I>&gt;<i> LDAP entry because you wouldn't want someone else to get a 
+</I>&gt;<i> jabber account using an userid that wasn't them (e.g. bob smith 
+</I>&gt;<i> activatng his jabber account on Mark Wilcox's LDAP entry). 
+</I>&gt;<i> 
+</I>&gt;<i> The downside is that now the user's LDAP password is now stored 
+</I>&gt;<i> in the directory in plaintext. As an LDAP server administrator I 
+</I>&gt;<i> wouldn't want that (more importantly, my boss wouldn't let me do it 
+</I>&gt;<i> anyway).
+</I>&gt;<i> 
+</I>&gt;<i> Optionally we could ask the user to send 2 passwords during 
+</I>&gt;<i> registration, 1 is their LDAP password to authenticate to the server 
+</I>&gt;<i> and the 2nd their jabber password (which we could make sure is 
+</I>&gt;<i> different), but that's not good either, becuase most people want 
+</I>&gt;<i> LDAP authentication so that they don't have multiple passwords.
+</I>&gt;<i> 
+</I>&gt;<i> The other option is to not enable jabber digest authentication and if 
+</I>&gt;<i> people want to secure passwords, then use SSL. 
+</I>&gt;<i> 
+</I>&gt;<i> sheath and I are going to concentrate on getting the plaintext 
+</I>&gt;<i> authentication to work first and worry about the digest password 
+</I>&gt;<i> later.
+</I>&gt;<i> 
+</I>&gt;<i> looking for options...
+</I>&gt;<i> Mark
+</I>&gt;<i> 
+</I>&gt;<i> Mark Wilcox
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A>
+</I>&gt;<i> Got LDAP?
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+						-Ben
+
+------------------------------------ |\      _,,,--,,_  ,) ----------
+Benjamin Kahn                        /,`.-'`'   -,  ;-;;'
+(212) 924 - 2220 ext 201            |,4-  ) )-,_ ) /\
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ben at cybersites.com</A> --------------- '---''(_/--' (_/-' ---------------
+   I just want to make the world a better place for me to live in.
+			-Lucy in a Peanuts comic
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003546.html">[JDEV] digest and ldap and authentication
+</A></li>
+	<LI>Next message: <A HREF="003559.html">[JDEV] digest and ldap and authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3548">[ date ]</a>
+              <a href="thread.html#3548">[ thread ]</a>
+              <a href="subject.html#3548">[ subject ]</a>
+              <a href="author.html#3548">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

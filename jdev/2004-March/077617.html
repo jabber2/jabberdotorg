@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] High Volume &amp; Temporary Files
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20High%20Volume%20%26%20Temporary%20Files&In-Reply-To=%3C4060D18D.4040803%40invoqsystems.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="077634.html">
+   <LINK REL="Next"  HREF="077618.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] High Volume &amp; Temporary Files</H1>
+    <B>Dave Jarvis</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20High%20Volume%20%26%20Temporary%20Files&In-Reply-To=%3C4060D18D.4040803%40invoqsystems.com%3E"
+       TITLE="[jdev] High Volume &amp; Temporary Files">djarvis at invoqsystems.com
+       </A><BR>
+    <I>Tue Mar 23 18:08:45 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="077634.html">[jdev] JabberApplet auth mechas (?).
+</A></li>
+        <LI>Next message: <A HREF="077618.html">[jdev] High Volume &amp; Temporary Files
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77617">[ date ]</a>
+              <a href="thread.html#77617">[ thread ]</a>
+              <a href="subject.html#77617">[ subject ]</a>
+              <a href="author.html#77617">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I'm currently using Jabberd Version 1.4.2.  I used the quick setup on 
+RedHat Linux, and am able to send messages between users easily and swiftly.
+
+The reason I'm writing is because we're doing high volume (20,000) 
+messages that are software driven into the Jabber server, with offline 
+accounts.  This means that the XML spool files are growing quite large, 
+even though the content of each message is quite small:
+
+-rw-------    1 jabber   jabber       1.3M Mar 23 15:24 testing.xml
+
+It takes 3 seconds for the jabber server to write a single message to 
+the end of this file.  I've also noticed temporary files being written 
+during this process, and (though I haven't looked at the source) believe 
+the algorithm upon receipt of each new message is:
+
+1) Copy all XML elements in the testing.xml file into the temporary 
+file, up until the closing elements.
+2) Append the new message onto the end of the temporary file.
+3) Write the closing elements.
+4) Rename the temporary file over the existing file.
+
+When a user only has a few hundred messages, this algorithm works just 
+fine, as the file sizes are small.  But when the files are a few MB in 
+size (e.g., 7000+ messages), this algorithm suffers a severe performance 
+penalty (between 3 and 5 seconds to add a message).  We're using a 
+dual-CPU Intel-based machine running at 1.8 GHz per chip, with 4 chip 
+emulation enabled, and a Linux bogomip count of 3578.26.  I don't know 
+the stats on the harddrive.
+
+If the file can be locked, I would recommend changing the algorithm:
+
+1) Read from the end of the file until the last message
+2) Truncate the file from the end of that message
+3) Write the new message
+4) Write whatever was truncated
+
+Of course, you would want to keep a small journal for recovery purposes 
+in case of a crash.
+
+If there is a different version, or a different implementation of a 
+Jabber server (which stores messages offline) which doesn't suffer from 
+this performance issue, I'd really appreciate knowing.
+
+Many thanks!
+
+Sincerely,
+Dave Jarvis
+-- 
+Invoq Systems Inc.
+t. 250.380.0304
+e. <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">djarvis at invoqsystems.com</A>
+w. <A HREF="http://www.invoqsystems.com">http://www.invoqsystems.com</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="077634.html">[jdev] JabberApplet auth mechas (?).
+</A></li>
+	<LI>Next message: <A HREF="077618.html">[jdev] High Volume &amp; Temporary Files
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77617">[ date ]</a>
+              <a href="thread.html#77617">[ thread ]</a>
+              <a href="subject.html#77617">[ subject ]</a>
+              <a href="author.html#77617">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] [ANN] Google Talk engineering manager live chat
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20%5BANN%5D%20Google%20Talk%20engineering%20manager%20live%20chat&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="022942.html">
+   <LINK REL="Next"  HREF="022946.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] [ANN] Google Talk engineering manager live chat</H1>
+    <B>Richard Dobson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20%5BANN%5D%20Google%20Talk%20engineering%20manager%20live%20chat&In-Reply-To="
+       TITLE="[jdev] [ANN] Google Talk engineering manager live chat">richard at dobson-i.net
+       </A><BR>
+    <I>Fri Sep 23 02:55:58 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="022942.html">[jdev] Second-guessing dns for s2s
+</A></li>
+        <LI>Next message: <A HREF="022946.html">[jdev] [ANN] Google Talk engineering manager live chat
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#22945">[ date ]</a>
+              <a href="thread.html#22945">[ thread ]</a>
+              <a href="subject.html#22945">[ subject ]</a>
+              <a href="author.html#22945">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> I think this is simply something terribly broken about most XMPP
+</I>&gt;<i> implementations.
+</I>
+Im not convinced of this, personally I think the DNS situation is exactly as
+it should be, lets use some examples of other situations.
+
+SMTP
+Lets say a users email address is <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at email.isp.com</A> and no MX records or A
+records are setup for email.isp.com, the email server will not try to lookup
+isp.com to see if that is setup, why should it?, if it did it might actually
+connect to something completely unrelated which is bad.
+
+HTTP
+If a website is www.website.isp.com but the DNS is not setup a web browser
+will not check www.isp.com to see if that exists, it will just assume that
+as the DNS says &quot;not found&quot; that that is an invalid address, just as it
+should IMO.
+
+&gt;<i> Users don't think of MUC as &quot;another server&quot;
+</I>
+Whether users think it is or not doesnt really change the fact that it is
+effectively another server, the physical setup of the software/hardware is
+irrelivant the only thing that matters is that it has a different domain
+name.
+
+&gt;<i> and the reality is that many people in large organizations don't have the
+</I>&gt;<i> ability to manage DNS or getting DNS changes is a huge burden that could
+</I>&gt;<i> lead them to another &quot;SIMPLEr&quot; (ha ha) IM system.
+</I>
+Maybe so, but someone in that organisation will have the ability, and the
+difficulty in getting things added or modified is really an issue for that
+organisation and the people implementing IM to resolve, if they wont allow
+it to be added then there must be a reason for it (i.e. the people
+installing IM for that domain havent been given permission to install it),
+also the DNS admins should be the ones making the decisions as to what DNS
+addresses the XMPP services should have so they have to be involved anyway,
+also im unsure as to how using SIMPLE instead helps matters if they arnt
+being allowed to setup DNS entries.
+
+Sorry its just im finding this hard to understand why organisations arnt
+allowing the setting up of appropriate DNS entries for their IM system if
+the installation of that system has been authorised by the appropriate
+people at that organisation, if its not been authorised then it shouldnt
+really be being installed in the first place, and if its just an issue of
+not being able to setup sub domains in their dns system then my suggestion
+of just getting a new domain for the conference server (or whatever sub
+server it is) will work fine, be inline with the standards and work fine
+with all currently deployed implementations without any need for the
+workaround you have implemented.
+
+&gt;<i> If everybody implemented the same logic that we do in Jive Messenger, it
+</I>&gt;<i> seems like it would mostly solve the problem. Since we can't enforce
+</I>&gt;<i> that, we still recommend DNS entries and will continue to do careful
+</I>&gt;<i> testing to make sure that we work with all the other s2s implementations
+</I>
+Maybe so, but im not convinced the stated reasons for implementing this
+workaround are enough, IMO the fact DNS says it doesnt exist should be
+enough for servers to know its an invalid server address, this is how things
+seem to work for practically every other internet protocol ive ever looked
+into so I dont see why it should be different for XMPP.
+
+Sorry im not trying to argue for the sake of it, I truely cannot see enough
+of a reason for it could you provide some examples of when this has been an
+real issue and what the reasons for it were? As the only reasons I can think
+of are the following, along with a possible solution that is to the specs:
+
+1)
+- Problem
+Their dns provider doesnt support subdomains.
+- Solution
+Switch dns providers or register a new domain for the MUC server.
+
+2)
+- Problem
+Their companies dns admins refuse to add the entries.
+- Potensial reasons
+The people installing the IM service have not gained the appropriate
+permission to setup the service.
+The appropriate channels have not been followed.
+The dns admins have not been consulted during deployment.
+- Solutions
+Get permission before deploying.
+Go through the appropriate comapny channels in order to get it added.
+Ensure admins are consulted with regards to dns entries to pick.
+
+3)
+- Problem
+Cant be bothered with the effort to get the appropriate dns entries
+- Solution
+Dont cut corners and go ahead and get the dns entries, must have had gone to
+the effort to get the entries for the root domain in the first place anyway.
+
+If you can provide some other reasons that I havent thought of please do, so
+far I cant think of any without obvious solutions but im sure you must have
+come across some others. Of course its up to you if you want to implement
+these workarounds in your implementation, but if you want it to become a
+standard it would be better to have some firmer reasons for doing so.
+
+Now partly off topic, something which has come to mind to me is that if say
+you have the following two SRV records:
+
+_xmpp-server._tcp.example.com                s2s.example.com
+_xmpp-server._tcp.muc.example.com        s2s.example.com
+
+if the two SRV records point to the same server then it would be nice if you
+are already connected to s2s.example.com for communication with example.com
+then when you try to communicate with an address at muc.example.com it
+negotiates it over the existing connection to s2s.example.com rather than
+opening a new one.
+
+Richard
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="022942.html">[jdev] Second-guessing dns for s2s
+</A></li>
+	<LI>Next message: <A HREF="022946.html">[jdev] [ANN] Google Talk engineering manager live chat
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#22945">[ date ]</a>
+              <a href="thread.html#22945">[ thread ]</a>
+              <a href="subject.html#22945">[ subject ]</a>
+              <a href="author.html#22945">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

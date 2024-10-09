@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Attaching MIME types
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Attaching%20MIME%20types&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005661.html">
+   <LINK REL="Next"  HREF="005663.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Attaching MIME types</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Attaching%20MIME%20types&In-Reply-To="
+       TITLE="[JDEV] Attaching MIME types">dwaite at jabber.com
+       </A><BR>
+    <I>Fri Jan 19 12:21:23 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005661.html">[JDEV] Attaching MIME types
+</A></li>
+        <LI>Next message: <A HREF="005663.html">[JDEV] Attaching MIME types
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5662">[ date ]</a>
+              <a href="thread.html#5662">[ thread ]</a>
+              <a href="subject.html#5662">[ subject ]</a>
+              <a href="author.html#5662">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Sunir Shah wrote:
+
+&gt;<i> Is there an existing protocol for attaching MIME types in the
+</I>&gt;<i> Jabber message stream? Say I was talking to you and wanted to
+</I>&gt;<i> send you an image; could I embed that in a &lt;message/&gt; element?
+</I>&gt;<i>
+</I>&gt;<i> This might look like:
+</I>&gt;<i>
+</I>&gt;<i> &lt;message to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at server</A>&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bar at server</A>&quot;&gt;
+</I>&gt;<i>     &lt;x
+</I>&gt;<i>         xmlns=&quot;jabber:x:mime&quot;
+</I>&gt;<i>         type=&quot;image/gif&quot;
+</I>&gt;<i>         target=&quot;aWindow&quot;
+</I>&gt;<i>     &gt;
+</I>&gt;<i>         [... insert MIME encoded gif; probably in a CDATA section ...]
+</I>&gt;<i>     &lt;/x&gt;
+</I>&gt;<i> &lt;/message&gt;
+</I>&gt;<i>
+</I>&gt;<i> If not, to whom would I submit an RFC?
+</I>&gt;<i>
+</I>
+some basic issues:
+1. you will definately need to so something such as base64 encoding to
+send the data reliably - streaming binary data would most probably hit
+either a reserved XML character or generate invalid UTF-8.This will
+increase the size of data by about a third while in transit.
+
+2. the jabber.org server has client rate limiting (called karma)
+installed: this will limit you very quickly in the amount of traffic you
+can send. This is understandable: no deployed network or server in the
+world could handle 20,000 users streaming MP3s through one node. This
+does however require that you turn off karma by hand in your server, and
+will limit your mime sending to just the local server or to other servers
+you disable this protection on. In other words - this will not be
+accepted into the core protocol, as it will never adequately work.
+
+3. you will be limited based on the size of the message - the Jabber
+server does not route messages asynchronously, so the entire content will
+have to live on the server and be processed by the server in order to be
+routed. I do not know the exact limit, but after a certain size (I'm
+guessing 500k) the system will just kill off your session.
+
+-David Waite
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005661.html">[JDEV] Attaching MIME types
+</A></li>
+	<LI>Next message: <A HREF="005663.html">[JDEV] Attaching MIME types
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5662">[ date ]</a>
+              <a href="thread.html#5662">[ thread ]</a>
+              <a href="subject.html#5662">[ subject ]</a>
+              <a href="author.html#5662">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

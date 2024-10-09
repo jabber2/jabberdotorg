@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Smack API and jabber.org
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Smack%20API%20and%20jabber.org&In-Reply-To=%3C358531180901081842w118e8f6j81118360d6f51e4%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058020.html">
+   <LINK REL="Next"  HREF="058022.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Smack API and jabber.org</H1>
+    <B>sumedha rubasinghe</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Smack%20API%20and%20jabber.org&In-Reply-To=%3C358531180901081842w118e8f6j81118360d6f51e4%40mail.gmail.com%3E"
+       TITLE="[jdev] Smack API and jabber.org">sumedha.r at gmail.com
+       </A><BR>
+    <I>Thu Jan  8 20:42:27 CST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058020.html">[jdev] Smack API and jabber.org
+</A></li>
+        <LI>Next message: <A HREF="058022.html">[jdev] Smack API and jabber.org
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58021">[ date ]</a>
+              <a href="thread.html#58021">[ thread ]</a>
+              <a href="subject.html#58021">[ subject ]</a>
+              <a href="author.html#58021">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+I have following code block &amp; it works.
+/sumedha
+
+xmppConnection = new XMPPConnection(serverCredentials.getServerUrl());
+try {
+	xmppConnection.connect();
+} catch (XMPPException e) {
+      log.error(&quot;Failed to connect to server
+:<i>&quot;+serverCredentials.getServerUrl(), e);
+</I>}
+//Pause for a small time before trying to login.
+//This prevents random ssl exception from Smack API
+try {
+	Thread.sleep(100);
+} catch (InterruptedException e5) {
+	log.debug(&quot;Sleep interrupted &quot;,e5);
+}
+
+if(xmppConnection.isConnected()){
+	if(! xmppConnection.isAuthenticated()){
+	try {
+		xmppConnection.login(serverCredentials.getAccountName()+&quot;@&quot;+
+					serverCredentials.getServerUrl(),
+					serverCredentials.getPassword(),
+					serverCredentials.getResource(),
+					true);
+	} catch (XMPPException e) {
+		try {
+			log.error(&quot;Login failed for &quot;
+					+serverCredentials.getAccountName()
+					+&quot;@&quot;+serverCredentials.getServerUrl()
+					+&quot;.Retrying in 2 secs&quot;,e);
+			Thread.sleep(2000);
+			xmppConnection.login(serverCredentials.getAccountName()+&quot;@&quot;+
+					serverCredentials.getServerUrl(),
+    				        serverCredentials.getPassword(),
+					serverCredentials.getResource(),
+					true);
+			} catch (InterruptedException e1) {
+				log.error(&quot;Sleep interrupted.&quot;,e1);
+			} catch (XMPPException e2) {
+				log.error(&quot;Login failed for : &quot;+serverCredentials.getAccountName()
+						+&quot;@&quot;+serverCredentials.getServerUrl(),e2);
+				throw new AxisFault(&quot;Login failed for : &quot;+serverCredentials.getAccountName()
+						+&quot;@&quot;+serverCredentials.getServerUrl());
+			}
+		}
+	        //Listen for Message type packets from specified server url
+		//packetFilter = new AndFilter(new PacketTypeFilter(Message.class),
+		//		new FromContainsFilter(serverCredentials.getServerUrl()));
+		packetFilter = new FromContainsFilter(serverCredentials.getServerUrl());					
+	}
+}					
+
+
+
+
+
+On Fri, Jan 9, 2009 at 3:00 AM,  &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jlist9 at gmail.com</A>&gt; wrote:
+&gt;<i> Hello all,
+</I>&gt;<i>
+</I>&gt;<i> Has anyone tried using jivesoftware's Smack API to access
+</I>&gt;<i> jabber.org? I tried some sample code on their forum but I was
+</I>&gt;<i> getting an error. The same code (with the slight difference of
+</I>&gt;<i> using a full email address) works fine for talk.google.com.
+</I>&gt;<i>
+</I>&gt;<i> Or, has anyone tried any java XMPP library with success?
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> The error:
+</I>&gt;<i>
+</I>&gt;<i> SASL authentication failed using mechanism PLAIN:
+</I>&gt;<i>        at org.jivesoftware.smack.SASLAuthentication.authenticate(SASLAuthentication.java:325)
+</I>&gt;<i>        at org.jivesoftware.smack.XMPPConnection.login(XMPPConnection.java:395)
+</I>&gt;<i>        at com.gn.xmpp.XmppTest.main(XmppTest.java:40)
+</I>&gt;<i>
+</I>&gt;<i> The sample code:
+</I>&gt;<i>
+</I>&gt;<i> ConnectionConfiguration cc = new ConnectionConfiguration(&quot;jabber.org&quot;, 5222, &quot;jabber.org&quot;);
+</I>&gt;<i> XMPPConnection connection = new XMPPConnection(cc);
+</I>&gt;<i> try {
+</I>&gt;<i>     connection.connect();
+</I>&gt;<i>     SASLAuthentication.supportSASLMechanism(&quot;PLAIN&quot;, 0);
+</I>&gt;<i>     connection.login(&quot;your.jabber&quot;, &quot;password&quot;, &quot;resource&quot;);
+</I>&gt;<i>     System.out.println(connection.isAuthenticated());
+</I>&gt;<i> } catch (XMPPException e1) {
+</I>&gt;<i>     e1.printStackTrace();
+</I>&gt;<i> }
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Best regards,
+</I>&gt;<i> Jack
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> FAQ: <A HREF="http://www.jabber.org/discussion-lists/jdev-faq">http://www.jabber.org/discussion-lists/jdev-faq</A>
+</I>&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058020.html">[jdev] Smack API and jabber.org
+</A></li>
+	<LI>Next message: <A HREF="058022.html">[jdev] Smack API and jabber.org
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58021">[ date ]</a>
+              <a href="thread.html#58021">[ thread ]</a>
+              <a href="subject.html#58021">[ subject ]</a>
+              <a href="author.html#58021">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

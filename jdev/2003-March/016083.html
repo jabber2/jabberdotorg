@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Problems with Jabberd1.4.2
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Problems%20with%20Jabberd1.4.2&In-Reply-To=1048819016.18392.46.camel%40womble">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="016082.html">
+   <LINK REL="Next"  HREF="016084.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Problems with Jabberd1.4.2</H1>
+    <B>Mike Prince</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Problems%20with%20Jabberd1.4.2&In-Reply-To=1048819016.18392.46.camel%40womble"
+       TITLE="[JDEV] Problems with Jabberd1.4.2">mike at mikeprince.com
+       </A><BR>
+    <I>Fri Mar 28 11:58:27 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="016082.html">[JDEV] Problems with Jabberd1.4.2
+</A></li>
+        <LI>Next message: <A HREF="016084.html">[JDEV] dialback issues / patch, for 1.4.2???
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#16083">[ date ]</a>
+              <a href="thread.html#16083">[ thread ]</a>
+              <a href="subject.html#16083">[ subject ]</a>
+              <a href="author.html#16083">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>] On 
+</I>&gt;<i> Behalf Of Aaron Caskey
+</I>&gt;<i> Sent: Thursday, March 27, 2003 6:37 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: [JDEV] Problems with Jabberd1.4.2
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> I'm in the process of setting up a Jabber Server for our 
+</I>&gt;<i> organisation and I have created a bunch of scripts to allow 
+</I>&gt;<i> users to quickly add departments and individuals to their roster.
+</I>&gt;<i> 
+</I>&gt;<i> I am manipulating the user.xml files directly and have set 
+</I>&gt;<i> the timeout to 0. The server seems to be picking up roster 
+</I>&gt;<i> changes, but only partially.
+</I>
+Which timeout?
+
+&gt;<i> The main problem is that one user can see another, but the 
+</I>&gt;<i> reverse is not the case, even tho both users registration is 
+</I>&gt;<i> set to &quot;both&quot;
+</I>
+By 'see another', do you mean they are in each-others roster?  Or do you
+mean presence is functioning correctly and they appear 'online'?
+ 
+&gt;<i> Resending a subscribe request will sometimes update the 
+</I>&gt;<i> status but it will only do it once, and if the other user's 
+</I>&gt;<i> status changes then another subscribe needs to be sent. It 
+</I>&gt;<i> seems to me that the servers internal state is getting out of 
+</I>&gt;<i> sync with whats in the files.
+</I>&gt;<i> 
+</I>&gt;<i> Is there a way to tell jabberd to reread all the user.xml 
+</I>&gt;<i> files without restarting it?
+</I>
+I am doing the same thing; using a component to modify roster entries
+and then forcing them to propogate to clients.  Here's how I do it...
+
+1) Read in the existing roster using and &lt;iq get&gt; request.
+2) Modify the roster with my new entries
+3) Write out the full new roster using an &lt;iq set&gt; request
+
+Here's how I refresh the server
+
+4) Fake an offline/online cycle from the client.  This causes the roster
+logic in the server to reload.
+
+Here's how we update the clients to know about the updated roster.  BTW,
+we're also *forcing* subscriptions here and completely bypassing the
+subscribe cycle.
+
+5) &lt;probe&gt; all the online clients (resources) for this user
+6) For each client that responds, send an &lt;iq set&gt; to the specific
+resource
+
+Note that subscriptions are symetric.  In my system both users are on
+the same Jabber server and I'm able to force the reciprocal
+subscription.   This would require extra work to function across
+domains.
+
+&gt;<i> On an unrelated note is there a way to tell jabberd to resend 
+</I>&gt;<i> roster information to a client (This would probably 
+</I>&gt;<i> facilitate rereading the user.xml file and may answer my 
+</I>&gt;<i> first question)
+</I>&gt;<i> 
+</I>&gt;<i> Lastly would xdb_sql help with this at all? I don't really 
+</I>&gt;<i> want to move to this as it would require me to rewrite all my 
+</I>&gt;<i> setup and roster modification scripts.
+</I>
+Yes.  So instead of doing &lt;iq&gt; get's and set's you would just modify the
+data directly in the database.  You'd still have to encourage the Jabber
+server to reload the roster info (my offline/online cycle); as well as
+do a push to the online clients.
+
+For code examples, my Yaja! library comes with code to do the above.
+
+Hope this helps,
+
+Mike
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="016082.html">[JDEV] Problems with Jabberd1.4.2
+</A></li>
+	<LI>Next message: <A HREF="016084.html">[JDEV] dialback issues / patch, for 1.4.2???
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#16083">[ date ]</a>
+              <a href="thread.html#16083">[ thread ]</a>
+              <a href="subject.html#16083">[ subject ]</a>
+              <a href="author.html#16083">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

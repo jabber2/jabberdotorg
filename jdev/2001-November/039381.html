@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Trouble in making my own JUD component in Jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Trouble%20in%20making%20my%20own%20JUD%20component%20in%20Jabber&In-Reply-To=%3C20011106135315.H14414%40server.pizzahut.com.ph%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039380.html">
+   <LINK REL="Next"  HREF="039384.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Trouble in making my own JUD component in Jabber</H1>
+    <B>Migs Paraz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Trouble%20in%20making%20my%20own%20JUD%20component%20in%20Jabber&In-Reply-To=%3C20011106135315.H14414%40server.pizzahut.com.ph%3E"
+       TITLE="[JDEV] Trouble in making my own JUD component in Jabber">map at internet.org.ph
+       </A><BR>
+    <I>Mon Nov  5 23:53:15 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039380.html">[JDEV] mod_account - remote account management
+</A></li>
+        <LI>Next message: <A HREF="039384.html">[JDEV] Trouble in making my own JUD component in Jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39381">[ date ]</a>
+              <a href="thread.html#39381">[ thread ]</a>
+              <a href="subject.html#39381">[ subject ]</a>
+              <a href="author.html#39381">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I resolved the previous problem - it was mismatched secrets - and I'm
+getting the hang of using Jabber::Nodefactory.  I wrote this little piece
+of code to start off writing a JUD component/transport; I'm looking into
+writing other sorts of transports later.
+
+This one is supposed to give the list of search keys to a Jabber client.
+I followed the jabber-programmers.pdf file.
+
+But, when testing with Gabber, it just waits on the server.  What is wrong?
+Malformed output?  Thanks.
+
+
+#!/usr/bin/perl
+# juday.pl, a JUD component
+
+use Jabber::Connection;
+use Jabber::NodeFactory;
+use Jabber::NS qw(:all);
+
+our $c = new Jabber::Connection(
+  ns =&gt; &quot;jabber:component:accept&quot;,                             
+  server =&gt; 'localhost:1234',
+  localname =&gt; &quot;jud.localhost&quot;,
+  log    =&gt; 1,
+);
+
+$c-&gt;connect or die &quot;oops: &quot;.$c-&gt;lastError;
+$c-&gt;register_handler('message', \&amp;message);
+$c-&gt;register_handler('iq', \&amp;iq);
+
+$c-&gt;auth(&quot;test&quot;);
+
+# I wonder if this is needed for components.
+$c-&gt;send('&lt;presence/&gt;');
+
+
+$c-&gt;start();
+
+$c-&gt;disconnect();
+
+
+sub message {
+  my $node = shift;
+  print &quot;Message --&gt; &quot;, $node-&gt;toStr, &quot;\n&quot;;
+}
+
+sub iq {
+  my $node = shift;
+
+  print &quot;IQ --&gt; &quot;, $node-&gt;toStr(), &quot;\n&quot;;
+
+  # Different kinds of XML content
+  if (($node-&gt;attr(&quot;type&quot;) eq &quot;get&quot;) &amp;&amp;
+      ($node-&gt;getTag(&quot;query&quot;, &quot;jabber:iq:search&quot;))) {
+
+      my $id = $node-&gt;attr(&quot;id&quot;);
+
+      # Request for search parameters.
+      my $nf = new Jabber::NodeFactory;
+
+      my $tag = $nf-&gt;newNode(&quot;iq&quot;);
+      $tag-&gt;attr(&quot;type&quot;, &quot;result&quot;);
+      $tag-&gt;attr(&quot;from&quot;, &quot;jud.localhost&quot;);
+      $tag-&gt;attr(&quot;id&quot;, $id);
+      
+      my $tag2 = $tag-&gt;insertTag(&quot;query&quot;, &quot;jabber:iq:search&quot;);
+      $tag2-&gt;insertTag(&quot;first&quot;);
+      $tag2-&gt;insertTag(&quot;last&quot;);
+      $tag2-&gt;insertTag(&quot;nick&quot;);
+      $tag2-&gt;insertTag(&quot;email&quot;);
+
+      # I wonder if this key is needed.
+      $tag2-&gt;insertTag(&quot;key&quot;)-&gt;data(&quot;1&quot;);
+
+      $tag2-&gt;insertTag(&quot;instructions&quot;)-&gt;data(&quot;juday is here to help.&quot;);
+
+      # Send back to client
+      $c-&gt;send($tag);
+  }
+}
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039380.html">[JDEV] mod_account - remote account management
+</A></li>
+	<LI>Next message: <A HREF="039384.html">[JDEV] Trouble in making my own JUD component in Jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39381">[ date ]</a>
+              <a href="thread.html#39381">[ thread ]</a>
+              <a href="subject.html#39381">[ subject ]</a>
+              <a href="author.html#39381">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

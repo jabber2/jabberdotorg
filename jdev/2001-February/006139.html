@@ -1,0 +1,373 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] RE: [jadmin] install jabber server behind firewall
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20RE%3A%20%5Bjadmin%5D%20install%20jabber%20server%20behind%20firewall&In-Reply-To=NDBBJJNLKEIAOAHFEHEJMELACOAA.frank%40mancala.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006136.html">
+   <LINK REL="Next"  HREF="006137.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] RE: [jadmin] install jabber server behind firewall</H1>
+    <B>Thomas Muldowney</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20RE%3A%20%5Bjadmin%5D%20install%20jabber%20server%20behind%20firewall&In-Reply-To=NDBBJJNLKEIAOAHFEHEJMELACOAA.frank%40mancala.com"
+       TITLE="[JDEV] RE: [jadmin] install jabber server behind firewall">temas at box5.net
+       </A><BR>
+    <I>Fri Feb  9 19:19:34 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006136.html">[JDEV] RE: [jadmin] install jabber server behind firewall
+</A></li>
+        <LI>Next message: <A HREF="006137.html">[JDEV] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6139">[ date ]</a>
+              <a href="thread.html#6139">[ thread ]</a>
+              <a href="subject.html#6139">[ subject ]</a>
+              <a href="author.html#6139">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Here is some documentation on dialback:
+
+<A HREF="http://docs.jabber.org/draft-proto/html/dialback.html">http://docs.jabber.org/draft-proto/html/dialback.html</A>
+
+There are a few things you'll need to do to use s2s.  First make sure that 
+the hostname you are claiming to be actually does point back to your box.
+This is the whole point of the dialback mechanism, not allowing you to spoof
+as anyone.  Next you'll need to ensure that the s2s communications port is
+open on your firewall.  This is 5269 by default.  After that it should work
+just fine.
+
+--temas
+
+On Fri, Feb 09, 2001 at 05:50:04PM -0700, Frank Vernon wrote:
+&gt;<i> Hi all-
+</I>&gt;<i> 
+</I>&gt;<i> I too have been wrestling with 1.4 trying to get it to run behind a firewall
+</I>&gt;<i> today. I finally got it running locally but still no luck in interoperating
+</I>&gt;<i> with the jabber.org server.
+</I>&gt;<i> 
+</I>&gt;<i> The problem seems to be buried somewhere within the dialback mechanism but
+</I>&gt;<i> I'm new to the codebase so it's slow going trying to figure out exactly
+</I>&gt;<i> what's going on. Is there any documentation on the details of the dialback
+</I>&gt;<i> strategy? I can't seem to find any. Does anyone know if it's exchanging
+</I>&gt;<i> explicit IP addresses as apposed to just the canonical names defined in
+</I>&gt;<i> jabber.xml? (If so, this mechanism will never work in a  NAT'ed firewall
+</I>&gt;<i> scenario like mine.)
+</I>&gt;<i> 
+</I>&gt;<i> I've captured packets and can see the 'error' result in the
+</I>&gt;<i> &lt;db:result.../db:result&gt; exchange. From reading the code it looks like 'db'
+</I>&gt;<i> definitely refers to the dialback mechanism. I've browsed the code at some
+</I>&gt;<i> length and it would appear that for the most part the hashed items in the
+</I>&gt;<i> captured stream are not IP addresses but it's hard to tell in all cases. A
+</I>&gt;<i> little documentation would go a long way here.
+</I>&gt;<i> 
+</I>&gt;<i> I'm pretty sure that my firewall configuration is correct. I'm forwarding
+</I>&gt;<i> ports 5222 and 5269 and I have DNS setup so that my server name resolves to
+</I>&gt;<i> the IP address on the outside of the firewall. In theory, as far as a remote
+</I>&gt;<i> server is concerned, my server should appear to be sitting at the firewall
+</I>&gt;<i> address. Is there a reverse lookup in this process? Is there another port in
+</I>&gt;<i> use here? Any other pointers?
+</I>&gt;<i> 
+</I>&gt;<i> BTW- I think it would great if the debug output of the server included the
+</I>&gt;<i> raw XML packets at each step. Also some more detail in the db:result 'error'
+</I>&gt;<i> would be helpful to debug these issues.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks-
+</I>&gt;<i> Frank
+</I>&gt;<i> 
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin-admin at mailman.jabber.org</A>
+</I>&gt;<i> &gt; [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin-admin at mailman.jabber.org</A>]On Behalf Of Chris Schultz
+</I>&gt;<i> &gt; Sent: Friday, February 09, 2001 1:30 PM
+</I>&gt;<i> &gt; To: Chris Pile; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at mailman.jabber.org</A>
+</I>&gt;<i> &gt; Subject: Re: [jadmin] install jabber server behind firewall
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I don't have the firewall logs in front of me, but there are no ports
+</I>&gt;<i> &gt; open to this system.  I also tried removing the s2s and dnsrv entries
+</I>&gt;<i> &gt; but I could not get jabberd to start (I got a config file parse error).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; BTW, everything else pretty much works.  I'm just worried about dinging
+</I>&gt;<i> &gt; update.jabber.org with every user that hits my internal server.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; --Chris
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Chris Pile wrote:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I get similar messages:
+</I>&gt;<i> &gt; &gt; 20010209T15:31:00: [notice] (update.jabber.org): bouncing a packet to
+</I>&gt;<i> &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">959967024 at update.jabber.org</A>/1.1.1.5 from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chris at somedomain.tld</A>/JabberIM:
+</I>&gt;<i> &gt; &gt; Unable to deliver, destination unknown
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Although I also removed the s2s and dnsrv entries in my jabber.xml
+</I>&gt;<i> &gt; &gt; config.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I haven't had chance yet but will set up a simple firewall and log to
+</I>&gt;<i> &gt; &gt; see what port etc this traffic is transmitted on.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Chris: do you have any firewall logs to suggest that traffic is being
+</I>&gt;<i> &gt; &gt; sent to/from jabber.org?  I just figured these messages indicated that
+</I>&gt;<i> &gt; &gt; the info could not be sent.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Thanks,
+</I>&gt;<i> &gt; &gt; Chris Pile
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Chris Schultz wrote:
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; I'm having a related issue.  I'm trying to set up my Jabber 1.4 server
+</I>&gt;<i> &gt; &gt; &gt; for intranet use only.  And yet it keeps trying to communicate with
+</I>&gt;<i> &gt; &gt; &gt; update.jabber.org.  Here's the error.log file:
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; 20010209T03:50:59: [notice] (update.jabber.org): bouncing a packet to
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">959967039 at update.jabber.org</A>/0.9.3.5 from
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chris at monitor.availigence.com</A>/Winjab: Server Connect Timeout
+</I>&gt;<i> &gt; &gt; &gt; 20010209T03:51:31: [alert] (s2s): We were told by
+</I>&gt;<i> &gt; update.jabber.org that
+</I>&gt;<i> &gt; &gt; &gt; our sending name monitor.availigence.com is invalid, either something
+</I>&gt;<i> &gt; &gt; &gt; went wrong on their end, we tried using that name improperly, or dns
+</I>&gt;<i> &gt; &gt; &gt; does not resolve to us
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Now I'm sure that update can't talk to my box because I've blocked
+</I>&gt;<i> &gt; &gt; &gt; access at the firewall.  But why is our internal server still
+</I>&gt;<i> &gt; trying to
+</I>&gt;<i> &gt; &gt; &gt; communicate with the outside world at all?
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; My jabber.xml file is below.  I've taken out update, jud,
+</I>&gt;<i> &gt; mod_version.so
+</I>&gt;<i> &gt; &gt; &gt; but the behavior still continues.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Any help would be greatly appreciated.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; --Chris
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &lt;jabber&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;service id=&quot;sessions&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;host&gt;&lt;jabberd:cmdline
+</I>&gt;<i> &gt; &gt; &gt; flag=&quot;h&quot;&gt;monitor.availigence.com&lt;/jabberd:cmdline&gt;&lt;/host&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;jsm xmlns=&quot;jabber:config:jsm&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;filter&gt;
+</I>&gt;<i> &gt; &gt; &gt;           &lt;default/&gt;
+</I>&gt;<i> &gt; &gt; &gt;           &lt;max_size&gt;100&lt;/max_size&gt;
+</I>&gt;<i> &gt; &gt; &gt;           &lt;allow&gt;
+</I>&gt;<i> &gt; &gt; &gt;               &lt;conditions&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;ns/&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;unavailable/&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;from/&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;resource/&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;subject/&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;body/&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;show/&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;type/&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;roster/&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;group/&gt;
+</I>&gt;<i> &gt; &gt; &gt;               &lt;/conditions&gt;
+</I>&gt;<i> &gt; &gt; &gt;               &lt;actions&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;error/&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;offline/&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;reply/&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;continue/&gt;
+</I>&gt;<i> &gt; &gt; &gt;                   &lt;settype/&gt;
+</I>&gt;<i> &gt; &gt; &gt;               &lt;/actions&gt;
+</I>&gt;<i> &gt; &gt; &gt;           &lt;/allow&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;/filter&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;register notify=&quot;yes&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;instructions&gt;Choose a username and password to register with
+</I>&gt;<i> &gt; &gt; &gt; this server.&lt;/instructions&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;name/&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;email/&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;/register&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;welcome&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;subject&gt;Welcome!&lt;/subject&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;body&gt;Welcome to the Jabber server at localhost -- we hope you
+</I>&gt;<i> &gt; &gt; &gt; enjoy this service! For information about how to use Jabber, visit the
+</I>&gt;<i> &gt; &gt; &gt; Jabber User's Guide at <A HREF="http://docs.jabber.org/&lt;/body">http://docs.jabber.org/&lt;/body</A>&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;/welcome&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;vcard2jud/&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;browse&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;conference type=&quot;private&quot;
+</I>&gt;<i> &gt; &gt; &gt; jid=&quot;conference.monitor.availigence.com&quot; name=&quot;Conference&quot;/&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;service type=&quot;aim&quot; jid=&quot;aim.monitor.availigence.com&quot;
+</I>&gt;<i> &gt; name=&quot;AIM
+</I>&gt;<i> &gt; &gt; &gt; Transport&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;           &lt;ns&gt;jabber:iq:gateway&lt;/ns&gt;
+</I>&gt;<i> &gt; &gt; &gt;           &lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;/service&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;/browse&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;/jsm&gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;load main=&quot;jsm&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;jsm&gt;./jsm/jsm.so&lt;/jsm&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_echo&gt;./jsm/jsm.so&lt;/mod_echo&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_roster&gt;./jsm/jsm.so&lt;/mod_roster&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_time&gt;./jsm/jsm.so&lt;/mod_time&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_vcard&gt;./jsm/jsm.so&lt;/mod_vcard&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_last&gt;./jsm/jsm.so&lt;/mod_last&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_announce&gt;./jsm/jsm.so&lt;/mod_announce&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_agents&gt;./jsm/jsm.so&lt;/mod_agents&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_browse&gt;./jsm/jsm.so&lt;/mod_browse&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_admin&gt;./jsm/jsm.so&lt;/mod_admin&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_filter&gt;./jsm/jsm.so&lt;/mod_filter&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_offline&gt;./jsm/jsm.so&lt;/mod_offline&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_presence&gt;./jsm/jsm.so&lt;/mod_presence&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_auth_plain&gt;./jsm/jsm.so&lt;/mod_auth_plain&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_auth_digest&gt;./jsm/jsm.so&lt;/mod_auth_digest&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_auth_0k&gt;./jsm/jsm.so&lt;/mod_auth_0k&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_log&gt;./jsm/jsm.so&lt;/mod_log&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_register&gt;./jsm/jsm.so&lt;/mod_register&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;mod_xml&gt;./jsm/jsm.so&lt;/mod_xml&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;/load&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;/service&gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;xdb id=&quot;xdb&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;host/&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;load&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;xdb_file&gt;./xdb_file/xdb_file.so&lt;/xdb_file&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;/load&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;xdb_file xmlns=&quot;jabber:config:xdb_file&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;spool&gt;&lt;jabberd:cmdline
+</I>&gt;<i> &gt; flag='s'&gt;./spool&lt;/jabberd:cmdline&gt;&lt;/spool&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;/xdb_file&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;/xdb&gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;service id=&quot;c2s&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;load&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;pthsock_client&gt;./pthsock/pthsock_client.so&lt;/pthsock_client&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;/load&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;pthcsock xmlns='jabber:config:pth-csock'&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;authtime/&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;karma&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;init&gt;10&lt;/init&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;max&gt;10&lt;/max&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;inc&gt;1&lt;/inc&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;dec&gt;1&lt;/dec&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;penalty&gt;-6&lt;/penalty&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;restore&gt;10&lt;/restore&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;/karma&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;ip port=&quot;5222&quot;/&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;/pthcsock&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;/service&gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;log id='elogger'&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;host/&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;logtype/&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;format&gt;%d: [%t] (%h): %s&lt;/format&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;file&gt;error.log&lt;/file&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;stderr/&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;/log&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;log id='rlogger'&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;host/&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;logtype&gt;record&lt;/logtype&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;format&gt;%d %h %s&lt;/format&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;file&gt;record.log&lt;/file&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;/log&gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;service id=&quot;dnsrv&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;host/&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;load&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;dnsrv&gt;./dnsrv/dnsrv.so&lt;/dnsrv&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;/load&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;dnsrv xmlns=&quot;jabber:config:dnsrv&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;resend service=&quot;_jabber._tcp&quot;&gt;s2s&lt;/resend&gt; &lt;!-- for
+</I>&gt;<i> &gt; supporting
+</I>&gt;<i> &gt; &gt; &gt; SRV records --&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;resend&gt;s2s&lt;/resend&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;/dnsrv&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;/service&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;service id=&quot;s2s&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;load&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;dialback&gt;./dialback/dialback.so&lt;/dialback&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;/load&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;dialback xmlns='jabber:config:dialback'&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;legacy/&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;ip port=&quot;5269&quot;/&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;karma&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;init&gt;50&lt;/init&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;max&gt;50&lt;/max&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;inc&gt;4&lt;/inc&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;dec&gt;1&lt;/dec&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;penalty&gt;-5&lt;/penalty&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;restore&gt;50&lt;/restore&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;/karma&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;/dialback&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;/service&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;service id=&quot;conference.monitor.availigence.com&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;load&gt;&lt;conference&gt;./conference/conference.so&lt;/conference&gt;&lt;/load&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;conference xmlns=&quot;jabberd:config:conference&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;private/&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;history&gt;30&lt;/history&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;vCard&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;FN&gt;Conference&lt;/FN&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;DESC&gt;This service is for private conferencing rooms.&lt;/DESC&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;URL&gt;<A HREF="http://www.availigence.com/&lt;/URL">http://www.availigence.com/&lt;/URL</A>&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;/vCard&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;notice&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;join&gt; has become available&lt;/join&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;leave&gt; has left&lt;/leave&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;rename&gt; is now known as &lt;/rename&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;/notice&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;/conference&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;/service&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;service id='aim.monitor.availigence.com'&gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &lt;load&gt;&lt;aim_transport&gt;./aim-transport/aimtrans.so&lt;/aim_transport&gt;&lt;/load&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;aimtrans xmlns='jabber:config:aimtrans'&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;vCard&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;FN&gt;AIM Transport&lt;/FN&gt;
+</I>&gt;<i> &gt; &gt; &gt;         &lt;DESC&gt;An AIM Transport!&lt;/DESC&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;/vCard&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;/aimtrans&gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;/service&gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;   &lt;io&gt;
+</I>&gt;<i> &gt; &gt; &gt;     &lt;rate points=&quot;5&quot; time=&quot;25&quot;/&gt;
+</I>&gt;<i> &gt; &gt; &gt;  &lt;/io&gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;  &lt;pidfile&gt;./jabber.pid&lt;/pidfile&gt;
+</I>&gt;<i> &gt; &gt; &gt; &lt;/jabber&gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; --
+</I>&gt;<i> &gt; Chris Schultz ................................804.521.3072...o..
+</I>&gt;<i> &gt; Availigence, Inc. ............................804.935.0165...f..
+</I>&gt;<i> &gt; <A HREF="http://www.availigence.com">http://www.availigence.com</A> ....... <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chris.schutlz at NOSPavailigence.com</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20010209/260d04c0/attachment.pgp">https://www.jabber.org/jdev/attachments/20010209/260d04c0/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006136.html">[JDEV] RE: [jadmin] install jabber server behind firewall
+</A></li>
+	<LI>Next message: <A HREF="006137.html">[JDEV] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6139">[ date ]</a>
+              <a href="thread.html#6139">[ thread ]</a>
+              <a href="subject.html#6139">[ subject ]</a>
+              <a href="author.html#6139">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

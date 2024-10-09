@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber DevZone News - @jabber.org server
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20DevZone%20News%20-%20%40jabber.org%20server&In-Reply-To=%3C20010606134029.B2745%40box5.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="037595.html">
+   <LINK REL="Next"  HREF="037599.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber DevZone News - @jabber.org server</H1>
+    <B>Thomas Muldowney</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20DevZone%20News%20-%20%40jabber.org%20server&In-Reply-To=%3C20010606134029.B2745%40box5.net%3E"
+       TITLE="[JDEV] Jabber DevZone News - @jabber.org server">temas at box5.net
+       </A><BR>
+    <I>Wed Jun  6 13:40:29 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="037595.html">[JDEV] DPSM small update
+</A></li>
+        <LI>Next message: <A HREF="037599.html">[JDEV] jabber:iq:private (well, not so private -  public) data storage.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37596">[ date ]</a>
+              <a href="thread.html#37596">[ thread ]</a>
+              <a href="subject.html#37596">[ subject ]</a>
+              <a href="author.html#37596">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Again it's not necessarily a matter that simple.  The pipe gets filled, rate
+limitting takes affect and things seem to slow down.  Some of it is also acting
+as legitimate traffic and that causes some of the development things to spazz.
+So we're trying to seperate production level from development level pieces as 
+the first step, and then we'll also be putting in an actual box to act as the
+router for the jabber.org (jabelin.org as well) domain.  It will be using
+either a recent kernel and iptables or possible OpenBSD + ipf power.
+
+--temas
+
+On Wed, May 23, 2001 at 10:39:06AM -0700, Ron Wills wrote:
+&gt;<i>   I don't know if this is an option, but have you though of upgrading you kernel to 2.4 (I find 2.4.2
+</I>&gt;<i> to be the stablest) and using iptables (netfilter) as a fire wall against DDos and Various other
+</I>&gt;<i> attacts. I know compiling a new kernel and having to restart a server is a huge inconvence for
+</I>&gt;<i> everyone, but with iptables the security has increased ten fold (in my opinion). Even with ipchains,
+</I>&gt;<i> nmap (port scanner), will show several holes still in the firewall. Here's a configuration that seems
+</I>&gt;<i> to work good:
+</I>&gt;<i> 
+</I>&gt;<i> # Block NULL, FIN, Xmas style attacks
+</I>&gt;<i> iptables -N attacks
+</I>&gt;<i> iptables -A attacks -p tcp --tcp-flags ALL NONE -j DROP
+</I>&gt;<i> iptables -A attacks -p tcp --tcp-flags ALL FIN -j DROP
+</I>&gt;<i> iptables -A attacks -p tcp --tcp-flags ALL FIN,URG,PSH -j DROP
+</I>&gt;<i> iptables -A INPUT -j attacks
+</I>&gt;<i> iptables -A FORWARD -j attacks
+</I>&gt;<i> 
+</I>&gt;<i> # Prevent Dos Attacks
+</I>&gt;<i> iptables -A FORWARD -p tcp --syn -m limit --limit 1/s -j ACCEPT
+</I>&gt;<i> # Furtive port scanner
+</I>&gt;<i> iptables -A FORWARD -p tcp --tcp-flags SYN,ACK,FIN,RST RST -m limit --limit 1/s -j ACCEPT
+</I>&gt;<i> # Prevent Flood Pings
+</I>&gt;<i> iptables -A FORWARD -p icmp --icmp-type echo-request -m limit --limit 1/s -j ACCEPT
+</I>&gt;<i> 
+</I>&gt;<i> # Filter out anyone trying to connect to us
+</I>&gt;<i> iptables -N block
+</I>&gt;<i> iptables -A block -m state --state ESTABLISHED,RELATED -j ACCEPT
+</I>&gt;<i> iptables -A block -m state --state NEW -i ! eth0 -j ACCEPT
+</I>&gt;<i> 
+</I>&gt;<i> # Connections to accept
+</I>&gt;<i> iptables -A block -m state --state NEW -i eth0 -p tcp --dport 5222 -j ACCEPT
+</I>&gt;<i> iptables -A block -m state --state NEW -i eth0 -p icmp --icmp-type echo-request -j ACCEPT
+</I>&gt;<i> 
+</I>&gt;<i> iptables -A block -j DROP
+</I>&gt;<i> iptables -A INPUT -j block
+</I>&gt;<i> iptables -A FORWARD -j block
+</I>&gt;<i> 
+</I>&gt;<i> Jabber DevZone wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; @jabber.org server
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The following was posted by <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jer at jabber.org</A> via the Jabber DevZone web site (<A HREF="http://dev.jabber.org/">http://dev.jabber.org/</A>):
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; For the past few weeks the server hosting jabber.org has been under
+</I>&gt;<i> &gt; frequent DDoS (Distributed
+</I>&gt;<i> &gt; Denial of Service) attacks.  The type of attack has been a SYN flood
+</I>&gt;<i> &gt; to port 5222, originating from
+</I>&gt;<i> &gt; various networks and most likely compromised hosts.  We're not sure
+</I>&gt;<i> &gt; who or why, and don't yet have any
+</I>&gt;<i> &gt; information about the abuse, but it's not uncommon for popular open
+</I>&gt;<i> &gt; chat systems to be targeted in
+</I>&gt;<i> &gt; such a way (IRC for instance).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; There are two results of the attacks, one is congesting the server on
+</I>&gt;<i> &gt; port 5222 so that nobody can
+</I>&gt;<i> &gt; connect.  To combat this, as soon as an attack is recognized we
+</I>&gt;<i> &gt; immediately apply ipchains filters to
+</I>&gt;<i> &gt; block network access to the box and drop all packets from the
+</I>&gt;<i> &gt; offending hosts.  The larger problem is
+</I>&gt;<i> &gt; that on a few occassions the size of the attack is greater than and
+</I>&gt;<i> &gt; overwhelms the amount of bandwidth allotted to
+</I>&gt;<i> &gt; our server (a few T1s).  It takes a bit longer, but the local ISP
+</I>&gt;<i> &gt; hosting the server calls the
+</I>&gt;<i> &gt; upstream provider and have the offending networks blocked, returning
+</I>&gt;<i> &gt; the
+</I>&gt;<i> &gt; bandwidth capacity to normal.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; There have a couple of other service outages recently, due to the
+</I>&gt;<i> &gt; development nature of the server
+</I>&gt;<i> &gt; and that often a transport will runaway and consume system resources,
+</I>&gt;<i> &gt; bringing the server to a halt. As
+</I>&gt;<i> &gt; part of the foundation two new server boxes will be arriving soon, one
+</I>&gt;<i> &gt; for the production-only
+</I>&gt;<i> &gt; jabber.org server, and one available to the community for server and
+</I>&gt;<i> &gt; transport/services development and
+</I>&gt;<i> &gt; testing.  With the server developers getting their own domain
+</I>&gt;<i> &gt; (jabelin.org) to [ab]use
+</I>&gt;<i> &gt; and the added focus on the quality of services available from the
+</I>&gt;<i> &gt; foundation, server uptime and administration should improve :-)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; One last note is that the service was just updated to the latest
+</I>&gt;<i> &gt; release last night.  The flash5
+</I>&gt;<i> &gt; and HTTP-tunneling socket support is now available directly on
+</I>&gt;<i> &gt; jabber.org.  WCS (the Web Client
+</I>&gt;<i> &gt; Service) is now configured as well, and will be activated shortly for
+</I>&gt;<i> &gt; testing and experimentation.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; <A HREF="http://jabber.org/?oid=1502">http://jabber.org/?oid=1502</A>
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010606/79c0587f/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20010606/79c0587f/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="037595.html">[JDEV] DPSM small update
+</A></li>
+	<LI>Next message: <A HREF="037599.html">[JDEV] jabber:iq:private (well, not so private -  public) data storage.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37596">[ date ]</a>
+              <a href="thread.html#37596">[ thread ]</a>
+              <a href="subject.html#37596">[ subject ]</a>
+              <a href="author.html#37596">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

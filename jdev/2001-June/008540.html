@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Passwords, zero-K and storage
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Passwords%2C%20zero-K%20and%20storage&In-Reply-To=20010620102211.B2849%40box5.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="008537.html">
+   <LINK REL="Next"  HREF="008484.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Passwords, zero-K and storage</H1>
+    <B>Iain Shigeoka</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Passwords%2C%20zero-K%20and%20storage&In-Reply-To=20010620102211.B2849%40box5.net"
+       TITLE="[JDEV] Passwords, zero-K and storage">iainshigeoka at yahoo.com
+       </A><BR>
+    <I>Wed Jun 20 12:03:03 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="008537.html">[JDEV] Passwords, zero-K and storage
+</A></li>
+        <LI>Next message: <A HREF="008484.html">[JDEV] Porting to hp-ux
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8540">[ date ]</a>
+              <a href="thread.html#8540">[ thread ]</a>
+              <a href="subject.html#8540">[ subject ]</a>
+              <a href="author.html#8540">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>At 10:22 AM 6/20/2001 -0500, you wrote:
+&gt;<i> &gt;
+</I>&gt;<i> &gt; I've been playing around with these issues and from a modular standpoint,
+</I>&gt;<i> &gt; the system seems a bit incomplete.  Theoretically, when you plug in a new
+</I>&gt;<i> &gt; auth module, you should be able to use it to immediately authenticate new
+</I>&gt;<i> &gt; and existing accounts (accounts established and authenticated against 
+</I>&gt;<i> older
+</I>&gt;<i> &gt; user records).  For instance, I should be able to unplug digest and 
+</I>&gt;<i> plug in
+</I>&gt;<i> &gt; 0k and keep on chugging.
+</I>&gt;<i>
+</I>&gt;<i>Why would this necessarily be a design goal?  An authentication system is
+</I>&gt;<i>something to be highly guarded and carefully used.  This is how you let users
+</I>&gt;<i>on your system, and just dropping in a new method is something to be carefully
+</I>&gt;<i>considered.  It may be nice to do that, but the ramification of having the
+</I>&gt;<i>user passwords stored cleartext on the server isn't pretty.  Even when you
+</I>&gt;<i>store crypted ones how much better is that since most people use crappy
+</I>&gt;<i>passwords anyway.  So I'm not totally convinced that is a design goal, 
+</I>&gt;<i>although
+</I>&gt;<i>I do feel this partially already works.
+</I>
+I agree.  I just want a way for a server to upgrade its authentication 
+system and have clients automatically migrate to using it.  For example, I 
+have a feeling that 0k may be a stop gap until we move on to something else 
+(certificates?).  Anyhow, it would be nice to know that if this were to 
+occur, the user base could be upgraded without reregistration.
+
+&gt;<i> &gt; Method 2:  Another approach is to establish yet another protocol to allow
+</I>&gt;<i> &gt; clients to authenticate with an existing auth module, then once logged in,
+</I>&gt;<i> &gt; generate new information with a new auth module to &quot;upgrade&quot; to that
+</I>&gt;<i> &gt; authentication scheme.  This protocol can be very simple (e.g. force the
+</I>&gt;<i> &gt; client to auth twice: first with one module then with another) but the
+</I>&gt;<i> &gt; clients need to know about this in a standard (otherwise, only client A
+</I>&gt;<i> &gt; will work with server A).  This approach is basically a &quot;let the client
+</I>&gt;<i> &gt; worry about it&quot; strategy.  The client must know the plain text password,
+</I>&gt;<i> &gt; and can authenticate against both systems using it.  The worry is that
+</I>&gt;<i> &gt; client's will have a lot of auth bloat having to be able to support all
+</I>&gt;<i> &gt; auth systems in order to seamlessly access any jabber server (versus only
+</I>&gt;<i> &gt; needing to know about one auth method and use it on any jabber server if
+</I>&gt;<i> &gt; the server's are responsible for making these conversions).
+</I>&gt;<i>
+</I>&gt;<i>Is this not the get for iq:auth with registration?  Using the get on iq:auth
+</I>&gt;<i>the client could see the new method available, if necessary query the user for
+</I>&gt;<i>a password, or even offer to upgrade them, and then do so.  I mean the get was
+</I>&gt;<i>basically put in so people could see if 0k was available when client authors
+</I>&gt;<i>began implementing it, so they are basically doing what you are discussing.
+</I>
+Yes.  It is.  However, from a server perspective, I would probably like to 
+see a way to push the information out and &quot;enforce&quot; it.  Basically, 
+something that says, &quot;hey client, you need to re-auth in this new way 
+because the old method won't be supported for much longer&quot;.  I suppose this 
+could be a &quot;not our problem&quot; issue.  Servers can simply offer the new auth 
+method (relying on iq get), perhaps send an IM to the users when they login 
+using a depreciated method saying to upgrade their clients to support it 
+because the auth will change soon, and then just cut the old auth method 
+out after some time.  All without any standard in place.
+
+&gt;<i>Just to summarize my feelings.  I believe that the iq:auth get and the
+</I>&gt;<i>registration process are the correct method for this.  It allows the client to
+</I>&gt;<i>fully choose the upgrade path (as is necessary), and keep it mostly modular.
+</I>&gt;<i>Granted this whole beast isn't very well documented yet, and that largely adds
+</I>&gt;<i>to the problem.
+</I>
+:<i>)  I can agree with this.  I would probably like this documented (that the 
+</I>client is responsible for these actions) and probably some common scenarios 
+to guide both client and server developers.  Something for the new 
+Standards effort once the Foundation is ready.
+
+-iain
+
+
+_________________________________________________________
+Do You Yahoo!?
+Get your free @yahoo.com address at <A HREF="http://mail.yahoo.com">http://mail.yahoo.com</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="008537.html">[JDEV] Passwords, zero-K and storage
+</A></li>
+	<LI>Next message: <A HREF="008484.html">[JDEV] Porting to hp-ux
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8540">[ date ]</a>
+              <a href="thread.html#8540">[ thread ]</a>
+              <a href="subject.html#8540">[ subject ]</a>
+              <a href="author.html#8540">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

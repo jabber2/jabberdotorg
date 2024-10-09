@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Passwords, zero-K and storage
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Passwords%2C%20zero-K%20and%20storage&In-Reply-To=%3C20010620102211.B2849%40box5.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="067114.html">
+   <LINK REL="Next"  HREF="067115.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Passwords, zero-K and storage</H1>
+    <B>Thomas Muldowney</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Passwords%2C%20zero-K%20and%20storage&In-Reply-To=%3C20010620102211.B2849%40box5.net%3E"
+       TITLE="[JDEV] Passwords, zero-K and storage">temas at box5.net
+       </A><BR>
+    <I>Wed Jun 20 10:22:11 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="067114.html">[JDEV] Passwords, zero-K and storage
+</A></li>
+        <LI>Next message: <A HREF="067115.html">[JDEV] Passwords, zero-K and storage
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67112">[ date ]</a>
+              <a href="thread.html#67112">[ thread ]</a>
+              <a href="subject.html#67112">[ subject ]</a>
+              <a href="author.html#67112">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Fri, Jun 15, 2001 at 08:35:45PM -0500, Iain Shigeoka wrote:
+&gt;<i> Glad you brought up this point.  I've been wondering about highly related 
+</I>&gt;<i> issues that might as well get thrown in.
+</I>&gt;<i> 
+</I>
+&lt;snip/&gt;
+
+&gt;<i> Note: my comments are from a general server design standpoint and not 
+</I>&gt;<i> specific to jabberd.
+</I>&gt;<i> 
+</I>&gt;<i> I've been playing around with these issues and from a modular standpoint, 
+</I>&gt;<i> the system seems a bit incomplete.  Theoretically, when you plug in a new 
+</I>&gt;<i> auth module, you should be able to use it to immediately authenticate new 
+</I>&gt;<i> and existing accounts (accounts established and authenticated against older 
+</I>&gt;<i> user records).  For instance, I should be able to unplug digest and plug in 
+</I>&gt;<i> 0k and keep on chugging.
+</I>&gt;<i> 
+</I>
+Why would this necessarily be a design goal?  An authentication system is 
+something to be highly guarded and carefully used.  This is how you let users
+on your system, and just dropping in a new method is something to be carefully
+considered.  It may be nice to do that, but the ramification of having the
+user passwords stored cleartext on the server isn't pretty.  Even when you
+store crypted ones how much better is that since most people use crappy 
+passwords anyway.  So I'm not totally convinced that is a design goal, although
+I do feel this partially already works.
+
+&gt;<i> It would seem that the only real way of doing this is to store the 
+</I>&gt;<i> plaintext password and user name _somewhere_ so you can move records from 
+</I>&gt;<i> one authentication system to another.  (storing plain passwords, hashes, or 
+</I>&gt;<i> 0k sequences).  At least with the current system.  Now the implementation 
+</I>&gt;<i> may encrypt all these passwords so only the server can access them, or 
+</I>&gt;<i> perhaps a migration utility in the server, etc... but at some point, 
+</I>&gt;<i> somewhere, the plaintext passwords will need to exist.  Otherwise, when you 
+</I>&gt;<i> plug in a next generation authentication system, you'll need to have 
+</I>&gt;<i> everyone re-send or regenerate their password info.
+</I>&gt;<i> 
+</I>&gt;<i> Am I missing something?
+</I>&gt;<i> 
+</I>
+No, that sounds about right.  Although I would venture to guess that most next
+generation auth systems won't even use passwords, rather certificates, and PKI,
+so a password is possibly useless at that point, and would still require a 
+registration update.  I also wonder how many clients could transparently (sp?)
+do the reregistration when it has a new method.
+
+&gt;<i> This of course assumes that we need to worry about new auth protocols.  If 
+</I>&gt;<i> the existing 2 and a half (see side note at bottom) auth protocols are 
+</I>&gt;<i> pretty much it, then I guess there's not much of an issue here.  However, 
+</I>&gt;<i> since I doubt that this is true, it seems to be a serious problem for 
+</I>&gt;<i> upgrading existing servers that may have thousands of user accounts.  I 
+</I>&gt;<i> guess what I'm trying to say is, I would like to see the auth system build 
+</I>&gt;<i> to support secure _and_ seamless upgrades of authentication systems.
+</I>&gt;<i> 
+</I>&gt;<i> Method 1:  My thought is either we establish a standard server-side 
+</I>&gt;<i> password data &quot;format&quot; other than plaintext to provide a common &quot;seed&quot; 
+</I>&gt;<i> password that can be used to generate passwords in whatever module we are 
+</I>&gt;<i> using.  So when we install a new module and the existing user accounts 
+</I>&gt;<i> don't have password data in their format, they can ask the server, &quot;hey, 
+</I>&gt;<i> give me a seed for this user&quot;, and use the data to generate its data.  The 
+</I>&gt;<i> reason we need it standardized is so that future auth algorithms can be 
+</I>&gt;<i> designed to be compatible with the data.  To avoid plaintext, we store the 
+</I>&gt;<i> password in a way that the data displays certain mathematical properties 
+</I>&gt;<i> that can be exploited for generating new passwords in new systems while 
+</I>&gt;<i> preventing their use to generate current passwords with current 
+</I>&gt;<i> systems.  Probably not a trivial task.
+</I>&gt;<i> 
+</I>
+No this is not, because every approach, especially next generation auth,
+requires specifics.  Be it a password, a sequence number, a certificate, a 
+public key.  A generalized system isn't always good.  As for storing the 
+password, I think you just run into the classic problem of weak passwords.  No
+matter how you store it the algo to view and save the password is in the source
+and it's trivial to write a cracker.  Distribute that over a network of 
+computers and you'll get the pword eventually.
+
+&gt;<i> Method 2:  Another approach is to establish yet another protocol to allow 
+</I>&gt;<i> clients to authenticate with an existing auth module, then once logged in, 
+</I>&gt;<i> generate new information with a new auth module to &quot;upgrade&quot; to that 
+</I>&gt;<i> authentication scheme.  This protocol can be very simple (e.g. force the 
+</I>&gt;<i> client to auth twice: first with one module then with another) but the 
+</I>&gt;<i> clients need to know about this in a standard (otherwise, only client A 
+</I>&gt;<i> will work with server A).  This approach is basically a &quot;let the client 
+</I>&gt;<i> worry about it&quot; strategy.  The client must know the plain text password, 
+</I>&gt;<i> and can authenticate against both systems using it.  The worry is that 
+</I>&gt;<i> client's will have a lot of auth bloat having to be able to support all 
+</I>&gt;<i> auth systems in order to seamlessly access any jabber server (versus only 
+</I>&gt;<i> needing to know about one auth method and use it on any jabber server if 
+</I>&gt;<i> the server's are responsible for making these conversions).
+</I>&gt;<i> 
+</I>
+Is this not the get for iq:auth with registration?  Using the get on iq:auth
+the client could see the new method available, if necessary query the user for
+a password, or even offer to upgrade them, and then do so.  I mean the get was
+basically put in so people could see if 0k was available when client authors
+began implementing it, so they are basically doing what you are discussing.
+
+&gt;<i> So far this has not been an issue because we've always had the plaintext 
+</I>&gt;<i> password on the server which served as the common data format for password 
+</I>&gt;<i> information (method 1 with plaintext being the special password storage 
+</I>&gt;<i> format... ha ha ha).  It was easy to upgrade to 0k because we could upgrade 
+</I>&gt;<i> people on the server using the plaintext password.  However, I expect that 
+</I>&gt;<i> many/most would like to use the 0k advantage of no plaintext password at 
+</I>&gt;<i> all on the server.  If this is the case, then the next auth protocol (if 
+</I>&gt;<i> there will be one) is in for some trouble if we don't address things 
+</I>&gt;<i> sometime.
+</I>&gt;<i> 
+</I>&gt;<i> &lt;side note&gt;It would be nice nice for server's to be backward compatible and 
+</I>&gt;<i> still support digest if not plaintext passwords.  In this case, the 
+</I>&gt;<i> plaintext password still needs to be stored on the server even if 0k is 
+</I>&gt;<i> used.  I am curious to know how many are dumping backward compatibility for 
+</I>&gt;<i> the sake of security (pure 0k), and how many are using both or all three 
+</I>&gt;<i> (but since they store passwords on the server, what is the advantage of 
+</I>&gt;<i> 0k?).  How many clients support 0k when the spec isn't finished or 
+</I>&gt;<i> &quot;approved&quot;?&lt;/side node&gt;
+</I>&gt;<i> 
+</I>
+I have a server that dumped all semi clear pword support, it only has 0k, plus 
+4096bit SSL, plus I require anyone talking to me to have a 4096bit GPG key that
+I received not through the net.  I won't even start to discuss what we talk 
+about on there ;-)  (no it's not a joke).
+
+&gt;<i> &gt;[2] <A HREF="http://docs.jabber.org/draft-proto/html/zerok.html">http://docs.jabber.org/draft-proto/html/zerok.html</A>
+</I>&gt;<i> 
+</I>&gt;<i> &lt;side note&gt;I would really like to see someone (whoever implemented it in 
+</I>&gt;<i> jabberd) take a whack at updating this doc.    I figure they could do it 
+</I>&gt;<i> much easier than having one of us reverse engineer the protocol or grunt 
+</I>&gt;<i> through the server code.  The whole &quot;bootstrap&quot; process of the 
+</I>&gt;<i> authentication algorithm is left out and really should be specified... From 
+</I>&gt;<i> a &quot;clean room&quot; server implementation standpoint (someone not working or 
+</I>&gt;<i> looking at jabberd) the current omission makes 0k pretty much useless.  I 
+</I>&gt;<i> suppose we should wait until the Foundation/JEP/JIG etc is all settled 
+</I>&gt;<i> first...  *sigh*&lt;/side note&gt;
+</I>&gt;<i> 
+</I>&gt;<i> -iain
+</I>&gt;<i> 
+</I>&gt;<i> ps - sorry for the rant.
+</I>&gt;<i> 
+</I>
+It's always good to stimulate useful conversation.
+
+
+Just to summarize my feelings.  I believe that the iq:auth get and the 
+registration process are the correct method for this.  It allows the client to
+fully choose the upgrade path (as is necessary), and keep it mostly modular.
+Granted this whole beast isn't very well documented yet, and that largely adds
+to the problem.
+
+--temas
+
+ps - sorry this is so rambly, I'm still waking up
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010620/a5c80f6b/attachment-0002.pgp">https://www.jabber.org/jdev/attachments/20010620/a5c80f6b/attachment-0002.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="067114.html">[JDEV] Passwords, zero-K and storage
+</A></li>
+	<LI>Next message: <A HREF="067115.html">[JDEV] Passwords, zero-K and storage
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67112">[ date ]</a>
+              <a href="thread.html#67112">[ thread ]</a>
+              <a href="subject.html#67112">[ subject ]</a>
+              <a href="author.html#67112">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

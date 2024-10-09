@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Second-guessing dns for s2s
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Second-guessing%20dns%20for%20s2s&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="022952.html">
+   <LINK REL="Next"  HREF="022961.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Second-guessing dns for s2s</H1>
+    <B>Matt Tucker</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Second-guessing%20dns%20for%20s2s&In-Reply-To="
+       TITLE="[jdev] Second-guessing dns for s2s">matt at jivesoftware.com
+       </A><BR>
+    <I>Sat Sep 24 17:33:11 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="022952.html">[jdev] iq packet routing error
+</A></li>
+        <LI>Next message: <A HREF="022961.html">[jdev] Second-guessing dns for s2s
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#22959">[ date ]</a>
+              <a href="thread.html#22959">[ thread ]</a>
+              <a href="subject.html#22959">[ subject ]</a>
+              <a href="author.html#22959">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey all,
+
+We take security issues very seriously and appreciate the feedback.
+However, some of the reactions in this thread are simply unreasonable.
+Why do so many JSF discussions wax into flame wars? :)
+
+So, I'd like to take a step back and try to step through the issues.
+First, unless there's an evil XMPP server, you'll never run into
+problems. Servers are required to reject stream connections for domains
+that they don't control. So, if &quot;example.blah.com&quot; isn't controlled by
+the XMPP server &quot;blah.com&quot;, than an s2s connection for that subdomain
+will be rejected.
+
+Now, let's consider the case of an evil XMPP server. If somebody has
+managed to subvert your DNS tree, you're pretty much already screwed.
+Why wouldn't they just take over DNS of your normal server address? Even
+those of you that use dyndns and other such services where you don't
+control the full tree are in the same boat. Let's take the example:
+
+ someuser.dyndns.org
+
+Assume your server is down so some Jive Messenger instance tries to make
+the connection to dyndns.org. If an evil XMPP server truly lives at that
+address, how could you possibly trust that your dynamic DNS entry is
+also valid? Can anyone come up with a real example of this DNS attack
+being a greater vulnerability than standard dialback? If you don't trust
+your DNS tree, I would argue that the security of dialback is already
+compromised.
+
+So, dialback itself. I think it provides good security for most users.
+However, dialback + TLS doesn't seem to be implemented by any servers
+yet. We're going to create an implementation for Jive Messenger because
+we think it offers a great mix of security and ease of use. The most
+common secure s2s mechanism we've found so far is dialback + SASL
+external. For security, it's pretty much critical that the certificate
+presented through SASL external be signed by a CA. We're just completing
+our TLS + SASL external implementation now and will likely support all
+the major CA's by default. Based on many threads on this mailing list
+I'd also like to support certs signed by CACert.org by default. Anyway,
+assuming that servers are using TLS + SASL external, even a DNS attack
+wouldn't compromise the security of the Jive Messenger algorithm -- they
+would also need to subvert the CA cert signing process.
+
+&gt;<i> I disagree that this is a minor security hole. The fact that 
+</I>&gt;<i> my JM server can potentially contact two completely different 
+</I>&gt;<i> servers for the same JID is a very bad thing. Jabber ID's are 
+</I>&gt;<i> designed to be unique, and they should be. This uniqueness is 
+</I>&gt;<i> provided by using domain names to help partition off the 
+</I>&gt;<i> namespace. What you are essentially doing is flattening this 
+</I>&gt;<i> namespace by changing your implementation.
+</I>&gt;<i> 
+</I>&gt;<i> ie, when my server contacts <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at conference.jabber.org</A>, it 
+</I>&gt;<i> should NEVER, EVER, try to send that message to 
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at jabber.org</A> instead. This seems very bad to me.
+</I>
+Umm, I think you misunderstand. Actually what happens is that the JM
+instance will connect to jabber.org but attempt to send the packet to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at conference.jabber.org.</A> JID uniqueness is never violated.
+
+&gt;<i>From David Waite:
+</I>
+&gt;<i> It is that servers which implement the XMPP standard and which don't
+</I>add 
+&gt;<i> this DNS hack will not be able to contact all the services someone may
+</I>if 
+&gt;<i> they are also running under Jive.
+</I>
+We still tell users to make the DNS entries for compatibility with other
+servers. But, a good example of when users might not bother to make the
+DNS entries when using JM is when they want to connect multiple XMPP
+servers together but only inside their org (east-coast.example.com,
+west-coast.example.com, etc).
+
+Regards,
+Matt
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="022952.html">[jdev] iq packet routing error
+</A></li>
+	<LI>Next message: <A HREF="022961.html">[jdev] Second-guessing dns for s2s
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#22959">[ date ]</a>
+              <a href="thread.html#22959">[ thread ]</a>
+              <a href="subject.html#22959">[ subject ]</a>
+              <a href="author.html#22959">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

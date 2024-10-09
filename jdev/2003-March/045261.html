@@ -1,0 +1,278 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Need help with protocol translation
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Need%20help%20with%20protocol%20translation&In-Reply-To=%3C20030303023245.GA1705%40gideon.its.monash.edu.au%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="045258.html">
+   <LINK REL="Next"  HREF="045262.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Need help with protocol translation</H1>
+    <B>Robert Norris</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Need%20help%20with%20protocol%20translation&In-Reply-To=%3C20030303023245.GA1705%40gideon.its.monash.edu.au%3E"
+       TITLE="[JDEV] Need help with protocol translation">rob at cataclysm.cx
+       </A><BR>
+    <I>Sun Mar  2 20:32:45 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="045258.html">[JDEV] sorry
+</A></li>
+        <LI>Next message: <A HREF="045262.html">[JDEV] Java/Jabber/Client-Server Application
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45261">[ date ]</a>
+              <a href="thread.html#45261">[ thread ]</a>
+              <a href="subject.html#45261">[ subject ]</a>
+              <a href="author.html#45261">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> I need to translate between XMPP and a private XML based protocol. I think my 
+</I>&gt;<i> problem is similar to that of creating a transport between Jabber and AOL. 
+</I>&gt;<i> I've never done anything like this before and am looking for general tips and 
+</I>&gt;<i> ideas about how to approach this problem. I'm mostly interested in how to 
+</I>&gt;<i> create a mapping between the two protocols, but I'm also interested in 
+</I>&gt;<i> implementation pointers. Are there general guidelines or patterns that people 
+</I>&gt;<i> have discovered? Any books that are recomended?
+</I>
+Basically, you need to look at the functions that are provided on both
+sides, and develop a mapping between them. Then, you write a program
+that can hook into a Jabber server via its component interface, and also
+act as a client (or number of clients) for the foreign service.
+
+I offer here a small tutorial about how I wrote a transport for an
+instant messaging system called &quot;Goofey&quot;, that is used internally in my
+organsation.
+
+
+Address mapping
+---------------
+
+To link two networks, its necessary to make nodes on network A appear on
+network B in some way, and vice-versa. Making Goofey nodes (users)
+appear on the Jabber network was quite straightforward - there is a
+single central server for the service, and each username is just a
+simple text string, with no domain or realm. So, the mapping became:
+
+  JID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">goofey-user at transport</A>  &lt;-&gt;  Goofey: goofey-user
+
+That is, the Goofey user called 'foo' appears on the Jabber network as
+'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at transport</A>'. In this way, every Goofey user has an identifier on the
+Jabber network.
+
+Getting Jabber nodes (users) to appear on the Goofey network is not
+quite as easy. Since we can't just create an brand new address namespace
+on the network like we did above, we have to use existing Goofey
+identifiers.
+
+To do this, you get Goofey users to register their username and password
+with the transport (done via the 'jabber:iq:register mechanism, see
+<A HREF="http://www.jabber.org/protocol/registration.html">http://www.jabber.org/protocol/registration.html</A>). When this happens,
+the transport connects to the foreign network as a client on your
+behalf.
+
+By this point, we have the entire Goofey network mapped onto the Jabber
+network, and we have a single user JID mapped into the Goofey network,
+which is enough for a single user to send/receive message to/from the
+Goofey network. Obviously, additional &quot;clients&quot; can be started, one for
+each Jabber user that registers with the transport.
+
+
+Sending messages
+----------------
+
+To send a message to a Goofey user from Jabber, the user simply sends a
+message to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">recip-user at transport.</A>
+
+The transport first searches through its list of registered users to
+find the Goofey username for the sending JID. If it doesn't find one, it
+bounces the message with a 407 (Registration required) error.
+
+Once it finds the Jabber user's Goofey username, it uses it to identify
+the Goofey client connection that the message will be sent out on.
+
+Next, the transport creates a Goofey message from the contents of the
+&lt;body/&gt; element of the message (Goofey has no concept of &quot;subject&quot;, so
+that gets left out).
+
+The &quot;to&quot; address for the Goofey message gets taken from the recipient
+JID (recip-user), and attached to the message. The whole message then
+gets pushed out (via the Goofey client connection) to the Goofey
+network.
+
+
+Receiving messages
+------------------
+
+Receiving messages is basically the same as sending a message. The
+transport receives a message from one of its client connections. It
+then looks up the corresponding user JID for this client. It should
+always find one, because the client connection that the message arrived
+on should not exist if the corresponding user did not register with the
+transport.
+
+The transport creates a new &lt;message/&gt; packet, fills in the body from
+the received message, sets the &quot;to&quot; address to be the user JID found
+previously, sets the &quot;from&quot; to be <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sending-user at transport</A> (where
+&quot;sending-user&quot; is the Goofey username of the sender), and injects the
+message into the Jabber network.
+
+
+Mapping presence
+----------------
+
+If the foreign network has similar presence semantics as Jabber, then
+the mapping is almost exactly the same as message mapping.
+
+Goofey, however, has different (and simpler) presence mechanism, known
+as &quot;watches&quot;, which has made the transport implementation slightly more
+complicated.
+
+Basically, every user has a &quot;watch list&quot;. When a user connects or
+disconnects from Goofey, every user who has that user on their watch
+list is informed of the fact. No authorisation is required to add a user
+to their watch list, which makes it exceptionally easy to map Jabber
+subscription functions - when a Jabber user requests a subscription to a
+Goofey user, the transport simply responds with &quot;subscribed&quot;, and issues
+an &quot;add user to watch&quot; command to the Goofey server (and vice-versa for
+unsubscribes).
+
+Goofey has the concept of &quot;quiet&quot; states, but users are not informed
+when a user goes quiet. However, they can find this information about by
+polling.
+
+The polling mechanism allows a user to see the current state of all
+watched users with a single command, eg:
+
+  hawkeye OUT (Mar  3 11:21)  0u
+      box *IN (Mar  3 09:46)  0u I0:09 [Q:eating lunch]
+      gub  IN (Mar  3 09:40)  0u I????
+      rmi  IN (Mar  3 08:57)  0u I????
+    stick OUT (Mar  1 04:39)  2u
+    lanks OUT (Mar  1 04:26)  0u
+  faramir OUT (Feb 28 06:47)  0u
+   portal OUT (Dec 19 09:32)  0u
+
+So, the transport maps presence in the following way:
+
+ - When a watched user connects, the transport is informed, and sends
+   &lt;presence/&gt; to the Jabber user.
+
+ - When a watched user disconnects, the transport is informed, and sends
+   &lt;presence type='unavailable'/&gt; to the Jabber user.
+ 
+ - The server polls every five minutes (for each user), and parses the
+   returned information. If any states have changed since last time, new
+   presence packets are issued, with the &lt;status/&gt; and &lt;show/&gt; set
+   appropriately.
+
+(Note: I have plans to make this more intelligent in the future by
+keeping a global (rather than per-user) cache of all known Goofey users
+and their known states. Information received from every user currently
+online will be used to feed this database, which should allow for
+updates much closer to realtime).
+
+
+Other functions
+---------------
+
+One function that is used widely within Goofey is the ability to send
+messages to multiple users. Some Jabber clients currently provide this
+service, but they do it by sending a single messages multiple times,
+which means that recipients are unable to see who else received the
+message, and thus can't &quot;reply to all&quot;. Goofey allows recipients to see
+all other recipients.
+
+The &quot;Jabber Packet Headers&quot; extension (JEP-0033) would perform the same
+tasks, however, there are no clients that implement this extension yet.
+So, when and if I decide to implement this, I expect it will be done in
+one of two ways:
+
+ - Jabber users would send/receive messages to/from a JID like
+   &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo,bar,baz at transport</A>&quot; which would map to a multiple-recipient
+   messages to/from Goofey users &quot;foo&quot;, &quot;bar&quot; and &quot;baz&quot;. This would
+   work, however such a user would appear to be a &quot;different&quot; users to
+   <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at transport</A>, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bar at transport</A> and <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">baz at transport.</A>
+ 
+ - The transport could implement a mini-groupchat server that could be
+   used for multiple-recipient messaging.
+
+Neither of these are perfect, and I still haven't decided which is
+better. This is example is useful to see that not all functions have a
+perfect mapping, and some may require some serious compromises if you
+wish to implement them.
+
+
+Implementation
+--------------
+
+Implementation depends largely on the complexity of the foreign network.
+In implementing the Goofey transport, it was relatively straightforward.
+I have an I/O event loop (as provided by a library like MIO) which
+informs the application when something happens on a file descriptor.
+
+I have an instance of a Jabber stream library to manage getting packets
+in and out of the Jabber network. This instance is tied to the
+descriptor that connects to a jabberd router.
+
+When first started, this is all that happens. Then the transport simply
+responds to events as they come in from Jabber users. When users
+register, connections are made into the Goofey network, and those file
+descriptors are entered into the event loop.
+
+Then, as messages and presence/watch information arrives (from either
+side), the data gets transformed and spat out the other side.
+
+I also have a simple SIGALRM timer that triggers the watch polling.
+
+
+Conceptually, there's not a lot more to it than that. In fact, this
+method is how you'd bridge to just about any foreign network or service,
+not just a foreign IM network. Of course, if the remote service is
+particularly unusual, you may find yourself doing some serious
+mind-bending to make it &quot;fit&quot; into the Jabber way of thinking, but those
+are the breaks :)
+
+
+Hope this helps. I've been meaning to write something like this for a
+long time, so good on you for emailing on a day when I had time and
+motiviation to ;)
+
+Rob.
+
+-- 
+Robert Norris                                       GPG: 1024D/FC18E6C2
+Email+Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rob at cataclysm.cx</A>                Web: <A HREF="http://cataclysm.cx/">http://cataclysm.cx/</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20030303/ed1aca7c/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20030303/ed1aca7c/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="045258.html">[JDEV] sorry
+</A></li>
+	<LI>Next message: <A HREF="045262.html">[JDEV] Java/Jabber/Client-Server Application
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45261">[ date ]</a>
+              <a href="thread.html#45261">[ thread ]</a>
+              <a href="subject.html#45261">[ subject ]</a>
+              <a href="author.html#45261">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

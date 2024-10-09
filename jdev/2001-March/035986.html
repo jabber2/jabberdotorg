@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] On-The-Fly XML parsing
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20On-The-Fly%20XML%20parsing&In-Reply-To=%3C20010317230334.A2150%40Flint.digix.dyndns.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="035984.html">
+   <LINK REL="Next"  HREF="035987.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] On-The-Fly XML parsing</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20On-The-Fly%20XML%20parsing&In-Reply-To=%3C20010317230334.A2150%40Flint.digix.dyndns.org%3E"
+       TITLE="[JDEV] On-The-Fly XML parsing">kminkler at jabber.com
+       </A><BR>
+    <I>Sat Mar 17 22:03:34 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="035984.html">[JDEV] ICQ Server?
+</A></li>
+        <LI>Next message: <A HREF="035987.html">[JDEV] Jabber DevZone News - on-the-fly XML Parsing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35986">[ date ]</a>
+              <a href="thread.html#35986">[ thread ]</a>
+              <a href="subject.html#35986">[ subject ]</a>
+              <a href="author.html#35986">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>JDEV,
+
+    I've been working on a way to increase performance and memory usage in the jabber server,
+    and I've finnally got it working and commited.. 
+
+    Basically, the issue is that the jabber server is an xml router, as such, it's only looking
+    at the to and from attributes generally speaking, and ignoring any of the child data.. so,
+    I've created xmlnode objects that are parsed on-the-fly in the server... basically, the incoming
+    stream is parsed once for xml conformity (no bad xml), and a single xmlnode is created, just
+    the parent, and its attributes.  whereas before, and entire xmlnode tree was created for the
+    xmlnode and all of its children.
+
+    the xmlnode is marked incomplete, and the actual text for the node is stored with it.. when
+    any child nodes are accessed, the xmlnode's children are then created from parsing the stored
+    text, one child level at a time, as needed... so only the xmlnode structures that are needed are
+    ever stored in memory.. everything else is simply stored as the original text stream.
+
+    Yes, this means that a single xmlnode could conceivably be needed to be parsed several times,
+    but I assure you, this is not the server's bottleneck!  expat is incredibly fast at parsing text!
+    single xmlnodes are parsed in around 20 *nano* seconds, depending on size, and I've fed it giant
+    xml files ~12M in size, which it chewed up in around 2.5 seconds...  I'm not sure how long it takes
+    to build an xmlnode struct for that same file, because after several minutes of trying, i ran out
+    of memory, and it locked up my PC...
+
+    This method reduces the number of malloc and free calles in the server, which is where the real
+    bottleneck lies, and increases server performance and memory hogging!  
+
+    This project is still in developmental stages, and I would like to have some beta testers, and
+    performace experts take a look at it, and see how good/bad it is, before I commit it to the main
+    server codebase.
+
+    If you want to try it out, it's located in a branch of the &quot;jabberd&quot; module that is tagged
+    &quot;XMLNODE_TEST&quot;.  for example..
+
+    Check out the &quot;jabber2&quot; module from CVS:
+    cvs -d :pserver:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">anonymous at jabber.org</A>:/home/cvs co jabber2
+    cd jabber2
+
+    get rid of the &quot;HEAD&quot; jabberd module:
+    rm -rf jabberd
+
+    check out the experimental jabberd:
+    cvs -d :pserver:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">anonymous at jabber.org</A>:/home/cvs co -r XMLNODE_TEST jabberd
+
+    Configure and compile:
+    ./configure
+    make
+
+    Please report any problems either to this list, or my email adress at <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tsbandit at jabber.org</A>
+    thanks for your time, and happy jabbering!
+
+Keith Minkler
+
+-------
+Software Developer
+Jabber.COM, Inc.
+-------
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010317/bf600e8b/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20010317/bf600e8b/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="035984.html">[JDEV] ICQ Server?
+</A></li>
+	<LI>Next message: <A HREF="035987.html">[JDEV] Jabber DevZone News - on-the-fly XML Parsing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35986">[ date ]</a>
+              <a href="thread.html#35986">[ thread ]</a>
+              <a href="subject.html#35986">[ subject ]</a>
+              <a href="author.html#35986">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

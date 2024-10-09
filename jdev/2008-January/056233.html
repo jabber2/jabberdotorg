@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Bug in jabberd2 (2.1.13) on win32
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Bug%20in%20jabberd2%20%282.1.13%29%20on%20win32&In-Reply-To=%3C35d657240801221512p4f06f938ub39488789fd10b49%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="056242.html">
+   <LINK REL="Next"  HREF="056236.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Bug in jabberd2 (2.1.13) on win32</H1>
+    <B>Dan Hulme</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Bug%20in%20jabberd2%20%282.1.13%29%20on%20win32&In-Reply-To=%3C35d657240801221512p4f06f938ub39488789fd10b49%40mail.gmail.com%3E"
+       TITLE="[jdev] Bug in jabberd2 (2.1.13) on win32">dhulme at gmail.com
+       </A><BR>
+    <I>Tue Jan 22 17:12:57 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="056242.html">[jdev] XEP-0199 (XMPP Ping) to test reliability
+</A></li>
+        <LI>Next message: <A HREF="056236.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#56233">[ date ]</a>
+              <a href="thread.html#56233">[ thread ]</a>
+              <a href="subject.html#56233">[ subject ]</a>
+              <a href="author.html#56233">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I have run into a strange bug with the win32 version of jabberd2 (2.1.13).
+after disconnecting with some clients, the next client to connect hangs
+after that, the next client works fine again
+after tracking down the behavior, I found that removing the following
+line fixed the problem
+
+sx/io.c:149             s-&gt;want_write = 1;
+
+when a stream closes, and this is set, it seems to hang the next connection
+
+A similar bug is caused at
+
+error.c:85              s-&gt;want_write = 1;
+
+When a client is disconnected because of a bad stream/packet, this
+occurs, and disconnects the client.  But, the next client cannot
+connect again.
+
+Some clients, such as PSI, do not cause this problem when
+disconnecting.  It appears to be because they do not send a final
+&lt;/stream:stream&gt; tag before disconnecting.
+
+To duplicate the bug, connect to a win32 jabberd2 server with
+cocinella.  Disconnect.  Try to connect again.  The second connection
+will hang and eventually fail.  Try to connect again, and it will work
+again.  If you telnet to the server in this state, it will not respond
+to anything you send it.
+
+Initially, I used the provided win32 build (336) on nanoant.com.  This
+fails suitably for the test.
+
+Next, I tried building 2.1.21 on win32.  The build doesn't work
+without some fixes to the code.  Once I got it working, it had the
+same problem.
+
+Currently, I am using 2.1.13 on win32.  I have built it myself and it
+works almost without changing anything.  It has the bug, as well.  My
+line numbers above refer to this version.
+
+I don't pretend to understand everything that's going on in the code.
+However, I have tried with sasl on, sasl off, plainttext, etc., and no
+options seem to change this problem.  So it seems a fairly basic
+problem in jabberd2, and probably not related to plugins.  Does
+deactivating &quot;want_write&quot; prevent the session close information from
+being sent or recorded?  I don't know, but everything seems to work
+correctly even with that line commented.
+
+I'm unsure of what to try next in order to &quot;correctly&quot; fix the
+problem.  Perhaps the developers can take this and run with it.  I'm
+guessing that it has trouble &quot;writing&quot; to a closed session or
+something like that.
+
+-Dan
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="056242.html">[jdev] XEP-0199 (XMPP Ping) to test reliability
+</A></li>
+	<LI>Next message: <A HREF="056236.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#56233">[ date ]</a>
+              <a href="thread.html#56233">[ thread ]</a>
+              <a href="subject.html#56233">[ subject ]</a>
+              <a href="author.html#56233">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

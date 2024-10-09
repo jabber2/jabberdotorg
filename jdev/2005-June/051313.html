@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Net::Jabber Process() blocking
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Net%3A%3AJabber%20Process%28%29%20blocking&In-Reply-To=%3C20050602081127.GB2306%40dreamflow.nl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="051312.html">
+   <LINK REL="Next"  HREF="051321.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Net::Jabber Process() blocking</H1>
+    <B>Bart Matthaei</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Net%3A%3AJabber%20Process%28%29%20blocking&In-Reply-To=%3C20050602081127.GB2306%40dreamflow.nl%3E"
+       TITLE="[jdev] Net::Jabber Process() blocking">bart at dreamflow.nl
+       </A><BR>
+    <I>Thu Jun  2 03:11:28 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="051312.html">[jdev] Net::Jabber Process() blocking
+</A></li>
+        <LI>Next message: <A HREF="051321.html">[jdev] Net::Jabber Process() blocking
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51313">[ date ]</a>
+              <a href="thread.html#51313">[ thread ]</a>
+              <a href="subject.html#51313">[ subject ]</a>
+              <a href="author.html#51313">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, Jun 02, 2005 at 12:57:01PM +1000, Jeremy Lunn wrote:
+&gt;<i> On Sun, May 29, 2005 at 08:01:55PM +1000, Jeremy Lunn wrote:
+</I>&gt;<i> &gt; Here's a quick and nasty script I wrote to quickly return a list of
+</I>&gt;<i> &gt; users logged in, using service discovery (using it with jabberd 2.0s8).
+</I>&gt;<i> &gt; It works fine 80% of the time, but sometimes it blocks at the Process 
+</I>&gt;<i> &gt; line, even though there's a timeout specified.  Any reason as to why it
+</I>&gt;<i> &gt; might be doing this?  Any way I could debug it?
+</I>&gt;<i> 
+</I>&gt;<i> No one experienced similar problems with Net::Jabber/Net::XMPP?
+</I>&gt;<i> I've tried messing around with debug output, it seems that the &lt;iq&gt;
+</I>&gt;<i> response is being received but it's not executing the callback for some
+</I>&gt;<i> reason.
+</I>&gt;<i> 
+</I>&gt;<i> I'm guessing it's a bug in Net::Jabber?
+</I>
+Did you strace the process to check what it's doing?
+Also, did you make sure the InIQ() process actually returns?
+
+As a comment on your code:
+
+Try creating your own process loop. Something in the line of:
+
+//
+
+...
+$con-&gt;Send($req);
+
+my $loops = 0;
+
+while($loops &lt; 10) {
+
+	$loops += 1;
+
+	$con-&gt;Process(0);
+	sleep(1);
+}
+
+//
+
+If there is a bug in the Process() function of Net::Jabber, this could
+be a workaround.
+
+Regards,
+
+Bart
+
+-- 
+Bart Matthaei                      <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bart at ambrero.nl</A>
+
+Ambrero Software Development
+<A HREF="http://www.ambrero.nl/">http://www.ambrero.nl/</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="051312.html">[jdev] Net::Jabber Process() blocking
+</A></li>
+	<LI>Next message: <A HREF="051321.html">[jdev] Net::Jabber Process() blocking
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51313">[ date ]</a>
+              <a href="thread.html#51313">[ thread ]</a>
+              <a href="subject.html#51313">[ subject ]</a>
+              <a href="author.html#51313">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] SOCKS5 Bytestream File Transfer problem
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SOCKS5%20Bytestream%20File%20Transfer%20problem&In-Reply-To=%3Cd55e29bf0502251450fc60a68%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="079795.html">
+   <LINK REL="Next"  HREF="079798.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] SOCKS5 Bytestream File Transfer problem</H1>
+    <B>Anthony Ortiz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SOCKS5%20Bytestream%20File%20Transfer%20problem&In-Reply-To=%3Cd55e29bf0502251450fc60a68%40mail.gmail.com%3E"
+       TITLE="[jdev] SOCKS5 Bytestream File Transfer problem">anthonypaulo at gmail.com
+       </A><BR>
+    <I>Fri Feb 25 16:50:16 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="079795.html">[jdev] SOCKS5 Bytestream File Transfer problem
+</A></li>
+        <LI>Next message: <A HREF="079798.html">[jdev] SOCKS5 Bytestream File Transfer problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79796">[ date ]</a>
+              <a href="thread.html#79796">[ thread ]</a>
+              <a href="subject.html#79796">[ subject ]</a>
+              <a href="author.html#79796">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks for replying!
+
+Yes, I am trying to open up a SOCKS5 connection to the hash value as
+host : port 0 as per my understanding of the protocol :
+
+*** QUOTE [<A HREF="http://www.jabber.org/jeps/jep-0065.html#proto-establish]">http://www.jabber.org/jeps/jep-0065.html#proto-establish]</A> ***
+
+4.6 Target Establishes SOCKS5 Connection with StreamHost
+
+[1] If the Target is willing to accept the bytestream, it MUST attempt
+to open a standard TCP socket on the network address of the StreamHost
+communicated by the Initiator. If the Initiator provides more than one
+StreamHost, the Target SHOULD try to connect to them in the order they
+occur.
+
+...
+
+[3] If the Target is able to open a TCP socket on a StreamHost, it
+MUST utilize the SOCKS5 protocol specified in RFC 1928 [7] to
+establish the connection with the StreamHost. In accordance with the
+SOCKS5 RFC, the Target MAY have to authenticate in order to use the
+proxy. However, any authentication required is beyond the scope of
+this JEP.
+
+[4] Once the Target has successfully authenticated with the Proxy
+(even anonymously), it SHOULD send a CONNECT request to a host named:
+SHA1(SID + Initiator JID + Target JID), port 0, where the SHA1 hashing
+algorithm is specified by RFC 3174 [8]. The JIDs provided MUST be full
+JIDs (i.e., &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host</A>/resource&gt;); furthermore, in order to ensure
+proper results, the appropriate stringprep profiles (as specified in
+XMPP Core [9]) MUST be applied to the JIDs before application of the
+SHA1 hashing algorithm.
+
+[5] Example 14. Target Connects to StreamHost
+
+CMD = X'01'
+ATYP = X'03'
+DST.ADDR = SHA1 Hash of: (SID + Initiator JID + Target JID)
+DST.PORT = 0
+    
+[6] Example 15. StreamHost Acknowledges Connection
+
+STATUS = X'00'
+ 
+*** END QUOTE ***
+
+At first, my understanding was that I should open a standard TCP
+connection to the streamhost(s) (192.168.1.100:8010 in this particular
+case) in order to test if the connnection could be made (as per the
+paragraph [1]). I did this at first and that part worked fine &amp; was
+able to connect, but then I stripped that code out because it seemed
+redundant after I read paragraph [3] which states that I will have to
+open a SOCKS5 connection to that streamhost anyway, and in the
+following line refers to the streamhost as a &quot;proxy&quot;.  To further
+bolster the assumption that the streamhost (192.168.1.100:8010) is
+actually a SOCKS5 proxy, paragraph [4] refers to actions following the
+successful authentication with the &quot;proxy&quot;. This is why I have the
+following line in my code :
+
+Proxy.setDefaultProxy(host, port); // sets SOCKS5 proxy to be 192.168.1.100:8010
+
+Paragraph [4] clearly states that once I have authenticated with the
+Proxy, I should connet to (and I quote) &quot;a host named: SHA1(SID +
+Initiator JID + Target JID), port 0, where the SHA1 hashing algorithm
+is specified by RFC 3174 [8]. The JIDs provided MUST be full JIDs
+(i.e., &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host</A>/resource&gt;)
+
+So this tells me that the actual SOCKS5 host to connect to is the SHA1
+hash of sid + from + to and that the port is 0. That is why I have the
+following line in my code :
+
+Socket ss = new SocksSocket(SocksHost, 0);
+
+Paragraph [5] illustrates an example of the SOCKS5 connection, and it
+further reinforces the idea of what the SOCKS5 host address and port
+is :
+
+*** QUOTE ***
+DST.ADDR = SHA1 Hash of: (SID + Initiator JID + Target JID)
+DST.PORT = 0
+*** END QUOTE ***
+
+The example in paragraph [5] details the underlying SOCKS5 data which
+is detailed in <A HREF="http://www.faqs.org/rfcs/rfc1928.html">http://www.faqs.org/rfcs/rfc1928.html</A> and covered by
+the SOCKS5 library, so I don't need to worry about sending raw SOCKS5
+commands and such, the library does that for me.
+
+So do I have this whole thing figured out wrong?? I read and re-read
+the whole thing several times, and it could be that I'm just plain
+dumb, but I've tried to detail my understanding of the protocol as
+best as possible in the hopes that someone can point out where I'm
+going wrong.
+
+Thanks!!! :)
+
+Anthony
+
+p.s. btw Justin... great work on the PSI client! I downloaded it
+yesterday and it's a hell of a client! Beats the exodus and Disney Go
+clients I had been using in the past. Also, I read your article
+yesterday regarding the &quot;sad state of jabber&quot;
+(<A HREF="http://delta.affinix.com/docs/sadstate.html">http://delta.affinix.com/docs/sadstate.html</A>) as well as some other
+articles. Good stuff man, keep up the good work!
+
+On Fri, 25 Feb 2005 12:38:30 -0800, Justin Karneges
+&lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">justin-keyword-jabber.093179 at affinix.com</A>&gt; wrote:
+&gt;<i> On Friday 25 February 2005 04:45 am, Anthony Ortiz wrote:
+</I>&gt;<i> &gt; // using libidn/java/gnu/inet/encoding/Stringprep.java -- too boring
+</I>&gt;<i> &gt; to implement, thk god I found this!
+</I>&gt;<i> &gt; String SocksHost = SHA1(sid + Stringprep.nameprep(from + to)); // HASH
+</I>&gt;<i> &gt; OUTPUT=9134A1B74EB358B866C604B1E1B0DDEE0D664967
+</I>&gt;<i> 
+</I>&gt;<i> &gt; host = 192.168.1.100
+</I>&gt;<i> &gt; port = 8010
+</I>&gt;<i> &gt; // using <A HREF="http://lightning.prohosting.com/~kirillka/SOCKS/SOCKSLib.html">http://lightning.prohosting.com/~kirillka/SOCKS/SOCKSLib.html</A>
+</I>&gt;<i> &gt; SOCKS5 library. thk god for this too!
+</I>&gt;<i> &gt; Proxy.setDefaultProxy(host, port);
+</I>&gt;<i> &gt; Socket ss = new SocksSocket(SocksHost, 0);  // &lt;-- Unknown Host Exception
+</I>&gt;<i> 
+</I>&gt;<i> I don't understand this code.  What is Proxy?
+</I>&gt;<i> 
+</I>&gt;<i> It looks to me like you're creating a Socket that is trying to physically
+</I>&gt;<i> connect to that hash value (SocksHost) as a host, which is not going to work
+</I>&gt;<i> at all.  What you want to do is physically connect to 192.168.1.100, and then
+</I>&gt;<i> send the hash value in a packet over this connection.
+</I>&gt;<i> 
+</I>&gt;<i> -Justin
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="079795.html">[jdev] SOCKS5 Bytestream File Transfer problem
+</A></li>
+	<LI>Next message: <A HREF="079798.html">[jdev] SOCKS5 Bytestream File Transfer problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79796">[ date ]</a>
+              <a href="thread.html#79796">[ thread ]</a>
+              <a href="subject.html#79796">[ subject ]</a>
+              <a href="author.html#79796">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

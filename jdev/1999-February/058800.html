@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [Jabber Transport 1.0]
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5BJabber%20Transport%201.0%5D&In-Reply-To=%3CPine.LNX.3.96.990203173238.22820H-100000%40mondo.eppg.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058816.html">
+   <LINK REL="Next"  HREF="058801.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [Jabber Transport 1.0]</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5BJabber%20Transport%201.0%5D&In-Reply-To=%3CPine.LNX.3.96.990203173238.22820H-100000%40mondo.eppg.com%3E"
+       TITLE="[JDEV] [Jabber Transport 1.0]">jeremie at jabber.org
+       </A><BR>
+    <I>Wed Feb  3 17:36:05 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058816.html">[JDEV] [Transports 1.0]
+</A></li>
+        <LI>Next message: <A HREF="058801.html">[JDEV] [Clients 1.0]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58800">[ date ]</a>
+              <a href="thread.html#58800">[ thread ]</a>
+              <a href="subject.html#58800">[ subject ]</a>
+              <a href="author.html#58800">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+#### Intro
+
+The Jabber Transport is the heart of the whole system.  It is what all
+Jabber clients connect to, and what most data will pass through at some
+point. 
+
+It starts and operates just like any other Transport would, but it also
+starts listening on a network socket port 5222 for connections from
+clients.  The protocol used when talking to the clients is a superset of
+the main Jabber protocol, containing many little two way special exchanges
+just between the clients and this server. 
+
+Most of the client-server architecture here is based around a
+smart-server, where all of the intelligence and decision making is going
+on in the server.  All data and configuration information is stored on the
+server.  This allows for roaming users, simple clients, and a user being
+able to use any client and have it be configured the way they want it with
+all of their information available as soon as they log in. 
+
+The incoming data is processed into simple C structures, then passed to
+the modules through the API.  The modules handle almost all of the
+important functions and decision making for each user, allowing new
+modules to be written to add significant new functionality without
+affecting the rest of the server. 
+
+
+#### Modules
+
+The current proposal for configuring modules and associating users to
+modules is to use a &quot;group&quot; idea, so that each user belonged in a group. 
+Then each group could be configured to just use bits and pieces of certain
+modules, or all of one module.  All of the auth handlers would return a
+group ID when they authorize a user to tell the server what group to place
+that user in. 
+
+Example, start with the following modules:
+
+mod_mysql: provides all handlers based on DB tables
+mod_unix: provides auth and info/search only via /etc/passwd
+mod_roster: file based fast hashed roster management
+mod_archive: stores all messages for web based searchable archive
+
+And have the main config file like:
+&lt;users&gt;
+	&lt;!--mod_unix's auth handler returns this group--&gt;
+	&lt;locals&gt;
+		&lt;offline&gt;archive&lt;/offline&gt;
+		&lt;roster&gt;roster&lt;/roster&gt;
+		&lt;message&gt;archive&lt;/message&gt;
+	&lt;/locals&gt;
+	&lt;!--mod_mysql's auth handler returns this group, defaults all of it's users to itself--&gt;
+	&lt;general default='mysql'/&gt;
+ 	&lt;special&gt;
+		&lt;offline&gt;mysql&lt;/offline&gt;
+		&lt;roster&gt;roster&lt;/roster&gt;
+		&lt;message&gt;archive&lt;/message&gt;
+		&lt;status&gt;mysql&lt;/status&gt;
+	&lt;/special&gt;
+&lt;/users&gt;
+
+Obviously, this is a really simplified example, but hopefully enough to
+convey the idea.  All the modules are asked to authenticate a user, and
+when they do they return one of the group names from above(locals,
+general, special) which the server uses to figure out what module's
+handlers to call for that user for each of the handlers.
+
+The current module API, straight from the C file:
+typedef struct
+{
+        int module;
+        void (*init)(jpair *);
+        int (*authenticate)(char *, char *);
+		## Authentication handler
+        int (*notify)(char *, int);
+		## Tells the module when other users go online/offline
+        jpair *(*status)(char *, int);
+		## Notifies the module of its user's status
+        jpair *(*roster)(int, char *, char *, char *);
+		## Requested changes to the roster for the user
+        jpair *(*offline_message)(char *, jpair *);
+		## Store an offline message for the user
+        jpair *(*online_message)(char *);
+		## The users back, are there any stored messages?
+        jpair *(*search)(char *);
+		## Return any information for the user(incomplete!)
+        void (*log)(char *);
+		## Simple raw data logging
+} module;
+
+I need to take some time and rethink this API, it's definitely not
+complete yet.  I also need to figure out if there is a better way of
+making modules.  The way I'm doing it is sudo Apache-style, creating a
+global array and identifying each module by a compiled in int.  Anyone
+familiar with C and allowing 3rd party modules, please feel free to jump
+in here :) 
+
+
+#### Privacy
+
+Right now the server is using a simple 4-level privacy indicator, which is
+identified by the module that authenticated the user. 
+	#define SEC_INVISIBLE 1
+		Nobody can ever even know this user exists unless the receive a message for them.  
+		Status doesn't work at all, nobody can see this user's status.
+	#define SEC_LIST 2
+		No information is available(name/address/etc) except for username.
+		Status only works for those that are on this users roster.
+	#define SEC_SAFE 3
+		Everything works normally, name/address is available for searching/info requests.
+		Everyone can see current online status.
+	#define SEC_NONE 4
+		Same as 3, but anything that can be automated is, such as when a user adds this user
+		to their roster and sends an invitation, the server will automatically add them to this
+		users roster.
+I don't like how this works, and if possible I would like to get rid of it
+completely and move all of these decisions into the module API. 
+
+
+
+#### Code
+
+MUCH work needs to be done here.  After expat replaces tsp in the common
+lib, a complete cleanup of the Jabber Transport needs to happen.  The
+module API mentioned above needs to be solidified and the new group idea
+needs to be written.
+
+There's not really all that much that the transport does, just parsing out
+the protocol into structures, calling the module API where appropriate,
+maintaining a list of connected users and their current status, and
+dealing with errors/conflicts.  I'd like to make the code as straight
+forward as this sounds :)
+
+
+
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058816.html">[JDEV] [Transports 1.0]
+</A></li>
+	<LI>Next message: <A HREF="058801.html">[JDEV] [Clients 1.0]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58800">[ date ]</a>
+              <a href="thread.html#58800">[ thread ]</a>
+              <a href="subject.html#58800">[ subject ]</a>
+              <a href="author.html#58800">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

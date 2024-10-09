@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] ruby xmppd, and Psi
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20ruby%20xmppd%2C%20and%20Psi&In-Reply-To=5b698f5a0809180559w4b0fcdd5n127a3151f5ac93b8%40mail.gmail.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="028264.html">
+   <LINK REL="Next"  HREF="028266.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] ruby xmppd, and Psi</H1>
+    <B>Eric Will</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20ruby%20xmppd%2C%20and%20Psi&In-Reply-To=5b698f5a0809180559w4b0fcdd5n127a3151f5ac93b8%40mail.gmail.com"
+       TITLE="[jdev] ruby xmppd, and Psi">rakaur at malkier.net
+       </A><BR>
+    <I>Thu Sep 18 08:38:21 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="028264.html">[jdev] ruby xmppd, and Psi
+</A></li>
+        <LI>Next message: <A HREF="028266.html">[jdev] ruby xmppd, and Psi
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#28265">[ date ]</a>
+              <a href="thread.html#28265">[ thread ]</a>
+              <a href="subject.html#28265">[ subject ]</a>
+              <a href="author.html#28265">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, Sep 18, 2008 at 8:59 AM, Norman Rasmussen
+&lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>&gt; wrote:
+&gt;<i> So I can only assume the response values are incorrect, because the other
+</I>&gt;<i> values are identical.  Does your password has any non-ascii characters that
+</I>&gt;<i> might be being encoded as utf-8 correctly?  Can you force the server to
+</I>&gt;<i> generate the same nonce for both clients?  (It would require hacking at the
+</I>&gt;<i> DIGEST-MD5 code, but it would help validate that the response is being
+</I>&gt;<i> generated correctly.
+</I>
+The password is alnum only. Using a hard-coded nonce of
+&quot;9be91df13f8159809d392ed8dc96bdc2&quot;:
+
+Psi:
+
+-&gt; TLS established
+-&gt; &lt;?xml version=&quot;1.0&quot;?&gt;&lt;stream:stream
+xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> version=&quot;1.0&quot;
+xmlns=&quot;jabber:client&quot; to=&quot;malkier.net&quot; xml:lang=&quot;en&quot;
+xmlns:xml=&quot;<A HREF="http://www.w3.org/XML/1998/namespace&quot;">http://www.w3.org/XML/1998/namespace&quot;</A> &gt;
+&lt;- &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns='jabber:client'
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> from='malkier.net'
+id='f76c54806898a90dc1f12e78796f69c9' version='1.0'&gt;
+&lt;- &lt;stream:features&gt;&lt;mechanisms
+xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;/stream:features&gt;
+-&gt; &lt;auth xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot; mechanism=&quot;DIGEST-MD5&quot; /&gt;
+&lt;- &lt;challenge xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;cmVhbG09bWFsa2llci5uZXQsbm9uY2U9IjliZTkxZGYxM2Y4MTU5ODA5ZDM5MmVkOGRjOTZiZGMyIixxb3A9ImF1dGgiLGNoYXJzZXQ9dXRmLTgsYWxnb3JpdGhtPW1kNS1zZXNz&lt;/challenge&gt;
+-&gt; &lt;response xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;dXNlcm5hbWU9InJha2F1ciIscmVhbG09Im1hbGtpZXIubmV0Iixub25jZT0iOWJlOTFkZjEzZjgxNTk4MDlkMzkyZWQ4ZGM5NmJkYzIiLGNub25jZT0idVBvQWVnN2J1eHJ2UFpGMnkxakpjRUxsN3NlQXFGQW1KR0phMVZZdGtVWT0iLG5jPTAwMDAwMDAxLGRpZ2VzdC11cmk9InhtcHAvbWFsa2llci5uZXQiLHFvcD1hdXRoLHJlc3BvbnNlPTMxNjBhODJhMWY4NGY0NmM2YTIwNDcxMzFlNGFmNzdlLGNoYXJzZXQ9dXRmLTg=&lt;/response&gt;
+&lt;- &lt;failure xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;&lt;not-authorized/&gt;&lt;/failure&gt;
+&lt;- &lt;/stream:stream&gt;
+
+Or, decoded:
+
+&lt;- challenge: realm=malkier.net,nonce=&quot;9be91df13f8159809d392ed8dc96bdc2&quot;,qop=&quot;auth&quot;,charset=utf-8,algorithm=md5-sess
+-&gt; response: username=&quot;rakaur&quot;,realm=&quot;malkier.net&quot;,nonce=&quot;9be91df13f8159809d392ed8dc96bdc2&quot;,cnonce=&quot;uPoAeg7buxrvPZF2y1jJcELl7seAqFAmJGJa1VYtkUY=&quot;,nc=00000001,digest-uri=&quot;xmpp/malkier.net&quot;,qop=auth,response=3160a82a1f84f46c6a2047131e4af77e,charset=utf-8
+&lt;- failure
+
+Gajim (and Digsby, FYI):
+
+-&gt; TLS established
+-&gt; &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns=&quot;jabber:client&quot;
+to=&quot;malkier.net&quot; version=&quot;1.0&quot;
+xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> &gt;
+&lt;- &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns='jabber:client'
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> from='malkier.net'
+id='205d1918670c0a28dc4a8c8402e05032' version='1.0'&gt;
+&lt;- &lt;stream:features&gt;&lt;mechanisms
+xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;/stream:features&gt;
+-&gt; &lt;auth xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot; mechanism=&quot;DIGEST-MD5&quot; /&gt;
+&lt;- &lt;challenge xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;cmVhbG09bWFsa2llci5uZXQsbm9uY2U9IjliZTkxZGYxM2Y4MTU5ODA5ZDM5MmVkOGRjOTZiZGMyIixxb3A9ImF1dGgiLGNoYXJzZXQ9dXRmLTgsYWxnb3JpdGhtPW1kNS1zZXNz&lt;/challenge&gt;
+-&gt; &lt;response xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;Y2hhcnNldD11dGYtOCx1c2VybmFtZT0icmFrYXVyIixyZWFsbT0ibWFsa2llci5uZXQiLG5vbmNlPSI5YmU5MWRmMTNmODE1OTgwOWQzOTJlZDhkYzk2YmRjMiIsbmM9MDAwMDAwMDEsY25vbmNlPSIxZWE1ZTkwNTAyMTAxYTcwOGZlOTQ3MjMwOTM1ZWYwZTQ2MDYzZjIxM2ExMmNhMmRjIixkaWdlc3QtdXJpPSJ4bXBwL21hbGtpZXIubmV0IixyZXNwb25zZT04ZWI5YTNiNDkyNzFiNWJlZDk3Y2M2YTgzOTg4YWJhMyxxb3A9YXV0aA==&lt;/response&gt;
+&lt;- &lt;challenge xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;cnNwYXV0aD1lYjRkYjNmMjM5N2E0NDQzY2FhNTIxYmY4ZGZjZWQyZQ==&lt;/challenge&gt;
+-&gt; &lt;response xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot; /&gt;
+&lt;- &lt;success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/&gt;
+-&gt; SASL established
+
+Or, decoded:
+
+&lt;- challenge: realm=malkier.net,nonce=&quot;9be91df13f8159809d392ed8dc96bdc2&quot;,qop=&quot;auth&quot;,charset=utf-8,algorithm=md5-sess
+-&gt; response: charset=utf-8,username=&quot;rakaur&quot;,realm=&quot;malkier.net&quot;,nonce=&quot;9be91df13f8159809d392ed8dc96bdc2&quot;,nc=00000001,cnonce=&quot;1ea5e90502101a708fe947230935ef0e46063f213a12ca2dc&quot;,digest-uri=&quot;xmpp/malkier.net&quot;,response=8eb9a3b49271b5bed97cc6a83988aba3,qop=auth
+&lt;- challenge: binary
+-&gt; response: empty
+&lt;- success
+
+This is my (Ruby) code to generate the same response:
+
+def h(s)
+    Digest::MD5.digest(s)
+end
+
+def hh(s)
+    Digest::MD5.hexdigest(s)
+end
+
+def startsasl(response)
+    @jid = response['username'] + '@' + response['realm']
+    a1_h = DB::User.users[@jid].password
+
+    # Compute response and see if it matches.
+    # Sorry, but there's no pretty way to do this.
+    a1 = &quot;%s:%s:%s&quot; % [a1_h, response['nonce'], response['cnonce']]
+    a2 = &quot;AUTHENTICATE:%s&quot; % response['digest-uri']
+
+    myresp = &quot;%s:%s:%s:%s:auth:%s&quot; % [hh(a1), response['nonce'],
+                                      response['nc'], response['cnonce'],
+                                      hh(a2)]
+    myresp = hh(myresp)
+
+    [if myresp is equal to response, they're authorized, otherwise failure]
+end
+
+It appears as though Psi isn't base64 encoding cnonce. They're doing
+what looks to be an md5 digest, and the proper encoding is a
+base64-encoded md5 _hex_digest. As confusing as this (and MD5-DIGEST
+in general) is, I believe the culprit to be the lack of base64
+encoding on cnonce.
+
+I have been known to be wrong, though. I'm unsure as to how Psi could
+have gotten this wrong and it's never been caught, unless everyone's
+using PLAIN and not a single one is using DIGEST-MD5 and they didn't
+test it at all, which seems unlikely given the longevity of the
+client. I just don't understand how it could be my code if it works
+with (at least) two other clients using DIGEST-MD5.
+
+--
+Eric Will
+EBL Engineers
+National Institutes of Health
+xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rakaur at malkier.net</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="028264.html">[jdev] ruby xmppd, and Psi
+</A></li>
+	<LI>Next message: <A HREF="028266.html">[jdev] ruby xmppd, and Psi
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#28265">[ date ]</a>
+              <a href="thread.html#28265">[ thread ]</a>
+              <a href="subject.html#28265">[ subject ]</a>
+              <a href="author.html#28265">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

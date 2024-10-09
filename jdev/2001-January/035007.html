@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber in the real world.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20in%20the%20real%20world.&In-Reply-To=%3C20010123181944.E930%40box5.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="035016.html">
+   <LINK REL="Next"  HREF="035008.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber in the real world.</H1>
+    <B>Thomas Muldowney</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20in%20the%20real%20world.&In-Reply-To=%3C20010123181944.E930%40box5.net%3E"
+       TITLE="[JDEV] Jabber in the real world.">temas at box5.net
+       </A><BR>
+    <I>Tue Jan 23 18:19:44 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="035016.html">[JDEV] Jabber in the real world.
+</A></li>
+        <LI>Next message: <A HREF="035008.html">[JDEV] Jabber in the real world.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35007">[ date ]</a>
+              <a href="thread.html#35007">[ thread ]</a>
+              <a href="subject.html#35007">[ subject ]</a>
+              <a href="author.html#35007">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Spread some replies in throughout your points:
+
+--temas
+
+On Tue, Jan 23, 2001 at 11:38:41AM +0000, Michael Wilson wrote:
+&gt;<i> We're just about to deploy the beta of a Jabber-based IM system
+</I>&gt;<i> (initially for customer support) and I thought I might as well
+</I>&gt;<i> share some of the server issues that came up. My apologies if
+</I>&gt;<i> there are fixes for these that I'm not aware of; if this is the
+</I>&gt;<i> case please do let me know!
+</I>&gt;<i> 
+</I>&gt;<i> * Server instability; the Jabber (1.2) server is fairly good as
+</I>&gt;<i>   long as well behaved clients are logging on, but it's fairly
+</I>&gt;<i>   trivial to crash by sending arbitary XML. Solution; filter all
+</I>&gt;<i>   connections through a proxy that removes all dangerous syntax
+</I>&gt;<i>   (discovered by some source peeking and a lot of trial-and-error).
+</I>
+What is the XML you are sending it?  Have you tried CVS which will be 1.4 soon?
+
+&gt;<i> * Broken character entities and non-ASCII character handling.
+</I>&gt;<i>   Fixed by escaping everything in the proxy then fixing the broken
+</I>&gt;<i>   characters that come back from Jabber.
+</I>
+Could you be more specific?  I believe all our handling is per XML standards
+regarding CDATA and PCDATA sections.
+
+&gt;<i> * No concept of access control or virtual severs. Fixed these by
+</I>&gt;<i>   implementing fine-gained (ACL) access control and messaging
+</I>&gt;<i>   domains in the proxy (including presence information and
+</I>&gt;<i>   per-domain connection quotas).
+</I>
+ACL is scheduled to be in 1.4, I'm not sure how far along it is.  Virtual
+Servers are already in and work fine.
+
+&gt;<i> * Lack of broadcast/multicast message support (other than
+</I>&gt;<i>   groupchat, which is overkill). Fixed by implementing in proxy
+</I>&gt;<i>   (also put in a management console that allows most of the same
+</I>&gt;<i>   operations as IRC network operator privilidges).
+</I>
+Could you be more specific for what you are looking for?
+
+&gt;<i> * Lack of session statistics reporting and conversation content
+</I>&gt;<i>   capture. Implemented in proxy (user-specific logging levels)
+</I>&gt;<i>   with optional per-domain connection quotas; the data goes into
+</I>&gt;<i>   MySQL (which also holds applet config details for each domain)
+</I>&gt;<i>   and is viewed by a HTML/PHP reporting and management interface. 
+</I>
+There are some better statistics given by the 1.4 server, but more is always
+better in some environments =)
+
+&gt;<i> * Lack of any kind of clustering/high availability. Solution; run
+</I>&gt;<i>   two Jabber servers and mirror the spool directories with a
+</I>&gt;<i>   replication script. Run three proxy servers with cluster
+</I>&gt;<i>   synchronisation and use high-availability code to load-balance
+</I>&gt;<i>   connections across the two Jabber servers (and stop using one
+</I>&gt;<i>   that goes down).
+</I>
+Have you played with jpolld at all?  This is a front end that handles TCP/IP
+multiplexing into jabber.  I wrote it and can answer questions you have
+surrounding it.  We used a jpolld setup to push a server to 100k users all 
+active.
+
+&gt;<i> 
+</I>&gt;<i> On the client side we're using a skinnable applet with a
+</I>&gt;<i> definable level of functionality which defaults to sending
+</I>&gt;<i> Jabber XML over port 80 (port-translated by the switches to the
+</I>&gt;<i> proxies, filtered then forwarded to Jabber). Since some of our
+</I>&gt;<i> users are sitting behind firewalls that don't allow anything
+</I>&gt;<i> through except email and valid HTTP, there's also a secondary
+</I>&gt;<i> mode that encapsulates all upbound messages in a fake HTTP post
+</I>&gt;<i> request; this allows the applet to work from anywhere that can
+</I>&gt;<i> can see the world wide web. This was somewhat complicated by the
+</I>&gt;<i> fact that the proxies are behind load balancing switches; since
+</I>&gt;<i> the main HTTP download connection and the HTTP message posts may
+</I>&gt;<i> be routed to different servers they have to be identified and
+</I>&gt;<i> sent over the peer connections (if neccessary) before being
+</I>&gt;<i> amalgamated and sent to Jabber.
+</I>&gt;<i> 
+</I>&gt;<i> -- 
+</I>&gt;<i> | Michael Wilson               &quot;Smart Applications - Tools for life&quot;
+</I>&gt;<i> | Java Developer                           available @              
+</I>&gt;<i> | Insight ASP LTD                   <A HREF="http://www.myopenapps.com">http://www.myopenapps.com</A>       
+</I>&gt;<i> +----------------------Open Source Innovation-----------------------
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010123/0f632967/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20010123/0f632967/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="035016.html">[JDEV] Jabber in the real world.
+</A></li>
+	<LI>Next message: <A HREF="035008.html">[JDEV] Jabber in the real world.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35007">[ date ]</a>
+              <a href="thread.html#35007">[ thread ]</a>
+              <a href="subject.html#35007">[ subject ]</a>
+              <a href="author.html#35007">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

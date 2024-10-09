@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Bug in AIM transport ?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Bug%20in%20AIM%20transport%20%3F&In-Reply-To=%3C3D20E297.5000201%40openone.cz%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042576.html">
+   <LINK REL="Next"  HREF="042579.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Bug in AIM transport ?</H1>
+    <B>tomash</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Bug%20in%20AIM%20transport%20%3F&In-Reply-To=%3C3D20E297.5000201%40openone.cz%3E"
+       TITLE="[JDEV] Bug in AIM transport ?">tomas.holenda at openone.cz
+       </A><BR>
+    <I>Mon Jul  1 18:15:35 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042576.html">[JDEV] Accented Characters Lost
+</A></li>
+        <LI>Next message: <A HREF="042579.html">[JDEV] Re: Bug in AIM transport ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42577">[ date ]</a>
+              <a href="thread.html#42577">[ thread ]</a>
+              <a href="subject.html#42577">[ subject ]</a>
+              <a href="author.html#42577">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+bug reporting system on jabberstudio.org seems to be broken, so I'm 
+posting it here:
+
+I found bug in aim-transport (not sure about version, last entry in 
+changelog is from
+03-21-2002).
+
+Crash situation description:
+
+ From Exodus client, without being registered on AIM or ICQ, try 
+Tools/Lookup a vCard.
+Eenter <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jj at icq.yourserver.org.</A> Then server crashes.
+
+Here are last lines from logfile (jabberd -D):
+
+Wed Jun 26 13:15:29 2002  modules.c:158 MAPI A7132A8
+Wed Jun 26 13:15:29 2002  modules.c:175 mapi_call returning unhandled
+Wed Jun 26 13:15:29 2002  deliver.c:257 deliver(to[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jj at icq.jabber.cz</A>],from[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bebe at jabber.cz</A>/Exodus],type[4],packet[&lt;iq id='jcl_68' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jj at icq.jabber.cz</A>' type='get' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bebe at jabber.cz</A>/Exodus'&gt;&lt;query xmlns='vcard-temp'/&gt;&lt;/iq&gt;])
+Wed Jun 26 13:15:29 2002  deliver.c:474 DELIVER 1:icq.jabber.cz &lt;iq id='jcl_68' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jj at icq.jabber.cz</A>' type='get' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bebe at jabber.cz</A>/Exodus'&gt;&lt;query xmlns='vcard-temp'/&gt;&lt;/iq&gt;
+Wed Jun 26 13:15:29 2002  deliver.c:678 delivering to instance 'icq.jabber.cz'
+Wed Jun 26 13:15:29 2002  init.c:24 [AT] we got a packet from jabberd: &lt;iq id='jcl_68' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jj at icq.jabber.cz</A>' type='get' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bebe at jabber.cz</A>/Exodus'&gt;&lt;query xmlns='vcard-temp'/&gt;&lt;/iq&gt;
+Wed Jun 26 13:15:29 2002  mtq 8203558 leaving to pth
+Wed Jun 26 13:15:29 2002  mtq 81F2158 entering from pth
+Wed Jun 26 13:15:29 2002  mtq 81F2158 one call A839090
+Wed Jun 26 13:15:29 2002  parser.c:22 [AT] parsing packet for <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bebe at jabber.cz</A>/Exodus
+Wed Jun 26 13:15:29 2002  sessions.c:1286 [AT] Finding session for <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bebe at jabber.cz</A>
+Wed Jun 26 13:15:29 2002  iq.c:27 Running callback for vcard-temp
+Wed Jun 26 13:15:29 2002  sessions.c:1286 [AT] Finding session for <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bebe at jabber.cz</A>
+Wed Jun 26 13:15:29 2002  dnsrv.c:155 dnsrv: Read error on coprocess(1): 2 No such file or directory
+Wed Jun 26 13:15:29 2002  dnsrv.c:169 DNSRV CHILD: out of loop.. exiting normal
+
+gdb shows, that crash occurs in iq_cb.c.
+
+     s = at_session_find_by_jid(ti, jp-&gt;from);
+
+on line 13 returns NULL and next &quot;if&quot; condition tries to dereference it.
+
+Is it a real bug, or should I use some newer version?
+
+Regards
+   Tomas.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042576.html">[JDEV] Accented Characters Lost
+</A></li>
+	<LI>Next message: <A HREF="042579.html">[JDEV] Re: Bug in AIM transport ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42577">[ date ]</a>
+              <a href="thread.html#42577">[ thread ]</a>
+              <a href="subject.html#42577">[ subject ]</a>
+              <a href="author.html#42577">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

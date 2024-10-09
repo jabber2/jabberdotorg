@@ -1,0 +1,454 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jserver and etherxd
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20jserver%20and%20etherxd&In-Reply-To=20000827005944.A25104%40box5.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003748.html">
+   <LINK REL="Next"  HREF="003750.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jserver and etherxd</H1>
+    <B>Koichi Moriyama</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20jserver%20and%20etherxd&In-Reply-To=20000827005944.A25104%40box5.net"
+       TITLE="[JDEV] jserver and etherxd">morimori at cc.gatech.edu
+       </A><BR>
+    <I>Sun Aug 27 02:09:49 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003748.html">[JDEV] jserver and etherxd
+</A></li>
+        <LI>Next message: <A HREF="003750.html">[JDEV] jserver and etherxd
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3749">[ date ]</a>
+              <a href="thread.html#3749">[ thread ]</a>
+              <a href="subject.html#3749">[ subject ]</a>
+              <a href="author.html#3749">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thank you very much for your supporting me - all of your comments and
+efforts are really appreciated.
+
+Although I tried to put the IP address to the &lt;jabber&gt; element as an
+attribute (like the sample), the problem cannot be solved.
+
+I'm not sure what stands for the &quot;NIC&quot;; but, actually since the demo
+environment has only a Linux machine and some devices, there is no DNS
+server - just /etc/hosts (or ip address) are being used.  I made sure
+that telnet and some other IP base application and daemons run on the
+environment.  (Again, a jserver on my Linux box works when the box
+connects to the Internet.)
+
+Although I tried to see what happens in pth_connect_ev() of pth_high.c,
+I've not figured out what does happen there... (What I got is pth_sc()
+gives -1 (error) with an errno other than EINTR, and it pth_connect_ev()
+gives the errno from the 414 line of pth_high.c.)
+
+Let me attach the jserver.xml and log.txt.
+
+--
+Koichi Moriyama (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">morimori at cc.gatech.edu</A>)
+
+
+
+
+From: Thomas Muldowney &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">temas at box5.net</A>&gt;
+Subject: Re: [JDEV] jserver and etherxd
+Date: Sun, 27 Aug 2000 00:59:44 -0600
+
+&gt;<i> I would need to see a few things to know what's going on.  Mostly I would like
+</I>&gt;<i> to see your jserver.xml.  I would bet that your default name is nothing 
+</I>&gt;<i> something that is resolving.  Another possibility is it can't bind to the NIC
+</I>&gt;<i> for some odd reason.  Try specifying the IP on the &lt;jabber&gt;5222&lt;/jabber&gt; line,
+</I>&gt;<i> there is an example of this in the jserver.xml.  Otherwise, sending your
+</I>&gt;<i> jserver.xml and debug output again would be great.
+</I>&gt;<i> 
+</I>&gt;<i> --temas
+</I>&gt;<i> 
+</I>&gt;<i> On Sun, Aug 27, 2000 at 12:11:53AM -0400, Koichi Moriyama wrote:
+</I>&gt;<i> &gt; From: Koichi Moriyama &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">morimori at cc.gatech.edu</A>&gt;
+</I>&gt;<i> &gt; Subject: Re: [JDEV] jserver and etherxd
+</I>&gt;<i> &gt; Date: Sat, 26 Aug 2000 22:14:59 -0400 (EDT)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &gt; Sat Aug 26 20:58:30 2000  debug/tstream.c:335 tstream_connect: ADNS[127.0.0.1:5269]
+</I>&gt;<i> &gt; &gt; Sat Aug 26 20:58:30 2000  debug/tstream.c:488 tstream_socket 5269 127.0.0.1
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Here, in _tstream_socket() of tstream.c:488, pth_connect_ev() gives an
+</I>&gt;<i> &gt; error since it cannot establish a connection for something but I don't
+</I>&gt;<i> &gt; know for what it is...
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &gt; Sat Aug 26 20:58:30 2000  debug/tstream.c:459 tstream_cleanup
+</I>&gt;<i> &gt; &gt; Sat Aug 26 20:58:30 2000  debug/xmlstream.c:260 xmlstream_error
+</I>&gt;<i> &gt; &gt; Sat Aug 26 20:58:30 2000  debug/xmlstream.c:260 xmlstream_error
+</I>&gt;<i> &gt; &gt; Sat Aug 26 20:58:34 2000  error/etherxs Failed to establish communication with etherxd
+</I>&gt;<i> &gt; &gt; Terminated
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Can anyone guess what is wrong ?  (Please do not say jserver should
+</I>&gt;<i> &gt; run in a networked-environment.)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; In order to have an isolated network, I just changed a configuration
+</I>&gt;<i> &gt; on the Linux box not to refer DNS server; instead, I prepared some
+</I>&gt;<i> &gt; entries in /etc/hosts.  At least, telnet and some other deamons are
+</I>&gt;<i> &gt; available from the other client devices... jsever, please run there !
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; --
+</I>&gt;<i> &gt; Koichi Moriyama (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">morimori at cc.gatech.edu</A>)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; P.S. I'll do other things I should for a while, but I'll be back this
+</I>&gt;<i> &gt; from tomorrow morning.  Hope someone has a hint...
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; 
+</I>-------------- next part --------------
+&lt;jserver&gt;
+
+This is the Jabber Server XML configuration file.  Each section has it's own instructions.
+
+
+Replace the default name with your primary server hostname:
+
+  &lt;names&gt;
+    &lt;default&gt;morimori4.cc.gt.atl.ga.us&lt;/default&gt;
+    &lt;!-- You may have alises for this server, these are NOT virtual hosts, 
+         only use these for migrating from an old server name or for *receive only* on an alternate name
+      &lt;alias&gt;old.host.net&lt;/alias&gt;
+    --&gt;
+  &lt;/names&gt;
+
+
+This section provides the default bindings for IP addresses and ports used within the server.
+If the service is not loaded/used, it's direcives here are ignored.
+
+  &lt;listen&gt;
+    &lt;!-- &lt;jabber&gt;5222&lt;/jabber&gt; --&gt;
+    &lt;jabber ip='199.77.128.133'&gt;5222&lt;/jabber&gt;
+    &lt;ssl&gt;5223&lt;/ssl&gt;
+    &lt;irc&gt;6667&lt;/irc&gt;
+    &lt;http&gt;5280&lt;/http&gt;
+    &lt;telnet&gt;5228&lt;/telnet&gt;
+
+    &lt;!-- Specific IPs can also be used:
+    &lt;jabber ip='12.34.56.78'&gt;5222&lt;/jabber&gt;
+    &lt;irc ip='12.34.56.79'&gt;6667&lt;/irc&gt;
+    --&gt;
+
+  &lt;/listen&gt;
+
+
+The session log, make sure the folder exists!
+
+  &lt;log&gt;
+
+    &lt;!-- replace with &lt;error&gt;syslog&lt;/error&gt; to log to syslog instead, remove to log to STDERR --&gt;
+    &lt;error&gt;/usr/local/var/log/jserver.error&lt;/error&gt;
+
+    &lt;session&gt;/usr/local/var/log/jserver.log&lt;/session&gt;
+
+    &lt;!-- This will log some basic tracking information about every packet of data (TONS!)
+      &lt;packet&gt;/usr/local/var/log/jserver_packet.log&lt;/packet&gt;
+    --&gt;
+
+  &lt;/log&gt;
+
+
+Data is stored on the filesystem for each user, make sure the folder exists!
+
+  &lt;spool&gt;/usr/local/var/jspool&lt;/spool&gt;
+
+Registration instructions and fields, remove to disallow registration:
+
+  &lt;register&gt;
+    &lt;instructions&gt;Choose a username and password to register with this server.&lt;/instructions&gt;
+    &lt;username/&gt;&lt;password/&gt;&lt;name/&gt;&lt;email/&gt;
+  &lt;/register&gt;
+
+
+Server info:
+
+  &lt;info&gt;
+    &lt;name&gt;Koichi Moriyama&lt;/name&gt;
+    &lt;description&gt;A Jabber Server for the Reseach Project&lt;/description&gt;
+    &lt;url&gt;<A HREF="http://morimori.cc.gt.atl.ga.us/&lt;/url">http://morimori.cc.gt.atl.ga.us/&lt;/url</A>&gt;
+  &lt;/info&gt;
+
+
+A place to list the available agents for the users of this server:
+
+  &lt;agents&gt;
+
+    &lt;!-- this is the default agent for the (temporary) master jabber user directory --&gt;
+    &lt;agent jid=&quot;users.jabber.org&quot;&gt;
+      &lt;name&gt;Jabber User Directory&lt;/name&gt;
+      &lt;description&gt;You may register and create a public searchable profile, and search for other registered Jabber users.&lt;/description&gt;
+      &lt;service&gt;jud&lt;/service&gt;
+      &lt;register/&gt;
+      &lt;search/&gt;
+    &lt;/agent&gt;
+
+    &lt;!-- these are just examples, you will receive instructions on what to place here when you install a real agent
+    &lt;agent jid=&quot;aim.jabber.org&quot;&gt;
+      &lt;name&gt;AIM Transport&lt;/name&gt;
+      &lt;description&gt;This is the AIM Transport&lt;/description&gt;
+      &lt;transport&gt;AIM/AOL ScreenName&lt;/transport&gt;
+      &lt;service&gt;aim&lt;/service&gt;
+      &lt;register/&gt;
+    &lt;/agent&gt;
+    &lt;agent jid=&quot;icq.jabber.org&quot;&gt;
+      &lt;name&gt;ICQ Transport&lt;/name&gt;
+      &lt;description&gt;This is the ICQ Transport&lt;/description&gt;
+      &lt;transport&gt;ICQ#&lt;/transport&gt;
+      &lt;service&gt;icq&lt;/service&gt;
+      &lt;register/&gt;
+    &lt;/agent&gt;
+    &lt;agent jid=&quot;groups.jabber.org&quot;&gt;
+      &lt;name&gt;GroupChat&lt;/name&gt;
+      &lt;description&gt;You can create and participate in private chatrooms.&lt;/description&gt;
+      &lt;service&gt;privatechat&lt;/service&gt;
+      &lt;groupchat/&gt;
+      &lt;register/&gt;
+    &lt;/agent&gt;
+    --&gt;
+  &lt;/agents&gt;
+
+
+List of the default DSO loaded modules:
+
+  &lt;dso&gt;
+    &lt;mod_time&gt;/usr/local/lib/jabber/mod_time.so&lt;/mod_time&gt;
+    &lt;!-- &lt;mod_version&gt;/usr/local/lib/jabber/mod_version.so&lt;/mod_version&gt; --&gt;
+    &lt;mod_echo&gt;/usr/local/lib/jabber/mod_echo.so&lt;/mod_echo&gt;
+    &lt;svc_http&gt;/usr/local/lib/jabber/svc_http.so&lt;/svc_http&gt;
+    &lt;svc_irc&gt;/usr/local/lib/jabber/svc_irc.so&lt;/svc_irc&gt;
+  &lt;/dso&gt;
+
+
+This is how the server connects to etherx:
+
+  &lt;etherx&gt;
+    &lt;secret&gt;test&lt;/secret&gt;
+    &lt;!-- only enable to use remote mode, you should know what you are doing!
+      &lt;remote&gt;12.34.56.78&lt;/remote&gt;
+    --&gt;
+  &lt;/etherx&gt;
+
+List of usernames with administrative access, these users will all receive messages and notices sent to 'hostname':
+
+&lt;!--
+  &lt;admin&gt;
+    &lt;read&gt;support&lt;/read&gt;
+    &lt;write&gt;root&lt;/write&gt;
+  &lt;/admin&gt;
+--&gt;
+
+&lt;/jserver&gt;
+-------------- next part --------------
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query log/error
+Sun Aug 27 02:02:04 2000  debug/log.c:70 log_init
+Sun Aug 27 02:02:04 2000  warn/jserver Initializing Services
+Sun Aug 27 02:02:04 2000  debug/unknown.c:39 THREAD:UNKNOWN starting
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 1
+Sun Aug 27 02:02:04 2000  debug/offline.c:44 THREAD:OFFLINE starting
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 2
+Sun Aug 27 02:02:04 2000  debug/server.c:40 THREAD:SERVER starting
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 3
+Sun Aug 27 02:02:04 2000  debug/users.c:93 THREAD:USERS starting
+Sun Aug 27 02:02:04 2000  debug/config.c:150 name 4 for (null)
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query names/default
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query names
+Sun Aug 27 02:02:04 2000  debug/config.c:150 name 0 for morimori4.cc.gt.atl.ga.us
+Sun Aug 27 02:02:04 2000  debug/config.c:150 name 3 for morimori4.cc.gt.atl.ga.us
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query listen
+Sun Aug 27 02:02:04 2000  debug/tlisten.c:32 tlisten_start: 199.77.128.133
+Sun Aug 27 02:02:04 2000  debug/services.c:176 listening on 199.77.128.133:5222
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query spool
+Sun Aug 27 02:02:04 2000  debug/xdb.c:83 registered new xdb
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 0
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 0
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 4
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 4
+Sun Aug 27 02:02:04 2000  debug/mod_register init
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 2
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 2
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 3
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 3
+Sun Aug 27 02:02:04 2000  debug/mod_agents init
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 3
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 3
+Sun Aug 27 02:02:04 2000  debug/mod_log.c:146 init
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query log/session
+Sun Aug 27 02:02:04 2000  debug/tstream.c:63 tstream_new
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query log/packet
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 0
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 0
+Sun Aug 27 02:02:04 2000  debug/mod_auth_sha1 init
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 2
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 2
+Sun Aug 27 02:02:04 2000  debug/mod_auth init
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 2
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 2
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 0
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 0
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 2
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 2
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 3
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 3
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 3
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 3
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 3
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 3
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 0
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 0
+Sun Aug 27 02:02:04 2000  debug/mod_offline init
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 2
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 2
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 0
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 0
+Sun Aug 27 02:02:04 2000  debug/mod_presence init
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 4
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 4
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 0
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 0
+Sun Aug 27 02:02:04 2000  debug/mod_etherx init
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query etherx
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query etherx/secret
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query etherx/remote
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query names
+Sun Aug 27 02:02:04 2000  debug/ehandler.c:39 ehandler_new(morimori4.cc.gt.atl.ga.us,jabber:server)
+Sun Aug 27 02:02:04 2000  debug/ehlist.c:26 list_add(morimori4.cc.gt.atl.ga.us)
+Sun Aug 27 02:02:04 2000  debug/etherxs.c:94 attempting socket connect to (null) for transport morimori4.cc.gt.atl.ga.us
+Sun Aug 27 02:02:04 2000  debug/xmlstream.c:26 xmlstream_connect
+Sun Aug 27 02:02:04 2000  debug/tstream.c:63 tstream_new
+Sun Aug 27 02:02:04 2000  debug/xmlstream.c:101 head: &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='39A8AEDC' xmlns='jabber:server' from='morimori4.cc.gt.atl.ga.us' xmlns:etherx='<A HREF="http://etherx.jabber.org/'">http://etherx.jabber.org/'</A> etherx:secret='eb2e6149fc5c98c184f34df5109359030a668824'&gt;
+Sun Aug 27 02:02:04 2000  debug/tstream.c:133 tstream_write_buffer
+Sun Aug 27 02:02:04 2000  debug/ehandler.c:66 spun off connection attempt
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 4
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 4
+Sun Aug 27 02:02:04 2000  debug/svc_client.c:293 svc_client: init()
+Sun Aug 27 02:02:04 2000  debug/mod_dso.c:82 mod_dso
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query dso
+Sun Aug 27 02:02:04 2000  debug/mod_dso.c:43 mod_dso_load /usr/local/lib/jabber/mod_time.so
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 3
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 3
+Sun Aug 27 02:02:04 2000  debug/mod_dso.c:43 mod_dso_load /usr/local/lib/jabber/mod_echo.so
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 3
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 3
+Sun Aug 27 02:02:04 2000  debug/mod_dso.c:43 mod_dso_load /usr/local/lib/jabber/svc_http.so
+Sun Aug 27 02:02:04 2000  debug/svc_http.c:246 svc_http startup
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query listen
+Sun Aug 27 02:02:04 2000  debug/tlisten.c:32 tlisten_start: (null)
+Sun Aug 27 02:02:04 2000  error/jserver failed to listen on (null):5280
+Sun Aug 27 02:02:04 2000  error/jserver Failed to listen for service http
+Sun Aug 27 02:02:04 2000  debug/modules.c:83 mapi_register 3
+Sun Aug 27 02:02:04 2000  debug/modules.c:43 mapi_master 3
+Sun Aug 27 02:02:04 2000  debug/mod_dso.c:43 mod_dso_load /usr/local/lib/jabber/svc_irc.so
+Sun Aug 27 02:02:04 2000  debug/svc_irc.c:260 svc_irc startup
+Sun Aug 27 02:02:04 2000  debug/config.c:112 config query listen
+Sun Aug 27 02:02:04 2000  debug/tlisten.c:32 tlisten_start: (null)
+Sun Aug 27 02:02:04 2000  error/jserver failed to listen on (null):6667
+Sun Aug 27 02:02:04 2000  error/jserver Failed to listen for service irc
+Sun Aug 27 02:02:04 2000  debug/main.c:100 Main loop waiting
+Sun Aug 27 02:02:04 2000  debug/tlisten.c:87 tlisten_main: startup
+Sun Aug 27 02:02:04 2000  debug/tstream.c:212 tstream_main: startup
+Sun Aug 27 02:02:04 2000  debug/tstream.c:212 tstream_main: startup
+Sun Aug 27 02:02:04 2000  debug/xmlstream.c:222 xmlstream_main: startup
+Sun Aug 27 02:02:04 2000  debug/tstream.c:335 tstream_connect: ADNS[127.0.0.1:5269]
+Sun Aug 27 02:02:04 2000  debug/tstream.c:488 tstream_socket 5269 127.0.0.1
+Sun Aug 27 02:02:04 2000  debug/tstream.c:459 tstream_cleanup
+Sun Aug 27 02:02:04 2000  debug/xmlstream.c:260 xmlstream_error
+Sun Aug 27 02:02:04 2000  debug/xmlstream.c:260 xmlstream_error
+Sun Aug 27 02:02:04 2000  debug/etherxd.c:199 local etherxd attempting to start
+Sun Aug 27 02:02:04 2000  debug/tlisten.c:32 tlisten_start: (null)
+Sun Aug 27 02:02:04 2000  warn/etherxs Connection to etherxd failed 1 times, attempting to reconnect...
+Sun Aug 27 02:02:04 2000  debug/etherxs.c:94 attempting socket connect to (null) for transport morimori4.cc.gt.atl.ga.us
+Sun Aug 27 02:02:04 2000  debug/xmlstream.c:26 xmlstream_connect
+Sun Aug 27 02:02:04 2000  debug/tstream.c:63 tstream_new
+Sun Aug 27 02:02:04 2000  debug/xmlstream.c:101 head: &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='39A8AEDC' xmlns='jabber:server' from='morimori4.cc.gt.atl.ga.us' xmlns:etherx='<A HREF="http://etherx.jabber.org/'">http://etherx.jabber.org/'</A> etherx:secret='eb2e6149fc5c98c184f34df5109359030a668824'&gt;
+Sun Aug 27 02:02:04 2000  debug/tstream.c:133 tstream_write_buffer
+Sun Aug 27 02:02:04 2000  debug/xmlstream.c:273 xmlstream_cleanup
+Sun Aug 27 02:02:04 2000  debug/tstream.c:212 tstream_main: startup
+Sun Aug 27 02:02:04 2000  debug/xmlstream.c:222 xmlstream_main: startup
+Sun Aug 27 02:02:04 2000  debug/tstream.c:335 tstream_connect: ADNS[127.0.0.1:5269]
+Sun Aug 27 02:02:04 2000  debug/tstream.c:488 tstream_socket 5269 127.0.0.1
+Sun Aug 27 02:02:04 2000  debug/tstream.c:459 tstream_cleanup
+Sun Aug 27 02:02:04 2000  debug/xmlstream.c:260 xmlstream_error
+Sun Aug 27 02:02:04 2000  debug/xmlstream.c:260 xmlstream_error
+Sun Aug 27 02:02:05 2000  debug/etherxd.c:199 local etherxd attempting to start
+Sun Aug 27 02:02:05 2000  debug/tlisten.c:32 tlisten_start: (null)
+Sun Aug 27 02:02:05 2000  warn/etherxs Connection to etherxd failed 2 times, attempting to reconnect...
+Sun Aug 27 02:02:05 2000  debug/etherxs.c:94 attempting socket connect to (null) for transport morimori4.cc.gt.atl.ga.us
+Sun Aug 27 02:02:05 2000  debug/xmlstream.c:26 xmlstream_connect
+Sun Aug 27 02:02:05 2000  debug/tstream.c:63 tstream_new
+Sun Aug 27 02:02:05 2000  debug/xmlstream.c:101 head: &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='39A8AEDD' xmlns='jabber:server' from='morimori4.cc.gt.atl.ga.us' xmlns:etherx='<A HREF="http://etherx.jabber.org/'">http://etherx.jabber.org/'</A> etherx:secret='6ee2ded3a95af45c21b36ee885080b2f0fe9df51'&gt;
+Sun Aug 27 02:02:05 2000  debug/tstream.c:133 tstream_write_buffer
+Sun Aug 27 02:02:05 2000  debug/xmlstream.c:273 xmlstream_cleanup
+Sun Aug 27 02:02:05 2000  debug/tstream.c:212 tstream_main: startup
+Sun Aug 27 02:02:05 2000  debug/xmlstream.c:222 xmlstream_main: startup
+Sun Aug 27 02:02:05 2000  debug/tstream.c:335 tstream_connect: ADNS[127.0.0.1:5269]
+Sun Aug 27 02:02:05 2000  debug/tstream.c:488 tstream_socket 5269 127.0.0.1
+Sun Aug 27 02:02:05 2000  debug/tstream.c:459 tstream_cleanup
+Sun Aug 27 02:02:05 2000  debug/xmlstream.c:260 xmlstream_error
+Sun Aug 27 02:02:05 2000  debug/xmlstream.c:260 xmlstream_error
+Sun Aug 27 02:02:07 2000  debug/etherxd.c:199 local etherxd attempting to start
+Sun Aug 27 02:02:07 2000  debug/tlisten.c:32 tlisten_start: (null)
+Sun Aug 27 02:02:07 2000  warn/etherxs Connection to etherxd failed 3 times, attempting to reconnect...
+Sun Aug 27 02:02:07 2000  debug/etherxs.c:94 attempting socket connect to (null) for transport morimori4.cc.gt.atl.ga.us
+Sun Aug 27 02:02:07 2000  debug/xmlstream.c:26 xmlstream_connect
+Sun Aug 27 02:02:07 2000  debug/tstream.c:63 tstream_new
+Sun Aug 27 02:02:07 2000  debug/xmlstream.c:101 head: &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='39A8AEDF' xmlns='jabber:server' from='morimori4.cc.gt.atl.ga.us' xmlns:etherx='<A HREF="http://etherx.jabber.org/'">http://etherx.jabber.org/'</A> etherx:secret='17b68b247ef27d4225414cd0a324da4b903208f5'&gt;
+Sun Aug 27 02:02:07 2000  debug/tstream.c:133 tstream_write_buffer
+Sun Aug 27 02:02:07 2000  debug/xmlstream.c:273 xmlstream_cleanup
+Sun Aug 27 02:02:07 2000  debug/tstream.c:212 tstream_main: startup
+Sun Aug 27 02:02:07 2000  debug/xmlstream.c:222 xmlstream_main: startup
+Sun Aug 27 02:02:07 2000  debug/tstream.c:335 tstream_connect: ADNS[127.0.0.1:5269]
+Sun Aug 27 02:02:07 2000  debug/tstream.c:488 tstream_socket 5269 127.0.0.1
+Sun Aug 27 02:02:07 2000  debug/tstream.c:459 tstream_cleanup
+Sun Aug 27 02:02:07 2000  debug/xmlstream.c:260 xmlstream_error
+Sun Aug 27 02:02:07 2000  debug/xmlstream.c:260 xmlstream_error
+Sun Aug 27 02:02:10 2000  debug/etherxd.c:199 local etherxd attempting to start
+Sun Aug 27 02:02:10 2000  debug/tlisten.c:32 tlisten_start: (null)
+Sun Aug 27 02:02:10 2000  warn/etherxs Connection to etherxd failed 4 times, attempting to reconnect...
+Sun Aug 27 02:02:10 2000  debug/etherxs.c:94 attempting socket connect to (null) for transport morimori4.cc.gt.atl.ga.us
+Sun Aug 27 02:02:10 2000  debug/xmlstream.c:26 xmlstream_connect
+Sun Aug 27 02:02:10 2000  debug/tstream.c:63 tstream_new
+Sun Aug 27 02:02:10 2000  debug/xmlstream.c:101 head: &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='39A8AEE2' xmlns='jabber:server' from='morimori4.cc.gt.atl.ga.us' xmlns:etherx='<A HREF="http://etherx.jabber.org/'">http://etherx.jabber.org/'</A> etherx:secret='eef34a584aa6cd73962c3a0c64f6a66348de90fd'&gt;
+Sun Aug 27 02:02:10 2000  debug/tstream.c:133 tstream_write_buffer
+Sun Aug 27 02:02:10 2000  debug/xmlstream.c:273 xmlstream_cleanup
+Sun Aug 27 02:02:10 2000  debug/tstream.c:212 tstream_main: startup
+Sun Aug 27 02:02:10 2000  debug/xmlstream.c:222 xmlstream_main: startup
+Sun Aug 27 02:02:10 2000  debug/tstream.c:335 tstream_connect: ADNS[127.0.0.1:5269]
+Sun Aug 27 02:02:10 2000  debug/tstream.c:488 tstream_socket 5269 127.0.0.1
+Sun Aug 27 02:02:10 2000  debug/tstream.c:459 tstream_cleanup
+Sun Aug 27 02:02:10 2000  debug/xmlstream.c:260 xmlstream_error
+Sun Aug 27 02:02:10 2000  debug/xmlstream.c:260 xmlstream_error
+Sun Aug 27 02:02:14 2000  error/etherxs Failed to establish communication with etherxd
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003748.html">[JDEV] jserver and etherxd
+</A></li>
+	<LI>Next message: <A HREF="003750.html">[JDEV] jserver and etherxd
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3749">[ date ]</a>
+              <a href="thread.html#3749">[ thread ]</a>
+              <a href="subject.html#3749">[ subject ]</a>
+              <a href="author.html#3749">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

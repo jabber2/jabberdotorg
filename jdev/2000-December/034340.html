@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] FreeBSD and MIO
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20FreeBSD%20and%20MIO&In-Reply-To=%3CNEBBKDOJALFENGEHJPADAEAJCGAA.Sauron%40mediaone.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034328.html">
+   <LINK REL="Next"  HREF="034343.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] FreeBSD and MIO</H1>
+    <B>Edward J Becker</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20FreeBSD%20and%20MIO&In-Reply-To=%3CNEBBKDOJALFENGEHJPADAEAJCGAA.Sauron%40mediaone.net%3E"
+       TITLE="[JDEV] FreeBSD and MIO">Sauron at mediaone.net
+       </A><BR>
+    <I>Fri Dec  8 11:58:58 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034328.html">[JDEV] FreeBSD and MIO
+</A></li>
+        <LI>Next message: <A HREF="034343.html">[JDEV] FreeBSD and MIO
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34340">[ date ]</a>
+              <a href="thread.html#34340">[ thread ]</a>
+              <a href="subject.html#34340">[ subject ]</a>
+              <a href="author.html#34340">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Does this mean that in order to handle XDB by a custom component that some
+code must be written natively as a .SO ?
+
+I was hoping to have a separate (likely Java) component handle XDB and was
+hoping sockets were used for communication. Is this possible? Am I missing
+something?
+
+Edward
+
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+Keith Minkler
+Sent: Friday, December 08, 2000 4:24 AM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] FreeBSD and MIO
+
+
+Dennis,
+
+    You may be getting the components confused, if I'm reading that right...
+
+lemmi clarify a few terms for the benifit of the list, et all...
+
+Jabberd
+-------
+    Jabberd is simply an XML router.  it routes XML packets among known
+    hostnames.
+
+Base Modules
+------------
+    Base Modules offer jabberd some functionality.. they are used to
+    describe instances and tell jabberd how to route packets, and
+    how instances connect to jabberd
+    some base modules are:
+    base_load: DSO loader
+    base_exec: calls other programs.. passes data via STDIN/OUT
+    base_accept: listens on a port for component connections
+    base_host: defines a host name to deliver packets to
+    base_file: writes data to a file
+
+
+Components
+----------
+    Components are the server modules.  the most common components are:
+    JSM (Jabber Session Manager) -- does session management (can do auth as
+well)
+    S2S (Server &quot;2&quot; Server) -- connects to other servers to transmit packets
+    DNSRV (DNS Resolver) -- provides asyncronys DNS Resolution (without
+ADNS)
+    C2S (Client &quot;2&quot; Server) -- the component that listens on 5222 for
+clients
+    xdb_file -- the default XDB component.. uses flat files (username.xml)
+to store data
+    transports -- transports are all jabberd components
+
+Instances
+---------
+    Defined in the jabberd config file.  base modules describe components
+    and can &quot;instanate&quot; a component.. i.e. load it up, and hook it into
+    jabberd's deliver process
+    can be one of 3 types:
+    xdb -- only gets &lt;xdb/&gt; packets
+    log -- only gets &lt;log/&gt; packets
+    service -- gets &lt;route/&gt;, &lt;message/&gt;, &lt;presence/&gt;, and &lt;iq/&gt; packets
+
+
+MIO will live in jabberd, and yes, a component will have to be a DSO to use
+it, but,
+this doesn't involve JSM at all.. JSM is simply a component that manages
+Jabber
+Sessions.. (Jabber Session Manager)
+
+jabberd can handle a single server with transports running on it.. or you
+can
+spread the components among many different servers, and link jabberd's
+together
+with base_accept and base_connect.
+
+Hope this helps to clear things up!
+
+Keith Minkler
+
+
+On Fri, Dec 08, 2000 at 10:54:29AM +0200, Dennis Noordsij wrote:
+&gt;<i> On a note about MIO, I recall reading somewhere it would require all
+</I>&gt;<i> components to be modules linked into jabber? For me the power of jabber is
+</I>&gt;<i> being able to run all these parts on different systems and have them talk
+</I>&gt;<i> over TCP/IP. I assume my JSM will be too busy routing messages to also
+</I>have
+&gt;<i> all the transports and components running.
+</I>&gt;<i>
+</I>&gt;<i> Apologies if this has been discussed already and I missed it :-)
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i> Dennis
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> On Friday 08 December 2000 08:55, you wrote:
+</I>&gt;<i> &gt; Jdev,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I finnaly found the FreeBSD select(2) bug.. (well, my bug, not
+</I>FreeBSD's)
+&gt;<i> &gt; *G*
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; It has to do with differences in how linux and FreeBSD handle select(2)
+</I>&gt;<i> &gt; getting interupted by a signal.  On Linux, it clears the FD sets you
+</I>pass
+&gt;<i> &gt; into it, but on FreeBSD, it leaves the sets untouched.  (Thank GOD for
+</I>man
+&gt;<i> &gt; pages).  It is easily fixed by checking the return value of select(2),
+</I>and
+&gt;<i> &gt; not trying to read(2), write(2), or accept(2) from the sockets on an
+</I>error
+&gt;<i> &gt; condition (-1) such as when the loop is signalled.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; *phew*  with much joy, FreeBSD will be able to share in the 1.4 bliss,
+</I>&gt;<i> &gt; along with the rest of the community.. *G*
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Keith Minkler
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034328.html">[JDEV] FreeBSD and MIO
+</A></li>
+	<LI>Next message: <A HREF="034343.html">[JDEV] FreeBSD and MIO
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34340">[ date ]</a>
+              <a href="thread.html#34340">[ thread ]</a>
+              <a href="subject.html#34340">[ subject ]</a>
+              <a href="author.html#34340">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

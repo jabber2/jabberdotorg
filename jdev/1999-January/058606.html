@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Minor 'bug'let ?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Minor%20%27bug%27let%20%3F&In-Reply-To=%3C36926C08.33527C97%40jrc.it%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058607.html">
+   <LINK REL="Next"  HREF="058609.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Minor 'bug'let ?</H1>
+    <B>Dirk-Willem van Gulik</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Minor%20%27bug%27let%20%3F&In-Reply-To=%3C36926C08.33527C97%40jrc.it%3E"
+       TITLE="[JDEV] Minor 'bug'let ?">dirk.vangulik at jrc.it
+       </A><BR>
+    <I>Tue Jan  5 13:46:16 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058607.html">[JDEV] Re: AIM
+</A></li>
+        <LI>Next message: <A HREF="058609.html">[JDEV] Minor 'bug'let ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58606">[ date ]</a>
+              <a href="thread.html#58606">[ thread ]</a>
+              <a href="subject.html#58606">[ subject ]</a>
+              <a href="author.html#58606">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Though I admit that I do not completely understand the code; a minor
+buglet showed up on FreeBSD (if you optimize and non-null your structs).
+
+Sorry for the structure, but I could not find a CVS to diff against.
+
+In 	.../common/io.c
+
++               read_fd_set = active_fd_set;
+        	/* first time through we initialize the IO routine */
+                if(!first)
+                {
+                        DBUG(&quot;IO: waiting &quot;,&quot;&quot;)
+-                	read_fd_set = active_fd_set;
+                        h_err(select(FD_SETSIZE, &amp;read_fd_set,
+&amp;write_fd_set, NULL, NULL),&quot;select&quot;);
+
+                        DBUG(&quot;IO: select returned&quot;,&quot;&quot;)
+                        FD_ZERO(&amp;active_fd_set);
+                } else {
+
+Otherwise if the read_fd_set happens to contani cruft, the accept
+further down is triggered tooo easily.
+
+Secondly, given that the active_fd_set is (re)build each time; it
+is worthwhile to keep a maxfd; rather than FD_SETSIZE; at least
+on FreeBSD that makes a speed difference.
+
+Thirdly setting TCP_NODELAY and alllowing for port REUSE might be
+nice. 
+        if( (setsockopt(c-&gt;id,SOL_SOCKET,SO_REUSEADDR,(const char
+*)&amp;one,sizeof(one))) &lt;0)
+        if( (setsockopt(c-&gt;id,IPPROTO_TCP,TCP_NODELAY,(const void
+*)&amp;one,sizeof(one))) &lt;0) 
+
+DW
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: Dirk.VanGulik.vcf
+Type: text/x-vcard
+Size: 477 bytes
+Desc: Card for Dirk-Willem van Gulik
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/19990105/dbd1e56c/attachment-0002.vcf">https://www.jabber.org/jdev/attachments/19990105/dbd1e56c/attachment-0002.vcf</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058607.html">[JDEV] Re: AIM
+</A></li>
+	<LI>Next message: <A HREF="058609.html">[JDEV] Minor 'bug'let ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58606">[ date ]</a>
+              <a href="thread.html#58606">[ thread ]</a>
+              <a href="subject.html#58606">[ subject ]</a>
+              <a href="author.html#58606">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

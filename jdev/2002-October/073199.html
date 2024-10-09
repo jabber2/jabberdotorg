@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] hack to make transports work with xdb_sql
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20hack%20to%20make%20transports%20work%20with%20xdb_sql&In-Reply-To=%3C3DB8B024.4070306%40raditha.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="073215.html">
+   <LINK REL="Next"  HREF="073216.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] hack to make transports work with xdb_sql</H1>
+    <B>raditha dissanayake</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20hack%20to%20make%20transports%20work%20with%20xdb_sql&In-Reply-To=%3C3DB8B024.4070306%40raditha.com%3E"
+       TITLE="[JDEV] hack to make transports work with xdb_sql">jabber at raditha.com
+       </A><BR>
+    <I>Thu Oct 24 21:44:52 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="073215.html">[JDEV] Disney and Jabber/MSN
+</A></li>
+        <LI>Next message: <A HREF="073216.html">[JDEV] jabberoo
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#73199">[ date ]</a>
+              <a href="thread.html#73199">[ thread ]</a>
+              <a href="subject.html#73199">[ subject ]</a>
+              <a href="author.html#73199">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>hi guys,
+
+We've been having posts on and off about using xdb_sql with transports. 
+Here is a plain old hack to
+make xdb_sql work with transports other than yahoo. Most of it is 
+inspired by the yahoo transport
+and the example works with icqv7t 0.3.0 (great work alex)
+
+
+
+1. Let's start off by creating the table in mysql
+
+
+    CREATE TABLE icq (
+      username VARCHAR(32) PRIMARY KEY,
+      icq_id    VARCHAR(32) NOT NULL,
+      icq_pass  VARCHAR(32) NOT NULL
+    );
+
+
+
+2. then you need to create the query defs in xdb_sql.xml try adding the 
+following island. Since
+we are using v2 queries we don't need to code any validation functions
+
+
+
+&lt;!-- icq set query --&gt;
+      &lt;querydef name=&quot;icq-set&quot; dtd=&quot;2&quot; type=&quot;set&quot; namespace=&quot;icqtrans:data&quot;&gt;
+    &lt;text&gt;
+     INSERT INTO icq VALUES ('$$user$$', '$$id$$', '$$pass$$')
+     &lt;/text&gt;
+
+    &lt;user&gt;$$user$$&lt;/user&gt;
+        &lt;bindvar attrib=&quot;id&quot;&gt;$$id$$&lt;/bindvar&gt;
+        &lt;bindvar attrib=&quot;pass&quot;&gt;$$pass$$&lt;/bindvar&gt;
+    &lt;purge&gt;icq-remove&lt;/purge&gt;
+      &lt;/querydef&gt;
+
+&lt;!-- icq removal query --&gt;
+      &lt;querydef name=&quot;icq-remove&quot; dtd=&quot;2&quot; type=&quot;remove&quot; 
+namespace=&quot;icqtrans:data&quot;&gt;
+        &lt;text&gt;
+      DELETE FROM icq where username='$$user$$'
+       &lt;/text&gt;
+        &lt;user&gt;$$user$$&lt;/user&gt;
+      &lt;/querydef&gt;
+
+&lt;!-- icq get query --&gt;
+      &lt;querydef name=&quot;icq-get&quot; dtd=&quot;2&quot; type=&quot;get&quot; namespace=&quot;icqtrans:data&quot;&gt;
+    &lt;text&gt;
+     SELECT icq_id, icq_pass  FROM icq WHERE username = '$$user$$'
+     &lt;/text&gt;
+
+    &lt;user&gt;$$user$$&lt;/user&gt;
+        &lt;top-result&gt;
+           &lt;logon/&gt;
+        &lt;/top-result&gt;
+        &lt;bindcol attrib=&quot;username&quot; offset=&quot;0&quot;/&gt;
+    &lt;bindcol attrib=&quot;password&quot; offset=&quot;1&quot;/&gt;
+      &lt;/querydef&gt;
+
+
+3. Then you need to make changes to the actual code. Since it would be 
+nice if the transport continued
+to work with xdb_file i have used an #ifdef, so that means you will need 
+to add a -Dsql to your makefile
+if you want to use it with xdb_sql.
+
+The actual changes are to jabberd/utils.c and jabbered/unknown.c. The 
+two files are attached. Please compare
+them with the original. Couple of new functions have been added to utils 
+c while unknown.c gets a few
+lines of code inserted.
+
+4. make the transport and restart it.
+
+
+all the best
+
+
+
+
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: utils.c
+URL: &lt;<A HREF="http://mail.jabber.org/pipermail/jdev/attachments/20021024/cfba0a36/attachment-0003.txt">http://mail.jabber.org/pipermail/jdev/attachments/20021024/cfba0a36/attachment-0003.txt</A>&gt;
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: unkown.c
+URL: &lt;<A HREF="http://mail.jabber.org/pipermail/jdev/attachments/20021024/cfba0a36/attachment-0001.asc">http://mail.jabber.org/pipermail/jdev/attachments/20021024/cfba0a36/attachment-0001.asc</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="073215.html">[JDEV] Disney and Jabber/MSN
+</A></li>
+	<LI>Next message: <A HREF="073216.html">[JDEV] jabberoo
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#73199">[ date ]</a>
+              <a href="thread.html#73199">[ thread ]</a>
+              <a href="subject.html#73199">[ subject ]</a>
+              <a href="author.html#73199">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] XMPP on Android, Round #2
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP%20on%20Android%2C%20Round%20%232&In-Reply-To=%3C4CCB6D22.7040506%40measite.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088500.html">
+   <LINK REL="Next"  HREF="088502.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] XMPP on Android, Round #2</H1>
+    <B>Ren&#233; Treffer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP%20on%20Android%2C%20Round%20%232&In-Reply-To=%3C4CCB6D22.7040506%40measite.de%3E"
+       TITLE="[jdev] XMPP on Android, Round #2">treffer+jdev at measite.de
+       </A><BR>
+    <I>Fri Oct 29 18:56:02 CST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088500.html">[jdev] XMPP with Store and Forward feature
+</A></li>
+        <LI>Next message: <A HREF="088502.html">[jdev] XMPP on Android, Round #2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88501">[ date ]</a>
+              <a href="thread.html#88501">[ thread ]</a>
+              <a href="subject.html#88501">[ subject ]</a>
+              <a href="author.html#88501">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+It's been some time since my last posting. But I didn't stop thinking 
+about XMPP on Android devices. I've always been unhappy with asmack, 
+because it's sort of a hack. It does solve a problem, mainly to reduce 
+the amount of code to be written. But it doesn't solve the problem of 
+nice phone integration. We've ended up with many jabber apps on Android, 
+but none that's as native as e.g. a GTalk service.
+
+So what has happened in the meantime? I've spend the past months with 
+prototyping and developing an android-only xmpp connection service. From 
+scratch, but with a good system integration. And I've now reached the 
+point where everything starts to work.
+Have a look: <A HREF="http://measite.de/xmppservice.avi">http://measite.de/xmppservice.avi</A> (music is &quot;sad robot&quot; by 
+pornophonique [1]).
+
+The basic concept is a bit different from classic xmpp apps: Every 
+Stanzas will be isolated by the transport service and broadcasted to all 
+interrested apps. The demo chat app is just a few hundred lines of code, 
+because acting on XMPP events is plain simple (4 lines of XML plus 
+implementing the BroadcastReceiver). Apps and Service are thus 100% 
+isolated. Even app crashed won't cause the service to quit.
+
+The source was just pushed to github:
+<A HREF="http://github.com/rtreffer/AsmackService">http://github.com/rtreffer/AsmackService</A>
+<A HREF="http://github.com/rtreffer/AsmackChat">http://github.com/rtreffer/AsmackChat</A>
+I thought LGPL 2.1 and Apache 2.0 would give every project a chance to 
+use it. There are still some Apache 2 only parts, but they are on my 
+to-be-replaced list.
+
+Feature/Integration wise:
+- Ping is done every minute, based on android time ticks
+- Compression is done with the hidden Java7 API and reflection (this 
+can't break as the API should be frozen anyway)
+- The roster is stored in the contacts db
+- Roster fetch is done on global sync
+- All XMPP accounts are managed by the android accounts system
+- Broadcast Intents are used to push received messages to multiple
+
+Bad:
+- Still SASL/DNS libs, need to be replaced
+- Presence updates can stall/kill the service
+- Working with the android contacs api feels bad
+
+TODO (short term):
+- Rework presence
+- Build more app APIs
+- Get rid of all dependencies (sasl code is bad, the dns lib looks 
+wired, too)
+- Better certificate handling (read: check it!)
+- Add/Remove contacts
+- Build a fancy demo app :-)
+
+TODO (long term):
+- AOSP: no idea if there is a chance for such a code drop, but I think 
+system wide XMPP should be part of every android phone.
+- Build a smack compatible parser: Smack has the biggest OOP parsing 
+system I've seen.
+
+Anyway, the code is now open, give it a try.
+
+Regards,
+     Ren&#233; Treffer
+
+PS: I'm a fan of releasing software as software that respects your 
+freedom. I'd have usually picked WTFPL or UNLICENSE, but I'm intending 
+to contribute to the AOSP in the long run (read: this can easily take 12 
+months). That's why I ended up choosing Apache as well. But it's 
+incompatible with GPL, one of the most popular licenses. So we've now 
+this wired dual licensing, which noone really wants....
+
+[1] <A HREF="http://www.pornophonique.de/music.php">http://www.pornophonique.de/music.php</A> / 
+<A HREF="http://www.jamendo.com/en/artist/pornophonique">http://www.jamendo.com/en/artist/pornophonique</A>
+
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088500.html">[jdev] XMPP with Store and Forward feature
+</A></li>
+	<LI>Next message: <A HREF="088502.html">[jdev] XMPP on Android, Round #2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88501">[ date ]</a>
+              <a href="thread.html#88501">[ thread ]</a>
+              <a href="subject.html#88501">[ subject ]</a>
+              <a href="author.html#88501">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

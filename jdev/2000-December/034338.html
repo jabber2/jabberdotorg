@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] FreeBSD and MIO
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20FreeBSD%20and%20MIO&In-Reply-To=%3C3A31253A.8056011F%40jabber.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034345.html">
+   <LINK REL="Next"  HREF="034332.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] FreeBSD and MIO</H1>
+    <B>Craig</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20FreeBSD%20and%20MIO&In-Reply-To=%3C3A31253A.8056011F%40jabber.com%3E"
+       TITLE="[JDEV] FreeBSD and MIO">ckaes at jabber.com
+       </A><BR>
+    <I>Fri Dec  8 12:15:23 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034345.html">[JDEV] FreeBSD and MIO
+</A></li>
+        <LI>Next message: <A HREF="034332.html">[JDEV] Re: online docs
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34338">[ date ]</a>
+              <a href="thread.html#34338">[ thread ]</a>
+              <a href="subject.html#34338">[ subject ]</a>
+              <a href="author.html#34338">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Howdy, Keith.
+
+In our pthreads efforts, we've tried to get away from signals because signals and
+threads don't mix too well.  Instead of signalling the mio_main thread when we want
+to interrupt the select call,  here's what we do:
+
+1) Create a bidirectional pipe on init.
+2) Add the read end of it to the select all_rfds (each pass through the loop).
+3)  When we want to interrupt the select, we write a byte to the write end.
+4)  When the select call wakes up, it clears the pipe and carries on.
+
+Voila, signal-less interrupt of select.  Credit Dan Berstein.
+
+--C
+
+Keith Minkler wrote:
+
+&gt;<i> Jdev,
+</I>&gt;<i>
+</I>&gt;<i> I finnaly found the FreeBSD select(2) bug.. (well, my bug, not FreeBSD's) *G*
+</I>&gt;<i>
+</I>&gt;<i> It has to do with differences in how linux and FreeBSD handle select(2) getting
+</I>&gt;<i> interupted by a signal.  On Linux, it clears the FD sets you pass into it, but
+</I>&gt;<i> on FreeBSD, it leaves the sets untouched.  (Thank GOD for man pages).  It is
+</I>&gt;<i> easily fixed by checking the return value of select(2), and not trying to read(2),
+</I>&gt;<i> write(2), or accept(2) from the sockets on an error condition (-1) such as
+</I>&gt;<i> when the loop is signalled.
+</I>&gt;<i>
+</I>&gt;<i> *phew*  with much joy, FreeBSD will be able to share in the 1.4 bliss, along with
+</I>&gt;<i> the rest of the community.. *G*
+</I>&gt;<i>
+</I>&gt;<i> Keith Minkler
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034345.html">[JDEV] FreeBSD and MIO
+</A></li>
+	<LI>Next message: <A HREF="034332.html">[JDEV] Re: online docs
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34338">[ date ]</a>
+              <a href="thread.html#34338">[ thread ]</a>
+              <a href="subject.html#34338">[ subject ]</a>
+              <a href="author.html#34338">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

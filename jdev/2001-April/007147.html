@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Yahoo Transport Crash
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Yahoo%20Transport%20Crash&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007146.html">
+   <LINK REL="Next"  HREF="007148.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Yahoo Transport Crash</H1>
+    <B>Kevin Limperos</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Yahoo%20Transport%20Crash&In-Reply-To="
+       TITLE="[JDEV] Yahoo Transport Crash">klimperos at heuristicdesigns.com
+       </A><BR>
+    <I>Thu Apr 12 17:24:43 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007146.html">[JDEV] Hey ! This will continue forever ! Somebody please remove this person from list!
+</A></li>
+        <LI>Next message: <A HREF="007148.html">[JDEV] JabberBeans
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7147">[ date ]</a>
+              <a href="thread.html#7147">[ thread ]</a>
+              <a href="subject.html#7147">[ subject ]</a>
+              <a href="author.html#7147">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+	I'm running the Yahoo transport in its own (separate) jabberd on RH
+6.2/Jabber1.4.1/Yahoo0.8-1.4. When a user logs in then logs out and logs in
+again, something is apparently not reset or cleaned up correctly, as the
+server core dumps. The trace is:
+
+#0  0x8056fd1 in jid_cmp (a=0x30, b=0x81810c8) at jid.c:231
+231         if(_jid_nullstrcmp(a-&gt;resource, b-&gt;resource) != 0) return -1;
+(gdb) bt
+#0  0x8056fd1 in jid_cmp (a=0x30, b=0x81810c8) at jid.c:231
+#1  0x805715d in jid_append (a=0x30, b=0x81810c8) at jid.c:266
+#2  0x40140c33 in yahoo_parse_presence (yjp=0x8181120) at presence.c:268
+#3  0x4013fade in yahoo_parse_jpacket (arg=0x8181120) at parser.c:279
+#4  0x8055328 in mtq_main (arg=0x80c1b10) at mtq.c:150
+#5  0x4001aeee in pth_spawn_trampoline () from /usr/local/lib/libpth.so.13
+#6  0x40019058 in pth_mctx_set_bootstrap () from /usr/local/lib/libpth.so.13
+#7  0x40018fd6 in pth_mctx_set_trampoline () from
+/usr/local/lib/libpth.so.13
+#8  0x4005dc68 in __restore ()
+    at ../sysdeps/unix/sysv/linux/i386/sigaction.c:127
+
+Line 259 in presence.c:
+  s = yahoo_find_session(yjp-&gt;yti, jp-&gt;from);
+
+sets s to a value such that, s-&gt;online_users, while not NULL, seems to be
+corrupted (value 0x30 above).
+
+Any help would be appreciated. Thank you.
+
+-Kevin
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007146.html">[JDEV] Hey ! This will continue forever ! Somebody please remove this person from list!
+</A></li>
+	<LI>Next message: <A HREF="007148.html">[JDEV] JabberBeans
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7147">[ date ]</a>
+              <a href="thread.html#7147">[ thread ]</a>
+              <a href="subject.html#7147">[ subject ]</a>
+              <a href="author.html#7147">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

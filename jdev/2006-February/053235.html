@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] JEP-0124: multiple HTTP connections
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20JEP-0124%3A%20multiple%20HTTP%20connections&In-Reply-To=%3C200602031446.24444.justin-keyword-jabber.093179%40affinix.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="053234.html">
+   <LINK REL="Next"  HREF="053238.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] JEP-0124: multiple HTTP connections</H1>
+    <B>Justin Karneges</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20JEP-0124%3A%20multiple%20HTTP%20connections&In-Reply-To=%3C200602031446.24444.justin-keyword-jabber.093179%40affinix.com%3E"
+       TITLE="[jdev] JEP-0124: multiple HTTP connections">justin-keyword-jabber.093179 at affinix.com
+       </A><BR>
+    <I>Fri Feb  3 16:46:23 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="053234.html">[jdev] JEP-0124: multiple HTTP connections
+</A></li>
+        <LI>Next message: <A HREF="053238.html">[jdev] JEP-0124: multiple HTTP connections
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53235">[ date ]</a>
+              <a href="thread.html#53235">[ thread ]</a>
+              <a href="subject.html#53235">[ subject ]</a>
+              <a href="author.html#53235">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Friday 03 February 2006 13:52, Peter Saint-Andre wrote:
+&gt;<i> the connection manager fairly complex to code (and more complex than it
+</I>&gt;<i> needs to be unless there is some compelling reason to support multiple
+</I>&gt;<i> connections).
+</I>
+To explain this requires some polling background:
+
+Suppose a client normally polls every 30 seconds, but the polling attempt only 
+takes 2 seconds to complete.  This means that 28 seconds is spent without a 
+communications channel, assuming the client never tries to send data during 
+that period.  If the server is smart, it could wait before returning data, 
+holding the connection open until data is ready.
+
+There are two huge benefits to this server optimization:
+  1) it has the potential to reduce the frequency the client will poll
+  2) instead of, for example, having a 2 second receive window and a 28 second 
+idle period, there could be a 30 second receive window.  Now if data arrives 
+after 5 seconds, it is received instantly, instead of 25 seconds late.
+
+However, there is a disadvantage you might notice.  While the server is 
+holding the HTTP connection open, the client is unable to perform another 
+HTTP POST.  Thus, while the server optimization may yield instantaneous 
+received messages, sent messages will be stuck with, for example, a 28 second 
+pending period.  If the server didn't perform this optimization at all, then 
+sent messages could go out instantly.  So it becomes a tradeoff: we can have 
+fast received messages or fast sent messages, but not both.
+
+But this is under the assumption that you can only have one HTTP connection.  
+If JEP-124 allows at least two connections, then the client can &quot;sit&quot; on one 
+connection that the server holds open, for instantly receiving data, and it 
+can create secondary channels as necessary for instantly sending data.  This 
+would allow JEP-124 to perform nearly as well as TCP.
+
+-Justin
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="053234.html">[jdev] JEP-0124: multiple HTTP connections
+</A></li>
+	<LI>Next message: <A HREF="053238.html">[jdev] JEP-0124: multiple HTTP connections
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53235">[ date ]</a>
+              <a href="thread.html#53235">[ thread ]</a>
+              <a href="subject.html#53235">[ subject ]</a>
+              <a href="author.html#53235">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

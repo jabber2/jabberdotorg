@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Namespace IRI handling when forwarding stanzas between c2s and s2s links
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Namespace%20IRI%20handling%20when%20forwarding%20stanzas%20between%20c2s%0A%20and%20s2s%20links&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="023450.html">
+   <LINK REL="Next"  HREF="023452.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Namespace IRI handling when forwarding stanzas between c2s and s2s links</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Namespace%20IRI%20handling%20when%20forwarding%20stanzas%20between%20c2s%0A%20and%20s2s%20links&In-Reply-To="
+       TITLE="[jdev] Namespace IRI handling when forwarding stanzas between c2s and s2s links">m at tthias.net
+       </A><BR>
+    <I>Wed Nov 30 05:36:47 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="023450.html">[jdev] Subscription removal handling after sending directed presence
+</A></li>
+        <LI>Next message: <A HREF="023452.html">[jdev] Namespace IRI handling when forwarding stanzas between c2s	and s2s links
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23451">[ date ]</a>
+              <a href="thread.html#23451">[ thread ]</a>
+              <a href="subject.html#23451">[ subject ]</a>
+              <a href="author.html#23451">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi!
+
+
+I am currently finishing namespace support for the next release of 
+jabberd14. One remaining thing that is not completely clear to me is the 
+handling of the different namespace IRIs on c2s- and s2s-links. 
+Currently I am just mapping all three namespaces 'jabber:client', 
+'jabber:server', and 'jabber:component:accept' to the same jabberd14 
+internal namespace. When I am serializing the stanzas, I check which 
+type of connection the stanza is serialized on and use the standard 
+namespace IRI for this type of connection.
+
+The problem I have with that is the following:
+
+Assume a client sends the following stanza:
+
+&lt;message xmlns='jabber:client' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user1 at example.com</A>' 
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user2 at example.com</A>'&gt;
+    &lt;body&gt;Some example stanza, that is not very useful, but should 
+demonstrate my problem&lt;/body&gt;
+    &lt;x xmlns='<A HREF="http://example.com/someStrangeExtension'">http://example.com/someStrangeExtension'</A>&gt;
+        &lt;presence xmlns='jabber:server'/&gt;
+    &lt;/x&gt;
+&lt;/message&gt;
+
+This stanza gets delivered to user2 as:
+
+&lt;message xmlns='jabber:client' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user1 at example.com</A>' 
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user2 at example.com</A>'&gt;
+    &lt;body&gt;Some example stanza, that is not very useful, but should 
+demonstrate my problem&lt;/body&gt;
+    &lt;x xmlns='<A HREF="http://example.com/someStrangeExtension'">http://example.com/someStrangeExtension'</A>&gt;
+        &lt;presence xmlns='jabber:client'/&gt;
+    &lt;/x&gt;
+&lt;/message&gt;
+
+(Note the namespace switch for the &lt;presence/&gt; element.)
+Is this namespace change allowed, or is this an error?
+
+In that simple case I could keep the namespace of the presence element 
+intact very easily by just switching namespaces, when resending from one 
+connection type to another. But it gets more complicated when user2 is 
+on another server and I have to use s2s. In that case &lt;message/&gt; and 
+&lt;presence/&gt; for sure are send as 'jabber:server' to the other server. 
+But how does the other server know, that only the namespace of the 
+&lt;message/&gt; element has to be mapped back to 'jabber:client' before delivery?
+
+
+Tot kijk
+      Matthias
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="023450.html">[jdev] Subscription removal handling after sending directed presence
+</A></li>
+	<LI>Next message: <A HREF="023452.html">[jdev] Namespace IRI handling when forwarding stanzas between c2s	and s2s links
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23451">[ date ]</a>
+              <a href="thread.html#23451">[ thread ]</a>
+              <a href="subject.html#23451">[ subject ]</a>
+              <a href="author.html#23451">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

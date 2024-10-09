@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] MUC problems...
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20MUC%20problems...&In-Reply-To=%3C20030608135403.GA31842%40falcon.afraid.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="075145.html">
+   <LINK REL="Next"  HREF="075148.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] MUC problems...</H1>
+    <B>David Sutton</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20MUC%20problems...&In-Reply-To=%3C20030608135403.GA31842%40falcon.afraid.org%3E"
+       TITLE="[JDEV] MUC problems...">jabber at dsutton.legend.uk.com
+       </A><BR>
+    <I>Sun Jun  8 08:54:03 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="075145.html">[JDEV] MUC problems...
+</A></li>
+        <LI>Next message: <A HREF="075148.html">[JDEV] Re: MUC problems...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75146">[ date ]</a>
+              <a href="thread.html#75146">[ thread ]</a>
+              <a href="subject.html#75146">[ subject ]</a>
+              <a href="author.html#75146">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Mats,
+
+  I will look into these, however I need a little more information from
+you. Can you show me the full xml sent and received when you are
+changing room options. By the sounds of things, your request to change
+the options is being ignored. Also, try running the jabberd MUC is
+connected to in debug mode (-D command line switch). There will be clues
+in the output from there too.
+
+  Regarding the error message (point 3). I know that MU-Conference
+breaks the specifications in this respect, however this is for a reason.
+The MUC protocol allows you to send multiple item requests in a single
+query. Imagine the situation where you send 4 items, but three of them
+are incorrect in different ways (i.e. trying to kick a non-existant
+user, demote a room owner, etc) With the current schema, you only have
+room for one error message, despite there being 3 different errors. I've
+already brought this up with Peter Saint-Andre and he is looking into
+it. The whole error system needs an overhaul anyway as it needs both
+the jep and the implementation to use the new style error messages. As
+soon as that is in place, I will rewrite MU-Conference to use them.
+
+Regards.
+
+  David
+ 
+On Sun, Jun 08, 2003 at 08:26:56AM +0200, Mats Bengtsson wrote:
+&gt;<i> 
+</I>&gt;<i> Hi all,
+</I>&gt;<i> 
+</I>&gt;<i> During the implementation of the MUC stuff (0.5.2) (jabberd 1.4.2)
+</I>&gt;<i> in my client (coccinella.sourceforge.net) I have encountered several
+</I>&gt;<i> issues that seem to be bugs, or is just a misunderstanding. 
+</I>&gt;<i> Reference: JEP Version 1.4
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 1:   Setting the 
+</I>&gt;<i> &lt;field var='title'&gt;&lt;value&gt;The Rooms Name&lt;/value&gt;&lt;/field&gt;
+</I>&gt;<i> attribute while creating the room does not set the rooms title
+</I>&gt;<i> as seen when browsed.
+</I>&gt;<i> 
+</I>&gt;<i> 2:   Even rooms created as persistent are destroyed after some period (5-10 minutes?)
+</I>&gt;<i> 
+</I>&gt;<i> 3:   The &lt;error/&gt; elements are sent as child of the &lt;item/&gt; element
+</I>&gt;<i> which seems not to be in accordance with MUC's DTD:
+</I>&gt;<i> 
+</I>&gt;<i> JEP Version 1.4, Example 52:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;iq type='error' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>'
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">wiccarocks at shakespeare.lit</A>/laptop' id='kicktest'&gt;
+</I>&gt;<i>   &lt;query xmlns='<A HREF="http://jabber.org/protocol/muc#admin'">http://jabber.org/protocol/muc#admin'</A>&gt;
+</I>&gt;<i>     &lt;item nick='firstwitch' role='none'&gt;
+</I>&gt;<i>       &lt;reason&gt;Be gone!&lt;/reason&gt;
+</I>&gt;<i>     &lt;/item&gt;
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i>   &lt;error code='405'&gt;Not Allowed&lt;/error&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> While the MUC compoenent returns:
+</I>&gt;<i> 
+</I>&gt;<i> RECV: &lt;iq type='error' id='1012' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">matben at localhost</A>/coccinella' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mats at conference.localhost</A>'&gt;
+</I>&gt;<i>         &lt;query xmlns='<A HREF="http://jabber.org/protocol/muc#admin'">http://jabber.org/protocol/muc#admin'</A>&gt;
+</I>&gt;<i>                 &lt;item nick='stt' role='none'&gt;
+</I>&gt;<i>                         &lt;error code='403'&gt;Forbidden Kick request against admin&lt;/error&gt;
+</I>&gt;<i>                 &lt;/item&gt;
+</I>&gt;<i>         &lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> 4:    A room created as secret still allows any user to enter ???
+</I>&gt;<i> &lt;field var='secret'&gt;&lt;value&gt;xyz&lt;/value&gt;&lt;/field&gt;&lt;field var='privacy'&gt;&lt;value&gt;1&lt;/value&gt;
+</I>&gt;<i> 
+</I>&gt;<i> 5:    When the owner wants to configure a room after it is created, the returned
+</I>&gt;<i> form does not have the default values the room was created with.
+</I>&gt;<i> 
+</I>&gt;<i> 6:    It is not possible to obtain  list of role/affiliation items; all lists
+</I>&gt;<i> are empty!
+</I>&gt;<i> SEND: &lt;iq type='get' id='1014' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">secret at conference.sgi.se</A>'&gt;&lt;query
+</I>&gt;<i> xmlns='<A HREF="http://jabber.org/protocol/muc#admin'">http://jabber.org/protocol/muc#admin'</A>&gt;&lt;item role='participant'/&gt;&lt;/query&gt;&lt;/iq&gt;
+</I>&gt;<i> RECV: &lt;iq type='result' id='1014' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">matben at sgi.se</A>/coccinella'
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">secret at conference.sgi.se</A>'&gt;&lt;query xmlns='<A HREF="http://jabber.org/protocol/muc#admin'/">http://jabber.org/protocol/muc#admin'/</A>&gt;&lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Any idees anyone?
+</I>&gt;<i> 
+</I>&gt;<i> /Mats
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+-- 
+David Sutton
+Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dsutton at legend.co.uk</A>
+Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">peregrine at legend.net.uk</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20030608/2ab43967/attachment-0002.pgp">https://www.jabber.org/jdev/attachments/20030608/2ab43967/attachment-0002.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="075145.html">[JDEV] MUC problems...
+</A></li>
+	<LI>Next message: <A HREF="075148.html">[JDEV] Re: MUC problems...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75146">[ date ]</a>
+              <a href="thread.html#75146">[ thread ]</a>
+              <a href="subject.html#75146">[ subject ]</a>
+              <a href="author.html#75146">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

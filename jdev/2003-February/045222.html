@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabberd patch
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%20patch&In-Reply-To=%3CMWMail.aqomhkgf%40host.none%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="045221.html">
+   <LINK REL="Next"  HREF="045232.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabberd patch</H1>
+    <B>Tijl Houtbeckers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%20patch&In-Reply-To=%3CMWMail.aqomhkgf%40host.none%3E"
+       TITLE="[JDEV] jabberd patch">thoutbeckers at splendo.com
+       </A><BR>
+    <I>Wed Feb 26 09:25:44 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="045221.html">[JDEV] jabberd patch
+</A></li>
+        <LI>Next message: <A HREF="045232.html">[JDEV] jabberd patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45222">[ date ]</a>
+              <a href="thread.html#45222">[ thread ]</a>
+              <a href="subject.html#45222">[ subject ]</a>
+              <a href="author.html#45222">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&quot;Richard Dobson&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">richard at dobson-i.net</A>&gt; wrote on 26-2-2003 16:02:01:
+&gt;<i>
+</I>&gt;&gt;<i> &quot;At the level of the stream&quot; sounds pretty vague to me, but 
+</I>&gt;&gt;<i> thankfully after that the example we're talking about is given. 
+</I>&gt;&gt;<i> (Actually is sais &quot;an attempt&quot; to authenticate rather then &quot;a 
+</I>&gt;&gt;<i> succesfull attempt&quot; even ;). 
+</I>&gt;&gt;<i>  But look at the other examples given.. shutdowns.. internal errors. 
+</I>&gt;&gt;<i>  In those cases I would want my client to reconnect till the server 
+</I>&gt;&gt;<i>  is up again. You can tell me that this makes me a bad person/client 
+</I>&gt;&gt;<i>  but I'm not gonna press the &quot;connect&quot; button 20 times a minute just 
+</I>&gt;&gt;<i>  cause of that opinion :)
+</I>&gt;<i>
+</I>&gt;<i>Ah but do those error cases you talk about create errors of 
+</I>&gt;<i>&quot;Disconnected&quot; ??
+</I>
+In fact when I shutdown my windows jabberd 1.4.2 with ctrl-c it doesn't 
+say anything at all.. it just disconnects the socket. 
+
+Look, I already quoted from the documentation that there can be more 
+then one reason why a jabber-server would send a stream:error. What the 
+description should be it doesn't say anywhere, nor should it because 
+it's supposed to be a human readable description, it's not meant for 
+letting your client distinguise what type of stream error it is. 
+
+Can you agree with me on this?
+
+If you can then maybe you can also agree with me that according to the 
+documentation there can be different causes, and that some clients will 
+want to auto-reconnect in some of those cases. 
+
+&gt;<i>
+</I>&gt;&gt;<i> As you can see in the documentation (and this does happen in the real
+</I>&gt;&gt;<i> world too) there are more cases in wich this can happen. It's not 
+</I>&gt;&gt;<i> wise to tell clients to cripple themselves because we have a protocol
+</I>&gt;&gt;<i> problem. Rather, let's fix the protocol problem and *then* bug the
+</I>&gt;&gt;<i> client authors till they update it.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I want my client to reconnect unless the server tells it there is a
+</I>&gt;&gt;<i> good reason not to. Right now it does not, it's just sais there is an
+</I>&gt;&gt;<i> &quot;error&quot;.
+</I>&gt;<i>
+</I>&gt;<i>But it doesnt just say error, it says and i quote:
+</I>&gt;<i>
+</I>&gt;<i>&lt;stream:error&gt;Disconnected&lt;/stream:error&gt;&lt;/stream:stream&gt;
+</I>
+As far as I know jabberd 1.4.2 does this, yes. But it shouldn't make a 
+difference what it says. Maybe jabberd2 says &lt;stream:error&gt;Replaced by 
+another session: disconnected&lt;/stream:error&gt;&lt;/stream:stream&gt;, it would 
+make a lot more sense to me but in your world this would mean all the 
+clients would be broken again? 
+&gt;<i>
+</I>&gt;<i>Now AFAIK that error is only caused by other sessions causing the
+</I>&gt;<i>termination of an old session, so clients dont really have an excuse 
+</I>&gt;<i>even now to not handle that, Exodus manages it why cant the rest. So 
+</I>&gt;<i>as ive said any clients that exhibit the session fighting behaviour do 
+</I>&gt;<i>have a bug and need to be fixed since there is a way to properly 
+</I>&gt;<i>handle it. 
+</I>
+They only have this &quot;bug&quot; because the server doesn't let them know why 
+they are disconnected. If Exodus fixes this with a hack that scans for 
+&quot;Disconnected&quot; (wich I find hard to believe since it really *is* such a 
+big hack) or if it simply doesn't reconnect at all on &lt;stream:error&gt; 
+that probably work on jabberd 1.4.2 and maybe some others too, but it 
+is and will be a hack that no other client has to have, *since it's a 
+hack*. That's why the rest don't HAVE to manage, or should IMHO. 
+
+&gt;&gt;<i> I agree with you that the &quot;normal behaviour&quot; regarding logging in 
+</I>&gt;&gt;<i> with the same resource should not be changed. There should be proper 
+</I>&gt;&gt;<i> &quot;error&quot;- codes or alternate elements for closing the stream though. 
+</I>&gt;&gt;<i> Also it's not a bad idea for clients to expect the possiblity of a 
+</I>&gt;&gt;<i> &quot;409&quot; when logging in on a server that has this enabled.. though 
+</I>&gt;&gt;<i> it's unlikely to happen (any time soon) it won't make them worse 
+</I>&gt;&gt;<i> clients for having it. 
+</I>&gt;<i>
+</I>&gt;<i>Yup proper error codes will help a lot, but at the moment the server 
+</I>&gt;<i>does effectively tell you what has gone wrong and gives you a 
+</I>&gt;<i>&quot;Disconnected&quot; error so clients dont really have any excuse not 
+</I>&gt;<i>handling it.
+</I>
+I think this is a bizare way of handeling things, and even if it would 
+be a decent approach, it's surthenly not standardized or even 
+documented for that matter(at least I haven't seen it anywhere). So 
+again, it's a hack that works on jabber1.4.2 and maybe some others (or 
+all known for all I care) but who knows what SecretRedmondJabberD and 
+ObscureC64JabberD send back instead of &quot;Disconnected&quot;. Maybe they even 
+send &quot;Disconnected&quot; eg. when the sessionmanager goes down? Maybe some 
+current implementions use &quot;Disconnected&quot; for more then just duplicate 
+sessions? That would already break your hack.. 
+ 
+&gt;<i>
+</I>&gt;&gt;<i> Another alternative would be letting the client(s) decide wether they
+</I>&gt;&gt;<i> want to take over an excisting session (or whether they want to allow
+</I>&gt;&gt;<i> this). If we have proper error-codes for this such a system could
+</I>&gt;&gt;<i> always be created later on without breaking or confusing excisting
+</I>&gt;&gt;<i> clients.
+</I>&gt;<i>
+</I>&gt;<i>Ah yes I was thinking about this option, that could solve the previous
+</I>&gt;<i>gentlemans problem with sessions being terminated without altering 
+</I>&gt;<i>basic behaviours of the server for other clients. So maybe we need 
+</I>&gt;<i>some kind of option introduced into the auth so the client can tell 
+</I>&gt;<i>the server it doesnt want any existing sessions terminated if they 
+</I>&gt;<i>exist, I think this is the best option to solve the problem for all 
+</I>&gt;<i>parties involved. 
+</I>
+Proper error-codes and documented behaviour for closing a stream and 
+rejecting login because of duplicate sessions is needed. A means of 
+indicating that you don't want to &quot;hijack&quot; another session is nice too, 
+since it increases functionality for all clients that want to implement 
+it. 
+
+
+-- 
+Tijl Houtbeckers
+Software Engineer @ Splendo
+The Netherlands
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="045221.html">[JDEV] jabberd patch
+</A></li>
+	<LI>Next message: <A HREF="045232.html">[JDEV] jabberd patch
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45222">[ date ]</a>
+              <a href="thread.html#45222">[ thread ]</a>
+              <a href="subject.html#45222">[ subject ]</a>
+              <a href="author.html#45222">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

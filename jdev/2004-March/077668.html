@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Important bugfix for jadc2s
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Important%20bugfix%20for%20jadc2s&In-Reply-To=%3C20040329214458.GA25103%40hermes.muc.charente.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Important bugfix for jadc2s</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Important%20bugfix%20for%20jadc2s&In-Reply-To=%3C20040329214458.GA25103%40hermes.muc.charente.de%3E"
+       TITLE="[jdev] Important bugfix for jadc2s">m at tthias.net
+       </A><BR>
+    <I>Mon Mar 29 15:44:59 CST 2004</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77668">[ date ]</a>
+              <a href="thread.html#77668">[ thread ]</a>
+              <a href="subject.html#77668">[ subject ]</a>
+              <a href="author.html#77668">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi!
+
+If you are a Jabber server admin and using jadc2s as your client
+connection manager, this is an important bugfix for you, that will
+increase the stability for client connections to your server.
+
+The problem existed in jadc2s since 2002-10-22. At this time there has
+been introduced an output statment for debugging reasons. The problem
+with it is that jadc2s will close the standard output on startup so the
+debugging output will be sent to the client that connected on the socket
+that got the file descriptor 1 (which is the standard output normally).
+If the affected user connected using SSL this will even break the
+connection to this user as the client's SSL implementation will notice
+that the security layer SSL provides has been broken (the output is send
+to the connection without being encrypted by SSL). If the connection
+does not use SSL it depends on the client implementation if the extra
+CDATA is just ignored or causes an error as well.
+
+To fix the problem, please delete the following line from conn.c in
+jadc2s' main directory:
+                printf(&quot;Reading %d bytes\n&quot;, read_len);
+
+A patch against release 0.9.0 of jadc2s can be found at the end of this
+mail. If you are using the CVS version of jadc2s, you can simply update
+to the latest version.
+
+
+Tot kijk
+    Matthias
+
+
+diff -Naur jadc2s-0.9.0/clients.c jadc2s-0.9.0.1/clients.c
+--- jadc2s-0.9.0/clients.c	2003-10-13 00:58:25.000000000 +0200
++++ jadc2s-0.9.0.1/clients.c	2004-03-29 23:33:17.000000000 +0200
+@@ -505,7 +505,6 @@
+                     return 0;
+                 }
+ 
+-                printf(&quot;Reading %d bytes\n&quot;, read_len);
+                 len = _read_actual(c, fd, buf, read_len);
+                 return conn_read(c, buf, len);
+                 
+-- 
+Fon: +49-(0)70 0770 07770       <A HREF="http://matthias.wimmer.name/">http://matthias.wimmer.name/</A>
+HAM: DB1MW                      xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mawis at charente.de</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: Digital signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20040329/132c1932/attachment-0004.pgp">https://www.jabber.org/jdev/attachments/20040329/132c1932/attachment-0004.pgp</A>&gt;
+</PRE>
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77668">[ date ]</a>
+              <a href="thread.html#77668">[ thread ]</a>
+              <a href="subject.html#77668">[ subject ]</a>
+              <a href="author.html#77668">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] RE: G'morn! :)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20RE%3A%20G%27morn%21%20%3A%29&In-Reply-To=Pine.LNX.3.96.990512084611.28756A-100000%40mondo.eppg.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000633.html">
+   <LINK REL="Next"  HREF="000634.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] RE: G'morn! :)</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20RE%3A%20G%27morn%21%20%3A%29&In-Reply-To=Pine.LNX.3.96.990512084611.28756A-100000%40mondo.eppg.com"
+       TITLE="[JDEV] RE: G'morn! :)">tcharron at nermail.ups.com
+       </A><BR>
+    <I>Wed May 12 09:57:58 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000633.html">[JDEV] Denial of Service, Spam and Jabber
+</A></li>
+        <LI>Next message: <A HREF="000634.html">[JDEV] Net::Jabber Perl Module
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#632">[ date ]</a>
+              <a href="thread.html#632">[ thread ]</a>
+              <a href="subject.html#632">[ subject ]</a>
+              <a href="author.html#632">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>	DESPERATLY trying to finish it.. ;-P  I only need to fix ONE problem and it'll be ready.  Incoming xpt packets are now processed in
+their own thread (UBER cool..  When there are xpt packets to process, it starts a new thread, which in turn starts a new Message
+'object' that works within an independant thread).  The only problem is starting a new thread when a user wants to send a NEW
+message.  For some reason that I have yet to fathom, it produces an Access Violation.  Here is what the function call that dies
+looks like:
+
+---
+	DWORD * dwThreadId;
+	int * Something;
+
+
+ateThread( 
+            NULL,              // no security attribute 
+            0,                 // default stack size 
+            (LPTHREAD_START_ROUTINE) InstanceNewMessageThread,
+            (LPVOID) Something,    // thread parameter 
+            0,                 // not suspended 
+            dwThreadId);      // returns thread ID
+
+---
+	InstantNewMessageThread looks like this:
+
+---
+VOID InstanceNewMessageThread(LPVOID lpvParam) 
+{ 
+	AfxMessageBox(&quot;In New Message Thread&quot;);
+	CNewMessage dlg;
+	int nReturn = dlg.DoModal();
+	if(nReturn == IDOK)
+	{
+		ServerSocket.SendData(&quot;&lt;message&gt;&lt;to&gt;&quot; +
+			dlg.m_To + &quot;&lt;/to&gt;&lt;subject&gt;&quot; +
+			dlg.m_Subject + &quot;&lt;/subject&gt;&lt;say&gt;&quot; +
+			dlg.m_Say + &quot;&lt;/say&gt;&lt;/message&gt;\n\n&quot;);
+	}
+
+} 
+---
+
+	What dying is when it creates the new thread, which means that the error itself is in the first code snippet.  Any ideas?  I think that perhaps I'm not initiating the Pointer that is the 'passed argument' correctly.  Perhaps I'm just being an idiot.  Any idea how to create a Pointer to a void value in C?  I think I need to malloc somethingand get the pointer to point to that.  I'm not USING the value, so I was trying to throw it SOMETHING.. ;-P
+
+	Obviously it's only sending basic to/subject/say messages right now, but this is easily extended.  Eventually, I'll have the JabberSocket class (An extention of CAsyncSocket) have message sending members of it's own, but for now I just have it using a generic 'SendData' function, that piles up data sends it as it can.  The class itself handles blocking etc, itself, as CAsyncSocket provides callbacks when it's ok to send or ok to recieve when you try to send.. 
+
+	Anyway, I'mnot to sure how well you know C++, but my problem here is basic C, and I think I'm just thinking way to hard.  Think I'll risk looking like a COMPLETE MORON and CC this to JDev and see if anyone cares to smack some sense into my skull.
+
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Jeremie 
+</I>&gt;<i> Sent: Wednesday, May 12, 1999 9:51 AM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tcharron at nermail.ups.com</A>
+</I>&gt;<i> Cc: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tcharron at my-dejanews.com</A>
+</I>&gt;<i> Subject: G'morn! :)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Heya, hows the job thing coming along?
+</I>&gt;<i> 
+</I>&gt;<i> It's been a bit quite lately on jdev, but I've got lots of fun things
+</I>&gt;<i> coming RSN besides just 0.6.  I'll be posting a big plan/outlook tonight
+</I>&gt;<i> hopefully...
+</I>&gt;<i> 
+</I>&gt;<i> Other than that, the ICQ and AIM transports are developing nicely, very
+</I>&gt;<i> very &quot;prototype&quot; like, but still very cool.
+</I>&gt;<i> 
+</I>&gt;<i> Any luck with the win32 stuff?  I wish I had a compiler or knew win32 to
+</I>&gt;<i> at least offer to help a little :)  I'll be creating &quot;teams&quot; on jabber.org
+</I>&gt;<i> and I think there will be a win32 one, do you think you'll have the time
+</I>&gt;<i> to lead it?  It wont be till late May or early June for sure.
+</I>&gt;<i> 
+</I>&gt;<i> Anyway, just checking in!
+</I>&gt;<i> 
+</I>&gt;<i> Thanks!
+</I>&gt;<i> 
+</I>&gt;<i> Jer
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000633.html">[JDEV] Denial of Service, Spam and Jabber
+</A></li>
+	<LI>Next message: <A HREF="000634.html">[JDEV] Net::Jabber Perl Module
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#632">[ date ]</a>
+              <a href="thread.html#632">[ thread ]</a>
+              <a href="subject.html#632">[ subject ]</a>
+              <a href="author.html#632">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

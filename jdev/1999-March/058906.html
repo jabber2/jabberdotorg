@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] A question regarding scaling
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20A%20question%20regarding%20scaling&In-Reply-To=%3C000001be757e%24aaadd280%2414225e0a%40tarot.nhl02.us.ups.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058905.html">
+   <LINK REL="Next"  HREF="058908.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] A question regarding scaling</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20A%20question%20regarding%20scaling&In-Reply-To=%3C000001be757e%24aaadd280%2414225e0a%40tarot.nhl02.us.ups.com%3E"
+       TITLE="[JDEV] A question regarding scaling">tcharron at nermail.ups.com
+       </A><BR>
+    <I>Tue Mar 23 16:44:09 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058905.html">[JDEV] A question regarding scaling
+</A></li>
+        <LI>Next message: <A HREF="058908.html">[JDEV] A question regarding scaling
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58906">[ date ]</a>
+              <a href="thread.html#58906">[ thread ]</a>
+              <a href="subject.html#58906">[ subject ]</a>
+              <a href="author.html#58906">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>	Here's the reasoning I was thinking of wanting to connect to other servers
+beside's your home server.  Different transports that not all servers may
+run..  Let's use an example of a mod_perl module, or some other HTTP based
+transport..  If my server doesn't run it, I'd want to be able to connect to
+ANOTHER server.  My case would be while I'm at work behind an HTTP firewall.
+In this way, if you wish to utilize another transport, you can..
+
+	I know this really won't help load balancing in and of itself, I was more
+stuck on the 'connect to any server' part.. ;-P  Although, it would seem to
+me that 3 server connections that are remotely connected serving several
+hundred users each would help load balance a little, but not all THAT much..
+;-P
+
+	Wow, I just had a though about this..  If we did have what I mentioned, you
+could actually have the 'publically available server' be a different server
+then the one that actually validating logins, allowing for the
+authentication to be based on a machine inside a firewall, while the public
+server is out in the open, but contains none of the password and user data..
+Simular to this:
+
+ClientA      ClientB      ClientC
+    \           |          /
+     \          |         /
+      \         |        /
+       \        |       /
+        \       |      /
+         \      |     /
+          \     |    /
+          |-----------|
+          |Public     |
+          |Server     |
+          \-----------/
+                |
+                |
+================|===============
+==== Firewall ==|===============
+================|===============
+                |
+           /----------------\
+           | Authentication |
+           | Server         |
+           \----------------/
+
+	This way an ISP could have their authentication based on the same system
+that authenticates it's users (Which, if they're bright, is behind some sort
+of firewall)..
+
+--
+Thomas Charron
+United Parcel Service
+Northeast Region
+&quot;Moving at the speed of a T3 Trunk Line!&quot;
+
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">owner-jdev at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">owner-jdev at jabber.org</A>]On Behalf Of
+</I>&gt;<i> Jeremie Miller
+</I>&gt;<i> Sent: Tuesday, March 23, 1999 4:26 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: RE: [JDEV] A question regarding scaling
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &gt; 	Well, here is how I envision this being able to happen..
+</I>&gt;<i> Let's say I am
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">twolf at jabber.org.</A>  jabber.org contains my password and personal
+</I>&gt;<i> information.
+</I>&gt;<i> &gt; I then use my client to attach to jabber.tiac.net, as <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">twolf at jabber.org.</A>
+</I>&gt;<i> &gt; jabber.tiac.net would contact jabber.org to validate my
+</I>&gt;<i> password, and tell
+</I>&gt;<i> &gt; the server that <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">twolf at jabber.org</A> is connected on jabber.tiac.net, and to
+</I>&gt;<i> &gt; forward messages there.
+</I>&gt;<i>
+</I>&gt;<i> There are a few issues here...
+</I>&gt;<i>
+</I>&gt;<i> First, having &quot;roaming&quot; setup where the server your connected to talking
+</I>&gt;<i> to your real server doesn't offer any benifits, since everything will end
+</I>&gt;<i> up going back to your real server anyway.  I think the direct
+</I>&gt;<i> client-&gt;server connection is always going to be the best route, just like
+</I>&gt;<i> how HTTP works.
+</I>&gt;<i>
+</I>&gt;<i> Next: load balancing and lots of simultaneous connections to servers.
+</I>&gt;<i> There are two solutions that I can think of easily.  First, do it just
+</I>&gt;<i> like how you'd do a large web site, round-robin DNS or the like.  Have a
+</I>&gt;<i> farm of front end servers and a hefty back end database server, and
+</I>&gt;<i> however the DNS resolves is the server you are connected to.  This would
+</I>&gt;<i> require the authoring of a special module on the server to do everything
+</I>&gt;<i> through the database, but much of that framework will probably already be
+</I>&gt;<i> in place for other purposes.  Secondly, there is a special type of
+</I>&gt;<i> &quot;client&quot; that the server understands, that's a &quot;MULTI&quot; client.  It can
+</I>&gt;<i> harbor multiple simultaneous user logins over one connection to the
+</I>&gt;<i> server.  A simple proxy could be built that groups of users connect to and
+</I>&gt;<i> everything feeds back to the one main server.
+</I>&gt;<i>
+</I>&gt;<i> I'm quite sure that any needed load balancing or roaming problems can be
+</I>&gt;<i> solved as they are found, the architecture is quite scalable.
+</I>&gt;<i>
+</I>&gt;<i> &gt; &gt; Sorry if I'm being obtuse here, but I need to ask these
+</I>&gt;<i> questions as I'm
+</I>&gt;<i> &gt; &gt; evaluating including support for Jabber in our product.
+</I>&gt;<i>
+</I>&gt;<i> No problem, please ask away :) I get quite a few personal inquiries from
+</I>&gt;<i> others evaluating supporting Jabber and am willing to help in any way I
+</I>&gt;<i> can.
+</I>&gt;<i>
+</I>&gt;<i> Jer
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058905.html">[JDEV] A question regarding scaling
+</A></li>
+	<LI>Next message: <A HREF="058908.html">[JDEV] A question regarding scaling
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58906">[ date ]</a>
+              <a href="thread.html#58906">[ thread ]</a>
+              <a href="subject.html#58906">[ subject ]</a>
+              <a href="author.html#58906">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

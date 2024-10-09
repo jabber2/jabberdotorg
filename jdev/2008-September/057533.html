@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Jabber - Core banking (ISO-8583)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Jabber%20-%20Core%20banking%20%28ISO-8583%29&In-Reply-To=%3Crxw1510.3fjbhb%40no-mx.jabberforum.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="057530.html">
+   <LINK REL="Next"  HREF="057534.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Jabber - Core banking (ISO-8583)</H1>
+    <B>rxw1510</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Jabber%20-%20Core%20banking%20%28ISO-8583%29&In-Reply-To=%3Crxw1510.3fjbhb%40no-mx.jabberforum.org%3E"
+       TITLE="[jdev] Jabber - Core banking (ISO-8583)">rxw1510.3fjbhb at no-mx.jabberforum.org
+       </A><BR>
+    <I>Wed Sep 10 13:37:10 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="057530.html">[jdev] Jabber - Core banking (ISO-8583)
+</A></li>
+        <LI>Next message: <A HREF="057534.html">[jdev] auth code failes
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57533">[ date ]</a>
+              <a href="thread.html#57533">[ thread ]</a>
+              <a href="subject.html#57533">[ subject ]</a>
+              <a href="author.html#57533">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Jonathan Dickinson;3468 Wrote: 
+&gt;<i> Hi Reno,
+</I>&gt;<i> 
+</I>&gt;<i> I am browsing through the Wikipedia page right now.
+</I>&gt;<i> 
+</I>&gt;<i> Firstly, you would need to create a gateway. There are docs on how to
+</I>&gt;<i> do this else-where.
+</I>&gt;<i> 
+</I>&gt;<i> This gateway would have a number of JIDs that represent each bank
+</I>&gt;<i> (obviously always present).
+</I>&gt;<i> 
+</I>&gt;<i> You would then send iq stanzas to this component. For example:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;iq type=&quot;get&quot; id=&quot;101&quot; to=&quot;thebestbank (AT) ISO8583 (DOT)
+</I>&gt;<i> mycompany.org&quot;&gt;
+</I>&gt;<i> &lt;query xmlns=&quot;myqueryns&quot;&gt;
+</I>&gt;<i> &lt;iso8583 version=&quot;0&quot;&gt; &lt;!-- version is first digit in MTI --&gt;
+</I>&gt;<i> &lt;messageClass&gt;authorization&lt;/messageClass&gt; &lt;!-- third digit --&gt;
+</I>&gt;<i> &lt;messageFunction&gt;request&lt;/messageFunction&gt; &lt;!-- fourth digit --&gt;
+</I>&gt;<i> &lt;origin&gt;acquirer+repeat&lt;/origin&gt; &lt;!-- fifth digit --&gt;
+</I>&gt;<i> 
+</I>&gt;<i> &lt;!-- here-with the fields --&gt;
+</I>&gt;<i> &lt;pan&gt;2834729&lt;/pan&gt;
+</I>&gt;<i> &lt;credits type=&quot;forward&quot;&gt;100&lt;/credits&gt; &lt;!-- some fields have two
+</I>&gt;<i> states, this one is either credits or credits, reversal. --&gt;
+</I>&gt;<i> &lt;captureCode&gt;01234&lt;/captureCode&gt;
+</I>&gt;<i> &lt;/iso8583&gt;
+</I>&gt;<i> &lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> One approach you could take (if using .Net) is to implement your binary
+</I>&gt;<i> ISO8583 reader as an XML reader that spits out the elements. This would
+</I>&gt;<i> then allow you to do something like:
+</I>&gt;<i> 
+</I>&gt;<i> Iso8583Packet packet = ...;
+</I>&gt;<i> IqStanza = ...;
+</I>&gt;<i> IqQuery query = IqStanza.CreateQuery(&quot;myqueryns&quot;);
+</I>&gt;<i> 
+</I>&gt;<i> XmlReader reader = packet.GetReader();
+</I>&gt;<i> XmlDocument doc = new XmlDocument();
+</I>&gt;<i> doc.Load(reader);
+</I>&gt;<i> 
+</I>&gt;<i> query.SetContent(doc.RootElement);
+</I>&gt;<i> 
+</I>&gt;<i> And as for writing to your Iso8583 device:
+</I>&gt;<i> 
+</I>&gt;<i> IqQuery query = IqStanza.Query;
+</I>&gt;<i> XmlWriter wrtr = new Iso8583PacketWriter(myNetworkTransport);
+</I>&gt;<i> 
+</I>&gt;<i> XmlDocument doc = new XmlDocument();
+</I>&gt;<i> doc.AppendChild(query.XmlNode);
+</I>&gt;<i> doc.Save(wrtr);
+</I>&gt;<i> 
+</I>&gt;<i> I am sure you get the idea. You could appropriate
+</I>&gt;<i> niso&lt;<A HREF="http://niso8583.sourceforge.net/">http://niso8583.sourceforge.net/</A>&gt; for your uses. AgsXMPP is also a
+</I>&gt;<i> brilliant component development environment for XMPP components.
+</I>&gt;<i> 
+</I>&gt;<i> Oh, by the way, I am not sure if AgsXMPP supports serialization, but
+</I>&gt;<i> you can also just mark all the classes in niso as serializable and leave
+</I>&gt;<i> it up the .net framework to decide on how they look (not the best in
+</I>&gt;<i> terms of interopability, but it will get on the ground running).
+</I>&gt;<i> 
+</I>&gt;<i> If you are not going to use .Net then I am sure these concepts will
+</I>&gt;<i> translate in some way into the frameworks that you decide to use.
+</I>&gt;<i> 
+</I>&gt;<i> HTH.
+</I>&gt;<i> 
+</I>&gt;<i> From: jdev-bounces (AT) jabber (DOT) org [mailto:jdev-bounces (AT)
+</I>&gt;<i> jabber (DOT) org] On Behalf Of Reno Wijoyo
+</I>&gt;<i> Sent: Tuesday, September 09, 2008 12:50 PM
+</I>&gt;<i> To: jdev (AT) jabber (DOT) org
+</I>&gt;<i> Subject: [jdev] Jabber - Core banking (ISO-8583)
+</I>&gt;<i> 
+</I>&gt;<i> I'm trying to use Jabber as a mobile extension to core banking. Any
+</I>&gt;<i> suggestion on the best way to go about doing that? I'm thinking of using
+</I>&gt;<i> smack chatbot to communicate with database and other repositories.
+</I>&gt;<i> however the bank core is all in ISO 8583 format (no experience with the
+</I>&gt;<i> format yet).
+</I>&gt;<i> Any suggestions or car eto share some experience. Thanks in advance.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Rgds,
+</I>&gt;<i> Reno
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> FAQ: <A HREF="http://www.jabber.org/discussion-lists/jdev-faq">http://www.jabber.org/discussion-lists/jdev-faq</A>
+</I>&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: JDev-unsubscribe (AT) jabber (DOT) org
+</I>&gt;<i> _______________________________________________
+</I>
+
+I'm still trying to understand the internal elements of core banking
+and their interactions; only to a practical level.
+in the end, will all ISO traffic ends up in the database? if so can I
+just interact with the DB? what will I need? SQL-to-ISO decoder? i think
+NOW i'm more comfortable working with SQL than XMPP.
+
+
+-- 
+rxw1510
+------------------------------------------------------------------------
+rxw1510's Profile: <A HREF="http://www.jabberforum.org/member.php?userid=17256">http://www.jabberforum.org/member.php?userid=17256</A>
+View this thread: <A HREF="http://www.jabberforum.org/showthread.php?t=734">http://www.jabberforum.org/showthread.php?t=734</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="057530.html">[jdev] Jabber - Core banking (ISO-8583)
+</A></li>
+	<LI>Next message: <A HREF="057534.html">[jdev] auth code failes
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57533">[ date ]</a>
+              <a href="thread.html#57533">[ thread ]</a>
+              <a href="subject.html#57533">[ subject ]</a>
+              <a href="author.html#57533">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

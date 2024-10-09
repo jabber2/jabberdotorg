@@ -1,0 +1,373 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] File transfer not working using GLOOX
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20File%20transfer%20not%20working%20using%20GLOOX&In-Reply-To=%3CCAPZdQyRsiWjUFW8k4ORJ%3DCJHKz0z148m%3DgdOSJNX%3DTp4Qkn%2B1w%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="090050.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] File transfer not working using GLOOX</H1>
+    <B>Vimal Kumar Mishra</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20File%20transfer%20not%20working%20using%20GLOOX&In-Reply-To=%3CCAPZdQyRsiWjUFW8k4ORJ%3DCJHKz0z148m%3DgdOSJNX%3DTp4Qkn%2B1w%40mail.gmail.com%3E"
+       TITLE="[jdev] File transfer not working using GLOOX">vimalkumar.mishra at relevancelab.com
+       </A><BR>
+    <I>Tue Dec 30 05:37:18 UTC 2014</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="090050.html">[jdev] File transfer not working using GLOOX
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90051">[ date ]</a>
+              <a href="thread.html#90051">[ thread ]</a>
+              <a href="subject.html#90051">[ subject ]</a>
+              <a href="author.html#90051">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>hi kalpana
+
+I am sorry that was not my requirement so i dont know anything about this.
+
+thanks
+vimal mishra
+
+Thanks and Regards,
+Vimal Mishra
+
+On Wed, Dec 24, 2014 at 2:49 PM, Kalpana Anbalagan &lt;
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kalpanaanbalagann at gmail.com</A>&gt; wrote:
+
+&gt;<i> Hi,
+</I>&gt;<i>   I m using GLOOX example code to do file transfer..(ft_send.cpp file)
+</I>&gt;<i> I have a eJabberd server in my machine (binding to localhost : 5222) and a
+</I>&gt;<i> Jabber Messenger.
+</I>&gt;<i> I m running my code in windows platform using the example code given in
+</I>&gt;<i> ft_send.cpp..
+</I>&gt;<i> I m not able to transfer the file.
+</I>&gt;<i> Please let me know what I m doing wrong here..And also wanted to know when
+</I>&gt;<i> handleFTBytestream() API will get called..
+</I>&gt;<i>
+</I>&gt;<i> Thanks in advance for your help.
+</I>&gt;<i>
+</I>&gt;<i> see below my code//
+</I>&gt;<i>
+</I>&gt;<i> #include &quot;client.h&quot;
+</I>&gt;<i> #include &quot;connectionlistener.h&quot;
+</I>&gt;<i> #include &quot;stanza.h&quot;
+</I>&gt;<i> #include &quot;gloox.h&quot;
+</I>&gt;<i> #include &quot;disco.h&quot;
+</I>&gt;<i> #include &quot;loghandler.h&quot;
+</I>&gt;<i> #include &quot;logsink.h&quot;
+</I>&gt;<i> #include &quot;siprofileft.h&quot;
+</I>&gt;<i> #include &quot;siprofilefthandler.h&quot;
+</I>&gt;<i> #include &quot;bytestreamdatahandler.h&quot;
+</I>&gt;<i> #include &quot;socks5bytestreamserver.h&quot;
+</I>&gt;<i> using namespace gloox;
+</I>&gt;<i>
+</I>&gt;<i> #include &lt;sys/types.h&gt;
+</I>&gt;<i> #include &lt;sys/stat.h&gt;
+</I>&gt;<i> //#include &lt;unistd.h&gt;
+</I>&gt;<i> #include &lt;stdio.h&gt;
+</I>&gt;<i> #include &lt;string&gt;
+</I>&gt;<i> #include &lt;fstream&gt;
+</I>&gt;<i> #include &lt;ios&gt;
+</I>&gt;<i> #include &lt;time.h&gt;
+</I>&gt;<i> #include &lt;cstdio&gt; // [s]print[f]
+</I>&gt;<i>
+</I>&gt;<i> #if defined( WIN32 ) || defined( _WIN32 )
+</I>&gt;<i> # include &lt;windows.h&gt;
+</I>&gt;<i> #endif
+</I>&gt;<i>
+</I>&gt;<i> /**
+</I>&gt;<i>  * Usage:
+</I>&gt;<i>  *   ft_send <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jid at server</A>/full /path/to/file
+</I>&gt;<i>  *
+</I>&gt;<i>  * Sends the given file to the given full JID.
+</I>&gt;<i>  */
+</I>&gt;<i> class FTTest : public LogHandler, ConnectionListener, SIProfileFTHandler,
+</I>&gt;<i> BytestreamDataHandler
+</I>&gt;<i> {
+</I>&gt;<i>   public:
+</I>&gt;<i>     FTTest( const JID&amp; to, const std::string&amp; file ) : m_bs( 0 ), m_to( to
+</I>&gt;<i> ), m_file( file ), m_quit( false ) {}
+</I>&gt;<i>
+</I>&gt;<i>     virtual ~FTTest() {}
+</I>&gt;<i>
+</I>&gt;<i>     void start()
+</I>&gt;<i>     {
+</I>&gt;<i>
+</I>&gt;<i>       struct stat f_stat;
+</I>&gt;<i>       if( stat( m_file.c_str(), &amp;f_stat ) )
+</I>&gt;<i>         return;
+</I>&gt;<i>
+</I>&gt;<i>       m_size = f_stat.st_size;
+</I>&gt;<i>       std::ifstream ifile( m_file.c_str(), std::ios_base::in |
+</I>&gt;<i> std::ios_base::binary );
+</I>&gt;<i>       if( !ifile )
+</I>&gt;<i>         return;
+</I>&gt;<i>
+</I>&gt;<i>       JID jid( &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kalpana at 127.0.0.1</A>/Jabber Messenger&quot; );
+</I>&gt;<i>       j = new Client( jid, &quot;kalpana&quot; );
+</I>&gt;<i>       j-&gt;registerConnectionListener( this );
+</I>&gt;<i>       j-&gt;disco()-&gt;setVersion( &quot;ftsend&quot;, GLOOX_VERSION, &quot;Linux&quot; );
+</I>&gt;<i>       j-&gt;disco()-&gt;setIdentity( &quot;client&quot;, &quot;bot&quot; );
+</I>&gt;<i>       StringList ca;
+</I>&gt;<i>       ca.push_back( &quot;/path/to/cacert.crt&quot; );
+</I>&gt;<i>       j-&gt;setCACerts( ca );
+</I>&gt;<i>
+</I>&gt;<i>       j-&gt;logInstance().registerLogHandler( LogLevelDebug, LogAreaAll, this
+</I>&gt;<i> );
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>       m_server = new SOCKS5BytestreamServer( j-&gt;logInstance(), 7777 );
+</I>&gt;<i>       printf( &quot;about to listen\n&quot; );
+</I>&gt;<i>       ConnectionError le = ConnNoError;
+</I>&gt;<i>       if( ( le = m_server-&gt;listen() ) != ConnNoError )
+</I>&gt;<i>         printf( &quot;listen returned: %d\n&quot;, le );
+</I>&gt;<i>       printf( &quot;listening\n&quot; );
+</I>&gt;<i>
+</I>&gt;<i>       f = new SIProfileFT( j, this );
+</I>&gt;<i>       f-&gt;registerSOCKS5BytestreamServer( m_server );
+</I>&gt;<i>   f-&gt;addStreamHost( j-&gt;jid(),&quot;localhost&quot;, 7777);
+</I>&gt;<i>       // you should obtain this using disco, really:
+</I>&gt;<i>      f-&gt;addStreamHost( JID( &quot;reflector.amessage.eu&quot; ), &quot;
+</I>&gt;<i> reflector.amessage.eu&quot;, 6565 );
+</I>&gt;<i> //       f-&gt;addStreamHost( JID( &quot;proxy.jabber.org&quot; ), &quot;208.245.212.98&quot;,
+</I>&gt;<i> 7777 );
+</I>&gt;<i>
+</I>&gt;<i>       if( j-&gt;connect( false ) )
+</I>&gt;<i>       {
+</I>&gt;<i>         char input[200024];
+</I>&gt;<i>         ConnectionError ce = ConnNoError;
+</I>&gt;<i>         ConnectionError se = ConnNoError;
+</I>&gt;<i>         while( ce == ConnNoError )
+</I>&gt;<i>         {
+</I>&gt;<i>           if( m_quit )
+</I>&gt;<i>             j-&gt;disconnect();
+</I>&gt;<i>
+</I>&gt;<i>           ce = j-&gt;recv( 1 );
+</I>&gt;<i>           if( m_server )
+</I>&gt;<i>           {
+</I>&gt;<i>             se = m_server-&gt;recv( 1 );
+</I>&gt;<i>             if( se != ConnNoError )
+</I>&gt;<i>             {
+</I>&gt;<i>               printf( &quot;SOCKS5BytestreamServer returned: %d\n&quot;, se );
+</I>&gt;<i>               delete m_server;
+</I>&gt;<i>               m_server = 0;
+</I>&gt;<i>               m_quit = true;
+</I>&gt;<i>             }
+</I>&gt;<i>           }
+</I>&gt;<i>           if(!ifile.eof() )
+</I>&gt;<i>   {
+</I>&gt;<i>   if( m_bs )
+</I>&gt;<i>           {
+</I>&gt;<i>             if( m_bs-&gt;isOpen() )
+</I>&gt;<i>             {
+</I>&gt;<i>               ifile.read( input, 200024 );
+</I>&gt;<i>               std::string t( input, ifile.gcount() );
+</I>&gt;<i>               if( !m_bs-&gt;send( t ) )
+</I>&gt;<i>                 m_quit = true;
+</I>&gt;<i>             }
+</I>&gt;<i>             m_bs-&gt;recv( 1 );
+</I>&gt;<i>           }
+</I>&gt;<i>   }
+</I>&gt;<i>           else if( m_bs )
+</I>&gt;<i>             m_bs-&gt;close();
+</I>&gt;<i>         }
+</I>&gt;<i>         printf( &quot;ce: %d\n&quot;, ce );
+</I>&gt;<i>       }
+</I>&gt;<i>
+</I>&gt;<i>       f-&gt;dispose( m_bs );
+</I>&gt;<i>       delete f;
+</I>&gt;<i>       delete m_server;
+</I>&gt;<i>       delete j;
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     virtual void onConnect()
+</I>&gt;<i>     {
+</I>&gt;<i>       printf( &quot;connected!!!\n&quot; );
+</I>&gt;<i>
+</I>&gt;<i>  f-&gt;requestFT( m_to, m_file, m_size);
+</I>&gt;<i>     //  f-&gt;requestFT( m_to, m_file, m_size );
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     virtual void onDisconnect( ConnectionError e )
+</I>&gt;<i>     {
+</I>&gt;<i>       printf( &quot;ft_send: disconnected: %d\n&quot;, e );
+</I>&gt;<i>       if( e == ConnAuthenticationFailed )
+</I>&gt;<i>         printf( &quot;auth failed. reason: %d\n&quot;, j-&gt;authError() );
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     virtual bool onTLSConnect( const CertInfo&amp; info )
+</I>&gt;<i>     {
+</I>&gt;<i>       time_t from( info.date_from );
+</I>&gt;<i>       time_t to( info.date_to );
+</I>&gt;<i>
+</I>&gt;<i>       printf( &quot;status: %d\nissuer: %s\npeer: %s\nprotocol: %s\nmac:
+</I>&gt;<i> %s\ncipher: %s\ncompression: %s\n&quot;
+</I>&gt;<i>               &quot;from: %s\nto: %s\n&quot;,
+</I>&gt;<i>               info.status, info.issuer.c_str(), info.server.c_str(),
+</I>&gt;<i>               info.protocol.c_str(), info.mac.c_str(), info.cipher.c_str(),
+</I>&gt;<i>               info.compression.c_str(), ctime( &amp;from ), ctime( &amp;to ) );
+</I>&gt;<i>       return true;
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     virtual void handleLog( LogLevel level, LogArea area, const
+</I>&gt;<i> std::string&amp; message )
+</I>&gt;<i>     {
+</I>&gt;<i>       printf(&quot;log: level: %d, area: %d, %s\n&quot;, level, area,
+</I>&gt;<i> message.c_str() );
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     virtual void handleFTRequest( const JID&amp; from, const JID&amp; /*to*/,
+</I>&gt;<i> const std::string&amp; sid,
+</I>&gt;<i>                                   const std::string&amp; name, long size,
+</I>&gt;<i> const std::string&amp; hash,
+</I>&gt;<i>                                   const std::string&amp; date, const
+</I>&gt;<i> std::string&amp; mimetype,
+</I>&gt;<i>                                   const std::string&amp; desc, int /*stypes*/ )
+</I>&gt;<i>     {
+</I>&gt;<i>       printf( &quot;received ft request from %s: %s (%ld bytes, sid: %s). hash:
+</I>&gt;<i> %s, date: %s, mime-type: %s\n&quot;
+</I>&gt;<i>               &quot;desc: %s\n&quot;,
+</I>&gt;<i>               from.full().c_str(), name.c_str(), size, sid.c_str(),
+</I>&gt;<i> hash.c_str(), date.c_str(),
+</I>&gt;<i>               mimetype.c_str(), desc.c_str() );
+</I>&gt;<i>       f-&gt;acceptFT( from, sid, SIProfileFT::FTTypeS5B );
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i> //     virtual void handleFTRequestResult( const JID&amp; /*from*/, const
+</I>&gt;<i> std::string&amp; /*sid*/ )
+</I>&gt;<i> //     {
+</I>&gt;<i> //     }
+</I>&gt;<i>
+</I>&gt;<i>     virtual void handleFTRequestError( const IQ&amp; /*iq*/, const
+</I>&gt;<i> std::string&amp; /*sid*/ )
+</I>&gt;<i>     {
+</I>&gt;<i>       printf( &quot;ft request error\n&quot; );
+</I>&gt;<i>       m_quit = true;
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     virtual void handleFTBytestream( Bytestream* bs )
+</I>&gt;<i>     {
+</I>&gt;<i>       printf( &quot;received bytestream of type: %s&quot;, bs-&gt;type() ==
+</I>&gt;<i> Bytestream::S5B ? &quot;s5b&quot; : &quot;ibb&quot; );
+</I>&gt;<i>       m_bs = bs;
+</I>&gt;<i>       m_bs-&gt;registerBytestreamDataHandler( this );
+</I>&gt;<i>       if( m_bs-&gt;connect() )
+</I>&gt;<i>       {
+</I>&gt;<i>         if( bs-&gt;type() == Bytestream::S5B )
+</I>&gt;<i>           printf( &quot;ok! s5b connected to streamhost\n&quot; );
+</I>&gt;<i>         else
+</I>&gt;<i>           printf( &quot;ok! ibb sent request to remote entity\n&quot; );
+</I>&gt;<i>       }
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     virtual const std::string handleOOBRequestResult( const JID&amp; /*from*/,
+</I>&gt;<i> const JID&amp; /*to*/, const std::string&amp; /*sid*/ )
+</I>&gt;<i>     {
+</I>&gt;<i>       return std::string();
+</I>&gt;<i>     };
+</I>&gt;<i>
+</I>&gt;<i>     virtual void handleBytestreamData( Bytestream* /*bs*/, const
+</I>&gt;<i> std::string&amp; data )
+</I>&gt;<i>     {
+</I>&gt;<i>       printf( &quot;received %d bytes of data:\n%s\n&quot;, data.length(),
+</I>&gt;<i> data.c_str() );
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     virtual void handleBytestreamError( Bytestream* /*bs*/, const IQ&amp;
+</I>&gt;<i> /*iq*/ )
+</I>&gt;<i>     {
+</I>&gt;<i>       printf( &quot;bytestream error\n&quot; );
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     virtual void handleBytestreamOpen( Bytestream* /*bs*/ )
+</I>&gt;<i>     {
+</I>&gt;<i>       printf( &quot;bytestream opened\n&quot; );
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>     virtual void handleBytestreamClose( Bytestream* /*bs*/ )
+</I>&gt;<i>     {
+</I>&gt;<i>       printf( &quot;bytestream closed\n&quot; );
+</I>&gt;<i>       m_quit = true;
+</I>&gt;<i>     }
+</I>&gt;<i>
+</I>&gt;<i>   private:
+</I>&gt;<i>     Client *j;
+</I>&gt;<i>     SIProfileFT* f;
+</I>&gt;<i>     Bytestream* m_bs;
+</I>&gt;<i>     SOCKS5BytestreamServer* m_server;
+</I>&gt;<i>     JID m_to;
+</I>&gt;<i>     std::string m_file;
+</I>&gt;<i>     bool m_quit;
+</I>&gt;<i>     int m_size;
+</I>&gt;<i> };
+</I>&gt;<i>
+</I>&gt;<i> int main( int argc, char** argv )
+</I>&gt;<i> {
+</I>&gt;<i>  // if( argc == 3 )
+</I>&gt;<i>   {
+</I>&gt;<i>     JID j( &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">best at 127.0.0.1</A>/Jabber Messenger&quot; );
+</I>&gt;<i>     if( j.resource().empty() )
+</I>&gt;<i>     {
+</I>&gt;<i>       printf( &quot;error: need full jid\n&quot; );
+</I>&gt;<i>       return 1;
+</I>&gt;<i>     }
+</I>&gt;<i> FTTest *r = new FTTest( j, &quot;c:\\read.xml&quot; );
+</I>&gt;<i>     r-&gt;start();
+</I>&gt;<i>     delete( r );
+</I>&gt;<i>   }
+</I>&gt;<i> //  else
+</I>&gt;<i>   {
+</I>&gt;<i>     printf( &quot;error: need jid + file\n&quot; );
+</I>&gt;<i>   }
+</I>&gt;<i>   return 0;
+</I>&gt;<i> }
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Thanks,
+</I>&gt;<i> kalpana
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20141230/55aa4749/attachment.html">https://www.jabber.org/jdev/attachments/20141230/55aa4749/attachment.html</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="090050.html">[jdev] File transfer not working using GLOOX
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90051">[ date ]</a>
+              <a href="thread.html#90051">[ thread ]</a>
+              <a href="subject.html#90051">[ subject ]</a>
+              <a href="author.html#90051">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

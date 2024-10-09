@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabberd 1.4 to 2.0 migration script
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%201.4%20to%202.0%20migration%20script&In-Reply-To=%3CNFEGKFNHMEJLECGPEHIDEECJCAAA.nauman%40naseebnetworks.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="047968.html">
+   <LINK REL="Next"  HREF="047986.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabberd 1.4 to 2.0 migration script</H1>
+    <B>Nauman Khan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%201.4%20to%202.0%20migration%20script&In-Reply-To=%3CNFEGKFNHMEJLECGPEHIDEECJCAAA.nauman%40naseebnetworks.com%3E"
+       TITLE="[JDEV] jabberd 1.4 to 2.0 migration script">nauman at naseebnetworks.com
+       </A><BR>
+    <I>Thu Jan 22 06:37:49 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="047968.html">[JDEV] jabberd 1.4 to 2.0 migration script
+</A></li>
+        <LI>Next message: <A HREF="047986.html">[JDEV] jabberd 1.4 to 2.0 migration script
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47984">[ date ]</a>
+              <a href="thread.html#47984">[ thread ]</a>
+              <a href="subject.html#47984">[ subject ]</a>
+              <a href="author.html#47984">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi All,
+
+What kind of search can i implement using Jabber protocol - and where can i
+find documentation for it like syntax of request and response ?
+
+Regards
+Nauman
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+Trejkaz Xaoza
+Sent: Wednesday, January 21, 2004 5:35 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+Subject: [JDEV] jabberd 1.4 to 2.0 migration script
+
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+
+Attached is a Ruby script for migrating jabberd1.4 spool directories to
+jabberd2 mysql.  Unlike the script provided with jabberd2 itself, this one
+migrates all the data, or at least all the data possible under the jabberd2
+database schema.
+
+It migrates offline messages, which was the primary reason for writing it.
+
+Warning: this script is in beta state.  I cannot guarantee it will work on
+all
+spool directories, and I claim no responsibilities for what damage it might
+do to your system.  The last time I ran it, a tiger jumped in my window,
+swear to god.  'Buyer beware', YMMV, and so forth.
+
+Requirements:
+    - Ruby (tested on 1.8.1 but I don't think I used any new features so it
+      might work on earlier.  If it does work on earlier, let me know and
+I'll
+      update this!)
+    - rexml
+    - mysql-ruby
+
+To use:
+    - cd to your spool directory.
+    - type:   /path/to/migrate.rb jabber.example.com &gt; jabber-data.sql
+
+It will sit and whir for a while, telling you every user it's processing as
+it
+goes through its work.
+
+At present it uses the mysql-ruby library *only* for the string escape
+method.
+I know this is not ideal, however I'm working in a situation where I can't
+run this script on the server so I have to move all the data back to home,
+then back to the server.  It could, however, be trivially modified to
+connect
+to Mysql directly.  I chose Ruby because Perl's XML::DOM didn't feel like it
+had enough support for namespaces, though I'm probably wrong.  Either way it
+took about the same amount of time to write.
+
+A lot of the things it generates aren't 100% efficient.  Particularly, the
+VCard migration is really heavy on the number of SQL statements it
+generates.
+I could have done it better, but the most important thing was to get it to
+work right, fast.  I know also that the VCard conversion isn't 100%.  There
+are several VCard fields which are permitted in the VCard multiple times and
+as far as I know the database for jabberd2 only allows one of each (that is,
+the ADR and EMAIL elements.)
+
+It seems to work for me, with a bit of hacking of the script values I was
+able
+to set this up on a test server with a different hostname, and my account
+was
+set up correctly.
+
+Give me feedback, let me know if it works for you, or if it breaks.  If it
+breaks, send me a stack trace to me directly (I have TMDA running on my mail
+account so you will have to go through a confirmation process, no big deal
+but I'll warn you anyway.)
+
+Have fun, chaps.
+
+TX
+
+- --
+'Every sufficiently advanced technology is indistinguishable from magic' -
+Arthur C Clarke
+'Every sufficiently advanced magic is indistinguishable from technology' -
+Tom
+Graves
+
+      Email: Trejkaz Xaoza &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">trejkaz at xaoza.net</A>&gt;
+   Web site: <A HREF="http://xaoza.net/trejkaz/">http://xaoza.net/trejkaz/</A>
+  Jabber ID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">trejkaz at jabber.xaoza.net</A>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.3 (GNU/Linux)
+
+iD8DBQFADnH0mifzwBMPxxoRAqrdAJ0fFIW5NblNyctOSfmqlneQCixWJQCfVuwn
+84mk3mfSBF33rn4Ins/qIic=
+=jx3I
+-----END PGP SIGNATURE-----
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="047968.html">[JDEV] jabberd 1.4 to 2.0 migration script
+</A></li>
+	<LI>Next message: <A HREF="047986.html">[JDEV] jabberd 1.4 to 2.0 migration script
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47984">[ date ]</a>
+              <a href="thread.html#47984">[ thread ]</a>
+              <a href="subject.html#47984">[ subject ]</a>
+              <a href="author.html#47984">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

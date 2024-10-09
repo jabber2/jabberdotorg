@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Inputting arbitrary XML for testing
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Inputting%20arbitrary%20XML%20for%20testing&In-Reply-To=%3C427CE9A3.6020100%40laposte.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="051167.html">
+   <LINK REL="Next"  HREF="051169.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Inputting arbitrary XML for testing</H1>
+    <B>Julien PUYDT</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Inputting%20arbitrary%20XML%20for%20testing&In-Reply-To=%3C427CE9A3.6020100%40laposte.net%3E"
+       TITLE="[jdev] Inputting arbitrary XML for testing">julien.puydt at laposte.net
+       </A><BR>
+    <I>Sat May  7 11:15:31 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="051167.html">[jdev] Inputting arbitrary XML for testing
+</A></li>
+        <LI>Next message: <A HREF="051169.html">[jdev] Inputting arbitrary XML for testing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51168">[ date ]</a>
+              <a href="thread.html#51168">[ thread ]</a>
+              <a href="subject.html#51168">[ subject ]</a>
+              <a href="author.html#51168">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Alexey Nezhdanov a &#233;crit :
+&gt;<i> no attach :)
+</I>
+I did attach... some mail filter must have thought it was a virus ; 
+let's try to put it inline then (but it may need some editing):
+
+#!/usr/bin/python
+
+import socket
+
+class VerboseSocket:
+         def __init__ (self, sock):
+                 self.socket = sock
+
+         def connect (self, host, port):
+                 print 'connecting to %s on port %s' % (host, port)
+                 self.socket.connect ((host, port))
+
+         def send (self, data, flags = 0):
+                 print 'SEND:'
+                 print data
+                 self.socket.send (data, flags)
+
+         def recv (self, size, flags = 0):
+                 data = self.socket.recv (size, flags)
+                 print 'RECV:'
+                 print data
+                 return data
+
+         def bind (self, *args):
+                 self.socket.bind (*args)
+
+         def accept (self):
+                 (s, info) = self.socket.accept ()
+                 return (VerboseSocket(s), info)
+
+         def listen (self, *args):
+                 self.socket.listen (*args)
+
+         def fileno (self):
+                 return self.socket.fileno ()
+
+class JabberServer:
+
+         def __init__ (self):
+                 from sys import stdin
+                 import select
+                 s  = VerboseSocket (socket.socket (socket.AF_INET, 
+socket.SOCK_STREAM))
+                 s.bind (('localhost', 5223))
+                 s.listen (1)
+                 (client, info) = s.accept ()
+                 print 'New connection'
+                 running = True
+                 while running:
+                         (r, w, x) = select.select ([stdin, client], [], [])
+                         if client in r:
+                                 data = client.recv (1024)
+                                 pass # we don't care about the data: 
+VerboseSocket!
+                         if stdin in r:
+                                 client.send (stdin.readline ())
+
+
+class JabberClient:
+
+         def __init__ (self, name, passwd):
+                 from sys import stdin
+                 import select
+                 s = self.get_ready_socket (name, passwd)
+                 running = True
+                 while running:
+                         (r, w, x) = select.select ([stdin, s], [], [])
+                         if s in r:
+                                 data = s.recv (1024)
+                                 pass # we don't care about the data: 
+VerboseSocket!
+                         if stdin in r:
+                                 s.send (stdin.readline ())
+
+         def get_ready_socket (self, name, passwd):
+                 import sre, sha
+                 s = VerboseSocket (socket.socket (socket.AF_INET, 
+socket.SOCK_STREAM))
+                 s.connect ('localhost', 5222)
+                 s.send (&quot;&quot;&quot;&lt;?xml version='1.0' encoding='UTF-8'?&gt;&quot;&quot;&quot;)
+                 s.send (&quot;&quot;&quot;&lt;stream:stream xmlns=&quot;jabber:client&quot; 
+xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> to=&quot;localhost&quot; 
+id=&quot;msg_1&quot;&gt;&quot;&quot;&quot;)
+                 data = s.recv (1024)
+                 match = sre.findall (&quot;id='[0-9A-F]+'&quot;, data)[0]
+                 id = match[4:-1]
+                 s.send (&quot;&quot;&quot;&lt;iq type=&quot;get&quot; id=&quot;msg_2&quot;&gt;  &lt;query 
+xmlns=&quot;jabber:iq:auth&quot;&gt;  &lt;username&gt;%s&lt;/username&gt;&lt;/query&gt;&lt;/iq&gt;&quot;&quot;&quot; % name)
+                 s.recv (1024) # just eat the question about our password!
+                 digest = sha.new (id+passwd).hexdigest ()
+                 s.send (&quot;&quot;&quot;&lt;iq type=&quot;set&quot; id=&quot;msg_3&quot;&gt;  &lt;query 
+xmlns=&quot;jabber:iq:auth&quot;&gt;  &lt;username&gt;%s&lt;/username&gt;&lt;digest 
+sid='%s'&gt;%s&lt;/digest&gt;&lt;resource&gt;JabberHelper&lt;/resource&gt;&lt;/query&gt;&lt;/iq&gt;&quot;&quot;&quot; % 
+(name, id, digest))
+                 return s
+
+
+
+if __name__ == '__main__':
+         program = JabberClient ('boojum', 'toto')
+         #JabberServer ()
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="051167.html">[jdev] Inputting arbitrary XML for testing
+</A></li>
+	<LI>Next message: <A HREF="051169.html">[jdev] Inputting arbitrary XML for testing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51168">[ date ]</a>
+              <a href="thread.html#51168">[ thread ]</a>
+              <a href="subject.html#51168">[ subject ]</a>
+              <a href="author.html#51168">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

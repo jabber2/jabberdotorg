@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] IQ queries sent to client vs. handled by server?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20IQ%20queries%20sent%20to%20client%20vs.%20handled%20by%20server%3F&In-Reply-To=%3C996698834.3b686ad2d6c98%40www.ductape.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="038205.html">
+   <LINK REL="Next"  HREF="038207.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] IQ queries sent to client vs. handled by server?</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20IQ%20queries%20sent%20to%20client%20vs.%20handled%20by%20server%3F&In-Reply-To=%3C996698834.3b686ad2d6c98%40www.ductape.net%3E"
+       TITLE="[JDEV] IQ queries sent to client vs. handled by server?">tcharron at ductape.net
+       </A><BR>
+    <I>Wed Aug  1 15:47:14 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="038205.html">[JDEV] IQ queries sent to client vs. handled by server?
+</A></li>
+        <LI>Next message: <A HREF="038207.html">[JDEV] IQ queries sent to client vs. handled by server?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38206">[ date ]</a>
+              <a href="thread.html#38206">[ thread ]</a>
+              <a href="subject.html#38206">[ subject ]</a>
+              <a href="author.html#38206">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Quoting Jens Alfke &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jens at mac.com</A>&gt;:
+&gt;<i> On Wednesday, August 1, 2001, at 09:05 AM, Thomas Charron wrote:
+</I>&gt;<i> &gt; The 'to' JID?  An example would be a jabber:iq:browse message.  If I
+</I>&gt;<i> &gt; browse
+</I>&gt;<i> &gt; to '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tcharron at jabber.org</A>', server handles it.  If I browse
+</I>&gt;<i> &gt; to '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tcharron at jabber.org</A>/WinJab', it goes to the resource.
+</I>&gt;<i> But the same &quot;Generic XML Namespace Storage&quot; draft says &quot;Generic XML may
+</I>&gt;<i> also be stored public or private *on a specific resource*. When the 
+</I>&gt;<i> recipient of the iq set is a resource of that user, the namespace is 
+</I>&gt;<i> stored only on that resource and that resource then referenced in the 
+</I>&gt;<i> main users browse data.&quot; (Emphasis mine.) Which implies to me that a 
+</I>&gt;<i> later 'get' request made *on that resource* will return the set data, 
+</I>&gt;<i> since otherwise why bother putting it there?
+</I>
+  Then this would need to be handled by a servside module. The serverside 
+modules can and will recieve ALL iq requests, it's up to the module as to if 
+the module is going to let it pass thru to the client or not..  Easy enough...
+
+&gt;<i> (In any case, I'm not talking about jabber:iq:browse, but to namespaces
+</I>&gt;<i> that are not known to the server. If that makes a difference.)
+</I>
+  There would need to be TWO layers of namespaces, if this is the case.  ONE 
+that would be like 'jabber:iq:storage', and another that would contain the data 
+to store:
+
+&lt;iq type='set' to'jid'&gt;
+  &lt;storage xmlns='jabber:iq:storage'&gt;
+  &lt;homeaddy xmlns='tomscustomdata'&gt;
+    &lt;Street&gt;1 Oak Ridge&lt;/Street&gt;
+    &lt;City&gt;SomeCity&lt;/City&gt;
+  &lt;/homeaddy&gt;
+  &lt;/storage&gt;
+&lt;/iq&gt;
+
+  This way, mod_storage, or whatever it's gonna be called, can intercept 
+a 'storage' request, and also properly maintain a decent data format..
+
+&gt;<i> Might it be that the real answer is that the 'get' request will be 
+</I>&gt;<i> handled by the server only if there is already data stored under that 
+</I>&gt;<i> namespace, and otherwise dispatched to the client? That would make the
+</I>&gt;<i> most sense to me, and fits in with what Jeremie is so inscrutably 
+</I>&gt;<i> alluding to in the draft &lt;<A HREF="http://docs.jabber.org/draft-">http://docs.jabber.org/draft-</A>
+</I>&gt;<i> proto/html/xml.html&gt;.
+</I>
+  Yep, that'd be a good way to do it as well..
+
+&gt;<i> (I had a longer gripe here complaining about how incredibly vague much
+</I>&gt;<i> of the documentation is, but I thought it over and decided to remove it.
+</I>&gt;<i> Except for this allusion to it :)
+</I>
+  'Known Bug'..  8-P
+
+--- 
+Thomas Charron
+&lt;&lt; Wanted: One decent sig &gt;&gt;
+&lt;&lt; Preferably litle used  &gt;&gt;
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="038205.html">[JDEV] IQ queries sent to client vs. handled by server?
+</A></li>
+	<LI>Next message: <A HREF="038207.html">[JDEV] IQ queries sent to client vs. handled by server?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38206">[ date ]</a>
+              <a href="thread.html#38206">[ thread ]</a>
+              <a href="subject.html#38206">[ subject ]</a>
+              <a href="author.html#38206">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

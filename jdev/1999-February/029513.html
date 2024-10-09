@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [JabberBox 1.0]
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5BJabberBox%201.0%5D&In-Reply-To=%3CPine.LNX.3.96.990203172419.22820F-100000%40mondo.eppg.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="029512.html">
+   <LINK REL="Next"  HREF="029514.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [JabberBox 1.0]</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5BJabberBox%201.0%5D&In-Reply-To=%3CPine.LNX.3.96.990203172419.22820F-100000%40mondo.eppg.com%3E"
+       TITLE="[JDEV] [JabberBox 1.0]">jeremie at jabber.org
+       </A><BR>
+    <I>Wed Feb  3 17:31:18 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="029512.html">[JDEV] [Protocol 1.0]
+</A></li>
+        <LI>Next message: <A HREF="029514.html">[JDEV] [Transports 1.0]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29513">[ date ]</a>
+              <a href="thread.html#29513">[ thread ]</a>
+              <a href="subject.html#29513">[ subject ]</a>
+              <a href="author.html#29513">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+#### Intro
+
+The JabberBox is simply a &quot;data router&quot;.  It resolves the transport/server
+names and routes chunks of XML between them, creating sockets where
+needed. 
+
+When the JabberBox starts, it reads in the main configuration file for
+itself and all of the local transports.  It then starts two listening
+sockets, one on localhost:5269 and the localnetaddress:5269. 
+
+Connections to the localhost:5269 are most likely from transports.  When a
+transport connects it has the special permission to receive its chunk of
+the main configuration file.  After it initializes, it provides the
+names/aliases it is to be known as. 
+
+#### Protocol
+
+The transport might send:
+	&lt;?xml version=&quot;1.0&quot;?&gt;
+	&lt;jabberbox name=&quot;TPNAME&quot;&gt;
+Then the server would respond:
+	&lt;?xml version=&quot;1.0&quot;?&gt;
+	&lt;jabberbox&gt;
+	&lt;config&gt;--this is raw data from the main config file for TPNAME&lt;/config&gt;
+Then the transport would initialize and send:
+	&lt;alias&gt;TPNAME&lt;/alias&gt;
+	&lt;alias&gt;tp.server.com&lt;/alias&gt;
+At this point the JabberBox is ready to start delivering incoming data to
+the transport and the transport is configured and ready to receive.  What
+the transport would send/receive would look like: 
+	&lt;r from=&quot;tp.server.com&quot; to=&quot;other.server.com&quot;&gt;--raw XML data&lt;/r&gt;
+
+Connections from other servers come in on the local Internet socket on
+port 5269, and are only allowed to send data and receive errors/bounces.
+Any data destined for another server is delivered through a new socket to
+that server, and that socket remains open until there is an internal idle
+timeout or the JabberBox exits. 
+
+A typical connection from another server and chunk of data might look like:
+	&lt;?xml version=&quot;1.0&quot;?&gt;
+	&lt;jabberbox name=&quot;other.server.com&quot;&gt;
+	&lt;r from=&quot;tp.server.com&quot; to=&quot;other.server.com&quot;&gt;--raw XML data&lt;/r&gt;
+	&lt;/jabberbox&gt;
+
+The JabberBox resolves the &quot;to&quot; sides of these &lt;r&gt;&lt;/r&gt; &quot;packets&quot; and
+delivers them, otherwise it bounces them with another packet: 
+	&lt;r to=&quot;tp.server.com&quot; from=&quot;other.server.com&quot; error=&quot;noname&quot;&gt;--raw XML data&lt;/r&gt;
+The error will then be delivered back to the original sender server/transport.
+
+Essentially, the JabberBox is just a server routing XML documents in
+chunks to other JabberBox's or local transports.  It doesn't touch the
+contents of the &lt;r&gt;&lt;/r&gt; packets.  Since it's the main server process, it
+also provides an easy way to centrally manage the configuration data for
+local transports. 
+
+
+#### Ideas
+
+What I would like to see, is some slight additions made to the protocol
+between a transport and the JabberBox, so that transports can feed the
+JabberBox two types of administrative information.  When they connect,
+they could optionally send a public info packet, stating whether they
+allow public registrations, what type of transport they are, if they have
+a web site, number of registered users, a whole host of one shot
+information.  Also, periodically, they could send in temp stats such as
+number of connected users, number of users logged in so far today, etc...
+The local JabberBox could then send all of this collected data upon
+request, mostly for the local administrator or as cool statistics for the
+website for this Jabber installation. 
+
+The next step would be to have the JabberBox send in this information to a
+central Jabber server(@jabber.org) and global stats can be kept as well as
+a current list of online servers that anyone can register with and
+information about them.  For an example of something similar, check out
+<A HREF="http://www.shoutcast.com/">http://www.shoutcast.com/</A>
+
+Another idea that would fit in with the JabberBox, is for users that are
+running a server and multiple transports, and don't have the ability to
+easily add DNS aliases to make those transports publicly addressable.  A
+possibility would be to build a DB driven DNS server and do the ml.org
+thing but IP registrations would be done through Jabber, but hopefully
+someone will step up to the plate and do this before we have to :) 
+Another easier possibility would be to allow the JabberBox to send in an
+automated registration request to a special JabberBox server running
+possibly @jabber.org.  This special server would take those registrations
+as if they were real transports and route data to those servers.  Then
+this special JabberBox could have a wildcard DNS address like
+*.home.jabber.org or *.public.jabber.org, and the registration request
+would contain what name they wanted like scoobydoo.public.jabber.org. 
+Other than bandwidth, this is definitely an option that would work and be
+fairly easy to implement.
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="029512.html">[JDEV] [Protocol 1.0]
+</A></li>
+	<LI>Next message: <A HREF="029514.html">[JDEV] [Transports 1.0]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29513">[ date ]</a>
+              <a href="thread.html#29513">[ thread ]</a>
+              <a href="subject.html#29513">[ subject ]</a>
+              <a href="author.html#29513">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

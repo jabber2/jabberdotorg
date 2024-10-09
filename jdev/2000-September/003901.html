@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Exchanging roasters between Jabber Servers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Exchanging%20roasters%20between%20Jabber%20Servers&In-Reply-To=Pine.LNX.4.21.0009081642380.3016-100000%40harpia.mcc.ufc.br">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003899.html">
+   <LINK REL="Next"  HREF="003897.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Exchanging roasters between Jabber Servers</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Exchanging%20roasters%20between%20Jabber%20Servers&In-Reply-To=Pine.LNX.4.21.0009081642380.3016-100000%40harpia.mcc.ufc.br"
+       TITLE="[JDEV] Exchanging roasters between Jabber Servers">mass at ufl.edu
+       </A><BR>
+    <I>Fri Sep  8 22:09:18 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003899.html">[JDEV] Exchanging roasters between Jabber Servers
+</A></li>
+        <LI>Next message: <A HREF="003897.html">[JDEV] Exchanging roasters between Jabber Servers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3901">[ date ]</a>
+              <a href="thread.html#3901">[ thread ]</a>
+              <a href="subject.html#3901">[ subject ]</a>
+              <a href="author.html#3901">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Fri, 8 Sep 2000, Sellaro wrote:
+
+&gt;<i> -----BEGIN PGP SIGNED MESSAGE-----
+</I>&gt;<i> Hash: SHA1
+</I>&gt;<i> 
+</I>&gt;<i> Hi ther folks
+</I>&gt;<i> 
+</I>&gt;<i> I'm quite excited with new horizonts Jabber has brought. One of the best
+</I>&gt;<i> jabber feature is its distributed nature. Another one is server-side
+</I>&gt;<i> roaster storage.
+</I>&gt;<i> 
+</I>&gt;<i> About the later, I was thinking about if already there is a form of
+</I>&gt;<i> server-to-server communication for exchanging rostter of a user.
+</I>&gt;<i> 
+</I>&gt;<i> Suppose I am using jabber.org server while I set up my own jabber
+</I>&gt;<i> server. I build up my roster, get subscription permit from lots of
+</I>&gt;<i> people. OK, my roster is OK at jabber.org. But when my jabber server is up
+</I>&gt;<i> and running, will I have to rebuild my roster? 
+</I>&gt;<i> 
+</I>&gt;<i> That would be a very nice research and implementation matter ;)
+</I>
+This has come up several times, but there are also several issues with
+implementing something like this:
+
+- Security permissions. While at first glance this may seem like an
+innocent feature, the fact is your users have
+approved <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">you at jabberserver</A> to be on their roster. <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">you at otherjabberserver.com</A>
+is a completely different person, and the permissions (i.e subscriptions)
+cannot simply be transferred over. Imagine someone spoofing your account
+to be able to see someone else's online status or get around their message
+filter (&quot;no messages from people not on my roster&quot;).
+
+Also, since you are on their roster as well as <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">you at jabberserver</A>, there
+would be a translation to the new address (not a forwarding, more like a
+supplemental phonebook). This *cannot* be automatic, or you will have a
+security nightmare. Imagine someone hacking your machine and, to have a
+bit of fun, upgrading all the contacts on everyone's list to point to a
+new, fake server. Or even blank space.
+
+- Transport users (i.e. ICQ or AIM users on your roster) will usually have
+JIDs of the type <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">usernumber at icq.jabber.org</A> or <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aollogin at aim.jabber.com.</A>
+These are *not* real users, and the way that it maps a message from
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">you at jabberserver</A> to a AIM or ICQ account is via the transport, which has a
+virtual user in your roster which receives your presence and maps
+accordingly to the other server's space.
+
+Move these to another server and they won't work.  You will need some way
+of mapping these into users on the local server. One way that I have
+thought of doing this was a TID, or transport user identifier. For
+instance, via a special query to the transport machine, you can ask for a
+translation from a JID (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">UIN at icq.jabber.org</A>) to a transport ID
+(icq-transport:UIN). This would be done for transferring rosters and also
+for things like invitations, which have this same problem with virtualized
+users not being the same across servers. One important thing to note is
+that this would not be icq:UIN, as we are not Mirabilis/AOL, and can't
+quite standardize a URI without them ;-)
+
+
+Besides these two issues, it is definately possible and an extremely
+desirable feature. There is a definate need for someone to step in and
+develop a spec (and even better, an implementation) to solve these
+problems.
+
+-David Waite
+
+ &gt; 
+&gt;<i> - --
+</I>&gt;<i> Sellaro
+</I>&gt;<i> 
+</I>&gt;<i> Network Administrator
+</I>&gt;<i> Federal University of Cear&#225; (UFC)
+</I>&gt;<i> Computer Science Dept.
+</I>&gt;<i> Laborat&#243;rio do Mestrado em Ci&#234;ncia da Computa&#231;&#227;o (MCC)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> -----BEGIN PGP SIGNATURE-----
+</I>&gt;<i> Version: GnuPG v1.0.1 (GNU/Linux)
+</I>&gt;<i> Comment: For info see <A HREF="http://www.gnupg.org">http://www.gnupg.org</A>
+</I>&gt;<i> 
+</I>&gt;<i> iD8DBQE5uUKKVStqf8DLnN0RAoGhAKCykwYkbY782HWQI4EmKV6BG2BO7gCfd4Sf
+</I>&gt;<i> Fd5TQqIaQkMzDQgnzozpHK8=
+</I>&gt;<i> =Dx2P
+</I>&gt;<i> -----END PGP SIGNATURE-----
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003899.html">[JDEV] Exchanging roasters between Jabber Servers
+</A></li>
+	<LI>Next message: <A HREF="003897.html">[JDEV] Exchanging roasters between Jabber Servers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3901">[ date ]</a>
+              <a href="thread.html#3901">[ thread ]</a>
+              <a href="subject.html#3901">[ subject ]</a>
+              <a href="author.html#3901">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

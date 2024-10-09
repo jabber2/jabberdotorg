@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Server independant transport packages (for package	maintainers!)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Server%20independant%20transport%20packages%20%28for%20package%0A%09maintainers%21%29&In-Reply-To=%3C200504051333.02192.s.devrieze%40pandora.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="050824.html">
+   <LINK REL="Next"  HREF="050826.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Server independant transport packages (for package	maintainers!)</H1>
+    <B>Sander Devrieze</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Server%20independant%20transport%20packages%20%28for%20package%0A%09maintainers%21%29&In-Reply-To=%3C200504051333.02192.s.devrieze%40pandora.be%3E"
+       TITLE="[jdev] Server independant transport packages (for package	maintainers!)">s.devrieze at pandora.be
+       </A><BR>
+    <I>Tue Apr  5 06:32:57 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="050824.html">[jdev] Group chat with Pandion developers
+</A></li>
+        <LI>Next message: <A HREF="050826.html">[jdev] Serverless (peer2peer) jabber sessions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50825">[ date ]</a>
+              <a href="thread.html#50825">[ thread ]</a>
+              <a href="subject.html#50825">[ subject ]</a>
+              <a href="author.html#50825">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+Last week I made three tutorials describing how to install the &quot;old&quot; Jabber 
+transports in a way that they are compatible with *every* server 
+implementation supporting gateways. Although it is focussed on ejabberd, it 
+will be applicable to other server implementations too.
+
+The biggest problem with the old transports is that they need some (not all) 
+parts of jabberd 1.4.x. So, even if you are running a server like ejabberd, 
+you need these parts. I know there is the Jabber Runtime Component 
+( <A HREF="http://jabber.terrapin.com/JCR/">http://jabber.terrapin.com/JCR/</A> ), but the disadvantages of using this as a 
+solution instead of using the native parts of jabberd14 are:
+* a higher chance for bugs in JCR than just using native jabberd 1.4.x code
+* you have not the newest jabberd 1.4.x code (which fixes bugs).
+
+That's why I created these three tutorials (currently only tested with success 
+under Debian):
+<A HREF="http://ejabberd.jabber.ru/aim-transport">http://ejabberd.jabber.ru/aim-transport</A> (the old AIM/ICQ-Transport)
+<A HREF="http://ejabberd.jabber.ru/yahoo-transport-2">http://ejabberd.jabber.ru/yahoo-transport-2</A> (the old Yahoo-transport-2)
+<A HREF="http://ejabberd.jabber.ru/msn-transport">http://ejabberd.jabber.ru/msn-transport</A> (the old MSN Transport)
+
+P.S. In <A HREF="http://ejabberd.jabber.ru/tutorials-transports-privative">http://ejabberd.jabber.ru/tutorials-transports-privative</A> you can find 
+more tutorials and I am planning tutorials for jabber-gg-transport, ILE (I 
+Love Email), and JIT. So, in case you are interested ;-)
+
+So, how can package maintainers make there old jabberd14-only transports 
+server independant?
+
+They need to do only two things:
+
+1) First, they need to split the jabberd14 package into two parts: 
+&quot;jabberd-base&quot; which contains the library for xdb_file and the jabberd 
+binary, and another package with the name &quot;jabberd&quot; which contains all other 
+parts. The &quot;jabberd&quot; package should have a dependancy on &quot;jabberd-base&quot;. The 
+transport packages should also have a dependancy on &quot;jabberd-base&quot;.
+
+2) Second, they need to make the transport configuration files in the 
+transport packages server independant (see examples in tutorials). Also they 
+need to add separate init scripts for the transports. Eventually they can 
+create an init script that calls all the scripts in /etc/init.d/jabber/ in 
+one time. e.g.:
+
+/etc/init.d/jabber-server (the script that calls all other scripts)
+/etc/init.d/jabber-server-parts/ejabberd (or jabberd, or...)
+/etc/init.d/jabber-server-parts/msn-transport
+/etc/init.d/jabber-server-parts/yahoo-transport-2
+/etc/init.d/jabber-server-parts/etc
+
+As you can see this will make it very stream-lined, transparant, *and* easy to 
+document! In the documentation you just need for example &quot;apt-get install 
+&lt;choose a Jabber/XMPP server&gt;&quot;, install the transports you want, and run 
+&quot;/etc/init.d/jabber-server start&quot;. As you can see, that will be server 
+independant documentation! :O)
+
+
+So, spread the word to your distributions package maintainers! :-)
+
+-- 
+Mvg, Sander Devrieze.
+
+xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sander at l4l.be</A> ( <A HREF="http://jabber.tk/">http://jabber.tk/</A> )
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20050405/665a96ab/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20050405/665a96ab/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="050824.html">[jdev] Group chat with Pandion developers
+</A></li>
+	<LI>Next message: <A HREF="050826.html">[jdev] Serverless (peer2peer) jabber sessions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50825">[ date ]</a>
+              <a href="thread.html#50825">[ thread ]</a>
+              <a href="subject.html#50825">[ subject ]</a>
+              <a href="author.html#50825">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

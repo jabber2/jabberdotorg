@@ -1,0 +1,276 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Problem storing Private Data
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Problem%20storing%20Private%20Data&In-Reply-To=%3CKEEIJDHOCKFEMBECJJLPMENEDJAA.dmitchell%40vultus.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="044101.html">
+   <LINK REL="Next"  HREF="044105.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Problem storing Private Data</H1>
+    <B>Dave Mitchell</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Problem%20storing%20Private%20Data&In-Reply-To=%3CKEEIJDHOCKFEMBECJJLPMENEDJAA.dmitchell%40vultus.com%3E"
+       TITLE="[JDEV] Problem storing Private Data">dmitchell at vultus.com
+       </A><BR>
+    <I>Mon Nov 11 10:27:50 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="044101.html">[JDEV] small bug (iq:roster)
+</A></li>
+        <LI>Next message: <A HREF="044105.html">[JDEV] Problem storing Private Data
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#44104">[ date ]</a>
+              <a href="thread.html#44104">[ thread ]</a>
+              <a href="subject.html#44104">[ subject ]</a>
+              <a href="author.html#44104">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I've been trying to store private data by sending the following message:
+
+&lt;iq type=&quot;set&quot; id=&quot;1001&quot;&gt;
+  &lt;query xmns=&quot;jabber:iq:private&quot;&gt;
+    &lt;jabberClient xmns=&quot;jabberClient:privateInfo&quot;&gt;
+      &lt;privateData&gt;TestMessage&lt;/privateData&gt;
+    &lt;/jabberClient&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+I get the following back as a response:
+
+
+&lt;iq type='error' id='1001' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>/Work'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>/Work'&gt;
+  &lt;query xmns='jabber:iq:private'&gt;
+    &lt;jabberClient xmns='jabberClient:privateInfo'&gt;
+      &lt;privateData&gt;TestMessage&lt;/privateData&gt;
+    &lt;/jabberClient&gt;
+  &lt;/query&gt;
+&lt;error code='503'&gt;Service Unavailable&lt;/error&gt;&lt;/iq&gt;
+
+
+
+When I look at the log I see the following:
+
+
+
+
+Mon Nov 11 08:57:12 2002  mio.c:760 MIO read from socket 16: &lt;iq type=&quot;set&quot;
+id=&quot;1001&quot;&gt;
+  &lt;query xmns=&quot;jabber:iq:private&quot;&gt;
+    &lt;jabberClient xmns=&quot;jabberClient:privateInfo&quot;&gt;
+      &lt;privateData&gt;TestMessage&lt;/privateData&gt;
+    &lt;/jabberClient&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+Mon Nov 11 08:57:12 2002  c2s [client.c:277] pthsock_client_read called
+with: m:81436A8 flag:3 arg:81437A8
+Mon Nov 11 08:57:12 2002  deliver.c:474 DELIVER 4:jabber.vultus.com &lt;route
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>/8152688' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">16 at c2s</A>/81436A8'&gt;&lt;iq
+type='set' id='1001'&gt;
+  &lt;query xmns='jabber:iq:private'&gt;
+    &lt;jabberClient xmns='jabberClient:privateInfo'&gt;
+      &lt;privateData&gt;TestMessage&lt;/privateData&gt;
+    &lt;/jabberClient&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;&lt;/route&gt;
+Mon Nov 11 08:57:12 2002  deliver.c:678 delivering to instance 'sessions'
+Mon Nov 11 08:57:12 2002  deliver.c:94 (80E1038)incoming packet &lt;route
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>/8152688' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">16 at c2s</A>/81436A8'&gt;&lt;iq
+type='set' id='1001'&gt;
+  &lt;query xmns='jabber:iq:private'&gt;
+    &lt;jabberClient xmns='jabberClient:privateInfo'&gt;
+      &lt;privateData&gt;TestMessage&lt;/privateData&gt;
+    &lt;/jabberClient&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;&lt;/route&gt;
+Mon Nov 11 08:57:12 2002  users.c:143
+js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>,8147BC0)
+Mon Nov 11 08:57:12 2002  mtq 8146160 entering from pth
+Mon Nov 11 08:57:12 2002  mtq 8146160 queue call 82071C0
+Mon Nov 11 08:57:12 2002  sessions.c:246 THREAD:SESSION:FROM received a
+packet!
+Mon Nov 11 08:57:12 2002  modules.c:135 mapi_call 1
+Mon Nov 11 08:57:12 2002  modules.c:158 MAPI 8152920
+Mon Nov 11 08:57:12 2002  modules.c:158 MAPI 8152930
+Mon Nov 11 08:57:12 2002  modules.c:158 MAPI 8152960
+Mon Nov 11 08:57:12 2002  modules.c:158 MAPI 8152970
+Mon Nov 11 08:57:12 2002  modules.c:158 MAPI 8152980
+Mon Nov 11 08:57:12 2002  mod_filter.c:802
+ packet out from mod_filter
+
+Mon Nov 11 08:57:12 2002  modules.c:158 MAPI 8152A18
+Mon Nov 11 08:57:12 2002  mod_xml.c:72 handling user request (null)
+Mon Nov 11 08:57:12 2002  mod_xml handling set request for (null) with data
+(null)
+Programming Error: xdb_set() called with NULL
+Mon Nov 11 08:57:12 2002  deliver.c:474 DELIVER 2:jabber.vultus.com &lt;xdb
+type='set' action='insert' match='ns=' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>'
+from='sessions' ns='jabber:xdb:nslist' id='13'&gt;&lt;ns/&gt;&lt;/xdb&gt;
+Mon Nov 11 08:57:12 2002  deliver.c:678 delivering to instance 'xdb'
+Mon Nov 11 08:57:12 2002  xdb_file.c:172 handling xdb request &lt;xdb
+type='set' action='insert' match='ns=' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>'
+from='sessions' ns='jabber:xdb:nslist' id='13'&gt;&lt;ns/&gt;&lt;/xdb&gt;
+Mon Nov 11 08:57:12 2002  xdb_file.c:109 loading
+./spool/jabber.vultus.com/dmitchell.xml
+Mon Nov 11 08:57:12 2002  deliver.c:474 DELIVER 1:sessions &lt;xdb
+type='result' action='insert' match='ns=' to='sessions'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>' ns='jabber:xdb:nslist'
+id='13'&gt;&lt;ns/&gt;&lt;/xdb&gt;
+Mon Nov 11 08:57:12 2002  deliver.c:678 delivering to instance 'sessions'
+Mon Nov 11 08:57:12 2002  xdb.c:52 xdb_results checking xdb packet &lt;xdb
+type='result' action='insert' match='ns=' to='sessions'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>' ns='jabber:xdb:nslist'
+id='13'&gt;&lt;ns/&gt;&lt;/xdb&gt;
+Mon Nov 11 08:57:12 2002  xdb_file.c:272 decaching
+./spool/jabber.vultus.com/dmitchell.xml
+Mon Nov 11 08:57:12 2002  mtq 8146160 queue call 82071C0
+Mon Nov 11 08:57:12 2002  sessions.c:301 THREAD:SESSION:TO received data
+from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>/Work!
+Mon Nov 11 08:57:12 2002  modules.c:135 mapi_call 0
+Mon Nov 11 08:57:12 2002  modules.c:158 MAPI 8152940
+Mon Nov 11 08:57:12 2002  modules.c:175 mapi_call returning unhandled
+Mon Nov 11 08:57:12 2002  deliver.c:474 DELIVER 4:c2s &lt;route
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>/8152688' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">16 at c2s</A>/81436A8'&gt;&lt;iq
+type='error' id='1001' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>/Work'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>/Work'&gt;
+  &lt;query xmns='jabber:iq:private'&gt;
+    &lt;jabberClient xmns='jabberClient:privateInfo'&gt;
+      &lt;privateData&gt;TestMessage&lt;/privateData&gt;
+    &lt;/jabberClient&gt;
+  &lt;/query&gt;
+&lt;error code='503'&gt;Service Unavailable&lt;/error&gt;&lt;/iq&gt;&lt;/route&gt;
+Mon Nov 11 08:57:12 2002  deliver.c:678 delivering to instance 'c2s'
+Mon Nov 11 08:57:12 2002  c2s [client.c:164]
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>/8152688 has an active session, delivering packet
+Mon Nov 11 08:57:12 2002  c2s [client.c:236] Writing packet to MIO: &lt;iq
+type='error' id='1001' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>/Work'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>/Work'&gt;
+  &lt;query xmns='jabber:iq:private'&gt;
+    &lt;jabberClient xmns='jabberClient:privateInfo'&gt;
+      &lt;privateData&gt;TestMessage&lt;/privateData&gt;
+    &lt;/jabberClient&gt;
+  &lt;/query&gt;
+&lt;error code='503'&gt;Service Unavailable&lt;/error&gt;&lt;/iq&gt;
+Mon Nov 11 08:57:12 2002  mio.c:1054 mio_write called on x: 8205FB0 buffer:
+(null)
+Mon Nov 11 08:57:12 2002  mtq 8146160 leaving to pth
+Mon Nov 11 08:57:12 2002  mio.c:607 mio while loop top
+Mon Nov 11 08:57:12 2002  mio.c:620 mio while loop, working
+Mon Nov 11 08:57:12 2002  mio.c:279 write_dump writing data: &lt;iq
+type='error' id='1001' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>/Work'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmitchell at jabber.vultus.com</A>/Work'&gt;
+  &lt;query xmns='jabber:iq:private'&gt;
+    &lt;jabberClient xmns='jabberClient:privateInfo'&gt;
+      &lt;privateData&gt;TestMessage&lt;/privateData&gt;
+    &lt;/jabberClient&gt;
+  &lt;/query&gt;
+&lt;error code='503'&gt;Service Unavailable&lt;/error&gt;&lt;/iq&gt;
+Mon Nov 11 08:57:12 2002  mio.c:607 mio while loop top
+Mon Nov 11 08:57:51 2002  jabberd.c:255 main load check of 1.00 with 14
+total threads
+
+
+
+
+
+I checked the beginning of the debug log and this is what it says for
+mod_xml:
+
+Mon Nov 11 08:55:51 2002  mod_register init
+Mon Nov 11 08:55:51 2002  modules.c:79 mapi_register 6 80E8418
+Mon Nov 11 08:55:51 2002  modules.c:79 mapi_register 2 80E8448
+Mon Nov 11 08:55:51 2002  jsm.c:139 jsm: loading module mod_xml
+Mon Nov 11 08:55:51 2002  modules.c:79 mapi_register 0 80E8478
+Mon Nov 11 08:55:51 2002  modules.c:79 mapi_register 1 80E84A8
+Mon Nov 11 08:55:51 2002  deliver.c:288 Registering xdb with instance xdb
+Mon Nov 11 08:55:51 2002  deliver.c:288 Registering * with instance xdb
+Mon Nov 11 08:55:51 2002  xdb_file.c:296 xdb_file loading
+Mon Nov 11 08:55:51 2002  deliver.c:246 @-internal processing &lt;xdb
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' from='xdb' ns='jabber:config:xdb_file'
+id='0'/&gt;
+Mon Nov 11 08:55:51 2002  deliver.c:678 delivering to instance 'xdb'
+Mon Nov 11 08:55:51 2002  xdb.c:52 xdb_results checking xdb packet &lt;xdb
+type='result' to='xdb' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' ns='jabber:config:xdb_file'
+id='0'&gt;&lt;xdb_file xmlns='jabber:config:xdb_file'&gt;
+      &lt;spool&gt;./spool&lt;/spool&gt;
+    &lt;/xdb_file&gt;&lt;/xdb&gt;
+Mon Nov 11 08:55:51 2002  deliver.c:288 Registering c2s with instance c2s
+Mon Nov 11 08:55:51 2002  c2s [client.c:512] pthsock_client loading
+Mon Nov 11 08:55:51 2002  deliver.c:246 @-internal processing &lt;xdb
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' from='c2s' ns='jabber:config:pth-csock'
+id='0'/&gt;
+Mon Nov 11 08:55:51 2002  deliver.c:678 delivering to instance 'c2s'
+Mon Nov 11 08:55:51 2002  xdb.c:52 xdb_results checking xdb packet &lt;xdb
+type='result' to='c2s' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' ns='jabber:config:pth-csock'
+id='0'&gt;&lt;pthcsock xmlns='jabber:config:pth-csock'&gt;
+      &lt;authtime/&gt;
+      &lt;karma&gt;
+        &lt;init&gt;10&lt;/init&gt;
+        &lt;max&gt;10&lt;/max&gt;
+        &lt;inc&gt;1&lt;/inc&gt;
+        &lt;dec&gt;1&lt;/dec&gt;
+        &lt;penalty&gt;-6&lt;/penalty&gt;
+        &lt;restore&gt;10&lt;/restore&gt;
+      &lt;/karma&gt;
+
+
+      &lt;ip port='5222'/&gt;
+
+
+
+    &lt;/pthcsock&gt;&lt;/xdb&gt;
+Mon Nov 11 08:55:51 2002  mio.c:1198 io_select to listen on 5222 [(null)]
+Mon Nov 11 08:55:51 2002  mio.c:1222 io_select starting to listen on 5222
+[(null)]
+Mon Nov 11 08:55:51 2002  deliver.c:288 Registering elogger with instance
+elogger
+Mon Nov 11 08:55:51 2002  deliver.c:288 Registering * with instance elogger
+Mon Nov 11 08:55:51 2002  deliver.c:394 Registering logtype * with instance
+elogger
+Mon Nov 11 08:55:51 2002  base_format.c:123 base_format configuring instance
+elogger
+
+
+
+
+Can somebody help me figure out what I've missed?
+
+Thanks,
+
+Dave Mitchell
+
+
+---
+Outgoing mail is certified Virus Free.
+Checked by AVG anti-virus system (<A HREF="http://www.grisoft.com">http://www.grisoft.com</A>).
+Version: 6.0.408 / Virus Database: 230 - Release Date: 10/24/2002
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="044101.html">[JDEV] small bug (iq:roster)
+</A></li>
+	<LI>Next message: <A HREF="044105.html">[JDEV] Problem storing Private Data
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#44104">[ date ]</a>
+              <a href="thread.html#44104">[ thread ]</a>
+              <a href="subject.html#44104">[ subject ]</a>
+              <a href="author.html#44104">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

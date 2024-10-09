@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] [Standards] Using Jabber in a KDE game
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%5BStandards%5D%20Using%20Jabber%20in%20a%20KDE%20game&In-Reply-To=%3C20080904123122.191ecdfc%40alban-hp.cbg.collabora.co.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="057515.html">
+   <LINK REL="Next"  HREF="057497.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] [Standards] Using Jabber in a KDE game</H1>
+    <B>Alban Crequy</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%5BStandards%5D%20Using%20Jabber%20in%20a%20KDE%20game&In-Reply-To=%3C20080904123122.191ecdfc%40alban-hp.cbg.collabora.co.uk%3E"
+       TITLE="[jdev] [Standards] Using Jabber in a KDE game">alban.crequy at collabora.co.uk
+       </A><BR>
+    <I>Thu Sep  4 06:31:22 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="057515.html">[jdev] Send message to ID not in buddy list
+</A></li>
+        <LI>Next message: <A HREF="057497.html">[jdev] [Standards] Using Jabber in a KDE game
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57492">[ date ]</a>
+              <a href="thread.html#57492">[ thread ]</a>
+              <a href="subject.html#57492">[ subject ]</a>
+              <a href="author.html#57492">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+[ I added the Telepathy mailing list in Cc. ]
+
+Le Sat, 30 Aug 2008 13:56:31 +0200,
+Kleag &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kleag at free.fr</A>&gt; a &#233;crit :
+
+&gt;<i> Hello,
+</I>&gt;<i> 
+</I>&gt;<i> New to this list, I'm the author of KsirK, a KDE strategy game.
+</I>&gt;<i> Currently its net game uses pure TCP/IP. One player start its game by
+</I>&gt;<i> setting a port on which to listen to and the others connect to this
+</I>&gt;<i> port. Then the libkdegames/kgame library is used to communicate. This
+</I>&gt;<i> lib as all what is necessary to exchange messages including Qt
+</I>&gt;<i> objects. It also have a chat framework. KsirK is a multiplayer game
+</I>&gt;<i> with, currently, does not allow passive not playing participants.
+</I>&gt;<i> 
+</I>&gt;<i> Jabber seems to be a largely better solution. I want to have a very
+</I>&gt;<i> few centralized system, keeping one client as the game server and
+</I>&gt;<i> using the communication framework only for that: a communication
+</I>&gt;<i> tool. I'm also not interested in controling cheating, basing the game
+</I>&gt;<i> in trust.
+</I>&gt;<i> 
+</I>&gt;<i> So, my idea is to progressively switch to Jabber. In a first step, it
+</I>&gt;<i> would just allow to publish a proposed game in a kind of chat room
+</I>&gt;<i> and then the current communication system would be used. In a second
+</I>&gt;<i> step, xmpp would also be used to exchange game data.
+</I>&gt;<i> 
+</I>&gt;<i> I must admit that, even if Jabber seems promising, I'm a little bit
+</I>&gt;<i> lost in all the specifications and I don't know how to start
+</I>&gt;<i> implementing. I had a look to the recent thread (january and june)
+</I>&gt;<i> about the proposed Games XEPs and it seems promising for me. 
+</I>&gt;<i> 
+</I>&gt;<i> I will also contact the thelepathy and kopete teams as there are more
+</I>&gt;<i> related to KDE, but I'd like to have your opinion and advices about
+</I>&gt;<i> my ideas. I could describe them with more details, but I'm very not
+</I>&gt;<i> at ease with the underlying concepts and I don't want to say right
+</I>&gt;<i> now too silly things :-)
+</I>
+Hi,
+
+If you already have a working TCP/IP protocol for your game, you can
+use Telepathy stream tubes. You can use the Telepathy framework to
+choose a contact in your game and offer a stream tube to your contact.
+
+player 1:
+       unix socket
+KsirK ------------&gt;     Telepathy
+                    Connection Manager
+                            | Telepathy Stream tube
+player 2:                   | (some sort of XEP-0095 XEP-0047 atm)
+       unix socket          v
+KsirK &lt;------------     Telepathy
+                    Connection Manager
+
+<A HREF="http://telepathy.freedesktop.org/wiki/Tubes">http://telepathy.freedesktop.org/wiki/Tubes</A>
+
+The difference would be to listen on an unix socket instead of a inet
+socket on player 2's computer, and to connect on an unix socket instead
+of an inet socket on player 1's computer. The telepathy framework do
+the proxy and know how to reach the other contact. And the tube is
+negotiated by KsirK using the Telepathy D-Bus specification (see
+OfferStreamTube and AcceptStreamTube methods):
+<A HREF="http://telepathy.freedesktop.org/spec.html">http://telepathy.freedesktop.org/spec.html</A>
+
+The advantages would be that your users do not need to setup the jabber
+(server name, password) in your game because it reuses the connection
+of the desktop. And that you keep your current protocol, the Telepathy
+framework will be responsible to reach the contact, avoid NAT
+problems, etc.
+
+Does your game send a lot of data through the TCP connection? The
+current implementation in the Gabble Connection Manager use Stream
+Initiation (XEP-0095) and In Band Bytestream (XEP-0047) so the data
+travel through the Jabber server encoded in XML+base64. But we plan to
+implement tubes in a different way (Jingle?) to avoid abusing Jabber
+servers without changing the interface for applications using tubes.
+
+Best regards, 
+
+Alban
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="057515.html">[jdev] Send message to ID not in buddy list
+</A></li>
+	<LI>Next message: <A HREF="057497.html">[jdev] [Standards] Using Jabber in a KDE game
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57492">[ date ]</a>
+              <a href="thread.html#57492">[ thread ]</a>
+              <a href="subject.html#57492">[ subject ]</a>
+              <a href="author.html#57492">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Using XMPP to talk to a mobile client
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Using%20XMPP%20to%20talk%20to%20a%20mobile%20client&In-Reply-To=%3C49DF456F.3080400%40buddycloud.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="087617.html">
+   <LINK REL="Next"  HREF="087615.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Using XMPP to talk to a mobile client</H1>
+    <B>Simon Tennant</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Using%20XMPP%20to%20talk%20to%20a%20mobile%20client&In-Reply-To=%3C49DF456F.3080400%40buddycloud.com%3E"
+       TITLE="[jdev] Using XMPP to talk to a mobile client">simon at buddycloud.com
+       </A><BR>
+    <I>Fri Apr 10 08:11:11 CDT 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="087617.html">[jdev] Using XMPP to talk to a mobile client
+</A></li>
+        <LI>Next message: <A HREF="087615.html">[jdev] Using XMPP to talk to a mobile client
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87623">[ date ]</a>
+              <a href="thread.html#87623">[ thread ]</a>
+              <a href="subject.html#87623">[ subject ]</a>
+              <a href="author.html#87623">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Mobile is tricky: you fire off a stanza just as you enter a tunnel with
+no coverage and your client is none the wiser as to whether the stanza
+actually made it to the server. Indeed your GPRS or 3G connection may
+even stay connected.
+
+We have also had good success on the mobile by using sockets rather than
+BOSH in the Buddycloud client. 
+
+There are a couple of tricks that we used to ensure we loose no messages:
+
+    * On mobile networks the phone client may be pushing off messages
+      into a socket that has lost cellular coverage.  If you have a
+      large sliding window on the TCP layer, these messages are lost.
+      Twiddling your TCP stack can help keep the number of packets
+      between ACKs low.
+    * We have worked around these by using message archiving (XEP-0136)
+      and re-requesting messages slightly before the device lost connection.
+    * &quot;warm starting&quot;.  In a bouncy environment having to pull down the
+      roster, PEP and pub-sub subscriptions each time will get
+      expensive.  If a session can be recovered, recover, and keep on going.
+
+The real solution will be implementing XEP-0198: Stream Management and
+managing acknowledged stanzas at the application layer. This is
+something that we plan on implementing to handle the unpredictable
+mobile environment.
+
+S.
+
+Alexander Gnauck wrote:
+&gt;<i> Mridul Muralidharan wrote:
+</I>&gt;<i>   
+</I>&gt;&gt;<i> Just to mention, BOSH does not have any same client IP requirement/restriction.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> And unlike tcp binding of xmpp - where session is terminated if disconnected, BOSH does handle disconnects in its design.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> The only requirements would be -
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> a) ability of the client to connect back before the session/idle timeout.
+</I>&gt;&gt;<i> b) BOSH gateway not going down.
+</I>&gt;&gt;<i> c) BOSH client not going down.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> b and c are mentioned - so that the session state (rid, etc) is not lost.
+</I>&gt;&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i> I have a much better experience with sockets on Mobile devices than with 
+</I>&gt;<i> BOSH. Of course this also depends how reliable you Mobile network is, 
+</I>&gt;<i> but in Europe its very good, and sockets works very well.
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i> Alex
+</I>&gt;<i> --
+</I>&gt;<i> Alexander Gnauck
+</I>&gt;<i> <A HREF="http://www.ag-software.de">http://www.ag-software.de</A>
+</I>&gt;<i> xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gnauck at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>   
+</I>
+
+-- 
+Simon Tennant
+Buddycloud
+uk: +44 20 7043 6756               de: +49 89 420 955 854  
+uk: +44 78 5335 6047               de: +49 17 8545 0880
+email and xmpp: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">simon at buddycloud.com</A>
+<A HREF="http://buddycloud.com">http://buddycloud.com</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="087617.html">[jdev] Using XMPP to talk to a mobile client
+</A></li>
+	<LI>Next message: <A HREF="087615.html">[jdev] Using XMPP to talk to a mobile client
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87623">[ date ]</a>
+              <a href="thread.html#87623">[ thread ]</a>
+              <a href="subject.html#87623">[ subject ]</a>
+              <a href="author.html#87623">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

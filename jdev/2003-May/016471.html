@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Security in XMPP/Jabber: some questions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Security%20in%20XMPP/Jabber%3A%20some%20questions&In-Reply-To=3ECBDEE6.9090803%40rug.ac.be">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="016470.html">
+   <LINK REL="Next"  HREF="016472.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Security in XMPP/Jabber: some questions</H1>
+    <B>Robert Norris</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Security%20in%20XMPP/Jabber%3A%20some%20questions&In-Reply-To=3ECBDEE6.9090803%40rug.ac.be"
+       TITLE="[JDEV] Security in XMPP/Jabber: some questions">rob at cataclysm.cx
+       </A><BR>
+    <I>Wed May 21 21:37:06 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="016470.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+        <LI>Next message: <A HREF="016472.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#16471">[ date ]</a>
+              <a href="thread.html#16471">[ thread ]</a>
+              <a href="subject.html#16471">[ subject ]</a>
+              <a href="author.html#16471">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> First, I've done some more research myself, but I still have some 
+</I>&gt;<i> questions. From DJ Adams book, I know that there are 3 methodes to 
+</I>&gt;<i> authenticate, namely plaintext, digest and zero knowledge. Is it correct 
+</I>&gt;<i> that most clients use digest by default?
+</I>
+I beleive so. Its the most secure authentication mechanism that is part
+of the standard protocol. Zero-knowledge is used over digest by clients
+that support it.
+
+&gt;<i> Then there is SSL (Secure Socket Layer?) that you can use to encrypt the 
+</I>&gt;<i> whole stream, am I correct? Still, I don't see that clients use this by 
+</I>&gt;<i> default. What is the reason for this? I've read somewhere that it could 
+</I>&gt;<i>  be that this causes problems on some proxy servers, is this true? And 
+</I>&gt;<i> does SSL provide end-to-end security or only client-to-my-own-server 
+</I>&gt;<i> security?
+</I>
+I would imagine the reason it is not more widely used is that there is
+more overhead for clients to support it (even using a SSL library such
+as OpenSSL is non-trivial).
+
+SSL provides client-to-my-own-server security, not end-to-end.
+
+&gt;<i> Other two known ones are PGP and GnuPG, what's the difference between 
+</I>&gt;<i> those two? Is a client supporting PGP compatible with one supporting 
+</I>&gt;<i> GnuPG? How does this actually work? Is it encrypted at the client side, 
+</I>&gt;<i> decrypted at the server side, to know the to address and then encrypted 
+</I>&gt;<i> again to send it to the &quot;other side&quot;? What if the other side doesn't 
+</I>&gt;<i> know about PGP, how those this side knows about that lack of feature?
+</I>
+PGP and GnuPG are very similar. My understanding is that they're both
+implementations of OpenPGP (RFC2440). I don't know much about their
+differences, but I have managed to make them work together on various
+occasions.
+
+A client encrypts the message text (ie what would normally be included
+in the &lt;body/&gt; tag), and adds it to the message in a
+&lt;x xmlns='jabber:x:encrypted'/&gt; tag. The message is passed through the
+server as normal (the &lt;message/&gt; tag itself is not encrypted), and is
+decrypted by the receiving client.
+
+The only way to determine if the recipient supports this is by some sort
+of discovery. Since Jabber has lacked a discovery mechanism until
+recently, I beleive this was simply done by asking (in a chat message)
+if the person on the other end can support encrypted messages.
+
+The XMPP Working Group is working on a new protocol for end-to-end
+encryption. See <A HREF="http://www.jabber.org/ietf/">http://www.jabber.org/ietf/</A> for more information.
+
+&gt;<i> I read in &quot;The Instant Messaging Standards Race: Comparing XMPP/Jabber 
+</I>&gt;<i> and SIP/SIMPLe&quot; from Jabber Inc. sth. about SASL (Simple Authentication 
+</I>&gt;<i> and Security Layer) and TLS (Transport Layer Security). What is the 
+</I>&gt;<i> principle of those two?
+</I>
+SASL is the Simple Authentication and Security Layer, defined in
+RFC2222. Its job is to seperate the protocol used for authentication and
+establishment of security layers (integrity checking or encryption) from
+the underlying authentication mechanism (plaintext, digest, Kerberos,
+etc). This allows implementations to offer different mechanisms without
+requiring an update to the protocol.
+
+TLS is Transport Layer Security, which is the Internet-standard version
+of SSLv3 (RFC2246). The difference between TLS and SSL is minimal.
+
+Traditionally, servers offering SSL would operate in a &quot;wrappermode&quot;,
+opening another port for encrypted connections. The encryption begins as
+soon as a client connects. This is done with protocols such as HTTPS and
+IMAPS.
+
+Newer protocols use the STARTTLS method (see RFC2595), where a cleartext
+connection to a server is started, with the client the requesting
+encryption. The underlying TCP channel is reused.
+
+SASL and STARTTLS are IETF best practice, and so the XMPP Working Group
+Charter requires that the final version of XMPP implements them. More
+information about the XMPP usage of these protocols can be found in
+XMPP-Core, at <A HREF="http://www.jabber.org/ietf/">http://www.jabber.org/ietf/</A> .
+
+&gt;<i> What is meant by &quot;end-to-end&quot; vs &quot;hop-to-hop&quot; encryption, that with the 
+</I>&gt;<i> first one even the server can't read what is in the message? But how do 
+</I>&gt;<i> they know then where to send the message?
+</I>
+There is a difference between the message content (body) and the message
+envelope (header). A client would encrypt the body of the message, but
+leave the to and from addresses unencrypted, so that the server can use
+them to determine routing. This is known as end-to-end encryption - the
+original sender encrypts the message body, and only the final recipient
+of the message can decrypt it.
+
+Hop-to-hop encryption, on the other hand, simply refers encryption
+between two entities in the network, either between a client and a
+server or between two servers. This is what SSL/TLS is typically used
+for. When used correctly, it can help prevent network-based attacks
+(hijacking or sniffing the TCP connection), but does not provide
+end-to-end encryption.
+
+&gt;<i> Will jabberd2 support more security than the current jabberd server?
+</I>
+jabberd2 will support the XMPP security protocols (SASL and STARTTLS),
+the traditional plaintext, digest and zero-knowledge authentication
+protocols, the dialback protocol for server-to-server connections, and
+various forms of connection limits (IP restrictions, rate limiting,
+etc) which can help to prevent denial-of-service attacks.
+
+&gt;<i> I hope sb. has some time to answer these questions (or some of them). I 
+</I>&gt;<i> don't need in-depth information, just enough to understand it :).
+</I>
+Hope this helps :)
+
+Rob.
+
+-- 
+Robert Norris                                       GPG: 1024D/FC18E6C2
+Email+Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rob at cataclysm.cx</A>                Web: <A HREF="http://cataclysm.cx/">http://cataclysm.cx/</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20030522/046df8b6/attachment.pgp">https://www.jabber.org/jdev/attachments/20030522/046df8b6/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="016470.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+	<LI>Next message: <A HREF="016472.html">[JDEV] Security in XMPP/Jabber: some questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#16471">[ date ]</a>
+              <a href="thread.html#16471">[ thread ]</a>
+              <a href="subject.html#16471">[ subject ]</a>
+              <a href="author.html#16471">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

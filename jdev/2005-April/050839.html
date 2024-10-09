@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Serialization in JSO--Using JAVA
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Serialization%20in%20JSO--Using%20JAVA&In-Reply-To=%3CE1F190DAC247C64FAA46B38316FA151DE2EB97%40EX-101.mail.navisite.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="050850.html">
+   <LINK REL="Next"  HREF="050841.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Serialization in JSO--Using JAVA</H1>
+    <B>Matt Tucker</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Serialization%20in%20JSO--Using%20JAVA&In-Reply-To=%3CE1F190DAC247C64FAA46B38316FA151DE2EB97%40EX-101.mail.navisite.com%3E"
+       TITLE="[jdev] Serialization in JSO--Using JAVA">matt at jivesoftware.com
+       </A><BR>
+    <I>Tue Apr  5 10:15:28 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="050850.html">[jdev] Re: Real-world data forms?
+</A></li>
+        <LI>Next message: <A HREF="050841.html">[jdev] Serverless (peer2peer) jabber sessions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50839">[ date ]</a>
+              <a href="thread.html#50839">[ thread ]</a>
+              <a href="subject.html#50839">[ subject ]</a>
+              <a href="author.html#50839">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Merwin,
+
+This is a built-in feature of Smack, but you could definitely do it with JSO too. What you'd do:
+
+ 1) Serialize the object to a byte stream and then encode is as base 64.
+ 2) Add it as a packet extension to a message or presence.
+ 3) Look for the packet extension on the other side and de-serialize the object.
+
+We call these packet properties in Smack, which can be various primitive values or Java objects. Here's the code we use to write out the extension XML, which you could probably adapt for JSO:
+
+Regards,
+Matt
+
+-------------------
+
+if (properties != null &amp;&amp; !properties.isEmpty()) {
+    buf.append(&quot;&lt;properties xmlns=\&quot;<A HREF="http://www.jivesoftware.com/xmlns/xmpp/properties\&quot;">http://www.jivesoftware.com/xmlns/xmpp/properties\&quot;</A>&gt;&quot;);
+    // Loop through all properties and write them out.
+    for (Iterator i=getPropertyNames(); i.hasNext(); ) {
+        String name = (String)i.next();
+        Object value = getProperty(name);
+        buf.append(&quot;&lt;property&gt;&quot;);
+        buf.append(&quot;&lt;name&gt;&quot;).append(StringUtils.escapeForXML(name)).append(&quot;&lt;/name&gt;&quot;);
+        buf.append(&quot;&lt;value type=\&quot;&quot;);
+        if (value instanceof Integer) {
+            buf.append(&quot;integer\&quot;&gt;&quot;).append(value).append(&quot;&lt;/value&gt;&quot;);
+        }
+        else if (value instanceof Long) {
+            buf.append(&quot;long\&quot;&gt;&quot;).append(value).append(&quot;&lt;/value&gt;&quot;);
+        }
+        else if (value instanceof Float) {
+            buf.append(&quot;float\&quot;&gt;&quot;).append(value).append(&quot;&lt;/value&gt;&quot;);
+        }
+        else if (value instanceof Double) {
+            buf.append(&quot;double\&quot;&gt;&quot;).append(value).append(&quot;&lt;/value&gt;&quot;);
+        }
+        else if (value instanceof Boolean) {
+            buf.append(&quot;boolean\&quot;&gt;&quot;).append(value).append(&quot;&lt;/value&gt;&quot;);
+        }
+        else if (value instanceof String) {
+            buf.append(&quot;string\&quot;&gt;&quot;);
+            buf.append(StringUtils.escapeForXML((String)value));
+            buf.append(&quot;&lt;/value&gt;&quot;);
+        }
+        // Otherwise, it's a generic Serializable object. Serialized objects are in
+        // a binary format, which won't work well inside of XML. Therefore, we base-64
+        // encode the binary data before adding it.
+        else {
+            ByteArrayOutputStream byteStream = null;
+            ObjectOutputStream out = null;
+            try {
+                byteStream = new ByteArrayOutputStream();
+                out = new ObjectOutputStream(byteStream);
+                out.writeObject(value);
+                buf.append(&quot;java-object\&quot;&gt;&quot;);
+                String encodedVal = StringUtils.encodeBase64(byteStream.toByteArray());
+                buf.append(encodedVal).append(&quot;&lt;/value&gt;&quot;);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            finally {
+                if (out != null) {
+                    try { out.close(); } catch (Exception e) { }
+                }
+                if (byteStream != null) {
+                    try { byteStream.close(); } catch (Exception e) { }
+                }
+            }
+        }
+        buf.append(&quot;&lt;/property&gt;&quot;);
+    }
+    buf.append(&quot;&lt;/properties&gt;&quot;);
+}
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> 
+</I>&gt;<i> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf Of Merwin Pinto
+</I>&gt;<i> Sent: Tuesday, April 05, 2005 6:39 AM
+</I>&gt;<i> To: Jabber software development list
+</I>&gt;<i> Subject: [jdev] Serialization in JSO--Using JAVA
+</I>&gt;<i> 
+</I>&gt;<i>  &#160;
+</I>&gt;<i> Hi All,
+</I>&gt;<i>        Is it possible to serialize objects and send them 
+</I>&gt;<i> accross using Presence  or Message packets?
+</I>&gt;<i> the methods like setShow(),setStatus().... etc take only 
+</I>&gt;<i> Strings as Arguments .... Is there a method to send Objects....?
+</I>&gt;<i>   Can i subclass the presence packet and write a method to 
+</I>&gt;<i> accept a object ?..
+</I>&gt;<i> But the question is will it be sent accross thru the network 
+</I>&gt;<i> to another client?
+</I>&gt;<i> 
+</I>&gt;<i> PLEASE HELP .....
+</I>&gt;<i> Thanks a lot ,
+</I>&gt;<i> regards
+</I>&gt;<i> Merwin
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="050850.html">[jdev] Re: Real-world data forms?
+</A></li>
+	<LI>Next message: <A HREF="050841.html">[jdev] Serverless (peer2peer) jabber sessions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50839">[ date ]</a>
+              <a href="thread.html#50839">[ thread ]</a>
+              <a href="subject.html#50839">[ subject ]</a>
+              <a href="author.html#50839">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

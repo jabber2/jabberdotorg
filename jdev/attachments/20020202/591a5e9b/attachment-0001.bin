@@ -1,0 +1,94 @@
+My client wants to be able to create new user accounts after the user
+has logged in... 
+
+I'm not sure if this is supposed to be allowed, but when I have the
+following exchange with the server (build from CVS on 1/8/02)
+
+<color><param>0000,0000,FFFF</param>
+
+<<?xml version='1.0'?><<stream:stream
+xmlns:stream='http://etherx.jabber.org/streams' id='3C5CAF04'
+xmlns='jabber:client' from='myservername'>
+
+</color>
+
+<color><param>0000,FFFF,0000</param><<iq type="set" id="1001"><<query
+xmlns="jabber:iq:auth"><<username>waters<</username><<password>jabber<</password><<resource>InstantPictures<</resource><</query><</iq></color>
+
+<color><param>0000,0000,FFFF</param>
+
+<<iq type='result' id='1001'/>
+
+
+</color><color><param>0000,FFFF,0000</param><<iq type="get"
+id="1002"><<query xmlns="jabber:iq:register"/><</iq>
+
+</color>
+
+I get a segfault with the following jabberd -D output
+
+
+Sat Feb  2 19:39:54 2002  mio.c:608 mio while loop, working
+
+Sat Feb  2 19:39:54 2002  mio.c:746 MIO read from socket 10: <<iq
+type="get" id="1002"><<query xmlns="jabber:iq:register"/><</iq>
+
+Sat Feb  2 19:39:54 2002  c2s [client.c:266] pthsock_client_read
+called with: m:1A21D0 flag:3 arg:1A22F0
+
+Sat Feb  2 19:39:54 2002  deliver.c:460 DELIVER 4:myservername <<route
+to='waters@myservername/1AAB90' from='10@c2s/1A21D0'><<iq type='get'
+id='1002'><<query xmlns='jabber:iq:register'/><</iq><</route>
+
+Sat Feb  2 19:39:54 2002  deliver.c:664 delivering to instance
+'sessions'
+
+Sat Feb  2 19:39:54 2002  deliver.c:83 (17CB50)incoming packet <<route
+to='waters@myservername/1AAB90' from='10@c2s/1A21D0'><<iq type='get'
+id='1002'><<query xmlns='jabber:iq:register'/><</iq><</route>
+
+Sat Feb  2 19:39:54 2002  users.c:132
+js_user(waters@myservername,205000)
+
+Sat Feb  2 19:39:54 2002  mtq 1A5620 entering from pth
+
+Sat Feb  2 19:39:54 2002  mtq 1A5620 queue call 1A87D0
+
+Sat Feb  2 19:39:54 2002  sessions.c:235 THREAD:SESSION:FROM received
+a packet!
+
+Sat Feb  2 19:39:54 2002  modules.c:124 mapi_call 1
+
+Sat Feb  2 19:39:54 2002  modules.c:147 MAPI 1AAE40
+
+Sat Feb  2 19:39:54 2002  modules.c:147 MAPI 1AAE50
+
+Sat Feb  2 19:39:54 2002  modules.c:147 MAPI 1AAE80
+
+Sat Feb  2 19:39:54 2002  modules.c:147 MAPI 1AAE90
+
+Sat Feb  2 19:39:54 2002  modules.c:147 MAPI 1AAEA0
+
+Sat Feb  2 19:39:54 2002  mod_filter.c:791 
+
+ packet out from mod_filter
+
+
+Sat Feb  2 19:39:54 2002  modules.c:147 MAPI 1AAEB0
+
+Sat Feb  2 19:39:54 2002  modules.c:147 MAPI 1AAF90
+
+Sat Feb  2 19:39:54 2002  modules.c:147 MAPI 1AAFA0
+
+Sat Feb  2 19:39:54 2002  modules.c:147 MAPI 1AAFD0
+
+Sat Feb  2 19:39:54 2002  modules.c:164 mapi_call returning unhandled
+
+Sat Feb  2 19:39:54 2002  dnsrv.c:144 dnsrv: Read error on
+coprocess(1): 1 Operation not permitted
+
+Sat Feb  2 19:39:54 2002  dnsrv.c:158 DNSRV CHILD: out of loop..
+exiting normal
+
+Segmentation fault
+

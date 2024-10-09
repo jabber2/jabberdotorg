@@ -1,0 +1,291 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] 1.4.2CVS _mio_main race and patch
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%201.4.2CVS%20_mio_main%20race%20and%20patch&In-Reply-To=%3C3D36E064.9030902%40almeric.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="072099.html">
+   <LINK REL="Next"  HREF="072068.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] 1.4.2CVS _mio_main race and patch</H1>
+    <B>Tom Riddle</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%201.4.2CVS%20_mio_main%20race%20and%20patch&In-Reply-To=%3C3D36E064.9030902%40almeric.com%3E"
+       TITLE="[JDEV] 1.4.2CVS _mio_main race and patch">ftr at almeric.com
+       </A><BR>
+    <I>Thu Jul 18 10:36:04 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="072099.html">[JDEV] Presence indicator for web page
+</A></li>
+        <LI>Next message: <A HREF="072068.html">[JDEV] MSN Question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72067">[ date ]</a>
+              <a href="thread.html#72067">[ thread ]</a>
+              <a href="subject.html#72067">[ subject ]</a>
+              <a href="author.html#72067">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The following test program causes the _mio_main thread to sleep forever.
+It does this by causing _mio_main to call pth_write() on 
+mio__data-&gt;zzz[1] twice without an intervening call to pth_read().  This 
+causes the thread to sleep because pth_write() checks the fd for 
+writeability using select() before writing to it.  If the fd is not 
+writeable it sleeps the thread until it is writeable.  mio_data-&gt;zzz is 
+a pipe and the select semantics for a pipe is that the pipe is writable 
+only if it is empty (see pipe_poll() in /usr/src/linux-2.4/fs/pipe.c). 
+See the attached annotated strace.
+
+One solution is to make the pipe nonblocking.  This causes pth_write to 
+skip the select() call and just write to the fd.  The attached patch 
+does this.  Is this the best solution ?  One question that arises from 
+looking at the strace listing is why doesn't _mio_main get scheduled 
+sooner - perhaps removing the pth_yield() would help ?
+
+I am running jabbderd1.4.2CVS under rh7.2, linux2.4.9 and pth-1.4.1.
+I am not subscribed to this list so please reply to me directly.
+I can provide full strace listing if necessary.
+
+Thanks,
+Tom
+
+-- 
+
+Tom Riddle
+
+Oracom, Inc.
+<A HREF="http://www.almeric.com">http://www.almeric.com</A>
+
+Tel. +1 978.557.5710x305
+Fax  +1 978.557.5716
+
+-------------TEST PROGRAM---------
+
+#include &lt;arpa/inet.h&gt;
+
+int main(int argc, char **argv)
+{
+         int sd1 = socket(AF_INET, SOCK_STREAM, 0);
+         int sd2 = socket(AF_INET, SOCK_STREAM, 0);
+         char *ipAddr = &quot;192.168.0.96&quot;;
+         int port = 5222;
+         char *openStream = &quot;&lt;stream:stream 
+to='xpress-install3.oracom.com' xmlns='jabber:client' 
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;&quot;;
+         char buf[1024];
+
+         struct sockaddr_in addr;
+         addr.sin_family = AF_INET;
+         addr.sin_port = htons(port);
+         inet_aton(ipAddr, &amp;addr.sin_addr);
+
+         printf(&quot;connect1: %d\n&quot;,
+                 connect(sd1,(struct sockaddr *) &amp;addr,sizeof(addr)));
+         printf(&quot;connect2: %d\n&quot;,
+                 connect(sd2,(struct sockaddr *) &amp;addr,sizeof(addr)));
+
+         printf(&quot;write1: %d\n&quot;,
+                 write(sd1,openStream,strlen(openStream)));
+         printf(&quot;write2: %d\n&quot;,
+                 write(sd2,openStream,strlen(openStream)));
+
+         printf(&quot;read1: %d\n&quot;,
+                 read(sd1,buf,sizeof(buf)));
+         printf(&quot;read2: %d\n&quot;,
+                 read(sd2,buf,sizeof(buf)));
+
+         return 0;
+}
+
+
+--------------PATCH---------
+
+--- jabber-1.4.2/jabberd/mio.c  Fri Feb  8 02:39:27 2002
++++ jabber-1.4.2-new/jabberd/mio.c      Thu Jul 18 10:23:51 2002
+@@ -843,6 +843,9 @@
+          mio__data-&gt;k = karma_new(p);
+          pipe(mio__data-&gt;zzz);
+
++               /* set write side of pipe nonblocking to avoid sleeping 
+in pth_write */
++               pth_fdmode(mio__data-&gt;zzz[1],PTH_FDMODE_NONBLOCK);
++
+          /* start main accept/read/write thread */
+          attr = pth_attr_new();
+          pth_attr_set(attr,PTH_ATTR_JOINABLE,FALSE);
+
+-------------STRACE----------
+
+
+jabberd starts up and goes idle:
+
+rt_sigprocmask(SIG_SETMASK, [], ~[KILL STOP], 8) = 0
+select(5, [4], [], [], {0, 0})          = 0 (Timeout)
+rt_sigprocmask(SIG_SETMASK, ~[KILL STOP], NULL, 8) = 0
+gettimeofday({1026982108, 992463}, NULL) = 0
+sigprocmask(SIG_SETMASK, [], ~[KILL STOP]) = 0
+sigprocmask(SIG_SETMASK, ~[KILL STOP], []) = 0
+gettimeofday({1026982108, 992598}, NULL) = 0
+rt_sigpending([])                       = 0
+read(4, 0x80d9e68, 128)                 = -1 EAGAIN (Resource 
+temporarily unavailable)
+
+...
+
+handles first connection:
+
+rt_sigprocmask(SIG_SETMASK, [], ~[KILL STOP], 8) = 0
+select(5, [4], [], [], {0, 0})          = 0 (Timeout)
+rt_sigprocmask(SIG_SETMASK, ~[KILL STOP], NULL, 8) = 0
+gettimeofday({1026982108, 993429}, NULL) = 0
+sigprocmask(SIG_SETMASK, [], ~[KILL STOP]) = 0
+fcntl64(9, F_GETFL)                     = 0x802 (flags O_RDWR|O_NONBLOCK)
+accept(9, {sin_family=AF_INET, sin_port=htons(43454), 
+sin_addr=inet_addr(&quot;192.168.0.52&quot;)}}, [16]) = 16
+fcntl64(9, F_GETFL)                     = 0x802 (flags O_RDWR|O_NONBLOCK)
+fcntl64(16, F_GETFL)                    = 0x2 (flags O_RDWR)
+fcntl64(16, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+time(NULL)                              = 1026982108
+fcntl64(16, F_GETFL)                    = 0x802 (flags O_RDWR|O_NONBLOCK)
+fcntl64(16, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+
+fd 6 is mio_data-&gt;zzz[1], here we are in pth_write
+
+fcntl64(6, F_GETFL)                     = 0x1 (flags O_WRONLY)
+fcntl64(6, F_SETFL, O_WRONLY|O_NONBLOCK) = 0
+select(7, NULL, [6], NULL, {0, 0})      = 1 (out [6], left {0, 0})
+write(6, &quot; &quot;, 1)                        = 1
+fcntl64(6, F_GETFL)                     = 0x801 (flags O_WRONLY|O_NONBLOCK)
+fcntl64(6, F_SETFL, O_WRONLY)           = 0
+
+pth_write is successful, so far so good
+
+time(NULL)                              = 1026982108
+select(17, [3 9 12 13 14 15 16], [], NULL, {0, 0}) = 3 (in [3 9 16], 
+left {0, 0})
+fcntl64(3, F_GETFL)                     = 0 (flags O_RDONLY)
+
+
+_mio_main wakes up...
+
+select(4, [3], NULL, NULL, {0, 0})      = 1 (in [3], left {0, 0})
+read(3, &quot; &quot;, 8192)                      = 1
+sigprocmask(SIG_SETMASK, ~[KILL STOP], []) = 0
+gettimeofday({1026982108, 994735}, NULL) = 0
+rt_sigpending([])                       = 0
+read(4, 0x80d9e68, 128)                 = -1 EAGAIN (Resource 
+temporarily unavailable)
+rt_sigprocmask(SIG_SETMASK, [], ~[KILL STOP], 8) = 0
+select(5, [4], [], [], {0, 0})          = 0 (Timeout)
+rt_sigprocmask(SIG_SETMASK, ~[KILL STOP], NULL, 8) = 0
+gettimeofday({1026982108, 995090}, NULL) = 0
+sigprocmask(SIG_SETMASK, [], ~[KILL STOP]) = 0
+fcntl64(16, F_GETFL)                    = 0x802 (flags O_RDWR|O_NONBLOCK)
+read(16, &quot;&lt;stream:stream to=\'xpress-install3.oracom.com\' 
+xmlns=\'jabber:client\' 
+xmlns:stream=\'<A HREF="http://etherx.jabber.org/streams\'">http://etherx.jabber.org/streams\'</A>&gt;&quot;, 5000) = 117
+brk(0x8149000)                          = 0x8149000
+brk(0x814b000)                          = 0x814b000
+time(NULL)                              = 1026982108
+
+pth_write on mio_data-&gt;zzz[1] again...
+
+fcntl64(6, F_GETFL)                     = 0x1 (flags O_WRONLY)
+fcntl64(6, F_SETFL, O_WRONLY|O_NONBLOCK) = 0
+select(7, NULL, [6], NULL, {0, 0})      = 1 (out [6], left {0, 0})
+write(6, &quot; &quot;, 1)                        = 1
+fcntl64(6, F_GETFL)                     = 0x801 (flags O_WRONLY|O_NONBLOCK)
+fcntl64(6, F_SETFL, O_WRONLY)           = 0
+
+pth_write successful again
+
+fcntl64(16, F_GETFL)                    = 0x802 (flags O_RDWR|O_NONBLOCK)
+write(16, &quot;&lt;?xml version=\'1.0\'?&gt;&lt;stream:stream 
+xmlns:stream=\'<A HREF="http://etherx.jabber.org/streams\'">http://etherx.jabber.org/streams\'</A> id=\'3D3680DC\' 
+xmlns=\'jabber:client\' from=\'xpress-install3.oracom.com\'&gt;&quot;, 154) = 154
+fcntl64(16, F_GETFL)                    = 0x802 (flags O_RDWR|O_NONBLOCK)
+
+
+we go idle again...
+
+sigprocmask(SIG_SETMASK, ~[KILL STOP], []) = 0
+gettimeofday({1026982108, 996331}, NULL) = 0
+rt_sigpending([])                       = 0
+read(4, 0x80d9e68, 128)                 = -1 EAGAIN (Resource 
+temporarily unavailable)
+rt_sigprocmask(SIG_SETMASK, [], ~[KILL STOP], 8) = 0
+select(5, [4], [], [], {0, 0})          = 0 (Timeout)
+rt_sigprocmask(SIG_SETMASK, ~[KILL STOP], NULL, 8) = 0
+gettimeofday({1026982108, 996696}, NULL) = 0
+sigprocmask(SIG_SETMASK, [], ~[KILL STOP]) = 0
+
+...
+
+handle second connection
+
+fcntl64(9, F_GETFL)                     = 0x802 (flags O_RDWR|O_NONBLOCK)
+accept(9, {sin_family=AF_INET, sin_port=htons(43455), 
+sin_addr=inet_addr(&quot;192.168.0.52&quot;)}}, [16]) = 17
+fcntl64(9, F_GETFL)                     = 0x802 (flags O_RDWR|O_NONBLOCK)
+fcntl64(17, F_GETFL)                    = 0x2 (flags O_RDWR)
+fcntl64(17, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+time(NULL)                              = 1026982108
+fcntl64(17, F_GETFL)                    = 0x802 (flags O_RDWR|O_NONBLOCK)
+fcntl64(17, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+
+since we have not read fd 3 pth_write blocks
+
+fcntl64(6, F_GETFL)                     = 0x1 (flags O_WRONLY)
+fcntl64(6, F_SETFL, O_WRONLY|O_NONBLOCK) = 0
+select(7, NULL, [6], NULL, {0, 0})      = 0 (Timeout)
+
+_mio_main now blocked on fd 6 becoming writeable
+sigprocmask(SIG_SETMASK, ~[KILL STOP], []) = 0
+gettimeofday({1026982108, 999364}, NULL) = 0
+rt_sigpending([])                       = 0
+read(4, 0x80d9e68, 128)                 = -1 EAGAIN (Resource 
+temporarily unavailable)
+rt_sigprocmask(SIG_SETMASK, [], ~[KILL STOP], 8) = 0
+select(7, [4], [6], [], {0, 269263})    = 0 (Timeout)
+rt_sigprocmask(SIG_SETMASK, ~[KILL STOP], NULL, 8) = 0
+gettimeofday({1026982109, 268550}, NULL) = 0
+sigprocmask(SIG_SETMASK, [], ~[KILL STOP]) = 0
+gettimeofday({1026982109, 268649}, NULL) = 0
+sigprocmask(SIG_SETMASK, ~[KILL STOP], []) = 0
+gettimeofday({1026982109, 268737}, NULL) = 0
+rt_sigpending([])                       = 0
+read(4, 0x80d9e68, 128)                 = -1 EAGAIN (Resource 
+temporarily unavailable)
+
+more of the same
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="072099.html">[JDEV] Presence indicator for web page
+</A></li>
+	<LI>Next message: <A HREF="072068.html">[JDEV] MSN Question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72067">[ date ]</a>
+              <a href="thread.html#72067">[ thread ]</a>
+              <a href="subject.html#72067">[ subject ]</a>
+              <a href="author.html#72067">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

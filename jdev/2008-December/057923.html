@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] When to apply the SASLprep stringprep profile?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20When%20to%20apply%20the%20SASLprep%20stringprep%20profile%3F&In-Reply-To=%3C677E9840-749E-4AA9-80F1-FFFB88673DEF%40Isode.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="057924.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] When to apply the SASLprep stringprep profile?</H1>
+    <B>Kurt Zeilenga</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20When%20to%20apply%20the%20SASLprep%20stringprep%20profile%3F&In-Reply-To=%3C677E9840-749E-4AA9-80F1-FFFB88673DEF%40Isode.com%3E"
+       TITLE="[jdev] When to apply the SASLprep stringprep profile?">Kurt.Zeilenga at Isode.com
+       </A><BR>
+    <I>Mon Dec  1 11:04:46 CST 2008</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="057924.html">[jdev] And now ActionScript3 XMPP other than xiff?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57923">[ date ]</a>
+              <a href="thread.html#57923">[ thread ]</a>
+              <a href="subject.html#57923">[ subject ]</a>
+              <a href="author.html#57923">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+On Nov 30, 2008, at 9:49 AM, Tobias Markmann wrote:
+
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> when do i have to apply SASLprep and on what? The RFC, <A HREF="http://www.ietf.org/rfc/rfc4013.txt">http://www.ietf.org/rfc/rfc4013.txt</A> 
+</I>&gt;<i>  , just says it's applied on usernames and passwords.
+</I>
+It applies where it's called for, generally by protocol specifications  
+saying &quot;SASLprep this username&quot; or &quot;SASLprep this password&quot;.
+
+There are a few specifications which do so, name RFC 4616 (SASL/PLAIN)  
+and various LDAPv3 specifications (RFC4510).
+
+DIGEST-MD5 will not be revised to do SASLprep.  It will instead be  
+deprecated in favor of SCRAM (hopefully).
+
+&gt;<i> So I'm asking:
+</I>&gt;<i>
+</I>&gt;<i> 	&#8226; Do I need to apply SASLprep as server for all possible SASL  
+</I>&gt;<i> mechanism or just Digest-MD5?
+</I>
+Well, for Challenge/Response mechanisms, both sides need to agree on  
+how to handle the password.  For instance, with CRAM-MD5, the  
+specification (RFC 2195) just says the client/server implementations  
+hash the password.  But is that password Unicode or some other  
+character set? Is it UTF-8?  Should some code points be mapped to  
+others?  How should it be normalized?  What code points are  
+disallowed?  etc.
+
+Now, most implementations of CRAM-MD5 just agree (a priori) that the  
+password is US-ASCII represented with in a single octet with zero  
+parity, no-normalization, only printable characters allowed, etc.
+
+Likewise for many other mechanisms, including DIGEST-MD5 (though the  
+advertised character set is not US-ASCII).
+
+&gt;<i> 	&#8226; Does everything still work if clients doen't apply SASLprep  
+</I>&gt;<i> profile at all?
+</I>
+If they stick to the above agreement.
+
+&gt;<i> 	&#8226; At what point to do SASLprep on username and password? I mean do  
+</I>&gt;<i> I use the prepped string for response string calculation or the non- 
+</I>&gt;<i> prepped?
+</I>
+Generally, the username need not be prep'ed by the client.  The server  
+will prep it as needed to find the user data.  And generally, that  
+means applying jid specific preparation in XMPP.
+
+For passwords, well, moving beyond the above agreement is hard.  But  
+SASLprep is relatively safe in that, for US-ASCII printable password,  
+it produces the same output as the above agreement.
+
+-- Kurt
+
+
+&gt;<i>
+</I>&gt;<i> Cheers,
+</I>&gt;<i> Tobias
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> FAQ: <A HREF="http://www.jabber.org/discussion-lists/jdev-faq">http://www.jabber.org/discussion-lists/jdev-faq</A>
+</I>&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="057924.html">[jdev] And now ActionScript3 XMPP other than xiff?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57923">[ date ]</a>
+              <a href="thread.html#57923">[ thread ]</a>
+              <a href="subject.html#57923">[ subject ]</a>
+              <a href="author.html#57923">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Trouble with local JUD
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Trouble%20with%20local%20JUD&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006930.html">
+   <LINK REL="Next"  HREF="007125.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Trouble with local JUD</H1>
+    <B>&#216;rjan Sandland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Trouble%20with%20local%20JUD&In-Reply-To="
+       TITLE="[JDEV] Trouble with local JUD">orjan at sandland.ws
+       </A><BR>
+    <I>Thu Apr  5 02:32:17 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006930.html">[JDEV] Trouble with local JUD
+</A></li>
+        <LI>Next message: <A HREF="007125.html">[JDEV] Trouble with local JUD
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6944">[ date ]</a>
+              <a href="thread.html#6944">[ thread ]</a>
+              <a href="subject.html#6944">[ subject ]</a>
+              <a href="author.html#6944">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> You will need to have the service called something different than the
+</I>server
+&gt;<i> name so traffic can be routed correctly - probably
+</I>jud.vkhdli08.hda.hydro.com.
+&gt;<i> This should be set both in the service section for jud, and the agents
+</I>block
+&gt;<i> within the jsm 'sessions' configuration (the former telling the server how
+</I>it
+&gt;<i> should contact users-agent, the latter telling clients that the jud exists
+</I>and
+&gt;<i> where). There may be a requirement that jud.vkhdli08.hda.hydro.com be
+</I>&gt;<i> resolvable, if the users-agent uses a socket for the connection - in that
+</I>case
+&gt;<i> I'd recommend tossing that in the /etc/hosts file. Clients will speak to
+</I>&gt;<i> jud.vkhdli08.hda.hydro.com through the server, so they won't need to know
+</I>the
+&gt;<i> IP themselves.
+</I>
+Hi David,
+
+I've been ripping my hair out the last 24 hours... this is still not
+working.
+I'm sorry to bother you all with these problems, but I would very much like
+to get this server up and running.
+I'll try to breakdown the details a bit regarding what I've tried.
+
+This is the config that I think should work, but it doesn't (just extracts
+of the crucial parts)
+
+file - jabber.xml
+&lt;host&gt;&lt;jabberd:cmdline
+flag=&quot;h&quot;&gt;vkhdli08.hda.hydro.com&lt;/jabberd:cmdline&gt;&lt;/host&gt;
+&lt;service type=&quot;jud&quot; jid=&quot;jud.vkhdli08.hda.hydro.com&quot; name=&quot;Jabber User
+Directory&quot;&gt;
+&lt;ns&gt;jabber:iq:search&lt;/ns&gt;
+&lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+&lt;/service&gt;
+&lt;service id=&quot;jud&quot;&gt; &lt;host&gt;jud.vkhdli08.hda.hydro.com&lt;/host&gt;
+&lt;load&gt;&lt;jud&gt;./jud/jud.so&lt;/jud&gt;&lt;/load&gt;
+&lt;jud xmlns=&quot;jabber:config:jud&quot;&gt;
+&lt;vCard&gt;
+&lt;FN&gt;User Directory on localhost&lt;/FN&gt;
+&lt;DESC&gt;This service provides a simple user directory service.&lt;/DESC&gt;
+&lt;URL&gt;<A HREF="http://vkhdli08.hda.hydro.com/&lt;/URL">http://vkhdli08.hda.hydro.com/&lt;/URL</A>&gt;
+
+file - /etc/hosts
+127.0.0.1                    localhost.localdomain localhost
+jud.vkhdli08.hda.hydro.com
+x.x.x.x (ip removed)    vkhdli08.hda.hydro.com
+
+The output I get:
+
+XML debug:
+SENT: &lt;iq type=&quot;get&quot; id=&quot;wjSFields_wj_13&quot;
+to=&quot;jud.vkhdli08.hda.hydro.com&quot;&gt;&lt;query
+xmlns=&quot;jabber:iq:search&quot;&gt;&lt;/query&gt;&lt;/iq&gt;
+RECV: &lt;iq type='error' id='wjSFields_wj_13'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bark at vkhdli08.hda.hydro.com</A>/bark_650'
+from='jud.vkhdli08.hda.hydro.com'&gt;&lt;query xmlns='jabber:iq:search'/&gt;&lt;error
+code='502'&gt;Server Connect Failed&lt;/error&gt;&lt;/iq&gt;
+
+Console log:
+20010405T09:14:54: [alert] (jud.vkhdli08.hda.hydro.com): hostname maps back
+to ourselves!
+20010405T09:14:54: [notice] (jud.vkhdli08.hda.hydro.com): failed to
+establish connection
+20010405T09:14:54: [notice] (jud.vkhdli08.hda.hydro.com): bouncing a packet
+to jud.vkhdli08.hda.hydro.com from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bark at vkhdli08.hda.hydro.com</A>/bark_650:
+Server Connect Failed
+
+I can note that this machine is a part of a corporate network, with NIS,
+DNS, NFS and similar services set up.
+
+Let me try to refresh on some issues so I know I didn't do anything wrong.
+
+1. Services need a separate DNS name than the server itself. Ok.
+Q. Why does the console log issue a warning that we're mapping back to
+localhost?
+Obviously, the configuration I've set up with the /etc/hosts file results in
+jud.vkhdli08.hda.hydro.com maps back to the server, but it still fails to
+establish the connection.
+How can I be sure that the jud.so file is working allright? After all, I got
+some warnings about redefined header when compiling it.
+
+2. Clients speak to the JUD through the server, so only the server needs to
+know the jud.vkhdli08...etc alias - hence put it in /etc/hosts
+I've tried these combinations in the /etc/hosts file (not at the same time
+of course :-).
+The x.x.x.x is just a replacement for the hosts ip-address.
+
+127.0.0.1    jud.vkhdli08.hda.hydro.com
+x.x.x.x         jud.vkhdli08.hda.hydro.com
+127.0.0.1    jud.vkhdli08
+x.x.x.x         jud.vkhdli08
+127.0.0.1    jud.localhost
+x.x.x.x         jud.vkhdli08
+
+
+Finally, I can mention that I'm quite certain that the &quot;service type&quot;
+definition is read by the client, because it changes when I change the text
+&quot;Jabber User Directory&quot; to something else.
+
+Again - sorry to bother you with all of this.. I'm afraid that I've made a
+little silly error, a typo or something - but I can't find anything.
+I have installed a fresh copy of jabber/jud three times now, that should
+rule out that there are some typo in my config file or elsewhere.
+
+Thanks for your patience.
+
+Best regards,
+&#216;rjan Sandland
+Senior Consultant
+Net Technology AS
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006930.html">[JDEV] Trouble with local JUD
+</A></li>
+	<LI>Next message: <A HREF="007125.html">[JDEV] Trouble with local JUD
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6944">[ date ]</a>
+              <a href="thread.html#6944">[ thread ]</a>
+              <a href="subject.html#6944">[ subject ]</a>
+              <a href="author.html#6944">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

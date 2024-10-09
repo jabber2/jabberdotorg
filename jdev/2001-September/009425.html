@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Distributed Authentication (2nd attempt)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Distributed%20Authentication%20%282nd%20attempt%29&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="009424.html">
+   <LINK REL="Next"  HREF="009427.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Distributed Authentication (2nd attempt)</H1>
+    <B>Michael Hearn</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Distributed%20Authentication%20%282nd%20attempt%29&In-Reply-To="
+       TITLE="[JDEV] Distributed Authentication (2nd attempt)">mhearn at mailandnews.com
+       </A><BR>
+    <I>Sun Sep 16 14:14:17 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="009424.html">[JDEV] [Fwd: Open Source in Banking and Finance-- Workshop inBaltimore on November 9th]
+</A></li>
+        <LI>Next message: <A HREF="009427.html">[JDEV] Re: [jadmin] NDS LDAP - unable to compile
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9425">[ date ]</a>
+              <a href="thread.html#9425">[ thread ]</a>
+              <a href="subject.html#9425">[ subject ]</a>
+              <a href="author.html#9425">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Distributed Jabber Authentication
+by Mike Hearn (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mhearn at neuk.net</A>) Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tweedledee at jabber.org</A>
+
+------------------------------------------------------------------------
+This document will assume knowledge of what network authentication is,
+and how Microsoft Passport operates.
+
+Jabber network authentication as outlined in this prelimary document
+will allow for the following things:
+
+    * Authentication to arbitrary third party websites, without prior
+      knowledge of that site.
+    * Authentication to arbitrary services and servers, ie FTP servers,
+      where both server and client are jabber aware
+    * Authentication to services and servers for which the client is not
+      jabber aware.
+
+_Website authentication_
+
+This involves using a special authentication website to allow web
+browsers to act as an authentication front end. It works like this:
+
+   1. User visits site A (mycompany.com) and wishes to login. They see
+      one edit control, and a login button. They enter their network
+      address into the edit, and click login/submit
+   2. Site A sends either a Jabber IQ or a SOAP message to the users
+      server, that specifies the auth type (web), and a return URL.
+   3. Site B responds with a URL to the authentication website for that
+      server. Each Jabber server has one, we'll assume it's
+      *<A HREF="http://authenticate.jabber.org*">http://authenticate.jabber.org*</A> here. The URL points to a CGI
+      script that Site A will redirect to, for instance:
+
+      *<A HREF="http://authenticate.jabber.org/auth?token=120583asdbf5335sdfgy5767s*">http://authenticate.jabber.org/auth?token=120583asdbf5335sdfgy5767s*</A>
+   4. At this address, the user is presented with a form which asks them
+      to present credentials (probably a password, but could be anything
+      - a certificate, iris scan, fingerprint data etc.) probably over a
+      secure connection.
+   5. The user presents their credentials and submits. The
+      authentication CGI logs into the users account to verify their
+      identity, and if clear redirects the user to the URL specified in
+      the original authencation request. At the same time, cookies are
+      set on the authenicate.jabber.org domain, so if another site
+      redirects to that site in future after Step 1, the login process
+      is automatic.
+   6. Once returned to the original site A properly authenticated, Site
+      A can set a cookie containing the username, so from now on when
+      visiting that site you are automatically logged in.
+
+_Arbitrary services_
+
+We will use the example of a jabber aware FTP server and client for this
+section.
+
+   1. User connects to jabber-aware FTP server using jabber aware client
+   2. User gives client username and credentials (password, certificate,
+      whatever)
+   3. User sends username to FTP server.
+   4. FTP server sends message to jabber server via either an IQ or SOAP
+      asking for &quot;service&quot; authentication
+   5. Server responds with a token (random number), which the FTP server
+      then sends to the client
+   6. FTP client hashes credentials with random number and sends to ftp
+      server, which forwards this hash to the jabberd
+   7. Jabber server checks hashed credentials, and if clear sends
+      message back to FTP server announcing this fact, or otherwise
+      information about what went wrong.
+   8. User is now authenticated.
+
+_Arbitrary services when client is not Jabber aware_
+
+Often,  a service may be Jabber aware, but the client is not. In this
+case, the client will prompt the user for a username and password for
+its own authentication system, but the user may wish to use Jabber
+authentication as supported by the server. In this case, Instant
+Messaging (IM) Authentication can be used.
+
+   1. User connects to jabber-aware FTP server with legacy client
+   2. Client prompts user for username and password
+   3. Client supplies Jabber network address and blank password
+   4. FTP server sends SOAP/IQ to server requesting &quot;im&quot; authentication.
+      Server sends a message with embedded form to an active IM
+      connection if one, otherwise authentication fails.
+   5. Users chat client receives message, for instance &quot;Service
+      'SourceForge FTP' at 129.0.44.33 is requesting authentication.
+      Confirm? YES NO&quot; would be displayed in the chat client.
+   6. User clicks yes which triggers reply to server, which takes this
+      message and replies to FTP service with a clear authentication. 
+   7. FTP server has now authenticated the connection.
+
+This method utilises the fact that the user is probably running the chat
+client on the same machine as they are authenticating from.
+
+_______________________
+Michael Hearn
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mhearn at neuk.net</A>
+Jabber (jabber.org) <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tweedledee at jabber.org</A>
+ICQ# 34800568
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20010916/fcf236df/attachment.htm">https://www.jabber.org/jdev/attachments/20010916/fcf236df/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="009424.html">[JDEV] [Fwd: Open Source in Banking and Finance-- Workshop inBaltimore on November 9th]
+</A></li>
+	<LI>Next message: <A HREF="009427.html">[JDEV] Re: [jadmin] NDS LDAP - unable to compile
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9425">[ date ]</a>
+              <a href="thread.html#9425">[ thread ]</a>
+              <a href="subject.html#9425">[ subject ]</a>
+              <a href="author.html#9425">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

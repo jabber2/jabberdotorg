@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: [jadmin] [Fwd: jabberd porting questions/comments]
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20%5Bjadmin%5D%20%5BFwd%3A%20jabberd%20porting%20questions/comments%5D&In-Reply-To=%3CPine.LNX.4.10.10106131814180.28429-100000%40lor.jeremie.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="037725.html">
+   <LINK REL="Next"  HREF="037738.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: [jadmin] [Fwd: jabberd porting questions/comments]</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20%5Bjadmin%5D%20%5BFwd%3A%20jabberd%20porting%20questions/comments%5D&In-Reply-To=%3CPine.LNX.4.10.10106131814180.28429-100000%40lor.jeremie.com%3E"
+       TITLE="[JDEV] Re: [jadmin] [Fwd: jabberd porting questions/comments]">stpeter at jabber.org
+       </A><BR>
+    <I>Wed Jun 13 18:17:19 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="037725.html">[JDEV] Jabber on Cygwin
+</A></li>
+        <LI>Next message: <A HREF="037738.html">[JDEV] Developing a Jabber-Based application (Newbie guidance	)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37728">[ date ]</a>
+              <a href="thread.html#37728">[ thread ]</a>
+              <a href="subject.html#37728">[ subject ]</a>
+              <a href="author.html#37728">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Doug,
+
+Thanks for working to port jabberd to HP-UX, that's cool. The &quot;build
+manager&quot; (among his many other roles) is Thomas Muldowney, a.k.a. temas,
+so I'm cc'ing him on this message to make sure he sees your
+contribution and cross-posting to the JDEV list to flush out any other
+HP-UXers out there. :)
+
+Peter
+
+On Wed, 13 Jun 2001, Doug Claar wrote:
+
+&gt;<i> Wow! There are so many ways to communicate! I hope this is the right one...
+</I>&gt;<i> I am trying to port jabberd 1.4.1 to hp-ux. I've pursued both the gmake/gcc
+</I>&gt;<i> method and the make/ansi c methods, and have run into problems with both.
+</I>&gt;<i> 
+</I>&gt;<i> Once/if I get it running, I am willing to feed back my changes if folks
+</I>&gt;<i> are interested. (I've never done that before, so I guess I get to learn
+</I>&gt;<i> something new!)
+</I>&gt;<i> 
+</I>&gt;<i> Problems I've found in the non-gmake/gcc path:
+</I>&gt;<i> 
+</I>&gt;<i> The makefiles are gnumake specific, while this is not really necessary.
+</I>&gt;<i> I'd like to change them to work with standard make. This would entail
+</I>&gt;<i> modifying all the := lines, and replacing the ifeq() stuff in
+</I>&gt;<i> jabberd/Makefile. Pretty minor stuff.
+</I>&gt;<i> 
+</I>&gt;<i> The c files are not ansi c compatible. The first problem I ran into is
+</I>&gt;<i> that anonymous structures are not an ansi feature. Thus, the call:
+</I>&gt;<i> 
+</I>&gt;<i>    jutil_error(pkt, (terror){502, &quot;Unable to resolve hostname.&quot;});
+</I>&gt;<i> 
+</I>&gt;<i> is invalid. This can be fixed by either a utility function:
+</I>&gt;<i> 
+</I>&gt;<i>    terror mk_terror(const int code, const char *msg)
+</I>&gt;<i> 
+</I>&gt;<i> and rewriting the above as:
+</I>&gt;<i> 
+</I>&gt;<i>    jutil_error(pkt, mk_terror(502, &quot;Unable to resolve hostname.&quot;));
+</I>&gt;<i> 
+</I>&gt;<i> Or else rewriting jutil_error to have 3 arguments.
+</I>&gt;<i> 
+</I>&gt;<i> The next problem is that jabberd/single.h is missing a backslash on
+</I>&gt;<i> the &quot;Usage:&quot; line.
+</I>&gt;<i> 
+</I>&gt;<i> The next problem, which I haven't solved yet, is that the mio.c
+</I>&gt;<i> routine _mio_write_dump wants to add to a void pointer, and:
+</I>&gt;<i> 
+</I>&gt;<i>    cc: &quot;mio.c&quot;, line 295: error 1539: Cannot do arithmetic with pointers
+</I>&gt;<i>       to objects of unknown size.
+</I>&gt;<i> 
+</I>&gt;<i> I think I just need to cast to a char *, but I haven't studied the
+</I>&gt;<i> function enough to be sure...
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> The gmake/gcc path had problems with interpreting a warning that
+</I>&gt;<i> __va_alist was redefined (in stdargs.h and stdlib.h) as an error,
+</I>&gt;<i> and so configure punted early. I got past that (not sure how, when
+</I>&gt;<i> I added -xv to the lower level configure script, it worked...),
+</I>&gt;<i> but then I ran into a problem with pth_acmac.h understanding a define:
+</I>&gt;<i>    #define pth_sksize_sigstack(skaddr,sksize) ((sksize)')
+</I>&gt;<i>    cpp: &quot;pth_acmac.h&quot;, line 38: error 4007: Unterminated string or
+</I>&gt;<i>       character constant.
+</I>&gt;<i> 
+</I>&gt;<i> ==Doug Claar
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jadmin mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jadmin">http://mailman.jabber.org/listinfo/jadmin</A>
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="037725.html">[JDEV] Jabber on Cygwin
+</A></li>
+	<LI>Next message: <A HREF="037738.html">[JDEV] Developing a Jabber-Based application (Newbie guidance	)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37728">[ date ]</a>
+              <a href="thread.html#37728">[ thread ]</a>
+              <a href="subject.html#37728">[ subject ]</a>
+              <a href="author.html#37728">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] sasl help
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sasl%20help&In-Reply-To=%3C9fb9a1c20710230755o3ba046c2nc50271216ba9e5af%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085275.html">
+   <LINK REL="Next"  HREF="085279.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] sasl help</H1>
+    <B>Jacob Wright</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sasl%20help&In-Reply-To=%3C9fb9a1c20710230755o3ba046c2nc50271216ba9e5af%40mail.gmail.com%3E"
+       TITLE="[jdev] sasl help">jacwright at gmail.com
+       </A><BR>
+    <I>Tue Oct 23 09:55:43 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085275.html">[jdev] sasl help
+</A></li>
+        <LI>Next message: <A HREF="085279.html">[jdev] sasl help
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85276">[ date ]</a>
+              <a href="thread.html#85276">[ thread ]</a>
+              <a href="subject.html#85276">[ subject ]</a>
+              <a href="author.html#85276">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 10/23/07, Dave Cridland &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A>&gt; wrote:
+&gt;<i>
+</I>&gt;<i> On Tue Oct 23 08:25:59 2007, Jacob Wright wrote:
+</I>&gt;<i> &gt; I'm working on the DIGEST-MD5 SASL authentication and feel like I'm
+</I>&gt;<i> &gt; doing it
+</I>&gt;<i> &gt; perfectly, but my server is telling me I've got an incorrect auth
+</I>&gt;<i> &gt; for the
+</I>&gt;<i> &gt; right username and password.
+</I>&gt;<i>
+</I>&gt;<i> Now you know one of the reasons that the IETF is deprecating it. :-/
+</I>
+
+Deprecating it! After all this work I've done!? ;)  What is going to be the
+preferred method in the future?
+
+&gt;<i> var dataStr:String = bytes.readUTFBytes(bytes.bytesAvailable);
+</I>&gt;<i>
+</I>&gt;<i> Hmmm... DIGEST-MD5 isn't UTF-8, by default. (It's iso-8859-1, I
+</I>&gt;<i> think, due to HTTP-isms in it). This will probably work, though.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &gt; // transcode the string into an object
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; var data:Object = stringToObject(dataStr);
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> What does this actually do?
+</I>
+
+This takes the comma-delim string and creates a hash object out of it.
+
+&gt;<i> if (data.algorithm)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; obj.algorithm = data.algorithm;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> It doesn't seem very likely that you want to be messing with
+</I>&gt;<i> algorithm. It's not present in RFC2831, after all, and has no effect
+</I>&gt;<i> unless you're doing something other than qop=auth.
+</I>
+
+Ok.
+
+&gt;<i> obj.nc = &quot;00000001&quot;;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; if (data.qop)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; obj.qop = &quot;auth&quot;;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> qop absent, or qop=auth, are the same thing. You don't need to be
+</I>&gt;<i> conditional on whether the remote end gives you a choice. (Unless
+</I>&gt;<i> you're trying to do auth-int).
+</I>
+
+Good to know.
+
+&gt;<i> obj.cnonce = conn.generateId();
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> This isn't secure enough, but it should still work, of course.
+</I>
+
+Again, good to know.
+
+&gt;<i> var a1:String, a2:String;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; a1 = MD5.hash(obj.username + &quot;:&quot; + obj.realm + &quot;:&quot; + password) +
+</I>&gt;<i> &gt; &quot;:&quot; +
+</I>&gt;<i> &gt; obj.nonce + &quot;:&quot; + obj.cnonce;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> Ooops - does MD5.hash() return a hex digest or a binary one? You want
+</I>&gt;<i> a binary digest here.
+</I>
+
+AH! That was it! You are the best! I've spent hours on this. Thank you for
+your help, seriously.
+
+&gt;<i> var resultStr:String = objectToString(obj);
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> And again, what is this doing? Bear in mind that if it's some
+</I>&gt;<i> convenient built-in that produces output that's similar to
+</I>&gt;<i> DIGEST-MD5's syntax, this may not be quite right.
+</I>
+
+It is a convenience method. It takes the object I've been putting together
+and creates a key=&quot;value&quot;,key2=&quot;value2&quot; string out of it. Is that bad to
+quote every value? I noticed in examples that several key-value pairs were
+not quoted (e.g. charset, nc, etc.) but thought it didn't matter.
+
+Hope this gives you some pointers, anyway. I'm pretty sure it'll be
+&gt;<i> down to the distinction between H() and HEX(H()).
+</I>
+
+You were right. Thank you thank you again.
+
+Jacob Wright
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20071023/42f80f10/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20071023/42f80f10/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085275.html">[jdev] sasl help
+</A></li>
+	<LI>Next message: <A HREF="085279.html">[jdev] sasl help
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85276">[ date ]</a>
+              <a href="thread.html#85276">[ thread ]</a>
+              <a href="subject.html#85276">[ subject ]</a>
+              <a href="author.html#85276">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

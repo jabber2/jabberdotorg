@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Parent PID bug patch
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Parent%20PID%20bug%20patch&In-Reply-To=%3C20010212234900.I32161%40Flint.digix.dyndns.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="035488.html">
+   <LINK REL="Next"  HREF="035486.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Parent PID bug patch</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Parent%20PID%20bug%20patch&In-Reply-To=%3C20010212234900.I32161%40Flint.digix.dyndns.org%3E"
+       TITLE="[JDEV] Parent PID bug patch">kminkler at jabber.com
+       </A><BR>
+    <I>Mon Feb 12 22:49:00 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="035488.html">[JDEV] rpm contributer Jerome Tournier
+</A></li>
+        <LI>Next message: <A HREF="035486.html">[JDEV] ICQ &amp; MSN again
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35482">[ date ]</a>
+              <a href="thread.html#35482">[ thread ]</a>
+              <a href="subject.html#35482">[ subject ]</a>
+              <a href="author.html#35482">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey,
+
+    Sorry for the confusion, but there is an error in base_stdout.c  Although the offending code is correct, and functions normally when &lt;stdout/&gt; is used in a child jabberd, the heartbeat registration was happening at the wrong time.. it was being done when the server was initializing, when it should have been initialized when it was verifying the &lt;stdout/&gt; tag in the config... Please use this patch to fix this problem.
+
+    NOTE: this problem would occur when jabberd is run from a terminal, and the terminal is quit, or whenever the parent PID of the jabberd server changes.  This is the desired function when operating with &lt;stdout/&gt; however, so no other section of the code should be changed.
+
+Here is the patch:
+
+207c207,211
+&lt;     if(id == NULL) return r_PASS;
+---
+&gt;<i>     if(id == NULL) 
+</I>&gt;<i>     {
+</I>&gt;<i>         register_beat(2,base_stdout_heartbeat,NULL);
+</I>&gt;<i>         return r_PASS;
+</I>&gt;<i>     }
+</I>229d232
+&lt;     register_beat(2,base_stdout_heartbeat,NULL);
+
+
+Keith Minkler
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010212/19935bd1/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20010212/19935bd1/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="035488.html">[JDEV] rpm contributer Jerome Tournier
+</A></li>
+	<LI>Next message: <A HREF="035486.html">[JDEV] ICQ &amp; MSN again
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35482">[ date ]</a>
+              <a href="thread.html#35482">[ thread ]</a>
+              <a href="subject.html#35482">[ subject ]</a>
+              <a href="author.html#35482">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

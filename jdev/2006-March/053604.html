@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] implementing SASL digest in client library
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20implementing%20SASL%20digest%20in%20client%20library&In-Reply-To=%3CPine.NEB.4.63.0603231348330.23345%40panix2.panix.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="053601.html">
+   <LINK REL="Next"  HREF="053607.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] implementing SASL digest in client library</H1>
+    <B>Andrew Plotkin</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20implementing%20SASL%20digest%20in%20client%20library&In-Reply-To=%3CPine.NEB.4.63.0603231348330.23345%40panix2.panix.com%3E"
+       TITLE="[jdev] implementing SASL digest in client library">erkyrath at eblong.com
+       </A><BR>
+    <I>Thu Mar 23 13:06:29 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="053601.html">[jdev] Re: IQ request response query
+</A></li>
+        <LI>Next message: <A HREF="053607.html">[jdev] implementing SASL digest in client library
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53604">[ date ]</a>
+              <a href="thread.html#53604">[ thread ]</a>
+              <a href="subject.html#53604">[ subject ]</a>
+              <a href="author.html#53604">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I implemented this months ago, and it worked, but I never fully tested it 
+with non-ASCII usernames and passwords. Now I'm running into a problem, 
+and I don't know whether it's my fault.
+
+The SASL Digest document (rfc2831) says, in section 2.1.2.1:
+
+    The &quot;username-value&quot;, &quot;realm-value&quot; and &quot;passwd&quot; are encoded
+    according to the value of the &quot;charset&quot; directive. If &quot;charset=UTF-8&quot;
+    is present, and all the characters of either &quot;username-value&quot; or
+    &quot;passwd&quot; are in the ISO 8859-1 character set, then it must be
+    converted to ISO 8859-1 before being hashed.
+
+If I follow this instruction, authentication doesn't work. (I mean, it 
+doesn't work for usernames that contain characters in the 128-255 range. 
+If everything fits in ASCII, the two encodings are identical and 
+everything works. If there's a character beyond 255, the quoted 
+instruction doesn't apply and everything still works.)
+
+If I ignore the instruction (and never convert to 8859-1), then 
+authentication works in all cases.
+
+(I tested this against our own ejabberd server and against jabber.org.)
+
+So, did I screw up the implementation somewhere? Is ejabberd behaving 
+badly? Or should I be ignoring that line of the spec? (That would surely 
+be the easy way out, since it leads to my code working.)
+
+--Z
+
+-- 
+&quot;And Aholibamah bare Jeush, and Jaalam, and Korah: these were the borogoves...&quot;
+*
+If the Bush administration hasn't thrown you in military prison without trial,
+it's for one reason: they don't feel like it. Not because you're an American.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="053601.html">[jdev] Re: IQ request response query
+</A></li>
+	<LI>Next message: <A HREF="053607.html">[jdev] implementing SASL digest in client library
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53604">[ date ]</a>
+              <a href="thread.html#53604">[ thread ]</a>
+              <a href="subject.html#53604">[ subject ]</a>
+              <a href="author.html#53604">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

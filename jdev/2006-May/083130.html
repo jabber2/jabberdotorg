@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Admin Address Server requirements
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Admin%20Address%20Server%20requirements&In-Reply-To=%3C445A680E.50306%40jabber.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="083161.html">
+   <LINK REL="Next"  HREF="083162.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Admin Address Server requirements</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Admin%20Address%20Server%20requirements&In-Reply-To=%3C445A680E.50306%40jabber.org%3E"
+       TITLE="[jdev] Admin Address Server requirements">stpeter at jabber.org
+       </A><BR>
+    <I>Thu May  4 15:46:06 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="083161.html">[jdev] Admin Address Server requirements
+</A></li>
+        <LI>Next message: <A HREF="083162.html">[jdev] Admin Address Server requirements
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83130">[ date ]</a>
+              <a href="thread.html#83130">[ thread ]</a>
+              <a href="subject.html#83130">[ subject ]</a>
+              <a href="author.html#83130">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Chris Mullins wrote:
+&gt;<i> Trejkaz Wrote:
+</I>&gt;<i> 
+</I>&gt;&gt;&gt;<i> In general, does this feature really belong 
+</I>&gt;&gt;&gt;<i> on a server feature page?
+</I>&gt;<i> 
+</I>&gt;&gt;<i> Yes.  It is a feature, after all.
+</I>&gt;<i> 
+</I>&gt;<i> As features go though, it's pretty weak - there are a number of problems
+</I>&gt;<i> with it. 
+</I>&gt;<i> 
+</I>&gt;<i> The main use case which it seems to be addressing is, &quot;a user wants to
+</I>&gt;<i> send an IM to the server admin&quot;, which is great - but this isn't a
+</I>&gt;<i> strong way to do that. None of the users I know, including myself, would
+</I>&gt;<i> send a message to &quot;jabber.org&quot; in an attempt to get to Peter.
+</I>&gt;<i> 
+</I>&gt;<i> Now a good case for &quot;Get a list of server administrators via Disco&quot;
+</I>&gt;<i> could be made, especially if it was built into the clients, thereby
+</I>&gt;<i> allowing users to actually use it. As it sits now, it's just not too
+</I>&gt;<i> effective a server feature.
+</I>
+What if the admins don't want to expose their real addresses? You don't
+need to know my email address in order to contact <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">postmaster at jabber.org</A>
+or whatever, why should you need my JID in order to contact the admin of
+the jabber.org XMPP server?
+
+I agree that you could discover an admin by sending a query to
+example.com and asking &quot;hey, is <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">admin_dude at example.com</A> one of your
+admins?&quot; In fact this could be done right now using a disco#info request
+sent to the bare JID of the relevant admin (though I doubt that any
+servers implement such functionality yet):
+
+&lt;iq type='get' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">luser at example.org</A>' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">admin_dude at example.com</A>'&gt;
+  &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'/">http://jabber.org/protocol/disco#info'/</A>&gt;
+&lt;/iq&gt;
+
+&lt;iq type='result' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">admin_dude at example.com</A>' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">luser at example.org</A>'&gt;
+  &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'">http://jabber.org/protocol/disco#info'</A>&gt;
+    &lt;identity category='account' type='admin'/&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+But that's a different use case from trying to contact any random admin.
+(And for security reasons it may not be a good idea to allow entities to
+request the full list of admins.)
+
+Another use case is checking ownership of a server, for example during
+certificate generation. Currently CAcert and probably other certificate
+authorities will send an email to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at example.com</A> or some other
+canonical address in order to determine that an individual really does
+have control over a domain. We can do the same thing for XMPP servers if
+we have a canonical JID for contacting the admins. It just so happens
+that in the Jabber world that canonical address was inherited from the
+jabberd 1.x server series, and it is the domain of the XMPP server
+rather than something like <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">admin at example.com.</A>
+
+&gt;<i> I'm going to implement this as it's described (one more item on that
+</I>&gt;<i> list to check off, and it's only going to take an hour or two), but I'm
+</I>&gt;<i> not comfortably enough with it to leave it enabled by default on
+</I>&gt;<i> installation - or even to query during the install process to see if it
+</I>&gt;<i> should be enabled. 
+</I>
+Sure, it's up to a deployment if it wants to enable that feature.
+
+&gt;<i> There are a number of other more advanced features implied here as well
+</I>&gt;<i> - what if the server has Chinese Walls implemented (as a number of
+</I>&gt;<i> commercial servers do), and the user is on one side of the wall and the
+</I>&gt;<i> admins are on the other. Should the message be delivered? How is it
+</I>&gt;<i> logged for auditing? 
+</I>
+Those are implementation issues IMHO, but if you have thoughts on what
+the JEP should recommend, feel free to send them along. :-)
+
+Peter
+
+- --
+Peter Saint-Andre
+Jabber Software Foundation
+<A HREF="http://www.jabber.org/people/stpeter.shtml">http://www.jabber.org/people/stpeter.shtml</A>
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (Darwin)
+Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org">http://enigmail.mozdev.org</A>
+
+iD8DBQFEWmgNNF1RSzyt3NURAoEcAJ0ct8ImWQvdmR7Ikaf/DojZydfBBQCdGwbY
+c++J46L8X7bh2704t6P2eEs=
+=ibsj
+-----END PGP SIGNATURE-----
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 3641 bytes
+Desc: S/MIME Cryptographic Signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20060504/07e7b84f/attachment-0002.bin">https://www.jabber.org/jdev/attachments/20060504/07e7b84f/attachment-0002.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="083161.html">[jdev] Admin Address Server requirements
+</A></li>
+	<LI>Next message: <A HREF="083162.html">[jdev] Admin Address Server requirements
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83130">[ date ]</a>
+              <a href="thread.html#83130">[ thread ]</a>
+              <a href="subject.html#83130">[ subject ]</a>
+              <a href="author.html#83130">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

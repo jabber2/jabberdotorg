@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] fail to compile jabber server on AIX
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20fail%20to%20compile%20jabber%20server%20on%20AIX&In-Reply-To=%3C200106281651.LAA35672%40cliss.austin.ibm.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="067230.html">
+   <LINK REL="Next"  HREF="067207.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] fail to compile jabber server on AIX</H1>
+    <B>David Clissold</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20fail%20to%20compile%20jabber%20server%20on%20AIX&In-Reply-To=%3C200106281651.LAA35672%40cliss.austin.ibm.com%3E"
+       TITLE="[JDEV] fail to compile jabber server on AIX">cliss at austin.ibm.com
+       </A><BR>
+    <I>Thu Jun 28 11:51:45 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="067230.html">[JDEV] Strange server behaviour
+</A></li>
+        <LI>Next message: <A HREF="067207.html">[JDEV] Jabber Question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67206">[ date ]</a>
+              <a href="thread.html#67206">[ thread ]</a>
+              <a href="subject.html#67206">[ subject ]</a>
+              <a href="author.html#67206">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>You don't actually need to change any of the source code to build it
+on AIX with gcc.  I did make a change to the configure file as follows:
+
+35c35,37
+&lt; JHOME=`pwd`
+---
+&gt;<i> # Set JHOME to `pwd` only if not already set
+</I>&gt;<i> [ ! -n &quot;$JHOME&quot; ] &amp;&amp; JHOME=`pwd`
+</I>&gt;<i> 
+</I>136,137c138
+&lt; CFLAGS=&quot;$CFLAGS -DMAXDNAME=1025&quot;
+&lt; MCFLAGS=&quot;$MCFLAGS -Wl,-G&quot;
+---
+&gt;<i> MCFLAGS=&quot;$MCFLAGS -Wl,-G,-bexpall&quot;
+</I>
+The JHOME change was for convenience/configurability -- you don't need it.
+The CFLAGS entry adding -DMAXNAME was needed before 1.4.1, but the
+right header file is included in the right place that makes it
+unnecessary, so I removed it.
+The only change you really need is the MCFLAGS.  Then you should be
+able to build Jabber fully for AIX.
+
+NOW--- having said that, there is still a problem running the jabberd
+daemon on AIX.  It will frequently die while making pth calls, though
+the incidence is not always the same.  I have tried, and failed, to
+resolve the problem.  You can run it for a while (it actually seems
+to work better in '-D' mode), and someone else told me that they had
+much better luck running it without the DNS module, which they said
+they didn't need.  Sometimes it seems to run for a while, sometimes it
+dies almost immediately.
+
+The download site mentioned below contains many freeware and open-source
+packages, simply rebuilt and provided as-is, for users' convenience.
+(None of these are AIX or even IBM products; they include things like
+Gnome and KDE, many GNU utilities, tcl/tk, python, Apache, Samba,...)
+Jabber is just one of many -- but it has the aforementioned problem.
+(In fact, an extra 'README' was added noting as such).
+It is also the only tool on that site that uses pth; it could be a pth
+problem.
+
+Please go ahead and compile it yourself.  If you don't see the runtime
+problem, I'd definitely like to know about it!  Or if you do see the
+problem and have any ideas on it, let me know too.  It's been a few
+weeks since I've tried debugging it, but I'll try out new ideas.
+
+David Clissold
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cliss at austin.ibm.com</A>
+
+&gt;<i>From: =3D?gb2312?B?Uml2aWVyZSBTdKimcGhhbmU=3D?=3D
+</I>&gt;<i>	 &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Stephane.SR.Riviere at atosorigin.com</A>&gt;
+</I>&gt;<i>To: &quot;'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i>Subject: RE: [JDEV] fail to compile jabber server on AIX
+</I>&gt;<i>Date: Thu, 28 Jun 2001 09:22:49 +0200
+</I>&gt;<i>Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i>Hi,
+</I>&gt;<i>
+</I>&gt;<i>apparently IBM says they have ported Jabber to AIX, so I don't think you =
+</I>&gt;<i>can
+</I>&gt;<i>compile Jabber without any change to the code.
+</I>&gt;<i>
+</I>&gt;<i>You can find more information about Jabber on AIX at :
+</I>&gt;<i>
+</I>&gt;<i><A HREF="http://www-1.ibm.com/servers/aix/os/linux/jabber/">http://www-1.ibm.com/servers/aix/os/linux/jabber/</A>
+</I>&gt;<i>
+</I>&gt;<i>and you can download the IBM AIX port of Jabber (binary or source) at :
+</I>&gt;<i>
+</I>&gt;<i><A HREF="http://www-1.ibm.com/servers/aix/products/aixos/linux/download.html">http://www-1.ibm.com/servers/aix/products/aixos/linux/download.html</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>I hope this will help.
+</I>&gt;<i>
+</I>&gt;<i>St=A8=A6phane RIVIERE
+</I>&gt;<i>
+</I>&gt;<i>-----Message d'origine-----
+</I>&gt;<i>De?: SCH263 [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">beta_stn at 263.net</A>]
+</I>&gt;<i>Envoy=A8=A6?: jeudi 28 juin 2001 02:44
+</I>&gt;<i>=A8=A4?: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>Objet?: [JDEV] fail to compile jabber server on AIX
+</I>&gt;<i>
+</I>&gt;<i>hi,all
+</I>&gt;<i>I am new to jabber.I am trying to compile jabber server on AIX, with gcc =
+</I>&gt;<i>and
+</I>&gt;<i>gnu make. After I run the &quot;configure&quot;, during the make I got the result;
+</I>&gt;<i>
+</I>&gt;<i>$ make
+</I>&gt;<i>Making all in pthsock
+</I>&gt;<i>make[1]: Entering directory `/jabber/jabber-1.4.1/pthsock'
+</I>&gt;<i>gcc -g -Wall -fPIC -I. -I.. -I/jabber/jabber-1.4.1/jabberd/pth-1.3.7 -
+</I>&gt;<i>DMAXDNAME=3D1025 -I../jabberd/   -c -o client.o client.c
+</I>&gt;<i>gcc -g -Wall -fPIC -I. -I.. -I/jabber/jabber-1.4.1/jabberd/pth-1.3.7 -
+</I>&gt;<i>DMAXDNAME=3D1025 -I../jabberd/ -shared -Wl,-G -o pthsock_client.so client=
+</I>&gt;<i>.o
+</I>&gt;<i>collect2: ld returned 8 exit status
+</I>&gt;<i>ld: 0711-244 ERROR: No csects or exported symbols have been saved.
+</I>&gt;<i>make[1]: *** [pthsock_client] Error 1
+</I>&gt;<i>make[1]: Leaving directory `/jabber/jabber-1.4.1/pthsock'
+</I>&gt;<i>make: *** [all-recursive] Error 1
+</I>&gt;<i>
+</I>&gt;<i>Would anyone here tell me did I miss sth at configure or make step?
+</I>&gt;<i>Thanks.
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="067230.html">[JDEV] Strange server behaviour
+</A></li>
+	<LI>Next message: <A HREF="067207.html">[JDEV] Jabber Question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67206">[ date ]</a>
+              <a href="thread.html#67206">[ thread ]</a>
+              <a href="subject.html#67206">[ subject ]</a>
+              <a href="author.html#67206">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

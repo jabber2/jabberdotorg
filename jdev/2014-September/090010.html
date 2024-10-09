@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] XMPP-PubSub vs. remoteStorag
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP-PubSub%20vs.%20remoteStorag&In-Reply-To=%3C54072622.6030603%40geekplace.eu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089999.html">
+   <LINK REL="Next"  HREF="090016.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] XMPP-PubSub vs. remoteStorag</H1>
+    <B>Florian Schmaus</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP-PubSub%20vs.%20remoteStorag&In-Reply-To=%3C54072622.6030603%40geekplace.eu%3E"
+       TITLE="[jdev] XMPP-PubSub vs. remoteStorag">flo at geekplace.eu
+       </A><BR>
+    <I>Wed Sep  3 14:30:58 UTC 2014</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089999.html">[jdev] XMPP-PubSub vs. remoteStorag
+</A></li>
+        <LI>Next message: <A HREF="090016.html">[jdev] XMPP-PubSub vs. remoteStorag
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90010">[ date ]</a>
+              <a href="thread.html#90010">[ thread ]</a>
+              <a href="subject.html#90010">[ subject ]</a>
+              <a href="author.html#90010">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+On 01.09.2014 21:12, Tobias Kr&#228;ntzer wrote:
+&gt;<i> I&#8217;m planning to build a module that combines XMPP-PubSub with
+</I>&gt;<i> remoteStorage [1].
+</I>
+That sounds like a great project!
+
+&gt;<i> The question is, how should the items in the collections be mapped
+</I>&gt;<i> between the two APIs. remoteStorage is tree based and PubSub is
+</I>&gt;<i> somehow &#8222;list-based&#8220;.
+</I>
+Isn't PubSub with XEP-248 (PubSub Collection Nodes) also tree based?
+&gt;<i> 
+</I>&gt;<i> service.example.com &#9500;&#9472;&#9472; folder A &#9474;   &#9500;&#9472;&#9472; item 1 &#9474;   &#9500;&#9472;&#9472; item 2 &#9474;
+</I>&gt;<i> &#9500;&#9472;&#9472; subfolder u &#9474;   &#9474;   &#9492;&#9472;&#9472; item x &#9474;   &#9492;&#9472;&#9472; subfolder v &#9474;       &#9492;&#9472;&#9472;
+</I>&gt;<i> item 7 &#9500;&#9472;&#9472; folder B &#9474;   &#9500;&#9472;&#9472; subfolder u &#9474;   &#9474;   &#9492;&#9472;&#9472; item x &#9474;   &#9492;&#9472;&#9472;
+</I>&gt;<i> item 1 &#9500;&#9472;&#9472; folder C &#9474;   &#9492;&#9472;&#9472; item y &#9500;&#9472;&#9472; item 1 &#9492;&#9472;&#9472; item 2
+</I>
+How about:
+
+- - Use collection nodes for folders, and non-collection nodes for files
+- - Folder collection nodes do not need to have any items
+- - You can easily determine which node represents a folder and which is
+a file by doing a disco#info on it and determine it's type, which is
+either collection or leaf.
+- - Every node has set pubsub#max_items to '1'
+- - The item of a file node contains the data of the file (and maybe
+some metadata)
+
+Best,
+Florian
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+Comment: Using GnuPG with Thunderbird - <A HREF="http://www.enigmail.net/">http://www.enigmail.net/</A>
+
+iQF8BAEBCgBmBQJUByYiXxSAAAAAAC4AKGlzc3Vlci1mcHJAbm90YXRpb25zLm9w
+ZW5wZ3AuZmlmdGhob3JzZW1hbi5uZXQxMzU3QjAxODY1QjI1MDNDMTg0NTNEMjA4
+Q0FDMkE5Njc4NTQ4RTM1AAoJEIysKpZ4VI41IG0H/AuJR+HO/vj8uph85x+XlRxs
+EZcSLf2ZN2p9j1tfGSCrcMKdrG31u9nIvrxJIykjAhYvoFPCaSH0k0Ng2JTQv6ER
+PvOluiYYvzo2vWjsPYbcr4rrrU7FeFNfVNtMYbYihjWo8wqYNutNdr6fiGh3rOdZ
+HVrehRCBUB7DuusCB0G3nikED0GrZarHaUcE+XdLpDBg4X0wJLBjjRwFAtGmu372
+viBbbMbYaPqL5sb+W5fTIj7izcCEOkkk7BLUSAhcyUyAuvmSi6gplJ+8nAYTzuUj
+awhWDWe3anN03LlzcIKMGt6lEbD/1BoISGhC9UPUBJypGUefCpOfp00Tn6rsBK8=
+=i0JZ
+-----END PGP SIGNATURE-----
+</PRE>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089999.html">[jdev] XMPP-PubSub vs. remoteStorag
+</A></li>
+	<LI>Next message: <A HREF="090016.html">[jdev] XMPP-PubSub vs. remoteStorag
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90010">[ date ]</a>
+              <a href="thread.html#90010">[ thread ]</a>
+              <a href="subject.html#90010">[ subject ]</a>
+              <a href="author.html#90010">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

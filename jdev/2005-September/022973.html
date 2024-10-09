@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Second-guessing dns for s2s
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Second-guessing%20dns%20for%20s2s&In-Reply-To=E1F190DAC247C64FAA46B38316FA151D02202FDF%40EX-101.mail.navisite.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="022974.html">
+   <LINK REL="Next"  HREF="022975.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Second-guessing dns for s2s</H1>
+    <B>Tijl Houtbeckers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Second-guessing%20dns%20for%20s2s&In-Reply-To=E1F190DAC247C64FAA46B38316FA151D02202FDF%40EX-101.mail.navisite.com"
+       TITLE="[jdev] Second-guessing dns for s2s">thoutbeckers at splendo.com
+       </A><BR>
+    <I>Sat Sep 24 20:07:20 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="022974.html">[jdev] Second-guessing dns for s2s
+</A></li>
+        <LI>Next message: <A HREF="022975.html">[jdev] Second-guessing dns for s2s
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#22973">[ date ]</a>
+              <a href="thread.html#22973">[ thread ]</a>
+              <a href="subject.html#22973">[ subject ]</a>
+              <a href="author.html#22973">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sun, 25 Sep 2005 01:58:35 +0200, Matt Tucker &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">matt at jivesoftware.com</A>&gt;  
+wrote:
+
+&gt;<i> Tjil,
+</I>&gt;<i>
+</I>&gt;&gt;<i> I did that in my first reply, the other problem I pointed out
+</I>&gt;&gt;<i> was in my last reply; Instead of having to steal the DNS
+</I>&gt;&gt;<i> record you can &quot;steal&quot; one that's hardly used or doesn't even
+</I>&gt;&gt;<i> exist. This gives attacks a lot more &quot;stealth&quot;.
+</I>&gt;<i>
+</I>&gt;<i> Are you playing devil's advocate or are you serious? If I had to guess,
+</I>&gt;<i> I'd say that 99.9% of public XMPP servers are deployed at [domain].com
+</I>&gt;<i> or [sub].[domain].com. They're not deployed at
+</I>&gt;<i> [sub].[sub].[sub].[domain].com. This means that there are generally
+</I>&gt;<i> never &quot;unused&quot; or &quot;hardly used&quot; domains up the tree from any particular
+</I>&gt;<i> XMPP server that somebody could stealthily take over.
+</I>
+So basically what you're saying is.. you want to solve your problem  
+(people not able to get a decent (sub)domain), and replace it with the  
+problem that people can't use, for example jabber.im.example.org
+
+So what if that's 0.1% ? Or 0.01%? What if 0.01% of all users of Firefox  
+suffer from a buffer overflow. Does that mean you don't fix it?
+
+&gt;<i>
+</I>&gt;<i> What I'd love to see is that people generally agree that this algorithm:
+</I>&gt;<i>
+</I>&gt;<i>  * Is a miniscule security risk beyond standard dial-back. If you can't
+</I>&gt;<i> trust your DNS tree, you can't trust dial-back.
+</I>
+It is a &quot;very high&quot; security risk, because the consequences are very  
+serious, for the people who are exposed to the risk. Don't compare it with  
+the security risk associated with Dailback, because, as the examples  
+givven to you show, that is not true.
+
+The problem I think is, you speak of a &quot;DNS tree&quot;. In practise, the DNS  
+tree exists only 2 levels deep  
+(subdomains_containing_as_many_dots_as_you_want.domainname.top). You're  
+algoritim assumes differently. So if you have a server at example.org, and  
+you want conference.example.org to work without having a record, you can  
+do this safely. However, the person at jabber.example.org still isn't  
+safe, and doesn't have any control over his situation. Basically he's at  
+the mercy of whoever owns example.org. Of course he is too, right now, but  
+right now the owner of example.org would have to mess with  
+jabber.example.org itself, to do nasty things. With your hack, that is no  
+longer needed.
+
+So when all server run on domain.top, we're safe to use your hack.  
+However, that's usually the people who ARE in the position to make  
+subdomains.
+
+&gt;<i>  * Is a reasonable workaround given today's environment.
+</I>&gt;<i>  * Is a hack that it would be great to get rid of if a better
+</I>&gt;<i> alternative can be thought of.
+</I>
+Security compromising hacks are rarely a &quot;reasonably workaround&quot; in an  
+open enviroment like the internet. It's better to use one of the mentioned  
+solutions; running everything on the same domain or getting some free  
+subdomains from one of the many providers that do this.
+
+&gt;<i> If it's not the general community consensus that the above is true,
+</I>&gt;<i> we'll disable the algorithm by default.
+</I>&gt;<i>
+</I>&gt;&gt;<i> While requiring a signed certificate is a step up, it is only
+</I>&gt;&gt;<i> a small step it. It are still unknown servers you are talking
+</I>&gt;&gt;<i> to, thus unknown certificates.
+</I>&gt;<i>
+</I>&gt;<i> That's the point of a CA. If a CA signs a cert, that means you should
+</I>&gt;<i> trust it.
+</I>
+That is a very basic security misunderstanding. CA's do not provide  
+security, they provide acountability.
+Example: If you get a popup in your browser, which basically sais: &quot;This  
+website wants to run some code locally on your computer.&quot; and a friendly  
+box from your browser telling you it's signed with a VeriSign certificate  
+ from UnknownCompany, does that mean you trust this? By default? Without  
+even looking??? Not even IE at the height of it's insecurity would do this  
+(not even MS code!).
+
+Compare it to giving sensitive information to a person. To make it more  
+safe, you might ask them for a passport first. Does that protect the  
+information you give them? Of course not. They can still tell it to the  
+next person they see. But you can check if they are who they claim they  
+are to you, and thus hold them accountable. You can do that by looking at  
+the accountability data on the passport (eg. the name, sex, height) by  
+matching this by what you already know and what you can see. Next, you  
+have to trust the issuer of this passport; the goverment (&quot;the CA&quot;). If  
+you're smart you look at the safety measures they build in (watermarkings,  
+etc.), maybe you even call them up to check a serial number or something  
+on the passport.
+
+What you're doing with with dailback/sasl is just looking wether they  
+*have* a passport, and if it's a real passport (well, trust the CA on  
+that). You don't check if it's *their* passport, or even if the passport  
+you're seeing is the passport they tried to show you. And then, just  
+because they *have* one, you think it's safe to tell them sensitive  
+information.
+
+&gt;<i> No security is perfect, but the CA system is the bedrock of
+</I>&gt;<i> internet security.
+</I>
+For encrypting your data.
+
+Not for trust. The CA system isn't a magic sandbox that makes everything  
+safe. If I send my creditcard data over a CA signed SSL connection, that  
+doesn't make whatever happens on the other end of that encrypted pipe any  
+safer. I should still look at the certificate, the name/address of the  
+company/person, and say, &quot;Yes, this is the company/person that I know, and  
+I trust them, not cause of some crazy certificate, but because I know and  
+I trust them enough that they won't fuck up their security and have my  
+creditcard details or their certificate stolen.&quot;
+
+THAT, and trusting the CAs themself(!!), it the current &quot;bedrock&quot; of  
+internet security. It's not at all what you propose. What you propose with  
+dailback/SASL is &quot;hey buddy, you're smart enough to buy or steal this  
+certificate somewhere from a CA I like, so I'm gonna treat like I can  
+trust you a lot more then those *ordinary* dailback users&quot;. You'll have  
+the benefit of encryption, sure.. so people not involded witht the two of  
+you will have a harder time. But that server on the other end still has  
+the benifit of decryption ;) I wouldn't TRUST them any more than an  
+ordinary dailback server.
+
+What certificates *can* be used for, is as a stepping stone to develop  
+more eleborate security/trust systems. When it comes to malicious attacks  
+ from another server, they offer no real advantage over not using them at  
+all. Well, other than that the entire attack can now be encrypted ;)  
+(though man in the middle attacks can still be done, of course!)
+
+&gt;<i> I don't particularly like how the CA system works,
+</I>&gt;<i> but that's another issue.
+</I>&gt;<i>
+</I>&gt;&gt;<i> No matter how bad you want a feature, compromising security
+</I>&gt;&gt;<i> is not the right answer.
+</I>&gt;<i>
+</I>&gt;<i> I disagree. Nothing is a black and white issue -- features always have
+</I>&gt;<i> to be weighed against security. Many people won't go sky diving, but
+</I>&gt;<i> most feel reasonably safe driving a car despite the fact that tens of
+</I>&gt;<i> thousands die each year in car wrecks. For ultimate safety, s2s should
+</I>&gt;<i> just be disabled. :)
+</I>
+&gt;<i> In our opinion, our DNS algorithm isn't a
+</I>&gt;<i> significant risk beyond what you get with standard dial-back and is a
+</I>&gt;<i> virtually non-existent risk if you do decide to require CA certs for s2s
+</I>&gt;<i> connections.
+</I>
+Well, no matter how you twist and turn, that's simply not true. What's  
+true is that the &quot;edge&quot; cases where, you'll have to admit, the risk is  
+very significant indeed, are deemed irrelevent by you (in other words:  
+fuck you, edge cases). The worst thing is they can't possibly defend  
+themselves from this &quot;Jive attack&quot;, because even if they don't run it  
+themselves, they are still vonurable, the flaw is on your side, not  
+theirs. As for your second statement, I hope you learned enough about  
+internet security today to recognize that as bullshit.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="022974.html">[jdev] Second-guessing dns for s2s
+</A></li>
+	<LI>Next message: <A HREF="022975.html">[jdev] Second-guessing dns for s2s
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#22973">[ date ]</a>
+              <a href="thread.html#22973">[ thread ]</a>
+              <a href="subject.html#22973">[ subject ]</a>
+              <a href="author.html#22973">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

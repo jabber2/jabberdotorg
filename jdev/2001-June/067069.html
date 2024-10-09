@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Passwords, zero-K and storage
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Passwords%2C%20zero-K%20and%20storage&In-Reply-To=%3C5.1.0.14.0.20010615195417.00a6af40%40pop.mail.yahoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="067057.html">
+   <LINK REL="Next"  HREF="067074.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Passwords, zero-K and storage</H1>
+    <B>Iain Shigeoka</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Passwords%2C%20zero-K%20and%20storage&In-Reply-To=%3C5.1.0.14.0.20010615195417.00a6af40%40pop.mail.yahoo.com%3E"
+       TITLE="[JDEV] Passwords, zero-K and storage">iainshigeoka at yahoo.com
+       </A><BR>
+    <I>Fri Jun 15 20:35:45 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="067057.html">[JDEV] Passwords, zero-K and storage
+</A></li>
+        <LI>Next message: <A HREF="067074.html">[JDEV] Passwords, zero-K and storage
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67069">[ date ]</a>
+              <a href="thread.html#67069">[ thread ]</a>
+              <a href="subject.html#67069">[ subject ]</a>
+              <a href="author.html#67069">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Glad you brought up this point.  I've been wondering about highly related 
+issues that might as well get thrown in.
+
+At 11:52 PM 6/15/2001 +0100, DJ Adams wrote:
+
+&gt;<i>there was a question in the jdev room about how to avoid storing usernames
+</I>&gt;<i>and passwords in the &lt;username&gt;.xml files on the server.[1]
+</I>&gt;<i>
+</I>&gt;<i>I blurted out 'zero-K!' for half the answer - a way of &quot;removing the
+</I>&gt;<i>liability of storing password on the server&quot;[2]. This was followed by
+</I>&gt;<i>another answer a couple of mins later which contradicted me. I tried
+</I>&gt;<i>it out on my server, and sure enough, even when the mod_auth_plain and
+</I>&gt;<i>mod_auth_digest modules were commented out of JSM's load list, a password
+</I>&gt;<i>in plain text was stored on the server as well as the zero-K stuff.
+</I>
+... [snip]
+
+&gt;<i>Anyway, I would suggest that the snippet of code in mod_register_new()
+</I>&gt;<i>shown above is both redundant and wrong, and should be removed. The
+</I>&gt;<i>purpose of this code is served by mod_auth_plain and / or mod_auth_0k.
+</I>&gt;<i>
+</I>&gt;<i>Of course, I'm ready to be contradicted again; I'd like to hear what
+</I>&gt;<i>others think. I've tried this out (removing the snippet) on my test
+</I>&gt;<i>server and it solves the problem and doesn't cause any others, as far
+</I>&gt;<i>as my minimal testing has shown.
+</I>
+Note: my comments are from a general server design standpoint and not 
+specific to jabberd.
+
+I've been playing around with these issues and from a modular standpoint, 
+the system seems a bit incomplete.  Theoretically, when you plug in a new 
+auth module, you should be able to use it to immediately authenticate new 
+and existing accounts (accounts established and authenticated against older 
+user records).  For instance, I should be able to unplug digest and plug in 
+0k and keep on chugging.
+
+It would seem that the only real way of doing this is to store the 
+plaintext password and user name _somewhere_ so you can move records from 
+one authentication system to another.  (storing plain passwords, hashes, or 
+0k sequences).  At least with the current system.  Now the implementation 
+may encrypt all these passwords so only the server can access them, or 
+perhaps a migration utility in the server, etc... but at some point, 
+somewhere, the plaintext passwords will need to exist.  Otherwise, when you 
+plug in a next generation authentication system, you'll need to have 
+everyone re-send or regenerate their password info.
+
+Am I missing something?
+
+This of course assumes that we need to worry about new auth protocols.  If 
+the existing 2 and a half (see side note at bottom) auth protocols are 
+pretty much it, then I guess there's not much of an issue here.  However, 
+since I doubt that this is true, it seems to be a serious problem for 
+upgrading existing servers that may have thousands of user accounts.  I 
+guess what I'm trying to say is, I would like to see the auth system build 
+to support secure _and_ seamless upgrades of authentication systems.
+
+Method 1:  My thought is either we establish a standard server-side 
+password data &quot;format&quot; other than plaintext to provide a common &quot;seed&quot; 
+password that can be used to generate passwords in whatever module we are 
+using.  So when we install a new module and the existing user accounts 
+don't have password data in their format, they can ask the server, &quot;hey, 
+give me a seed for this user&quot;, and use the data to generate its data.  The 
+reason we need it standardized is so that future auth algorithms can be 
+designed to be compatible with the data.  To avoid plaintext, we store the 
+password in a way that the data displays certain mathematical properties 
+that can be exploited for generating new passwords in new systems while 
+preventing their use to generate current passwords with current 
+systems.  Probably not a trivial task.
+
+Method 2:  Another approach is to establish yet another protocol to allow 
+clients to authenticate with an existing auth module, then once logged in, 
+generate new information with a new auth module to &quot;upgrade&quot; to that 
+authentication scheme.  This protocol can be very simple (e.g. force the 
+client to auth twice: first with one module then with another) but the 
+clients need to know about this in a standard (otherwise, only client A 
+will work with server A).  This approach is basically a &quot;let the client 
+worry about it&quot; strategy.  The client must know the plain text password, 
+and can authenticate against both systems using it.  The worry is that 
+client's will have a lot of auth bloat having to be able to support all 
+auth systems in order to seamlessly access any jabber server (versus only 
+needing to know about one auth method and use it on any jabber server if 
+the server's are responsible for making these conversions).
+
+So far this has not been an issue because we've always had the plaintext 
+password on the server which served as the common data format for password 
+information (method 1 with plaintext being the special password storage 
+format... ha ha ha).  It was easy to upgrade to 0k because we could upgrade 
+people on the server using the plaintext password.  However, I expect that 
+many/most would like to use the 0k advantage of no plaintext password at 
+all on the server.  If this is the case, then the next auth protocol (if 
+there will be one) is in for some trouble if we don't address things 
+sometime.
+
+&lt;side note&gt;It would be nice nice for server's to be backward compatible and 
+still support digest if not plaintext passwords.  In this case, the 
+plaintext password still needs to be stored on the server even if 0k is 
+used.  I am curious to know how many are dumping backward compatibility for 
+the sake of security (pure 0k), and how many are using both or all three 
+(but since they store passwords on the server, what is the advantage of 
+0k?).  How many clients support 0k when the spec isn't finished or 
+&quot;approved&quot;?&lt;/side node&gt;
+
+&gt;<i>[2] <A HREF="http://docs.jabber.org/draft-proto/html/zerok.html">http://docs.jabber.org/draft-proto/html/zerok.html</A>
+</I>
+&lt;side note&gt;I would really like to see someone (whoever implemented it in 
+jabberd) take a whack at updating this doc.    I figure they could do it 
+much easier than having one of us reverse engineer the protocol or grunt 
+through the server code.  The whole &quot;bootstrap&quot; process of the 
+authentication algorithm is left out and really should be specified... From 
+a &quot;clean room&quot; server implementation standpoint (someone not working or 
+looking at jabberd) the current omission makes 0k pretty much useless.  I 
+suppose we should wait until the Foundation/JEP/JIG etc is all settled 
+first...  *sigh*&lt;/side note&gt;
+
+-iain
+
+ps - sorry for the rant.
+
+
+_________________________________________________________
+Do You Yahoo!?
+Get your free @yahoo.com address at <A HREF="http://mail.yahoo.com">http://mail.yahoo.com</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="067057.html">[JDEV] Passwords, zero-K and storage
+</A></li>
+	<LI>Next message: <A HREF="067074.html">[JDEV] Passwords, zero-K and storage
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67069">[ date ]</a>
+              <a href="thread.html#67069">[ thread ]</a>
+              <a href="subject.html#67069">[ subject ]</a>
+              <a href="author.html#67069">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

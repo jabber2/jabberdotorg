@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] XDB / ODBC
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20XDB%20/%20ODBC&In-Reply-To=%3C000001c1bbb4%2438555b70%240804010a%40wks08%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="069980.html">
+   <LINK REL="Next"  HREF="070007.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] XDB / ODBC</H1>
+    <B>Michel Oosterbeek</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20XDB%20/%20ODBC&In-Reply-To=%3C000001c1bbb4%2438555b70%240804010a%40wks08%3E"
+       TITLE="[JDEV] XDB / ODBC">oosterbeek.mah at stu.hsbrabant.nl
+       </A><BR>
+    <I>Fri Feb 22 09:00:51 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="069980.html">[JDEV] XDB / ODBC
+</A></li>
+        <LI>Next message: <A HREF="070007.html">[JDEV] XDB / ODBC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#69982">[ date ]</a>
+              <a href="thread.html#69982">[ thread ]</a>
+              <a href="subject.html#69982">[ subject ]</a>
+              <a href="author.html#69982">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Raditha,
+
+&gt;&gt;<i> SQLFreeHandle(SQL_HANDLE_DBC,self-&gt;dbc)  in xdbodbc_connect ?
+</I>
+I checked this by putting some debug info with every occurance of
+SQLFreeHandle, but this didn't seem to be the case. At first the
+environment-handler is made successfully, then the database-handler is
+created, also OK, then the connection is made, still everything all right...
+(all three times SQL_SUCCESS) but when we get to  &quot; xdbodbc_is_connected
+(XdbODBCBackend *self) &quot;  which is called by xdbodbc_connect, the error
+occurs.
+
+I found out the line
+ret = SQLGetInfo(self-&gt;dbc,SQL_DATA_SOURCE_NAME, buffer,sizeof
+buffer,&amp;outlen);
+is returning SQL_INVALID_HANDLE.
+
+
+&gt;&gt;<i> BTW: what's your database?
+</I>
+The database I am using is DB2, with unixODBC-2.0.9 (without threads) on
+RedHat 7.2
+
+Thanks,
+
+Michel Oosterbeek.
+
+
+-=Debug Output =-     (still the same)
+
+Thu Feb 21 13:07:25 2002  xdb.c:41 xdb_results checking xdb packet &lt;xdb
+type='result' to='xdb' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' ns='jabberd:xdb_sql:config'
+id='0'&gt;&lt;xdb_sql xmlns='jabberd:xdb_sql:config'&gt;
+    &lt;backend&gt;odbc&lt;/backend&gt;
+    &lt;connection&gt;
+      &lt;host&gt;dbpc&lt;/host&gt;
+      &lt;db&gt;testdb&lt;/db&gt;
+      &lt;user&gt;testuser&lt;/user&gt;
+      &lt;pass&gt;testpw&lt;/pass&gt;
+    &lt;/connection&gt;
+
+    &lt;queries&gt;
+      &lt;querydef name='auth-get'&gt;
+        &lt;text&gt;
+          SELECT password FROM users WHERE username =
+&amp;apos;$$username$$&amp;apos;
+        &lt;/text&gt;
+
+        &lt;bindvar name='user'&gt;$$username$$&lt;/bindvar&gt;
+
+        &lt;bindcol name='password' offset='0'/&gt;
+      &lt;/querydef&gt;
+
+      &lt;querydef name='auth-set'&gt;
+        &lt;text&gt;
+          UPDATE users SET password = &amp;apos;$$p$$&amp;apos; WHERE username =
+&amp;apos;$$username$$&amp;apos;
+        &lt;/text&gt;
+        &lt;bindvar name='user'&gt;$$username$$&lt;/bindvar&gt;
+        &lt;bindvar name='password'&gt;$$p$$&lt;/bindvar&gt;
+      &lt;/querydef&gt;
+
+    &lt;querydef name
+Thu Feb 21 13:07:25 2002  log.c:105 &lt;log type='alert'
+from='-internal'&gt;[xdbsql_config_init] cannot connect database :
+&lt;/log&gt;
+Thu Feb 21 13:07:25 2002  log.c:105 &lt;log type='alert'
+from='-internal'&gt;[xdb_sql] configuration failed&lt;/log&gt;
+Thu Feb 21 13:07:25 2002  deliver.c:277 Registering c2s with instance c2s
+Thu Feb 21 13:07:25 2002  client.c:440 pthsock_client loading
+Thu Feb 21 13:07:25 2002  deliver.c:235 @-internal processing &lt;xdb
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' from='c2s' ns='jabber:config:pth-csock'
+id='0'/&gt;
+Thu Feb 21 13:07:25 2002  deliver.c:649 delivering to instance 'c2s'
+
+................
+
+Thu Feb 21 13:07:25 2002  mio.c:1115 io_select to listen on 5269 [(null)]
+Thu Feb 21 13:07:25 2002  dnsrv.c:132 DNSRV CHILD: starting
+Thu Feb 21 13:07:25 2002  mio.c:1139 io_select starting to listen on 5269
+[(null)]Thu Feb 21 13:07:25 2002  dnsrv.c:147 DNSRV CHILD: Read from buffer:
+&lt;stream&gt;
+
+Thu Feb 21 13:07:25 2002  deliver.c:460 DELIVER 3:-internal &lt;log
+type='alert' from='-internal'&gt;[xdbsql_config_init] cannot connect database :
+&lt;/log&gt;
+Thu Feb 21 13:07:25 2002  deliver.c:649 delivering to instance 'elogger'
+20020221T12:07:25: [alert] (-internal): [xdbsql_config_init] cannot connect
+database :
+
+Thu Feb 21 13:07:25 2002  deliver.c:460 DELIVER 3:-internal &lt;log
+type='alert' from='-internal'&gt;[xdb_sql] configuration failed&lt;/log&gt;
+Thu Feb 21 13:07:25 2002  deliver.c:649 delivering to instance 'elogger'
+20020221T12:07:25: [alert] (-internal): [xdb_sql] configuration failed
+Thu Feb 21 13:07:25 2002  mio.c:624 socket 9 has restore karma -100 -=&gt; 50
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="069980.html">[JDEV] XDB / ODBC
+</A></li>
+	<LI>Next message: <A HREF="070007.html">[JDEV] XDB / ODBC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#69982">[ date ]</a>
+              <a href="thread.html#69982">[ thread ]</a>
+              <a href="subject.html#69982">[ subject ]</a>
+              <a href="author.html#69982">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

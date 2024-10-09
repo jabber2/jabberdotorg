@@ -1,0 +1,703 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Changes to 1.4.2.test2 for hp-ux
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Changes%20to%201.4.2.test2%20for%20hp-ux&In-Reply-To=%3C3C4469A7.12D78E66%40claar.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="069419.html">
+   <LINK REL="Next"  HREF="069415.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Changes to 1.4.2.test2 for hp-ux</H1>
+    <B>Doug Claar</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Changes%20to%201.4.2.test2%20for%20hp-ux&In-Reply-To=%3C3C4469A7.12D78E66%40claar.org%3E"
+       TITLE="[JDEV] Changes to 1.4.2.test2 for hp-ux">doug at claar.org
+       </A><BR>
+    <I>Tue Jan 15 11:40:55 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="069419.html">[JDEV] yahoo transport with problems
+</A></li>
+        <LI>Next message: <A HREF="069415.html">[JDEV] iq question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#69413">[ date ]</a>
+              <a href="thread.html#69413">[ thread ]</a>
+              <a href="subject.html#69413">[ subject ]</a>
+              <a href="author.html#69413">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Here are the changes I made to the test2 stuff to make it compile on hp-ux.
+Note that I compiled pth separately, using the config options discussed
+previously in this mailing list, so these changes don't encapsulate that.
+
+Most of the changes are to remove gnumake and gcc extensions. I built this
+on 11.00 hp-ux, 64 bit. This version (test2, not my changes) fixes the
+problems I mentioned previously: The welcome message getting truncated and
+the server not remembering my jabber id. (Well, actually, not remembering
+my password correctly...)
+
+Some of these might already be in the cvs versions, but I didn't get around
+to figuring out how to do cvs yet, so I don't know...
+
+==Doug Claar
+-------------- next part --------------
+*** Makefile	Sat Jan 20 21:32:48 2001
+--- ../jabber-1.4.2-test2/Makefile	Fri Jan 11 19:17:41 2002
+***************
+*** 3,8 ****
+--- 3,10 ----
+  #
+  include platform-settings
+  
++ CFLAGS=$(CCFLAGS)
++ 
+  SUBDIRS=pthsock xdb_file dnsrv jsm dialback jabberd
+  
+  all: all-recursive
+***************
+*** 29,39 ****
+  check-recursive installcheck-recursive single-recursive static-recursive:
+  	@set fnord $(MAKEFLAGS); amf=$$2; \
+  	dot_seen=no; \
+      if test &quot;$@&quot; = &quot;single-recursive&quot;; then \
+!       export ISSINGLE=1; \
+      fi; \
+  	if test &quot;$@&quot; = &quot;static-recursive&quot;; then \
+!       export ISSTATIC=1; \
+  	fi; \
+  	target=`echo $@ | sed s/-recursive//`; \
+  	list='$(SUBDIRS)'; for subdir in $$list; do \
+--- 31,42 ----
+  check-recursive installcheck-recursive single-recursive static-recursive:
+  	@set fnord $(MAKEFLAGS); amf=$$2; \
+  	dot_seen=no; \
++     DEFINES='-DCONFIGXML=&quot;jabber.xml&quot;'; \
+      if test &quot;$@&quot; = &quot;single-recursive&quot;; then \
+!       DEFINES='-DSINGLE -DSTATIC'; \
+      fi; \
+  	if test &quot;$@&quot; = &quot;static-recursive&quot;; then \
+!       	    DEFINES='-DSTATIC'; \
+  	fi; \
+  	target=`echo $@ | sed s/-recursive//`; \
+  	list='$(SUBDIRS)'; for subdir in $$list; do \
+***************
+*** 44,50 ****
+  	  else \
+  	    local_target=&quot;$$target&quot;; \
+  	  fi; \
+! 	  (cd $$subdir &amp;&amp; $(MAKE) $$local_target) \
+  	   || case &quot;$$amf&quot; in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+  	done; \
+  	if test &quot;$$dot_seen&quot; = &quot;no&quot;; then \
+--- 47,53 ----
+  	  else \
+  	    local_target=&quot;$$target&quot;; \
+  	  fi; \
+! 	  (cd $$subdir &amp;&amp; $(MAKE) $$local_target DEFINES=&quot;$$DEFINES&quot; )\
+  	   || case &quot;$$amf&quot; in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+  	done; \
+  	if test &quot;$$dot_seen&quot; = &quot;no&quot;; then \
+*** configure	Thu Jan 10 00:15:09 2002
+--- ../jabber-1.4.2-test2/configure	Fri Jan 11 19:32:02 2002
+***************
+*** 22,34 ****
+  ##
+  # Setup our initial flags
+  ##
+! if [ -n &quot;$CC&quot; ]; then
+!     CC=&quot;$CC&quot;;
+! else
+!     CC=&quot;gcc&quot;;
+! fi;
+! CFLAGS=&quot;$CFLAGS -g -Wall -I. -I..&quot;
+! MCFLAGS=&quot;$MCFLAGS -shared&quot;
+  LDFLAGS=&quot;$LDFLAGS&quot;
+  LIBS=&quot;$LIBS&quot;
+  XLDFLAGS=&quot;$XLDFLAGS &quot;
+--- 22,42 ----
+  ##
+  # Setup our initial flags
+  ##
+! 
+! hosttype=`uname -s`
+! case $hosttype in
+!     HP-UX)
+! 	    CC=&quot;cc -Ae&quot;
+! 	    CFLAGS=&quot;$CFLAGS -g +z -I. -I.. +DS2.0 +DA2.0W&quot;
+! 	    MCFLAGS=&quot;$MCFLAGS -b&quot;
+! 	    ;;
+!     *)
+! 	    CC=&quot;gcc&quot;;
+! 	    CFLAGS=&quot;$CFLAGS -g -Wall -fPIC -I. -I..&quot;
+! 	    MCFLAGS=&quot;$MCFLAGS -shared&quot;
+! 	    ;;
+! esac
+! 
+  LDFLAGS=&quot;$LDFLAGS&quot;
+  LIBS=&quot;$LIBS&quot;
+  XLDFLAGS=&quot;$XLDFLAGS &quot;
+***************
+*** 76,86 ****
+  ##
+  # Pth check
+  ##
+! printf &quot;Getting pth settings...&quot;
+! PTH_CFLAGS=`pth-config --cflags`
+! PTH_LDFLAGS=`pth-config --ldflags`
+! PTH_LIBS=`pth-config --libs`
+! PTH_LIBDIR=`pth-config --libdir`
+  if [ -n &quot;$PTH_CFLAGS&quot; ]; then
+      CFLAGS=&quot;$CFLAGS $PTH_CFLAGS&quot;;
+      LDFLAGS=&quot;$LDFLAGS $PTH_LDFLAGS&quot;;
+--- 84,100 ----
+  ##
+  # Pth check
+  ##
+! 
+! print &quot;Getting pth settings...&quot;
+! 
+! # Cheap &amp; dirty test for pth-config. If not present, can't use...
+! pth-config --version
+! if [ $? -eq 0 ]; then
+! 	PTH_CFLAGS=`pth-config --cflags`
+! 	PTH_LDFLAGS=`pth-config --ldflags`
+! 	PTH_LIBS=`pth-config --libs`
+! 	PTH_LIBDIR=`pth-config --libdir`
+! fi
+  if [ -n &quot;$PTH_CFLAGS&quot; ]; then
+      CFLAGS=&quot;$CFLAGS $PTH_CFLAGS&quot;;
+      LDFLAGS=&quot;$LDFLAGS $PTH_LDFLAGS&quot;;
+***************
+*** 110,115 ****
+--- 124,131 ----
+  printf &quot;Setting Build Parameters...&quot;
+  hosttype=`uname -s`
+  case $hosttype in
++     HP-UX)
++ 	XLDFLAGS=&quot;$XLDFLAGS -Wl,-E -lm -ldl -Wl,+std&quot;;;
+      Linux)
+          CFLAGS=&quot;$CFLAGS -fPIC&quot;
+          LIBS=&quot;$LIBS -ldl -lresolv&quot;
+*** dialback/Makefile	Mon Dec 17 12:09:12 2001
+--- ../jabber-1.4.2-test2/dialback/Makefile	Fri Jan 11 19:12:48 2002
+***************
+*** 7,13 ****
+  all: dialback
+  
+  dialback: $(dialback_OBJECTS)
+! 	$(CC) $(CFLAGS) $(MCFLAGS) -o dialback.so $(dialback_OBJECTS) $(LDFLAGS) $(LIBS)
+  
+  static: $(dialback_OBJECTS)
+  
+--- 7,13 ----
+  all: dialback
+  
+  dialback: $(dialback_OBJECTS)
+! 	$(LD) $(MCFLAGS) -o dialback.so $(dialback_OBJECTS) $(LDFLAGS) $(LIBS)
+  
+  static: $(dialback_OBJECTS)
+  
+*** dnsrv/Makefile	Mon Dec 17 12:09:12 2001
+--- ../jabber-1.4.2-test2/dnsrv/Makefile	Fri Jan 11 19:13:25 2002
+***************
+*** 13,19 ****
+  $(dnsrv_OBJECTS): $(dnsrv_HEADERS)
+  
+  dnsrv_build: $(dnsrv_OBJECTS) $(dnsrv_HEADERS)
+! 	$(CC) $(CFLAGS) $(MCFLAGS) -o dnsrv.so $(dnsrv_OBJECTS) 
+  
+  static: $(dnsrv_OBJECTS) $(dnsrv_HEADERS)
+  
+--- 13,19 ----
+  $(dnsrv_OBJECTS): $(dnsrv_HEADERS)
+  
+  dnsrv_build: $(dnsrv_OBJECTS) $(dnsrv_HEADERS)
+! 	$(LD) $(MCFLAGS) -o dnsrv.so $(dnsrv_OBJECTS) $(LDFLAGS)
+  
+  static: $(dnsrv_OBJECTS) $(dnsrv_HEADERS)
+  
+*** dnsrv/dnsrv.c	Wed Jan  9 14:34:32 2002
+--- ../jabber-1.4.2-test2/dnsrv/dnsrv.c	Fri Jan 11 19:33:44 2002
+***************
+*** 211,217 ****
+  	 xmlnode_put_attrib(pkt, &quot;to&quot;, to);
+  	 xmlnode_put_attrib(pkt, &quot;ip&quot;, ip);
+      }else{
+! 	 jutil_error(pkt, (terror){502, &quot;Unable to resolve hostname.&quot;});
+  	 xmlnode_put_attrib(pkt, &quot;iperror&quot;, &quot;&quot;);
+      }
+      deliver(dpacket_new(pkt),NULL);
+--- 211,217 ----
+  	 xmlnode_put_attrib(pkt, &quot;to&quot;, to);
+  	 xmlnode_put_attrib(pkt, &quot;ip&quot;, ip);
+      }else{
+! 	 jutil_error(pkt, TERROR(502, &quot;Unable to resolve hostname.&quot;));
+  	 xmlnode_put_attrib(pkt, &quot;iperror&quot;, &quot;&quot;);
+      }
+      deliver(dpacket_new(pkt),NULL);
+*** jabber.xml	Tue May 15 08:21:56 2001
+--- ../jabber-1.4.2-test2/jabber.xml	Fri Jan 11 18:58:24 2002
+***************
+*** 43,49 ****
+      be on one line, the server doesn't like it otherwise! :)
+      --&gt;
+  
+!     &lt;host&gt;&lt;jabberd:cmdline flag=&quot;h&quot;&gt;localhost&lt;/jabberd:cmdline&gt;&lt;/host&gt;
+  
+      &lt;!-- 
+      This is the custom configuration section for the 
+--- 43,49 ----
+      be on one line, the server doesn't like it otherwise! :)
+      --&gt;
+  
+!     &lt;host&gt;&lt;jabberd:cmdline flag=&quot;h&quot;&gt;hpindgr.cup.hp.com&lt;/jabberd:cmdline&gt;&lt;/host&gt;
+  
+      &lt;!-- 
+      This is the custom configuration section for the 
+***************
+*** 117,123 ****
+        &lt;vCard&gt;
+          &lt;FN&gt;Jabber Server&lt;/FN&gt;
+          &lt;DESC&gt;A Jabber Server!&lt;/DESC&gt;
+!         &lt;URL&gt;<A HREF="http://foo.bar/&lt;/URL">http://foo.bar/&lt;/URL</A>&gt;
+        &lt;/vCard&gt;
+  
+        &lt;!-- 
+--- 117,123 ----
+        &lt;vCard&gt;
+          &lt;FN&gt;Jabber Server&lt;/FN&gt;
+          &lt;DESC&gt;A Jabber Server!&lt;/DESC&gt;
+!         &lt;URL&gt;<A HREF="http://integration.cup.hp.com/dcia/&lt;/URL">http://integration.cup.hp.com/dcia/&lt;/URL</A>&gt;
+        &lt;/vCard&gt;
+  
+        &lt;!-- 
+***************
+*** 193,199 ****
+--- 193,201 ----
+        entry for &lt;host/&gt; above.
+        --&gt;
+  
++       &lt;!--
+        &lt;update&gt;&lt;jabberd:cmdline flag=&quot;h&quot;&gt;localhost&lt;/jabberd:cmdline&gt;&lt;/update&gt;
++       --&gt;
+  
+        &lt;!--
+        This enables the server to automatically update the 
+***************
+*** 223,232 ****
+--- 225,236 ----
+          directories, e.g., one for a company intranet.
+          --&gt;
+  
++ 	&lt;!--
+          &lt;service type=&quot;jud&quot; jid=&quot;users.jabber.org&quot; name=&quot;Jabber User Directory&quot;&gt;
+            &lt;ns&gt;jabber:iq:search&lt;/ns&gt;
+            &lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+          &lt;/service&gt;
++ 	--&gt;
+  
+          &lt;!--
+          The following services are examples only, you will need to
+*** jabberd/lib/Makefile	Sun Jan 28 02:18:17 2001
+--- ../jabber-1.4.2-test2/jabberd/lib/Makefile	Fri Jan 11 18:58:58 2002
+***************
+*** 3,9 ****
+  #
+  include ../../platform-settings
+  
+! CFLAGS:=$(CFLAGS)
+  
+  lib_HEADERS= \
+  	asciitab.h \
+--- 3,9 ----
+  #
+  include ../../platform-settings
+  
+! CFLAGS=$(CCFLAGS)
+  
+  lib_HEADERS= \
+  	asciitab.h \
+*** jabberd/lib/jutil.c	Wed Jan  3 03:00:00 2001
+--- ../jabber-1.4.2-test2/jabberd/lib/jutil.c	Fri Jan 11 19:03:33 2002
+***************
+*** 275,277 ****
+--- 275,285 ----
+      return NULL;
+  }
+  
++ #ifndef GCC
++ terror TERROR(const int code, const char *msg) {
++ 	terror t;
++ 	t.code=code;
++ 	strncpy(t.msg, msg, 64);
++ 	return t;
++ }
++ #endif
+*** jabberd/lib/lib.h	Fri Nov 30 14:32:11 2001
+--- ../jabber-1.4.2-test2/jabberd/lib/lib.h	Fri Jan 11 19:01:22 2002
+***************
+*** 591,613 ****
+      char msg[64];
+  } terror;
+  
+! #define TERROR_BAD           (terror){400,&quot;Bad Request&quot;}
+! #define TERROR_AUTH          (terror){401,&quot;Unauthorized&quot;}
+! #define TERROR_PAY           (terror){402,&quot;Payment Required&quot;}
+! #define TERROR_FORBIDDEN     (terror){403,&quot;Forbidden&quot;}
+! #define TERROR_NOTFOUND      (terror){404,&quot;Not Found&quot;}
+! #define TERROR_NOTALLOWED    (terror){405,&quot;Not Allowed&quot;}
+! #define TERROR_NOTACCEPTABLE (terror){406,&quot;Not Acceptable&quot;}
+! #define TERROR_REGISTER      (terror){407,&quot;Registration Required&quot;}
+! #define TERROR_REQTIMEOUT    (terror){408,&quot;Request Timeout&quot;}
+! #define TERROR_CONFLICT      (terror){409,&quot;Conflict&quot;}
+  
+! #define TERROR_INTERNAL   (terror){500,&quot;Internal Server Error&quot;}
+! #define TERROR_NOTIMPL    (terror){501,&quot;Not Implemented&quot;}
+! #define TERROR_EXTERNAL   (terror){502,&quot;Remote Server Error&quot;}
+! #define TERROR_UNAVAIL    (terror){503,&quot;Service Unavailable&quot;}
+! #define TERROR_EXTTIMEOUT (terror){504,&quot;Remote Server Timeout&quot;}
+! #define TERROR_DISCONNECTED (terror){510,&quot;Disconnected&quot;}
+  
+  /* --------------------------------------------------------- */
+  /*                                                           */
+--- 591,619 ----
+      char msg[64];
+  } terror;
+  
+! #ifdef GCC
+! #define TERROR(code, msg) (terror){code, msg}
+! #else
+! terror TERROR(const int code, const char *msg);
+! #endif
+  
+! #define TERROR_BAD           TERROR(400,&quot;Bad Request&quot;)
+! #define TERROR_AUTH          TERROR(401,&quot;Unauthorized&quot;)
+! #define TERROR_PAY           TERROR(402,&quot;Payment Required&quot;)
+! #define TERROR_FORBIDDEN     TERROR(403,&quot;Forbidden&quot;)
+! #define TERROR_NOTFOUND      TERROR(404,&quot;Not Found&quot;)
+! #define TERROR_NOTALLOWED    TERROR(405,&quot;Not Allowed&quot;)
+! #define TERROR_NOTACCEPTABLE TERROR(406,&quot;Not Acceptable&quot;)
+! #define TERROR_REGISTER      TERROR(407,&quot;Registration Required&quot;)
+! #define TERROR_REQTIMEOUT    TERROR(408,&quot;Request Timeout&quot;)
+! #define TERROR_CONFLICT      TERROR(409,&quot;Conflict&quot;)
+! 
+! #define TERROR_INTERNAL   TERROR(500,&quot;Internal Server Error&quot;)
+! #define TERROR_NOTIMPL    TERROR(501,&quot;Not Implemented&quot;)
+! #define TERROR_EXTERNAL   TERROR(502,&quot;Remote Server Error&quot;)
+! #define TERROR_UNAVAIL    TERROR(503,&quot;Service Unavailable&quot;)
+! #define TERROR_EXTTIMEOUT TERROR(504,&quot;Remote Server Timeout&quot;)
+! #define TERROR_DISCONNECTED TERROR(510,&quot;Disconnected&quot;)
+  
+  /* --------------------------------------------------------- */
+  /*                                                           */
+*** jabberd/Makefile	Mon Dec 17 12:09:12 2001
+--- ../jabber-1.4.2-test2/jabberd/Makefile	Fri Jan 11 19:17:32 2002
+***************
+*** 3,19 ****
+  #
+  include ../platform-settings
+  
+! ifeq ($(ISSINGLE),1)
+! 	DEFINES=-DHOME=&quot;\&quot;$(JHOME)\&quot;&quot; -DSINGLE -DSTATIC
+! else
+! 	DEFINES=-DHOME=&quot;\&quot;$(JHOME)\&quot;&quot; -DCONFIGXML=&quot;\&quot;jabber.xml\&quot;&quot;
+! endif
+! ifeq ($(ISSTATIC),1)
+! 	DEFINES=-DHOME=&quot;\&quot;$(JHOME)\&quot;&quot; -DSTATIC
+! endif
+  
+- CFLAGS=$(CCFLAGS) $(DEFINES)
+- 
+  jabberd_HEADERS=jabberd.h single.h
+  
+  SUBDIRS=base lib $(PSUBDIR)
+--- 3,10 ----
+  #
+  include ../platform-settings
+  
+! CFLAGS=$(CCFLAGS) -DHOME=\&quot;$(JHOME)\&quot;
+  
+  jabberd_HEADERS=jabberd.h single.h
+  
+  SUBDIRS=base lib $(PSUBDIR)
+***************
+*** 23,29 ****
+  	mio.o \
+  	mio_raw.o \
+  	mio_xml.o \
+!     mio_ssl.o \
+  	deliver.o \
+  	heartbeat.o \
+  	jabberd.o \
+--- 14,20 ----
+  	mio.o \
+  	mio_raw.o \
+  	mio_xml.o \
+! 	mio_ssl.o \
+  	deliver.o \
+  	heartbeat.o \
+  	jabberd.o \
+***************
+*** 63,69 ****
+  	base/base_format.o \
+  	base/base_stderr.o \
+  	base/base_to.o
+! 	
+  jabberd_STATICOBJS=\
+  	$(JHOME)/jsm/deliver.o \
+  	$(JHOME)/jsm/jsm.o \
+--- 54,60 ----
+  	base/base_format.o \
+  	base/base_stderr.o \
+  	base/base_to.o
+! 
+  jabberd_STATICOBJS=\
+  	$(JHOME)/jsm/deliver.o \
+  	$(JHOME)/jsm/jsm.o \
+***************
+*** 96,104 ****
+  	$(JHOME)/jsm/modules/mod_xml.o \
+  	$(JHOME)/dnsrv/dnsrv.o \
+  	$(JHOME)/dnsrv/srv_resolv.o \
+!     $(JHOME)/dialback/dialback.o \
+!     $(JHOME)/dialback/dialback_out.o \
+!     $(JHOME)/dialback/dialback_in.o \
+  	$(JHOME)/pthsock/client.o \
+  	$(JHOME)/xdb_file/xdb_file.o
+  
+--- 87,95 ----
+  	$(JHOME)/jsm/modules/mod_xml.o \
+  	$(JHOME)/dnsrv/dnsrv.o \
+  	$(JHOME)/dnsrv/srv_resolv.o \
+! 	$(JHOME)/dialback/dialback.o \
+! 	$(JHOME)/dialback/dialback_out.o \
+! 	$(JHOME)/dialback/dialback_in.o \
+  	$(JHOME)/pthsock/client.o \
+  	$(JHOME)/xdb_file/xdb_file.o
+  
+*** jabberd/mio.c	Thu Jan 10 14:06:29 2002
+--- ../jabber-1.4.2-test2/jabberd/mio.c	Fri Jan 11 19:40:48 2002
+***************
+*** 292,298 ****
+          else if(len &lt; cur-&gt;len)
+          { 
+  
+!             cur-&gt;cur += len;
+              cur-&gt;len -= len;
+              return 1;
+          } 
+--- 292,298 ----
+          else if(len &lt; cur-&gt;len)
+          { 
+  
+!             cur-&gt;cur = &amp;cur-&gt;cur + len;
+              cur-&gt;len -= len;
+              return 1;
+          } 
+***************
+*** 996,1002 ****
+          {
+              new-&gt;data = pmalloco(p,len+2);
+              memcpy(new-&gt;data,buffer,len);
+!             memcpy((new-&gt;data + len) - 1, &quot;/&gt;&quot;,3);
+              len++;
+              /* THIS WAS DUMB, I'm just leaving it here to remind me of how dumb it was :)
+              sprintf(new-&gt;data,&quot;%.*s/&gt;&quot;,len-2,buffer); */
+--- 996,1002 ----
+          {
+              new-&gt;data = pmalloco(p,len+2);
+              memcpy(new-&gt;data,buffer,len);
+!             memcpy((&amp;new-&gt;data + len) - 1, &quot;/&gt;&quot;,3);
+              len++;
+              /* THIS WAS DUMB, I'm just leaving it here to remind me of how dumb it was :)
+              sprintf(new-&gt;data,&quot;%.*s/&gt;&quot;,len-2,buffer); */
+*** jsm/modules/Makefile	Mon Dec 17 12:09:13 2001
+--- ../jabber-1.4.2-test2/jsm/modules/Makefile	Fri Jan 11 19:15:14 2002
+***************
+*** 1,6 ****
+  include ../../platform-settings
+  
+! CFLAGS=$(CCFLAGS) $(DEFINES) -I../../jabberd/
+  
+  jsm_modules_HEADERS=../jsm.h ../../jabberd/jabberd.h
+  
+--- 1,6 ----
+  include ../../platform-settings
+  
+! CFLAGS=$(CCFLAGS) -I../../jabberd/
+  
+  jsm_modules_HEADERS=../jsm.h ../../jabberd/jabberd.h
+  
+*** jsm/modules/mod_auth_0k.c	Wed Jan  9 14:34:32 2002
+--- ../jabber-1.4.2-test2/jsm/modules/mod_auth_0k.c	Fri Jan 11 19:34:16 2002
+***************
+*** 208,214 ****
+      /* if we can, set the 0k vars to what the client told us to */
+      if(!disable &amp;&amp; xmlnode_get_tag_data(m-&gt;packet-&gt;iq,&quot;hash&quot;) != NULL &amp;&amp; mod_auth_0k_set(m,id,xmlnode_get_tag_data(m-&gt;packet-&gt;iq,&quot;hash&quot;),xmlnode_get_tag_data(m-&gt;packet-&gt;iq,&quot;token&quot;),xmlnode_get_tag_data(m-&gt;packet-&gt;iq,&quot;sequence&quot;)))
+      {
+!         jutil_error(m-&gt;packet-&gt;x,(terror){500,&quot;Authentication Storage Failed&quot;});
+          return M_HANDLED;
+      }
+  
+--- 208,214 ----
+      /* if we can, set the 0k vars to what the client told us to */
+      if(!disable &amp;&amp; xmlnode_get_tag_data(m-&gt;packet-&gt;iq,&quot;hash&quot;) != NULL &amp;&amp; mod_auth_0k_set(m,id,xmlnode_get_tag_data(m-&gt;packet-&gt;iq,&quot;hash&quot;),xmlnode_get_tag_data(m-&gt;packet-&gt;iq,&quot;token&quot;),xmlnode_get_tag_data(m-&gt;packet-&gt;iq,&quot;sequence&quot;)))
+      {
+!         jutil_error(m-&gt;packet-&gt;x,TERROR(500,&quot;Authentication Storage Failed&quot;));
+          return M_HANDLED;
+      }
+  
+*** jsm/modules/mod_auth_plain.c	Sun Sep 30 01:20:50 2001
+--- ../jabber-1.4.2-test2/jsm/modules/mod_auth_plain.c	Fri Jan 11 19:34:29 2002
+***************
+*** 94,100 ****
+      /* tuck away for a rainy day */
+      if(mod_auth_plain_reset(m,id,pass))
+      {
+!         jutil_error(m-&gt;packet-&gt;x,(terror){500,&quot;Password Storage Failed&quot;});
+          return M_HANDLED;
+      }
+  
+--- 94,100 ----
+      /* tuck away for a rainy day */
+      if(mod_auth_plain_reset(m,id,pass))
+      {
+!         jutil_error(m-&gt;packet-&gt;x,TERROR(500,&quot;Password Storage Failed&quot;));
+          return M_HANDLED;
+      }
+  
+*** jsm/Makefile	Mon Dec 17 12:09:12 2001
+--- ../jabber-1.4.2-test2/jsm/Makefile	Fri Jan 11 19:15:53 2002
+***************
+*** 3,9 ****
+  #
+  include ../platform-settings
+  
+! CFLAGS=$(CCFLAGS) $(DEFINES) -I../jabberd/
+  
+  jsm_HEADERS=jsm.h ../jabberd/jabberd.h
+  
+--- 3,9 ----
+  #
+  include ../platform-settings
+  
+! CFLAGS=$(CCFLAGS) -I../jabberd/
+  
+  jsm_HEADERS=jsm.h ../jabberd/jabberd.h
+  
+***************
+*** 51,57 ****
+  $(jsm_OBJECTS): $(jsm_HEADERS)
+  
+  all-local: $(jsm_OBJECTS) $(jsm_HEADERS)
+! 	$(CC) $(CFLAGS) $(MCFLAGS) -o jsm.so $(jsm_OBJECTS) $(jsm_EXOBJECTS) $(LDFLAGS) $(LIBS)
+  
+  static: static-recursive
+  
+--- 51,57 ----
+  $(jsm_OBJECTS): $(jsm_HEADERS)
+  
+  all-local: $(jsm_OBJECTS) $(jsm_HEADERS)
+! 	$(LD) $(MCFLAGS) -o jsm.so $(jsm_OBJECTS) $(jsm_EXOBJECTS) $(LDFLAGS) $(LIBS)
+  
+  static: static-recursive
+  
+*** jsm/authreg.c	Sun Sep 30 01:20:49 2001
+--- ../jabber-1.4.2-test2/jsm/authreg.c	Fri Jan 11 19:35:05 2002
+***************
+*** 86,92 ****
+              {
+                  jutil_error(p-&gt;x, TERROR_NOTACCEPTABLE);
+              }else if(js_user(si,p-&gt;to,NULL) != NULL){
+!                 jutil_error(p-&gt;x, (terror){409,&quot;Username Not Available&quot;});
+              }else if(!js_mapi_call(si, e_REGISTER, p, NULL, NULL)){
+                  jutil_error(p-&gt;x, TERROR_NOTIMPL);
+              }
+--- 86,92 ----
+              {
+                  jutil_error(p-&gt;x, TERROR_NOTACCEPTABLE);
+              }else if(js_user(si,p-&gt;to,NULL) != NULL){
+!                 jutil_error(p-&gt;x, TERROR(409,&quot;Username Not Available&quot;));
+              }else if(!js_mapi_call(si, e_REGISTER, p, NULL, NULL)){
+                  jutil_error(p-&gt;x, TERROR_NOTIMPL);
+              }
+*** pthsock/Makefile	Mon Dec 17 12:09:13 2001
+--- ../jabber-1.4.2-test2/pthsock/Makefile	Fri Jan 11 19:15:02 2002
+***************
+*** 14,20 ****
+  $(pthsock_client_OBJECTS): $(HEADERS)
+  
+  pthsock_client: $(pthsock_client_OBJECTS) $(HEADERS)
+! 	$(CC) $(CFLAGS) $(MCFLAGS) -o pthsock_client.so $(pthsock_client_OBJECTS) $(LDFLAGS) $(LIBS)
+  
+  static: $(pthsock_client_OBJECTS) $(HEADERS)
+  
+--- 14,20 ----
+  $(pthsock_client_OBJECTS): $(HEADERS)
+  
+  pthsock_client: $(pthsock_client_OBJECTS) $(HEADERS)
+! 	$(LD) $(MCFLAGS) -o pthsock_client.so $(pthsock_client_OBJECTS) $(LDFLAGS) $(LIBS)
+  
+  static: $(pthsock_client_OBJECTS) $(HEADERS)
+  
+*** xdb_file/Makefile	Sat Jan 13 14:06:56 2001
+--- ../jabber-1.4.2-test2/xdb_file/Makefile	Fri Jan 11 19:14:01 2002
+***************
+*** 1,6 ****
+  include ../platform-settings
+  
+! CFLAGS:=$(CFLAGS) -I../jabberd
+  
+  xdb_file_OBJECTS=xdb_file.o
+  
+--- 1,6 ----
+  include ../platform-settings
+  
+! CFLAGS=$(CCFLAGS) -I../jabberd
+  
+  xdb_file_OBJECTS=xdb_file.o
+  
+***************
+*** 9,15 ****
+  all: xdb_file
+  
+  xdb_file: $(xdb_file_OBJECTS)
+! 	$(CC) $(CFLAGS) $(MCFLAGS) -o xdb_file.so $(xdb_file_OBJECTS) $(LDFLAGS) $(LIBS)
+  
+  static: $(xdb_file_OBJECTS)
+  
+--- 9,15 ----
+  all: xdb_file
+  
+  xdb_file: $(xdb_file_OBJECTS)
+! 	$(LD) $(MCFLAGS) -o xdb_file.so $(xdb_file_OBJECTS) $(LDFLAGS) $(LIBS)
+  
+  static: $(xdb_file_OBJECTS)
+  
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="069419.html">[JDEV] yahoo transport with problems
+</A></li>
+	<LI>Next message: <A HREF="069415.html">[JDEV] iq question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#69413">[ date ]</a>
+              <a href="thread.html#69413">[ thread ]</a>
+              <a href="subject.html#69413">[ subject ]</a>
+              <a href="author.html#69413">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

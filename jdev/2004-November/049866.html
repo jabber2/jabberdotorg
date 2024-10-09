@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] PATCH: fix c2s authreg memory leaks
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20PATCH%3A%20fix%20c2s%20authreg%20memory%20leaks&In-Reply-To=%3C20041120015803.A21118%40unbeatenpath.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="049863.html">
+   <LINK REL="Next"  HREF="049867.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] PATCH: fix c2s authreg memory leaks</H1>
+    <B>Cameron Moore</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20PATCH%3A%20fix%20c2s%20authreg%20memory%20leaks&In-Reply-To=%3C20041120015803.A21118%40unbeatenpath.net%3E"
+       TITLE="[jdev] PATCH: fix c2s authreg memory leaks">lists at unbeatenpath.net
+       </A><BR>
+    <I>Sat Nov 20 01:58:03 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="049863.html">[jdev] Re: TLS and self-signed certs
+</A></li>
+        <LI>Next message: <A HREF="049867.html">[jdev] PATCH: fix c2s authreg memory leaks
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#49866">[ date ]</a>
+              <a href="thread.html#49866">[ thread ]</a>
+              <a href="subject.html#49866">[ subject ]</a>
+              <a href="author.html#49866">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+I've attached a small patch against the v2_0 cvs branch.  Here's the
+change summary:
+
+  * c2s/authreg_(my|pg)sql.c: tie in free function as soon as possible
+    to prevent memory leaks
+  * c2s/authreg.c: use authreg_free()
+
+Now for the extended description.  I was playing around with valgrind
+today and noticed that if I started c2s without mysqld running, it would
+leak a little memory.  The problem was that in ar_mysql_init(), the
+mysqlcontext object was never destroyed if the connection failed.  The
+cleanest way to fix this is to let authreg_init() free it properly when
+the module init fails.  To make this work, I moved the assignment of the
+free function up to the top of ar_mysql_init() and fixed some improper
+freeing stuff in the main authreg_init().  I haven't tested the patch to
+authreg_pgsql.c, but I'm pretty sure it will work.
+
+DISCLAIMER: I've stayed up way too late fixing this bug, and I'm not a C
+guru anyway.  I'm sure I'll reread this over the weekend and see that I
+screwed something up.  ;-)
+
+PS - Anyone else seeing that when mysql is not running, that c2s doesn't
+send any errors to syslog?  I haven't figured that one out yet...
+-- 
+Cameron Moore
+[ Why is a boxing ring square? ]
+-------------- next part --------------
+Index: authreg.c
+===================================================================
+RCS file: /home/cvs/jabberd2/c2s/authreg.c,v
+retrieving revision 1.40.2.11
+diff -u -r1.40.2.11 authreg.c
+--- authreg.c	30 Apr 2004 02:42:53 -0000	1.40.2.11
++++ authreg.c	20 Nov 2004 07:15:39 -0000
+@@ -141,7 +141,7 @@
+     if((init)(ar) != 0)
+     {
+         log_write(c2s-&gt;log, LOG_ERR, &quot;failed to initialise auth module '%s'&quot;, name);
+-        free(ar);
++        authreg_free(ar);
+         return NULL;
+     }
+ 
+@@ -149,8 +149,7 @@
+     if(ar-&gt;user_exists == NULL)
+     {
+         log_write(c2s-&gt;log, LOG_ERR, &quot;auth module '%s' has no check for user existence&quot;, name);
+-        if(ar-&gt;free != NULL) (ar-&gt;free)(ar);
+-        free(ar);
++        authreg_free(ar);
+         return NULL;
+     }
+     
+Index: authreg_mysql.c
+===================================================================
+RCS file: /home/cvs/jabberd2/c2s/authreg_mysql.c,v
+retrieving revision 1.8.2.4
+diff -u -r1.8.2.4 authreg_mysql.c
+--- authreg_mysql.c	31 May 2004 23:01:24 -0000	1.8.2.4
++++ authreg_mysql.c	20 Nov 2004 07:15:40 -0000
+@@ -365,6 +365,7 @@
+     /* configure the database context with field names and SQL statements */
+     mysqlcontext = (mysqlcontext_t) malloc( sizeof( struct mysqlcontext_st ) );
+     ar-&gt;private = mysqlcontext;
++    ar-&gt;free = _ar_mysql_free;
+ 
+     /* determine our field names and table name */
+     username = _ar_mysql_param( ar-&gt;c2s-&gt;config
+@@ -500,7 +501,6 @@
+     ar-&gt;set_zerok = _ar_mysql_set_zerok;
+     ar-&gt;create_user = _ar_mysql_create_user;
+     ar-&gt;delete_user = _ar_mysql_delete_user;
+-    ar-&gt;free = _ar_mysql_free;
+ 
+     return 0;
+ }
+Index: authreg_pgsql.c
+===================================================================
+RCS file: /home/cvs/jabberd2/c2s/authreg_pgsql.c,v
+retrieving revision 1.11.2.3
+diff -u -r1.11.2.3 authreg_pgsql.c
+--- authreg_pgsql.c	31 May 2004 23:01:24 -0000	1.11.2.3
++++ authreg_pgsql.c	20 Nov 2004 07:15:40 -0000
+@@ -365,6 +365,7 @@
+     /* configure the database context with field names and SQL statements */
+     pgsqlcontext = (pgsqlcontext_t) malloc( sizeof( struct pgsqlcontext_st ) );
+     ar-&gt;private = pgsqlcontext;
++    ar-&gt;free = _ar_pgsql_free;
+ 
+     /* determine our field names and table name */
+     username = _ar_pgsql_param( ar-&gt;c2s-&gt;config
+@@ -497,7 +498,6 @@
+     ar-&gt;set_zerok = _ar_pgsql_set_zerok;
+     ar-&gt;create_user = _ar_pgsql_create_user;
+     ar-&gt;delete_user = _ar_pgsql_delete_user;
+-    ar-&gt;free = _ar_pgsql_free;
+ 
+     return 0;
+ }
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="049863.html">[jdev] Re: TLS and self-signed certs
+</A></li>
+	<LI>Next message: <A HREF="049867.html">[jdev] PATCH: fix c2s authreg memory leaks
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#49866">[ date ]</a>
+              <a href="thread.html#49866">[ thread ]</a>
+              <a href="subject.html#49866">[ subject ]</a>
+              <a href="author.html#49866">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

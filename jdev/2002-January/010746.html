@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Scale of server
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Scale%20of%20server&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="010744.html">
+   <LINK REL="Next"  HREF="010749.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Scale of server</H1>
+    <B>Jason Reineri</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Scale%20of%20server&In-Reply-To="
+       TITLE="[JDEV] Scale of server">jreineri at northridge.com
+       </A><BR>
+    <I>Thu Jan 10 14:25:25 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="010744.html">[JDEV] Scale of server
+</A></li>
+        <LI>Next message: <A HREF="010749.html">[JDEV] The Important Things
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10746">[ date ]</a>
+              <a href="thread.html#10746">[ thread ]</a>
+              <a href="subject.html#10746">[ subject ]</a>
+              <a href="author.html#10746">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm actually testing load on a server right now.  I have one box with
+three instances of dpsm, one instance of jabberd, as well as the yahoo
+and msn transports running.  The user information is stored in a mySQL
+db running on the same machine and jabber accesses it through a version
+of xdb_sql that we have modified to fix a few quirks and to make it work
+with the msn transport.  The way we are load balancing the connections
+to the three instances of dpsm is to just run each one on a virtual ip
+and set up our dns to round robin the three ip's.
+ 
+With a straight test that does nothing but connect sockets to the
+server, we can get 10,000 connections per instance of dpsm.  Three
+instances of dpsm seems to be the limit with this test, as there are
+diminishing returns with any more than that.  I'm now using a tester app
+I found in the CVS repository to get an actual load test.  The app has
+some problems with it so we are tweaking it and running tests.  I don't
+have solid numbers yet, but I know that I have had 3,000 users
+simultaneously logged in and all of them sending messages.  The problem
+with this test is that if you have 3,000 people logged in at any given
+time, they will not be constantly talking to each other.  So with some
+tweaking we are trying to make a load test that will more accurately
+simulate a load.
+ 
+What we are trying to accomplish here is to have 30,000 clients
+connected to the one box, with a percentage of them talking that would
+accurately reflect a real life server.
+ 
+Note:  Our server machine is just a desktop that we stole to test on.
+It's a one CPU P4 1.3Ghz I believe, with 1GB RAM.  If we had multiple
+CPU's I suspect we could get away with running even more instances of
+dpsm.  We are also going to try adding 2 more network cards to the
+machine so each instance of dpsm will be on it's own network card.  Let
+me know if you need any more info.  I've found the information on
+scaling Jabber to be pretty lean and hard to find.
+ 
+Jason Reineri
+Northridge Systems, Inc.
+ 
+-----Original Message-----
+From: Michael F. March [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">march at indirect.com</A>] 
+Sent: Thursday, January 10, 2002 2:38 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] Scale of server
+ 
+Do you know of a Jabber server that has had 3K users on at one time?
+ 
+	----- Original Message ----- 
+	From: Jason Reineri &lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jreineri at northridge.com</A>&gt;  
+	To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> 
+	Sent: Thursday, January 10, 2002 7:29 AM
+	Subject: RE: [JDEV] Scale of server
+	 
+	Jabber can handle 3000 concurrent users with no problem.  The
+only problem you will have is that the select() function in Linux is
+hard coded to a certain number of sockets.  In kernel 2.4 that limit is
+1024.  You can either recompile the kernel to allow more, or you can use
+dpsm or jpolld as your socket manager.  These socket managers use the
+poll() function instead of select() and are not subject to the limit.
+You will however have to increase the number of file descriptors you can
+have open per process.  This can be done in a startup script that calls
+ulimit.
+	 
+	Jason Reineri
+	Northridge Systems, Inc.
+	 
+	-----Original Message-----
+	From: Rodrigo Roman [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at ferengi.com.ar</A>] 
+	Sent: Wednesday, January 09, 2002 6:14 PM
+	To: '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'
+	Subject: [JDEV] Scale of server
+	 
+	I'm planing an instalation of jabber server in a isp, we have
+aprox 3000 concurrent users (i dont know wich porcentage will use our
+messanger) our client base is 150k users.
+	Wich is the best implementation for this numbers? 
+	Is jabber prepared for this? 
+	Are all the transports able to work in this client base? 
+	Thanks for your help! 
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20020110/0b27c23e/attachment.htm">https://www.jabber.org/jdev/attachments/20020110/0b27c23e/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="010744.html">[JDEV] Scale of server
+</A></li>
+	<LI>Next message: <A HREF="010749.html">[JDEV] The Important Things
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10746">[ date ]</a>
+              <a href="thread.html#10746">[ thread ]</a>
+              <a href="subject.html#10746">[ subject ]</a>
+              <a href="author.html#10746">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

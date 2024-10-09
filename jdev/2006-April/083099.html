@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> Stream feature negotiation ordering. Was: Re: [jdev] S2S	questions - from attribute and version support
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20Stream%20feature%20negotiation%20ordering.%20Was%3A%20Re%3A%20%5Bjdev%5D%20S2S%0A%09questions%20-%20from%20attribute%20and%20version%20support&In-Reply-To=%3C2601.1146162086.322979%40peirce.dave.cridland.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="083098.html">
+   <LINK REL="Next"  HREF="083100.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>Stream feature negotiation ordering. Was: Re: [jdev] S2S	questions - from attribute and version support</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20Stream%20feature%20negotiation%20ordering.%20Was%3A%20Re%3A%20%5Bjdev%5D%20S2S%0A%09questions%20-%20from%20attribute%20and%20version%20support&In-Reply-To=%3C2601.1146162086.322979%40peirce.dave.cridland.net%3E"
+       TITLE="Stream feature negotiation ordering. Was: Re: [jdev] S2S	questions - from attribute and version support">dave at cridland.net
+       </A><BR>
+    <I>Thu Apr 27 13:21:25 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="083098.html">Stream feature negotiation ordering. Was: Re: [jdev] S2S	questions -	from attribute and version support
+</A></li>
+        <LI>Next message: <A HREF="083100.html">[jdev] rebuild wildfire error with eclipse.why? 
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83099">[ date ]</a>
+              <a href="thread.html#83099">[ thread ]</a>
+              <a href="subject.html#83099">[ subject ]</a>
+              <a href="author.html#83099">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu Apr 27 18:51:32 2006, Michal vorner Vaner wrote:
+&gt;<i> On Thu, Apr 27, 2006 at 07:34:21PM +0200, Matthias Wimmer wrote:
+</I>&gt;<i> &gt; Peter Saint-Andre schrieb:
+</I>&gt;<i> &gt; &gt;Stream compression is negotiated when you can't set the TLS &gt; 
+</I>&gt;<i> &gt;compression bit for whatever reason. I'd agree with Ralph that &gt; 
+</I>&gt;<i> &gt;negotiating this after TLS and before SASL (or jabber:iq:auth) 
+</I>&gt;<i> makes &gt; &gt;the most sense. So:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;1. TLS
+</I>&gt;<i> &gt; &gt;2. Stream compression
+</I>&gt;<i> &gt; &gt;3. SASL etc. (or jabber:iq:auth)
+</I>&gt;<i> &gt; &gt; I think stream compression should be negotiated AFTER doing 
+</I>&gt;<i> SASL. The &gt; reason is that some SASL mechanisms can establish an 
+</I>&gt;<i> encryption layer. &gt; If SASL encrypts the stream, stream compression 
+</I>&gt;<i> would not work anymore.
+</I>&gt;<i> &gt; Negotiating stream compression after doing SASL would result in 
+</I>&gt;<i> being &gt; the stream first compressed and encrypted afterwards - 
+</I>&gt;<i> which works.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> Well, as I know, the compression can be done in TLS, not SASL. SASL 
+</I>&gt;<i> is
+</I>&gt;<i> only few stanzas at the beginning to send a password, whilest the 
+</I>&gt;<i> whole
+</I>&gt;<i> stream is piped trough the TLS only usually, right? And it is a good
+</I>&gt;<i> place for it anyway, as encryption makes the data look more
+</I>&gt;<i> unpredictable, which is good for encryption.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>SASL can also provide privacy and/or integrity, too. It can provide 
+strong encryption in fewer round-trips than TLS, as well. And 
+usually, SASL doesn't send a password - it only does so with PLAIN 
+and the non-standard LOGIN mechanisms.
+
+
+&gt;<i> I'm not expert for either of them, but I guess compresion in TLS 
+</I>&gt;<i> makes
+</I>&gt;<i> sence, in SASL doesn't..
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>A SASL mechanism could provide compression. None do, as far as I 
+know, but they could.
+
+In any case, the important factor isn't so much when the compression 
+gets negotiated, but where it's applied - compression is adding a 
+layer into the stack. Normally, it's easiest to add a layer in at the 
+top of a running connection, so you'd add it in after any encryption 
+has been negotiated.
+
+If you know you're not going to negotiate a privacy/intergrity layer 
+in SASL, you could negotiate it beforehand, thus compressing the SASL 
+exchange for a slight saving. On a server, you could refuse to 
+provide encryption/integrity via SASL if compression was in effect, 
+or you could assume the client knew what it was doing if you were 
+capable of inserting a layer.
+
+So it's typically going to be one of:
+
+1) TLS -&gt; Comp -&gt; SASL(no encrypt)
+2) SASL(encrypt) -&gt; Comp
+3) TLS -&gt; Comp -&gt; Auth
+
+(and non recommended)
+
+4) Comp -&gt; Auth
+5) Comp -&gt; SASL(no encrypt)
+
+And always, the result should be that data is first compressed, then 
+any SASL encoding is applied, then any TLS.
+
+In general, SASL exchanges compress by around 20% on ESMTP, IMAP, and 
+XMPP because they're base64 encoded. In ACAP (and presumably LDAP, 
+although I've not looked), they don't compress as well because 
+they're transmitted in binary.
+
+By the way, I was meaning to ask why the stream compression mechanism 
+uses zlib format rather than just deflate blocks? zlib just 
+introduces overhead - it's for compressing files, not streams. TLS 
+(and both application-level compression proposals for IMAP) use pure 
+deflate. HTTP uses gzip and zlib (confusingly it calls zlib 
+&quot;deflate&quot;), but then, it's designed to handle precompressed files on 
+the server, so this is a somewhat different circumstance.
+
+Dave.
+-- 
+           You see things; and you say &quot;Why?&quot;
+   But I dream things that never were; and I say &quot;Why not?&quot;
+    - George Bernard Shaw
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="083098.html">Stream feature negotiation ordering. Was: Re: [jdev] S2S	questions -	from attribute and version support
+</A></li>
+	<LI>Next message: <A HREF="083100.html">[jdev] rebuild wildfire error with eclipse.why? 
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83099">[ date ]</a>
+              <a href="thread.html#83099">[ thread ]</a>
+              <a href="subject.html#83099">[ subject ]</a>
+              <a href="author.html#83099">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

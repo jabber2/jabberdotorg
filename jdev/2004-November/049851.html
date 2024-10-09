@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Session request/Resource bind after Digest MD5 auth ..
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Session%20request/Resource%20bind%20after%20Digest%20MD5%20auth%20..&In-Reply-To=%3Cfd2a5672041112153639e4a59f%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="049865.html">
+   <LINK REL="Next"  HREF="049852.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Session request/Resource bind after Digest MD5 auth ..</H1>
+    <B>Scott Mikolaitis</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Session%20request/Resource%20bind%20after%20Digest%20MD5%20auth%20..&In-Reply-To=%3Cfd2a5672041112153639e4a59f%40mail.gmail.com%3E"
+       TITLE="[jdev] Session request/Resource bind after Digest MD5 auth ..">smikolai at gmail.com
+       </A><BR>
+    <I>Fri Nov 12 17:36:03 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="049865.html">[jdev] Re: TLS and self-signed certs
+</A></li>
+        <LI>Next message: <A HREF="049852.html">[jdev] Session request/Resource bind after Digest MD5 auth ..
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#49851">[ date ]</a>
+              <a href="thread.html#49851">[ thread ]</a>
+              <a href="subject.html#49851">[ subject ]</a>
+              <a href="author.html#49851">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm currently home growing a client in Java and have somehow managed to connect,
+authenticate using DIGEST-MD5.  In reading RFC's 3921 and 3920 the XMPP Core
+draft I have ( page 36 ) says &quot;Client must send a new stream header to
+the server,
+to which the server must respond with.. a list of available stream
+features...&quot; and so on..
+
+It is at this point my client sends:
+
+&lt;stream:stream to='localhost' xmlns='jabber:client'
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> version='1.0'&gt;
+
+To which the server responds with:
+
+&lt;?xml version='1.0'?&gt;&lt;stream:stream
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> xmlns='jabber:client'
+from='localhost' version='1.0'
+id='8rtzkzdf7wt99kz94okrr5fwpdwny8v60o5lni0v'&gt;
+&lt;stream:features xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;&lt;bind
+xmlns='urn:ietf:params:xml:ns:xmpp-bind'/&gt;&lt;session
+xmlns='urn:ietf:params:xml:ns:xmpp-session'/&gt;&lt;/stream:features&gt;
+
+While the jabberd debug output shows:
+
+C2S : sx (io.c:191) decoded read data (114 bytes): &lt;stream:stream
+to='localhost' xmlns='jabber:client'
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> version='1.0'&gt;
+C2S : sx (server.c:118) stream request: to localhost from (null) version 1.0
+C2S : sx (server.c:133) 10 state change from 0 to 1
+C2S : sx (server.c:149) stream id is hv3y4duh5gfn8vv5lns2tj0vnumo0m6ih9gmnb3s
+C2S : sx (server.c:179) prepared stream response: &lt;?xml
+version='1.0'?&gt;&lt;stream:stream
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> xmlns='jabber:client'
+from='localhost' version='1.0'
+id='hv3y4duh5gfn8vv5lns2tj0vnumo0m6ih9gmnb3s'&gt;
+C2S : sx (io.c:207) tag 10 event 1 data 0x0
+C2S : Fri Nov 12 03:17:19 2004 c2s.c:38 want write
+C2S : Fri Nov 12 03:17:19 2004 c2s.c:398 write action on fd 10
+C2S : sx (io.c:279) 10 ready for writing
+C2S : sx (io.c:237) encoding 183 bytes for writing: &lt;?xml
+version='1.0'?&gt;&lt;stream:stream
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> xmlns='jabber:client'
+from='localhost' version='1.0'
+id='hv3y4duh5gfn8vv5lns2tj0vnumo0m6ih9gmnb3s'&gt;
+C2S : sx (chain.c:79) calling io write chain
+C2S : sx (ssl.c:220) in _sx_ssl_wio
+C2S : sx (ssl.c:224) queueing buffer for write
+C2S : sx (ssl.c:240) preparing queued buffer for write
+C2S : sx (ssl.c:302) prepared 204 ssl bytes for write
+C2S : sx (io.c:298) handing app 204 bytes to write
+C2S : sx (io.c:299) tag 10 event 3 data 0x818f6a0
+C2S : Fri Nov 12 03:17:19 2004 c2s.c:104 writing to 10
+C2S : Fri Nov 12 03:17:19 2004 c2s.c:108 204 bytes written
+C2S : sx (server.c:29) stream established
+C2S : sx (sx.c:134) authenticating stream (method=SASL/DIGEST-MD5;
+id=<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nugget at localhost</A>)
+C2S : sx (sx.c:139) 10 state change from 1 to 4
+C2S : sx (sx.c:140) tag 10 event 5 data 0x0
+C2S : sx (server.c:45) building features nad
+C2S : sx (sasl.c:77) already auth'd, not offering sasl mechanisms
+C2S : Fri Nov 12 03:17:19 2004 bind.c:40 offering resource bind and session
+C2S : sx (io.c:332) tag 10 event 0 data 0x0
+C2S : Fri Nov 12 03:17:19 2004 c2s.c:33 want read
+C2S : Fri Nov 12 03:17:19 2004 c2s.c:398 write action on fd 10
+C2S : sx (io.c:279) 10 ready for writing
+C2S : sx (io.c:237) encoding 185 bytes for writing: &lt;stream:features
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;&lt;bind
+xmlns='urn:ietf:params:xml:ns:xmpp-bind'/&gt;&lt;session
+xmlns='urn:ietf:params:xml:ns:xmpp-session'/&gt;&lt;/stream:features&gt;
+
+Continued from the 3920 RFC &quot;..Upon being so informed that resource binding is
+required, the client MUST bind a resource to the stream by sending to the server
+an IQ stanza of the type &quot;set&quot;..&quot;
+
+So, my client sends:
+
+&lt;iq to='localhost' type='set' id='sess_1'&gt;&lt;session
+xmlns='urn:ietf:params:xml:ns:xmpp-session'/&gt;&lt;/iq&gt;
+
+Which shows up in jabberd's debug output:
+
+C2S : sx (ssl.c:326) loading 122 bytes into ssl read buffer
+C2S : sx (io.c:191) decoded read data (101 bytes): &lt;iq to='localhost'
+type='set' id='sess_1'&gt;&lt;session
+xmlns='urn:ietf:params:xml:ns:xmpp-session'/&gt;&lt;/iq&gt;
+C2S : sx (io.c:67) completed nad: &lt;iq xmlns='jabber:client'
+id='sess_1' type='set' to='localhost'&gt;&lt;session
+xmlns='urn:ietf:params:xml:ns:xmpp-session'/&gt;&lt;/iq&gt;
+C2S : sx (chain.c:119) calling nad read chain
+C2S : sx (io.c:110) tag 10 event 6 data 0x8170578
+C2S : Fri Nov 12 04:33:52 2004 c2s.c:283 unrecognised pre-session packet, bye
+C2S : sx (error.c:79) prepared error: &lt;stream:error
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;&lt;not-authorized
+xmlns='urn:ietf:params:xml:ns:xmpp-streams'/&gt;&lt;/stream:error&gt;
+
+And I'm subsequently booted by &lt;/stream:stream&gt;
+
+I've investigated c2s.c a bit, but I'm finding the C a little cryptic
+and I'm a bit puzzled
+as to why this either doesn't work as advertised - or I'm doing
+something stupid..
+any advice?
+
+Scott
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="049865.html">[jdev] Re: TLS and self-signed certs
+</A></li>
+	<LI>Next message: <A HREF="049852.html">[jdev] Session request/Resource bind after Digest MD5 auth ..
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#49851">[ date ]</a>
+              <a href="thread.html#49851">[ thread ]</a>
+              <a href="subject.html#49851">[ subject ]</a>
+              <a href="author.html#49851">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

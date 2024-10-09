@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] SSI Protocol draft 1
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20SSI%20Protocol%20draft%201&In-Reply-To=%3CPine.OSX.4.40.0110151442160.370-100000%40titatovenaar.sfo.covalent.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039173.html">
+   <LINK REL="Next"  HREF="039179.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] SSI Protocol draft 1</H1>
+    <B>Dirk-Willem van Gulik</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20SSI%20Protocol%20draft%201&In-Reply-To=%3CPine.OSX.4.40.0110151442160.370-100000%40titatovenaar.sfo.covalent.net%3E"
+       TITLE="[JDEV] SSI Protocol draft 1">dirkx at covalent.net
+       </A><BR>
+    <I>Mon Oct 15 16:58:52 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039173.html">[JDEV] SSI Protocol draft 1
+</A></li>
+        <LI>Next message: <A HREF="039179.html">[JDEV] user information for other transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39177">[ date ]</a>
+              <a href="thread.html#39177">[ thread ]</a>
+              <a href="subject.html#39177">[ subject ]</a>
+              <a href="author.html#39177">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> Here it is. Dead simple. And not finished. But you get the idea.
+</I>
+Though I appreciate that this 'forwarding' is very similar to the passport
+idea's - I am not quite sure it is needed at all.
+
+I think there are two options at a high level - which collapse into one if
+with some careful trust management.
+
+-&gt;	You(*) trust a site enough to 'auth' with it. In that case
+	just adding a sign on protocol to the web server is your
+	solution; i.e. <A HREF="http://research.covalent.net/-">http://research.covalent.net/-</A>&gt;auth_jabber
+	or something along those lines.
+
+	You: as in 'you the end user'.
+
+-&gt;	You do not quite trust the web site enough to authenticate
+	with it - but enough to give them access to part of your
+	details. So you need to prove to some third party, which
+	is also trusted by the web site you want to identify yourself
+	with, that you are who you say you are.
+
+And in the latter case you need to pick up a singed cookie somewhere else,
+or there needs to be some second channel, etc. Or something else. However
+in all cases you are actively willing to entrust the site with -some-
+information (some token, a uid, etc). Now you can use that as a toehold.
+
+Now given that that is the case - why not make the sign on such that it
+cannot be replayed, reused or anything like that. I.e. by making sure that
+when you talk to the half trusted side - it has enough to auth you with
+the backend system - but not enough to abuse what it learns.
+
+For examply by using a one time challenge or one time password, by
+proxying through an https connection to the authing backend (with
+appropriate cert's), by letting your IM pop up an OK window fed through a
+back channel. by having the IM show you a 4 digit PIN, RSA SecureID like
+tricks, OTP calculators, etc, etc. All of which can be hidden - at the
+client side or at the server side where appropriate.
+
+Dw
+
+&gt;<i> Authentication Protocol
+</I>&gt;<i> Draft 1
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> The following elements represent the different actions that are
+</I>&gt;<i> available in the Single Sign-In Protocol.
+</I>&gt;<i>
+</I>&gt;<i> The following terms are used in this document:
+</I>&gt;<i>
+</I>&gt;<i> Client - users software (web browser, ftp client etc. that is not
+</I>&gt;<i> directly connected to the jabber network).
+</I>&gt;<i>
+</I>&gt;<i> Host - users host (for instance, jabber.org).
+</I>&gt;<i>
+</I>&gt;<i> Requester - the entity that wishes to authenticate the Client with the Host.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> At the start of a SSI transaction, the Requester should interrogate the
+</I>&gt;<i> Host to determine what authentication options are available. The first
+</I>&gt;<i> version of this protcol will define 3 types, however, more may be added
+</I>&gt;<i> at a later date.
+</I>&gt;<i>
+</I>&gt;<i> The following message is sent.
+</I>&gt;<i>
+</I>&gt;<i> &lt;beginTransaction xmlns=&quot;<A HREF="http://jabber.org/ssi&quot;/">http://jabber.org/ssi&quot;/</A>&gt;
+</I>&gt;<i>
+</I>&gt;<i> and the Host sends back:
+</I>&gt;<i>
+</I>&gt;<i> &lt;transaction id=&quot;02343151&quot; xmlns=&quot;<A HREF="http://jabber.org/ssi&quot;">http://jabber.org/ssi&quot;</A>&gt;
+</I>&gt;<i> 	&lt;authType name=&quot;web&quot;/&gt;
+</I>&gt;<i> 	&lt;authType name=&quot;service&quot;/&gt;
+</I>&gt;<i> 	&lt;authType name=&quot;im&quot;/&gt;
+</I>&gt;<i> &lt;/transaction&gt;
+</I>&gt;<i>
+</I>&gt;<i> The Requester now has a transaction ID that can be used in subsequent
+</I>&gt;<i> messages.
+</I>&gt;<i>
+</I>&gt;<i> The Requester now sends something like this:
+</I>&gt;<i>
+</I>&gt;<i> &lt;signIn id=&quot;02343151&quot; xmlns=&quot;<A HREF="http://jabber.org/ssi&quot;">http://jabber.org/ssi&quot;</A>&gt;
+</I>&gt;<i>    &lt;authType name=&quot;web&quot;&gt;
+</I>&gt;<i>    	&lt;template&gt;<A HREF="http://requester/ssi-template.html&lt;/template">http://requester/ssi-template.html&lt;/template</A>&gt;
+</I>&gt;<i>
+</I>&gt;<i> &lt;return-url&gt;<A HREF="http://requester/signin?key=SOMEVERYLONGRANDOMUNGUESSABLENUMBER&lt;/return-url">http://requester/signin?key=SOMEVERYLONGRANDOMUNGUESSABLENUMBER&lt;/return-url</A>&gt;
+</I>&gt;<i>    &lt;/authType&gt;
+</I>&gt;<i> &lt;/signIn&gt;
+</I>&gt;<i>
+</I>&gt;<i> and the Host sends back when successful
+</I>&gt;<i>
+</I>&gt;<i> &lt;instructions id=&quot;02343151&quot; xmlns=&quot;<A HREF="http://jabber.org/ssi&quot;">http://jabber.org/ssi&quot;</A>&gt;
+</I>&gt;<i> 	&lt;authType name=&quot;web&quot;&gt;
+</I>&gt;<i>
+</I>&gt;<i> 		&lt;redirect-url&gt;<A HREF="https://signin.host/go.pl?id=02343151&lt;/redirect-url">https://signin.host/go.pl?id=02343151&lt;/redirect-url</A>&gt;
+</I>&gt;<i>
+</I>&gt;<i> 	&lt;/authType&gt;
+</I>&gt;<i> &lt;/instructions&gt;
+</I>&gt;<i>
+</I>&gt;<i> Note that the redirect-URL can be anything, the fact that the
+</I>&gt;<i> transaction ID features in it in this example doesn't indicate this has
+</I>&gt;<i> to be the case.
+</I>&gt;<i>
+</I>&gt;<i> The Requestor then sends an HTTP Redirect to the Client. The Sign-in
+</I>&gt;<i> program loads up the file specified in the &lt;template&gt; element of the
+</I>&gt;<i> &lt;signIn&gt; message, and then interpolates the form into that page
+</I>&gt;<i> (Passport calls this co-branding) and sends it to the Client. Once the
+</I>&gt;<i> Client has submitted their credentials, they are cleared, and sent back
+</I>&gt;<i> to the return-url. The sign in page can set cookies so the credentials
+</I>&gt;<i> don't have to be re-entered. The Requestor site can also set a cookie
+</I>&gt;<i> with the user name in, so the Client will not have to reauthenticate in
+</I>&gt;<i> future.
+</I>&gt;<i>
+</I>&gt;<i> ______________________________
+</I>&gt;<i> Michael Hearn
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mhearn at neuk.net</A>
+</I>&gt;<i> Jabber (jabber.org) <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tweedledee at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039173.html">[JDEV] SSI Protocol draft 1
+</A></li>
+	<LI>Next message: <A HREF="039179.html">[JDEV] user information for other transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39177">[ date ]</a>
+              <a href="thread.html#39177">[ thread ]</a>
+              <a href="subject.html#39177">[ subject ]</a>
+              <a href="author.html#39177">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

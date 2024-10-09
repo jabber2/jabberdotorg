@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [jadmin] performance numbers.. questions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5Bjadmin%5D%20performance%20numbers..%20questions&In-Reply-To=%3C3AF99FF4.86E34DDF%40usa.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [jadmin] performance numbers.. questions</H1>
+    <B>Dustin Puryear</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5Bjadmin%5D%20performance%20numbers..%20questions&In-Reply-To=%3C3AF99FF4.86E34DDF%40usa.net%3E"
+       TITLE="[JDEV] [jadmin] performance numbers.. questions">dpuryear at usa.net
+       </A><BR>
+    <I>Wed May  9 14:52:20 CDT 2001</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66455">[ date ]</a>
+              <a href="thread.html#66455">[ thread ]</a>
+              <a href="subject.html#66455">[ subject ]</a>
+              <a href="author.html#66455">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I am actually now getting some hard numbers from the jabbertest tools.
+One test I ran connected 1000 users to a Jabber server running on a
+Pentium III 600 with 192MB of RAM. I saw some odd results. But first,
+here is how the test works:
+
+active_jab basically connects 1..n users serially, and sends x messages
+when each user connects. It does NOT send messages concurrently for each
+connected user. (Although that would be an excellent feature--to be
+added soon!) Instead, if you want to simulate multiple users sending
+messages at the same time to the same server then you just run muliple
+instances of active_jab on the same or different client machines. (Very
+simple.) The basic idea is:
+
+for user 1..n do
+  connect user to jabber
+  send x messages and track delivery times
+done
+
+for user 1..n do
+  disconnect user from jabber
+done
+
+Memory
+=======
+First of all, I assumed that Jabber would consume a lot of memory, which
+turned out to be a wrong assumption. I saw my %memused jump from a rough
+minimum of 81% to maybe 95%. My %swpused did not change significantly,
+which indicates that I had enough core memory for the job. (Remember
+Linux always uses as much memory as it can for buffers, so the starting
+value of 81% isn't surprising.) The big issue here is that there was
+only a small jump--around 14%.
+
+CPU
+=======
+Big surprise here. Jabber seems to *quickly* begin eating CPU cycles as
+the number of connected users increases. Here is some data:
+
+users   idle  user  sys
+0       99%   1%    0%
+200     70%   24%   3%
+500     45%   50%   5%
+800     30%   64%   6%        
+1000    20%   70%   10%
+
+(Yes, the totals may be more or less that 100%. I am getting these
+numbers from graphs and quickly jotting them down.)
+
+Note that Jabber is consuming 24% of the CPU at 200 users on a Pentium
+III 600. I also noticed that as more users are connected the message
+delivery time decreased. The progession was slow.. usually going from 0
+seconds to 2 seconds as the number of users went from 0..1000. But
+still.. why is that? Remember I am not sending message concurrently.
+Instead, as each user connects active_jab sends x messages (defaults to
+5), and then proceeds to the next user.
+
+I would like some feedback on this data. Does this look like what
+everyone else has been experiencing? Are my numbers out of wack?! What
+other numbers would be useful?
+
+I think the next logical step is to run active_jab on several machines
+at once. That way we can test how many *concurrent* users can connect
+and send messages.
+
+Regards, Dustin
+
+-- 
+Dustin Puryear &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dpuryear at usa.net</A>&gt;
+<A HREF="http://members.telocity.com/~dpuryear">http://members.telocity.com/~dpuryear</A>
+In the beginning the Universe was created. 
+This has been widely regarded as a bad move. - Douglas Adams
+_______________________________________________
+jadmin mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jadmin">http://mailman.jabber.org/listinfo/jadmin</A>
+
+
+
+</PRE>
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66455">[ date ]</a>
+              <a href="thread.html#66455">[ thread ]</a>
+              <a href="subject.html#66455">[ subject ]</a>
+              <a href="author.html#66455">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

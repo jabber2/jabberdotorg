@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Still another patch ... (seed the rand() function)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Still%20another%20patch%20...%20%28seed%20the%20rand%28%29%20function%29&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="017839.html">
+   <LINK REL="Next"  HREF="017841.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Still another patch ... (seed the rand() function)</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Still%20another%20patch%20...%20%28seed%20the%20rand%28%29%20function%29&In-Reply-To="
+       TITLE="[JDEV] Still another patch ... (seed the rand() function)">m at tthias.net
+       </A><BR>
+    <I>Sat Oct 11 18:11:00 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="017839.html">[JDEV] Another jadc2s patch ... (sm reconnects)
+</A></li>
+        <LI>Next message: <A HREF="017841.html">[JDEV] MSN-t 1.2.8rc1
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17840">[ date ]</a>
+              <a href="thread.html#17840">[ thread ]</a>
+              <a href="subject.html#17840">[ subject ]</a>
+              <a href="author.html#17840">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi!
+
+Sorry to flood this mailinglist this week end. ;-) This is another patch
+for jadc2s.
+
+jadc2s used the rand() function to generate ids for the digest
+authentication but never seeds the rand() function. The result is that
+with every restart of jadc2s it generates the same sequence of ids
+again. This is a very bad behavior especially on servers with less load.
+An attacker could takeover and account if he is able to sniff
+connections and if he is able to crash jadc2s (or jadc2s is restarted
+regularily). He can just sniff which id was sent to the client and what
+the client sent back as response. Afterwards he crashes jadc2s or waits
+for an other restart. Then he just has to wait for the right moment
+where the server will generate this key again (counting the logins),
+connect to it and he will be successfully able to authenticate as the
+other user. By changing the password he has taken over the account.
+
+The fix is to just seed the rand() function at startup of jadc2s with
+the current time that will be different for every restart. (But using
+rand() to generate the digest ids still isn't a very strong
+implementation.)
+
+
+Tot kijk
+    Matthias
+
+--- jadc2s.c	2003-10-10 11:05:45.000000000 +0200
++++ jadc2s-srand.c	2003-10-12 00:53:41.000000000 +0200
+@@ -200,6 +200,9 @@
+         return 1;
+     }
+ 
++    /* seed the rand() function */
++    srand(time(NULL));
++
+     /* start logging */
+     c2s-&gt;log = log_new(&quot;jadc2s&quot;);
+     log_write(c2s-&gt;log, LOG_NOTICE, &quot;starting up&quot;);
+
+-- 
+For kibibytes see:
+<A HREF="http://www.iec.ch/online_news/etech/arch_2003/etech_0503/focus.htm">http://www.iec.ch/online_news/etech/arch_2003/etech_0503/focus.htm</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: Digital signature
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20031012/17a7cd5b/attachment.pgp">https://www.jabber.org/jdev/attachments/20031012/17a7cd5b/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="017839.html">[JDEV] Another jadc2s patch ... (sm reconnects)
+</A></li>
+	<LI>Next message: <A HREF="017841.html">[JDEV] MSN-t 1.2.8rc1
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17840">[ date ]</a>
+              <a href="thread.html#17840">[ thread ]</a>
+              <a href="subject.html#17840">[ subject ]</a>
+              <a href="author.html#17840">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

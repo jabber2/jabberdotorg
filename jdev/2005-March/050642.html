@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: File xfer gone wrong? [SOLVED]
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20File%20xfer%20gone%20wrong%3F%20%5BSOLVED%5D&In-Reply-To=%3Cd55e29bf0503170025eabcce6%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="050607.html">
+   <LINK REL="Next"  HREF="050643.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: File xfer gone wrong? [SOLVED]</H1>
+    <B>Anthony Ortiz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20File%20xfer%20gone%20wrong%3F%20%5BSOLVED%5D&In-Reply-To=%3Cd55e29bf0503170025eabcce6%40mail.gmail.com%3E"
+       TITLE="[jdev] Re: File xfer gone wrong? [SOLVED]">anthonypaulo at gmail.com
+       </A><BR>
+    <I>Thu Mar 17 02:25:44 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="050607.html">[jdev] File xfer gone wrong?
+</A></li>
+        <LI>Next message: <A HREF="050643.html">[jdev] Re: File xfer gone wrong? [SOLVED]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50642">[ date ]</a>
+              <a href="thread.html#50642">[ thread ]</a>
+              <a href="subject.html#50642">[ subject ]</a>
+              <a href="author.html#50642">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Okay, I figured out the problem.... it seems that in Java you can't
+use an underlying stream when you're already using one of its
+subclasses. In this instance, I created a buffered stream writer on my
+outgoing socket stream and used it to do the socks handshake. After
+the handshaking was done I needed to send the last reply packet
+signifying everything was okay, but I did this using the regular
+socket stream. It was choking on this part for some reason. When I
+switched it to continue using the buffered output stream all worked
+fine. I guess the morale of the story is that you can't use a stream
+if it's already in use in on of your sublcassed stream writers. It
+still doesn't answer why this worked with Psi and not with Exodus
+though... strange.
+
+Thanks for all your help.
+
+Anthony
+
+
+On Wed, 9 Mar 2005 17:39:13 -0500, Anthony Ortiz &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">anthonypaulo at gmail.com</A>&gt; wrote:
+&gt;<i> Hello everyone!
+</I>&gt;<i> 
+</I>&gt;<i> I posted a message on the exodus newsgroup a while back but I think
+</I>&gt;<i> it's dead as I haven't seen any activity in weeks. Maybe someone has
+</I>&gt;<i> been thought this before or can spot the obvious and point me in the
+</I>&gt;<i> right direction, so I'm reposting most of it here.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks!!
+</I>&gt;<i> 
+</I>&gt;<i> Anthony
+</I>&gt;<i> 
+</I>&gt;<i> === repost from exodus newsgroup ===
+</I>&gt;<i> I've written a simple java applet that implements the Jabber protocol in very
+</I>&gt;<i> much the same way yahoo chat works. Right now things are going smoothly, I can
+</I>&gt;<i> log in, do rostering, chatting, and bytestream file transfers. I have been
+</I>&gt;<i> testing so far against the PSI client, and I am able to transfer files back and
+</I>&gt;<i> forth no problem. However, I seem to be having a problem with the Exodus client.
+</I>&gt;<i> I am able to receive a file from an Exodous client just fine (though I had to
+</I>&gt;<i> use the latest development build 0.9.0.39; 0.9.0.0 resulted in a corrupted
+</I>&gt;<i> file), but for some reason I can't seem to send a file to Exodus, it gives me
+</I>&gt;<i> the error &quot;Exodus was unable to connect to any file transfer proxies or the
+</I>&gt;<i> sender.&quot; This is what happens :
+</I>&gt;<i> 
+</I>&gt;<i> 1) I do the usual stream initiation stuff
+</I>&gt;<i> 2) I create a server socket on host:port
+</I>&gt;<i> 3) I send the iq containing the streamhost stanza with the host:port
+</I>&gt;<i> 4) I accept the connection on the serversocket
+</I>&gt;<i> 
+</I>&gt;<i> At this point the Exodus client is sending me a SOCKS5 version
+</I>&gt;<i> identifier/method selection message, stating that it
+</I>&gt;<i> supports &quot;no authentication&quot;
+</I>&gt;<i> 
+</I>&gt;<i> 5) I send 2 bytes in response, the first byte being the version (5) and the
+</I>&gt;<i> second being &quot;no authentication&quot; (0).
+</I>&gt;<i> 
+</I>&gt;<i> At this point the Exodus client is sending me a socks5 request message
+</I>&gt;<i> containing :
+</I>&gt;<i> 
+</I>&gt;<i> version 5
+</I>&gt;<i> cmd 1
+</I>&gt;<i> type 3
+</I>&gt;<i> host = SHA1 hash
+</I>&gt;<i> port 0
+</I>&gt;<i> 
+</I>&gt;<i> So far so good!
+</I>&gt;<i> 
+</I>&gt;<i> 6) hash matches great, so I send the Exodus client a reply message with
+</I>&gt;<i> status = 0 meaning we're good to go
+</I>&gt;<i> 
+</I>&gt;<i> It is at this point that I believe I have nothing left to do but wait for an
+</I>&gt;<i> iq response from the exodus client, but instead it immediately pops up an
+</I>&gt;<i> error message stating that it was unable to connect. How can that be when
+</I>&gt;<i> everything seemed to be going so well?? Is Exodus expecting something else?
+</I>&gt;<i> Or maybe I should be setting the other fields in my reply besides setting the
+</I>&gt;<i> status field to 0?? I tried filling in the reply message fields with :
+</I>&gt;<i> 
+</I>&gt;<i> version : 5
+</I>&gt;<i> reply (status) : 0
+</I>&gt;<i> reserved : 0
+</I>&gt;<i> type = 3
+</I>&gt;<i> addr = host
+</I>&gt;<i> port = port
+</I>&gt;<i> 
+</I>&gt;<i> and this doesn't work either. What am I doing wrong?? What's weird is that I
+</I>&gt;<i> can transfer files both ways against a PSI client, and PSI and Exodus work
+</I>&gt;<i> fine against each other as well, but it's only when I try to send a file to
+</I>&gt;<i> Exodus that I have this problem. Heeeeeeeeelp!!
+</I>&gt;<i> 
+</I>&gt;<i> Thank you for your time!! :)
+</I>&gt;<i> 
+</I>&gt;<i> Anthony
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="050607.html">[jdev] File xfer gone wrong?
+</A></li>
+	<LI>Next message: <A HREF="050643.html">[jdev] Re: File xfer gone wrong? [SOLVED]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50642">[ date ]</a>
+              <a href="thread.html#50642">[ thread ]</a>
+              <a href="subject.html#50642">[ subject ]</a>
+              <a href="author.html#50642">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Message Read Receipts
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Message%20Read%20Receipts&In-Reply-To=%3C393B7FFFC141428C85DE728A336E6E95%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089463.html">
+   <LINK REL="Next"  HREF="089465.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Message Read Receipts</H1>
+    <B>Spencer MacDonald</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Message%20Read%20Receipts&In-Reply-To=%3C393B7FFFC141428C85DE728A336E6E95%40gmail.com%3E"
+       TITLE="[jdev] Message Read Receipts">spencer.macdonald.other at gmail.com
+       </A><BR>
+    <I>Sun May 19 09:11:04 UTC 2013</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089463.html">[jdev] Message Read Receipts
+</A></li>
+        <LI>Next message: <A HREF="089465.html">[jdev] Message Read Receipts
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89464">[ date ]</a>
+              <a href="thread.html#89464">[ thread ]</a>
+              <a href="subject.html#89464">[ subject ]</a>
+              <a href="author.html#89464">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks for the Feedback. 
+
+I think the issue with embedding it in a message is the neither XEP-0136 or XEP-0313 store message that have no body, which a includes a last read message.
+
+Keeping it as a separate XEP means it can be used with any Message Archiving solution.
+
+Also the auto sending of read is something I want to avoid, if they haven't read it then don't move the marker. There is a separate delivered marker for this. I appreciate that delivery  receipts already exist but they have to be sent for every message that requests them and as you alluded to, how your supposed to handle them with archived messages is a bit ambiguous.
+
+One solution I thought of for duplicate message ids, is for the server to embed a timestamp based on the archive into the chat marker.
+
+Naturally if I turned this into any XEP then all of this would only be sent to clients that advertise support. 
+
+Regards
+
+Spencer
+
+
+On Sunday, 19 May 2013 at 09:23, Lance Stout wrote:
+
+&gt;<i> &gt; Any thoughts either way on my &quot;Chat Marker&quot; proposal?
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> So, after some pondering, there are three user experiences I can see:
+</I>&gt;<i> 
+</I>&gt;<i> 1) The primary clients talking to each other:
+</I>&gt;<i> 
+</I>&gt;<i> So XEP-0085 by itself should cover this, as Stefan pointed out. However, it
+</I>&gt;<i> might leave holes because of non-instanaeous delivery. Eg, Juliet sends Romeo
+</I>&gt;<i> a message at the same time he sends an active state message. So Juliet would
+</I>&gt;<i> assume Romeo has read a message that he might not have actually received yet.
+</I>&gt;<i> 
+</I>&gt;<i> If we make a new element to tie the update with a specific message
+</I>&gt;<i> ID, then that potential hole goes away. So we can add a new
+</I>&gt;<i> 
+</I>&gt;<i> &lt;lastread id=&quot;1234etc&quot; xmlns=&quot;urn:xmpp:lastread:tmp&quot; /&gt;
+</I>&gt;<i> 
+</I>&gt;<i> element to outgoing messages when:
+</I>&gt;<i> 
+</I>&gt;<i> a) The last ID sent by the other person has changed (so only send a
+</I>&gt;<i> &lt;lastread /&gt; update once per change in ID)
+</I>&gt;<i> b) If the user doesn't send a response chat within some period of time,
+</I>&gt;<i> automatically send a &lt;lastread /&gt; update. Basically, give the user a chance
+</I>&gt;<i> to respond with a message and piggyback the &lt;lastread /&gt; update with that (maybe
+</I>&gt;<i> a composing state message would suffice), but if after a few seconds the user
+</I>&gt;<i> hasn't done something and the client is still focused and active, etc, emit a
+</I>&gt;<i> standalone update.
+</I>&gt;<i> 
+</I>&gt;<i> As usual, we don't send these updates when the other client doesn't advertise
+</I>&gt;<i> support for it in disco.
+</I>&gt;<i> 
+</I>&gt;<i> The combination of just delivery receipt and chat state might be sufficient, 
+</I>&gt;<i> but I've not been able to convince myself yet that it would properly handle 
+</I>&gt;<i> case 3 with offline messages.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 2) A secondary client that is online, which wishes to stay in sync:
+</I>&gt;<i> 
+</I>&gt;<i> This is the purpose of XEP-0280 Message Carbons. So long as the delivery receipts,
+</I>&gt;<i> chat state notifications and the &lt;lastread /&gt; updates from case 1 are also synced
+</I>&gt;<i> via carbons, everything should be covered.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 3) A user has received messages while offline:
+</I>&gt;<i> 
+</I>&gt;<i> So this is the fun one because it requires some interaction with the archives.
+</I>&gt;<i> When requesting history, the results should note the ID where the offline
+</I>&gt;<i> storage began, as Zash pointed out.
+</I>&gt;<i> 
+</I>&gt;<i> Based on that, the client can send a &lt;lastread /&gt; update. Likewise it can
+</I>&gt;<i> generate the delivery receipts requested in the offline messages (although,
+</I>&gt;<i> there shouldn't actually be any since you wouldn't request receipts when sending
+</I>&gt;<i> to an offline JID, and XEP-0184 has a slight ambiguity with how to handle offline
+</I>&gt;<i> messages).
+</I>&gt;<i> 
+</I>&gt;<i> I would suggest that standalone lastread updates should be included in archived 
+</I>&gt;<i> history because they're required to fully resume conversation state to match
+</I>&gt;<i> other systems like iMessage, etc. The main question at this point is where to 
+</I>&gt;<i> send the updates (if at all), particularly when the sender JID is no longer online.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> In general, what makes things challenging is that message IDs are not required to
+</I>&gt;<i> be globally unique. The same ID could be used multiple times during the same
+</I>&gt;<i> conversation if a user is bouncing between clients or reconnects.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> -- Lance
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Attachments: 
+</I>&gt;<i> - smime.p7s
+</I>&gt;<i> 
+</I>
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20130519/1e622769/attachment.html">https://www.jabber.org/jdev/attachments/20130519/1e622769/attachment.html</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089463.html">[jdev] Message Read Receipts
+</A></li>
+	<LI>Next message: <A HREF="089465.html">[jdev] Message Read Receipts
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89464">[ date ]</a>
+              <a href="thread.html#89464">[ thread ]</a>
+              <a href="subject.html#89464">[ subject ]</a>
+              <a href="author.html#89464">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

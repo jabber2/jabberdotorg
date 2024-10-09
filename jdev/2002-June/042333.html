@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Possible Denial of Service in mio_ssl.c
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Possible%20Denial%20of%20Service%20in%20mio_ssl.c&In-Reply-To=%3C87d6v3zgxs.fsf%40nb-acer.better-com.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042332.html">
+   <LINK REL="Next"  HREF="042335.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Possible Denial of Service in mio_ssl.c</H1>
+    <B>Martin Lesser</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Possible%20Denial%20of%20Service%20in%20mio_ssl.c&In-Reply-To=%3C87d6v3zgxs.fsf%40nb-acer.better-com.de%3E"
+       TITLE="[JDEV] Possible Denial of Service in mio_ssl.c">jabber-adm at better-com.de
+       </A><BR>
+    <I>Fri Jun  7 02:27:59 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042332.html">[JDEV] File transfers
+</A></li>
+        <LI>Next message: <A HREF="042335.html">[JDEV] Possible Denial of Service in mio_ssl.c
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42333">[ date ]</a>
+              <a href="thread.html#42333">[ thread ]</a>
+              <a href="subject.html#42333">[ subject ]</a>
+              <a href="author.html#42333">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The last days we had some trouble with a script-kiddie:
+
+Looks like this kid wrote a script which permanently (at least every
+second) tried to connect to port 5223 of our Jabber-Server (1.4.2)
+without having a real ssl-client at his side.
+
+This caused a huge number of log-entries (after enabling debugging):
+
+  mio_ssl.c:238 SSL accepting socket with new session 82aeb48
+  mio_ssl.c:256 Error from SSL: error:140760FC:SSL routines:SSL23_GET_CLIENT_HELLO:unknown protocol
+  mio_ssl.c:257 SSL Error in SSL_accept call
+
+After some time this caused our main jabberd to hang - only a restart of
+jabberd after inserting a DROP-Rule for the kiddies IP into our
+iptables-ruleset brought jabberd back into stable working.
+
+At the moment I've no idea how to prevent jabberd of looping endless/too
+soon through mio_ssl in such a case, perhaps the heartbeat-monitor could
+help us here but I don't know how.
+
+Please correct me if you think that there's a possible misconfiguration
+at our side so I can post the relevant parts of our conf-files.
+
+BTW, is there a simple way to see which current user comes from which IP?
+netstat at this point is only partially helpful.
+
+TIA,
+
+Martin
+
+-- 
+Express-Kommunikation mit Jabber:
+JabberID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">martin at jabber.bettercom.de</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042332.html">[JDEV] File transfers
+</A></li>
+	<LI>Next message: <A HREF="042335.html">[JDEV] Possible Denial of Service in mio_ssl.c
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42333">[ date ]</a>
+              <a href="thread.html#42333">[ thread ]</a>
+              <a href="subject.html#42333">[ subject ]</a>
+              <a href="author.html#42333">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

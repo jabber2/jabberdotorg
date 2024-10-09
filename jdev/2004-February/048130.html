@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] architecture questions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20architecture%20questions&In-Reply-To=%3C00b501c3fa4c%24f7b48fd0%24e201020a%40pmillard2k%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="048112.html">
+   <LINK REL="Next"  HREF="048134.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] architecture questions</H1>
+    <B>Peter Millard</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20architecture%20questions&In-Reply-To=%3C00b501c3fa4c%24f7b48fd0%24e201020a%40pmillard2k%3E"
+       TITLE="[jdev] architecture questions">me at pgmillard.com
+       </A><BR>
+    <I>Mon Feb 23 14:32:12 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="048112.html">[jdev] architecture questions
+</A></li>
+        <LI>Next message: <A HREF="048134.html">[jdev] Re: architecture questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48130">[ date ]</a>
+              <a href="thread.html#48130">[ thread ]</a>
+              <a href="subject.html#48130">[ subject ]</a>
+              <a href="author.html#48130">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Joanne wrote:
+&gt;<i> I have a few areas I'd appreciate thoughts/opinions on:
+</I>&gt;<i>
+</I>&gt;<i> (1) message queuing/processing
+</I>[SNIP]
+As stpeter already mentioned, JEP-013 solves this initial message flood, but
+isn't availble out of the box in either jabberd2 or jabberd 1.4.3. Once you send
+presence, ALL offline messages will get sent to that client. If your &quot;client&quot;
+application blocks + processes, thats fine, but it does mean that the server
+will &quot;assume&quot; that the messages are delivered even if it takes a while for your
+app to process them.
+
+&gt;<i> (2) scalability &amp; redundancy
+</I>&gt;<i> I would like to connect multiple jabber clients to the same jabber server.
+</I>&gt;<i> Also keep in mind that my clients will only be available within the internal
+</I>&gt;<i> network, so I'm exploiting the A2A (application 2 application) capability of
+</I>&gt;<i> jabber. Although each jabber client does the same thing, they would each
+</I>&gt;<i> need to have unique jids. But I also read that I could run multiple clients
+</I>&gt;<i> with the same jid but with different resource identifiers. Jabber would then
+</I>&gt;<i> decide which client to forward the message to based on the client's presence
+</I>&gt;<i> priority. Unfortunately, this doesn't do any load balancing, but it would
+</I>&gt;<i> allow me to take down one client without disrupting any message processing
+</I>&gt;<i> (since jabber would just forward messages to the next priority client). Is
+</I>&gt;<i> my thinking correct on this?
+</I>
+Yes, your assessments are correct. However, I would add that your &quot;client&quot;
+applications could force jabberd to do more intelligent load balancing by
+changing presence priority when the start processing a message. So an example
+flow (from the client side) would be:
+    1. Recv. a message to process.
+    2. Change presence priority from 10 to 0 (for example).
+    3. Write presence change to socket (sync).
+    4. Process message (sync).
+    5. Change presence priority from 0 back to 10.
+    6. Write presence change to socket (sync).
+    7. Wait for another packet.
+
+So if you have 10 client apps hooked up at once, four of them may be at priorty
+0, and the others may be at priority 10. The clients with the higher priority
+would get packets first, and immediately change to 0 (moving them to the bottom
+of the delivery list).
+
+As you stated, this also has the advantage of automatic scalability (add more
+client apps), and fail-over for each client. The only caveat here is that
+whatever is sending the packets MUST always send packets to the bare jid (no
+resource).
+
+Regaurding the client vs. component argument... I don't necessarily agree with
+stpeter :) He may be thinking that your talking about writing a client plugin or
+something.. Using a client connection for this buys you a lot of routing and
+queueing. You would loose this if you went the component route. No need to
+re-invent the wheel.
+
+pgm.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="048112.html">[jdev] architecture questions
+</A></li>
+	<LI>Next message: <A HREF="048134.html">[jdev] Re: architecture questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48130">[ date ]</a>
+              <a href="thread.html#48130">[ thread ]</a>
+              <a href="subject.html#48130">[ subject ]</a>
+              <a href="author.html#48130">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

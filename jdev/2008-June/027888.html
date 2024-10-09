@@ -1,0 +1,219 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] xmpp4r component development
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20xmpp4r%20component%20development&In-Reply-To=A790BE8D83ECC3469047C2E344EABE613539F91E5A%40zamail01.k2workflow.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="027887.html">
+   <LINK REL="Next"  HREF="027889.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] xmpp4r component development</H1>
+    <B>Jonathan Dickinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20xmpp4r%20component%20development&In-Reply-To=A790BE8D83ECC3469047C2E344EABE613539F91E5A%40zamail01.k2workflow.com"
+       TITLE="[jdev] xmpp4r component development">jonathanD at k2.com
+       </A><BR>
+    <I>Wed Jun 18 07:24:02 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="027887.html">[jdev] xmpp4r component development
+</A></li>
+        <LI>Next message: <A HREF="027889.html">[jdev] xmpp4r component development
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27888">[ date ]</a>
+              <a href="thread.html#27888">[ thread ]</a>
+              <a href="subject.html#27888">[ subject ]</a>
+              <a href="author.html#27888">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Oh, I also forgot one possible way (possibly the best):
+
+Protocol flow (excuse the shorthand):
+
+Client: &lt;message from=&quot;juliet&quot; to=&quot;nurse/balance&quot;&gt;&lt;body&gt;Send a nurse.&lt;/body&gt;&lt;/message&gt;
+Nurse/Balance: &lt;message from=&quot;juliet&quot; to=&quot;nurse/Jill&quot;&gt;&lt;body&gt;Send a nurse.&lt;/body&gt;&lt;/message&gt;
+Nurse/Jill: &lt;message from=&quot;nurse/Jill&quot; to=&quot;juliet&quot;&gt;&lt;body&gt;On her way.&lt;/body&gt;&lt;/message&gt;
+
+This would allow each bot to service an entire request. A window would pop up with that bot's response - the user would most likely (via intuition) respond to that bot.
+
+One thing: a 'lazy' user could keep the nurse/Jill window open and send many requests to it, or they may close it and never be able to get back. Another option would be to (after the above flow has occurred):
+
+Client: &lt;message from=&quot;juliet&quot; to=&quot;nurse/balance&quot;&gt;&lt;body&gt;Send a nurse&lt;/body&gt;&lt;/message&gt;
+Nurse/Balance: &lt;message from=&quot;nurse/balance&quot; to=&quot;juliet&quot;&gt;&lt;body&gt;You have a previous session with Jill. Continue?&lt;/body&gt;&lt;/message&gt;
+Client: &lt;message from=&quot;juliet&quot; to=&quot;nurse/balance&quot;&gt;&lt;body&gt;&lt;/body&gt;&lt;/message&gt;
+OR: &lt;message from=&quot;juliet&quot; to=&quot;nurse/balance&quot;&gt;&lt;body&gt;Y&lt;/body&gt;&lt;/message&gt;
+Nurse/Balance: &lt;message from=&quot;juliet&quot; to=&quot;nurse/Jill&quot;&gt;&lt;body&gt;Send a nurse.&lt;/body&gt;&lt;/message&gt;
+Nurse/Jill: &lt;message from=&quot;nurse/Jill&quot; to=&quot;juliet&quot;&gt;&lt;body&gt;On her way.&lt;/body&gt;&lt;/message&gt;
+
+Another route:
+
+Client: &lt;message from=&quot;juliet&quot; to=&quot;nurse/balance&quot;&gt;&lt;body&gt;Send a nurse&lt;/body&gt;&lt;/message&gt;
+Nurse/Balance: &lt;message from=&quot;nurse/balance&quot; to=&quot;juliet&quot;&gt;&lt;body&gt;You have a previous session with Jill. Continue?&lt;/body&gt;&lt;/message&gt;
+Client: &lt;message from=&quot;juliet&quot; to=&quot;nurse/balance&quot;&gt;&lt;body&gt;N&lt;/body&gt;&lt;/message&gt;
+Nurse/Balance: &lt;message from=&quot;juliet&quot; to=&quot;nurse/Jane&quot;&gt;&lt;body&gt;Send a nurse.&lt;/body&gt;&lt;/message&gt;
+Nurse/Jill: &lt;message from=&quot;nurse/Jane&quot; to=&quot;juliet&quot;&gt;&lt;body&gt;On her way.&lt;/body&gt;&lt;/message&gt;
+
+HTH
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf Of
+</I>&gt;<i> Jonathan Dickinson
+</I>&gt;<i> Sent: 18 June 2008 02:08 PM
+</I>&gt;<i> To: Jabber/XMPP software development list
+</I>&gt;<i> Subject: Re: [jdev] xmpp4r component development
+</I>&gt;<i>
+</I>&gt;<i> Hey Adam,
+</I>&gt;<i>
+</I>&gt;<i> A load-balancable bot? I assume that means that your chatbot can have x
+</I>&gt;<i> amounts of real contacts.
+</I>&gt;<i>
+</I>&gt;<i> The XMPP specs would indicate that you would need to give each a separate
+</I>&gt;<i> resource. One idea (not 100% XMPP compliant): since components can alter
+</I>&gt;<i> user's rosters how about providing the user with a new roster item every time
+</I>&gt;<i> they log in - this roster item would be one of the bots. E.g.
+</I>&gt;<i>
+</I>&gt;<i> Login 1:
+</I>&gt;<i>
+</I>&gt;<i> Juliet's Contact List
+</I>&gt;<i> ---------------------
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nurse at acmenurse.org</A>/jill
+</I>&gt;<i>
+</I>&gt;<i> Login 2:
+</I>&gt;<i>
+</I>&gt;<i> Juliet's Contact List
+</I>&gt;<i> ---------------------
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nurse at acmenurse.org</A>/jane
+</I>&gt;<i>
+</I>&gt;<i> The problem with that is Juliet may never communicate with the bot, as such it
+</I>&gt;<i> 'goes to waste' and one bot may be servicing requests alone (in the worst
+</I>&gt;<i> case). But it is a clean implementation.
+</I>&gt;<i>
+</I>&gt;<i> Another option would be to route all requests as follows:
+</I>&gt;<i>
+</I>&gt;<i> Client connections ---&gt; server ---&gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nurse at acmenurse.org</A> ---&gt; jill, jane
+</I>&gt;<i>
+</I>&gt;<i> You would need to persist the contact's state between the bots, so you have a
+</I>&gt;<i> few options with that as well (===&gt; indicates state info):
+</I>&gt;<i>
+</I>&gt;<i> Jill and Jane communicate with <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nurse at acmenurse.org</A> to gather state.
+</I>&gt;<i> Client connections ---&gt; server ---&gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nurse at acmenurse.org</A> ---&gt; jill, jane
+</I>&gt;<i>                                             V================^=====^
+</I>&gt;<i> Or
+</I>&gt;<i>
+</I>&gt;<i> Jill and Jane communicate with database to gather state.
+</I>&gt;<i> Client connections ---&gt; server ---&gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nurse at acmenurse.org</A> ---&gt; jill, jane
+</I>&gt;<i>                                                               ^=====^=====
+</I>&gt;<i> Database
+</I>&gt;<i>
+</I>&gt;<i> Finally, you can have the contact contain all the state for each contact. And
+</I>&gt;<i> send it along with each request. The flow would be:
+</I>&gt;<i>
+</I>&gt;<i> Cl == client (Juliet)
+</I>&gt;<i> Co == component (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Nurse at acmenurse.org</A>)
+</I>&gt;<i> B1 == bot1 (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Nurse at acmenurse.org</A>)
+</I>&gt;<i> B2 == bot2 (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Nurse at acmenurse.org</A>)
+</I>&gt;<i>
+</I>&gt;<i> Cl ---&gt; Co: &lt;message&gt;&lt;body&gt;Yes, send a nurse.&lt;/body&gt;&lt;/message&gt;
+</I>&gt;<i> Co ---&gt; B1: &lt;message&gt;&lt;body&gt;Yes, send a
+</I>&gt;<i> nurse.&lt;/body&gt;&lt;state&gt;&lt;nurseRequested/&gt;&lt;/state&gt;&lt;/message&gt;
+</I>&gt;<i> B1 ---&gt; Co: &lt;message&gt;&lt;body&gt;Nurse
+</I>&gt;<i> sent.&lt;/body&gt;&lt;state&gt;&lt;nurseSent/&gt;&lt;/state&gt;&lt;/message&gt;
+</I>&gt;<i> Co ---&gt; Cl: &lt;message&gt;&lt;body&gt;Nurse sent.&lt;/body&gt;&lt;/message&gt;
+</I>&gt;<i>
+</I>&gt;<i> Cl ---&gt; Co: &lt;message&gt;&lt;body&gt;Send a nurse&lt;/body&gt;&lt;/message&gt;
+</I>&gt;<i> Co ---&gt; B2: &lt;message&gt;&lt;body&gt;Send a
+</I>&gt;<i> nurse.&lt;/body&gt;&lt;state&gt;&lt;nurseSent/&gt;&lt;/state&gt;&lt;/message&gt;
+</I>&gt;<i> B2 ---&gt; Co: &lt;message&gt;&lt;body&gt;Nurse already
+</I>&gt;<i> sent.&lt;/body&gt;&lt;state&gt;&lt;nurseSent/&gt;&lt;/state&gt;&lt;/message&gt;
+</I>&gt;<i> Co ---&gt; Cl: &lt;message&gt;&lt;body&gt;Nurse already sent.&lt;/body&gt;&lt;/message&gt;
+</I>&gt;<i>
+</I>&gt;<i> B1 ---&gt; Co: &lt;message&gt;&lt;body&gt;Nurse at your door.&lt;/body&gt;&lt;state/&gt;&lt;/message&gt;
+</I>&gt;<i> Co ---&gt; Cl: &lt;message&gt;&lt;body&gt;Nurse at your door&lt;/body&gt;&lt;/message&gt;
+</I>&gt;<i>
+</I>&gt;<i> Cl ---&gt; Co: &lt;message&gt;&lt;body&gt;Send a nurse.&lt;/body&gt;&lt;/message&gt;
+</I>&gt;<i> Co ---&gt; B1: &lt;message&gt;&lt;body&gt;Send a nurse.&lt;/body&gt;&lt;state/&gt;&lt;/message&gt;
+</I>&gt;<i> B1 ---&gt; Co: &lt;message&gt;&lt;body&gt;Are you
+</I>&gt;<i> sure?&lt;/body&gt;&lt;state&gt;&lt;nurseRequested/&gt;&lt;/state&gt;&lt;/message&gt;
+</I>&gt;<i> Co ---&gt; Cl: &lt;message&gt;&lt;body&gt;Are you sure?&lt;/body&gt;&lt;/message&gt;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> I am sure you get the idea. Is this what you were after?
+</I>&gt;<i>
+</I>&gt;<i> Jonathan
+</I>&gt;<i>
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf Of
+</I>&gt;<i> &gt; Adam Pisoni
+</I>&gt;<i> &gt; Sent: 17 June 2008 05:38 PM
+</I>&gt;<i> &gt; To: Jabber/XMPP software development list
+</I>&gt;<i> &gt; Subject: [jdev] xmpp4r component development
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Hola.   I'm a newcomer at this list, but friends with Anders and
+</I>&gt;<i> &gt; Blaine.  I'll also be at the summit this year.   I'm working on a,
+</I>&gt;<i> &gt; still under wraps, project for Geni.com that involves heavy xmpp
+</I>&gt;<i> &gt; development.  Currently I'm working on a xmpp4r component to serve as
+</I>&gt;<i> &gt; the gateway between our application and 'the world'.   I would say my
+</I>&gt;<i> &gt; component is acting like a glorified, load balance-able bot, but it's
+</I>&gt;<i> &gt; a bit more than that.    There's not a lot of information out there on
+</I>&gt;<i> &gt; components in general and even less on writing components with
+</I>&gt;<i> &gt; xmpp4r.  We've made tremendous progress, however , thanks to help from
+</I>&gt;<i> &gt; Anders and Blaine, as well as lots of trial and error.   We're well on
+</I>&gt;<i> &gt; our way towards building a general xmpp4r component framework that is
+</I>&gt;<i> &gt; analogous to xmpp4r-simple, but for component development.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The good news is that we will be open sourcing this component
+</I>&gt;<i> &gt; framework so that others can benefit.    This will probably be the
+</I>&gt;<i> &gt; first of a number of pieces in development that we will be open
+</I>&gt;<i> &gt; sourcing.   We realize that the xmpp community is still in its infancy
+</I>&gt;<i> &gt; and as such, everyone, including ourselves, benefits when we all
+</I>&gt;<i> &gt; share. That said, I'm curious if anyone else out there has had much
+</I>&gt;<i> &gt; experience building these types of components, especially with xmpp4r,
+</I>&gt;<i> &gt; and would like to exchange notes.   I am also hoping to share some of
+</I>&gt;<i> &gt; my design decisions to solicit some feedback.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; So, anyone want to exchange war stories?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thanks,
+</I>&gt;<i> &gt; adam
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; JDev mailing list
+</I>&gt;<i> &gt; FAQ: <A HREF="http://www.jabber.org/discussion-lists/jdev-faq">http://www.jabber.org/discussion-lists/jdev-faq</A>
+</I>&gt;<i> &gt; Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> &gt; Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> &gt; Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> FAQ: <A HREF="http://www.jabber.org/discussion-lists/jdev-faq">http://www.jabber.org/discussion-lists/jdev-faq</A>
+</I>&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="027887.html">[jdev] xmpp4r component development
+</A></li>
+	<LI>Next message: <A HREF="027889.html">[jdev] xmpp4r component development
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27888">[ date ]</a>
+              <a href="thread.html#27888">[ thread ]</a>
+              <a href="subject.html#27888">[ subject ]</a>
+              <a href="author.html#27888">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

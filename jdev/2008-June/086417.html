@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Jabber presence traffic characterization
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Jabber%20presence%20traffic%20characterization&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE6135359613E5%40zamail01.k2workflow.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="086419.html">
+   <LINK REL="Next"  HREF="086421.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Jabber presence traffic characterization</H1>
+    <B>Jonathan Dickinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Jabber%20presence%20traffic%20characterization&In-Reply-To=%3CA790BE8D83ECC3469047C2E344EABE6135359613E5%40zamail01.k2workflow.com%3E"
+       TITLE="[jdev] Jabber presence traffic characterization">jonathanD at k2.com
+       </A><BR>
+    <I>Mon Jun  9 01:31:26 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="086419.html">[jdev] Jabber presence traffic characterization
+</A></li>
+        <LI>Next message: <A HREF="086421.html">[jdev] Jabber presence traffic characterization
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86417">[ date ]</a>
+              <a href="thread.html#86417">[ thread ]</a>
+              <a href="subject.html#86417">[ subject ]</a>
+              <a href="author.html#86417">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf Of
+</I>&gt;<i> JabberForum
+</I>&gt;<i> Sent: 08 June 2008 06:20 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: [jdev] Jabber presence traffic characterization
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Hi folks,
+</I>&gt;<i>
+</I>&gt;<i> I'm currently working on a research project for my Ph.D in which I
+</I>&gt;<i> need to simulate network traffic during long periods of inactivity on
+</I>&gt;<i> mobile Internet tablets.
+</I>[Jonathan Dickinson]
+Good luck!
+
+&gt;<i> One focus application would be Jabber, and I
+</I>&gt;<i> was wondering what would be the traffic pattern for a scenario in which
+</I>&gt;<i> a Jabber client is running on a mobile Internet tablet for long periods
+</I>&gt;<i> of inactivity (e.g. no data traffic, just presence traffic).
+</I>[Jonathan Dickinson]
+There are a few instances, as always, it depends on the environment. Does the user have 200+ contacts, or only one contact? Is the user using stream compression? These things make a huge difference to the results you will get.
+
+&gt;<i> Given that
+</I>&gt;<i> I could not find any relevant literature in such subject, I'm posting in
+</I>&gt;<i> this forum asking for help. In fact, what I need is the traffic
+</I>&gt;<i> characterization for Jabber presence traffic, and I'm not really
+</I>&gt;<i> concerned about Jabber messaging traffic, because the idea is to
+</I>&gt;<i> simulate a network scenario with a connection between a Jabber client
+</I>&gt;<i> and a Jabber server. I know Jabber uses XMPP, but I couldn't find
+</I>&gt;<i> whether presence information was exchanged over TCP or UDP, for start.
+</I>[Jonathan Dickinson]
+XMPP is transport agnostic - that is, you can pump it over any transport mechanism that you want: TCP, UDP even HTTP (using BOSH): although I don't think there is an official UDP XEP for it.
+
+&gt;<i> If it is TCP, I would like to know whether this TCP connection is
+</I>&gt;<i> &quot;persistent&quot; (kept open for as long as the user is logged on the
+</I>&gt;<i> server&quot;) or &quot;temporary&quot; (opened each time the users updates its status
+</I>&gt;<i> on the server and/or the user requests an update on the status of the
+</I>&gt;<i> contacts list).
+</I>[Jonathan Dickinson]
+XMPP uses a realtime persistent connection, or a simulated one (in the case of BOSH). The user connects and gets presence updates etc. You *could* have the user connect, update their presence and then disconnect, but that isn't really the point of XMPP. So yeah, 90% of the time it's TCP.
+
+If you read the RFC you will see that the flow for presence works as follows:
+
+Connect
+-------
+
+Client1 -&gt; &lt;presence/&gt; -&gt; Server1
+Server1 -&gt; &lt;presence type='probe'/&gt; -&gt; Client1's contacts' Servers (Server2)
+Server1 -&gt; &lt;presence/&gt; -&gt; Server2
+Server2 -&gt; Checks presence of clients -&gt; &lt;presence type='x'/&gt; -&gt; Server1
+Server1 -&gt; &lt;presence type='x'/&gt; -&gt; Client1
+
+Client1 changes presence
+------------------------
+
+Client1 -&gt; &lt;presence&gt;...&lt;/presence&gt; -&gt; Server1
+Server1 -&gt; &lt;presence&gt;...&lt;/presence&gt; -&gt; Server2
+Server2 -&gt; &lt;presence&gt;...&lt;/presence&gt; -&gt; Client2
+
+Client2 changes presence
+------------------------
+
+Client2 -&gt; &lt;presence&gt;...&lt;/presence&gt; -&gt; Server2
+Server2 -&gt; &lt;presence&gt;...&lt;/presence&gt; -&gt; Server1
+Server1 -&gt; &lt;presence&gt;...&lt;/presence&gt; -&gt; Client1
+
+That's the rough idea.
+
+&gt;<i> Also, if anybody has knowledge of   related works on
+</I>&gt;<i> Jabber traffic characterization and would like to share, it would be
+</I>&gt;<i> really valuable.
+</I>[Jonathan Dickinson]
+Sorry, I have no statistics for you. One thing to keep in mind is that most transports use a the 'whitespace pings': the server sends a whitespace character to the client every few seconds/minutes to see if they are online (i.e. if they have disconnected due to a software/internet crash).
+
+I think your best bet would be to:
+A. Read RFC 3290 and RFC 3291 and see what they say and how it relates to your questions. You should be able to make a good amount of assumptions based on those documents.
+B. Download Wireshark and extend it to profile what you want: run the client for a few days to see what happens.
+C. Find a server with performance profiling (performance monitors under Windows NT), or extend one with those.
+
+I will see if I can get those into my server and I could send you a 'demo' version of it (commercial software now). If you told me what stats you need maybe I could help with a custom server.
+
+&gt;<i>
+</I>&gt;<i> Thanks in advance,
+</I>&gt;<i>
+</I>&gt;<i> Fuad Abinader
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> fabinader
+</I>&gt;<i> ------------------------------------------------------------------------
+</I>&gt;<i> fabinader's Profile: <A HREF="http://www.jabberforum.org/member.php?userid=16997">http://www.jabberforum.org/member.php?userid=16997</A>
+</I>&gt;<i> View this thread: <A HREF="http://www.jabberforum.org/showthread.php?t=244">http://www.jabberforum.org/showthread.php?t=244</A>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> FAQ: <A HREF="http://www.jabber.org/discussion-lists/jdev-faq">http://www.jabber.org/discussion-lists/jdev-faq</A>
+</I>&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="086419.html">[jdev] Jabber presence traffic characterization
+</A></li>
+	<LI>Next message: <A HREF="086421.html">[jdev] Jabber presence traffic characterization
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86417">[ date ]</a>
+              <a href="thread.html#86417">[ thread ]</a>
+              <a href="subject.html#86417">[ subject ]</a>
+              <a href="author.html#86417">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

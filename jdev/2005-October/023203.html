@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] differentiated karma in jabber1.x
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20differentiated%20karma%20in%20jabber1.x&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="023204.html">
+   <LINK REL="Next"  HREF="023206.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] differentiated karma in jabber1.x</H1>
+    <B>Kirschner, Larry</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20differentiated%20karma%20in%20jabber1.x&In-Reply-To="
+       TITLE="[jdev] differentiated karma in jabber1.x">Larry.kirschner at mtvn.com
+       </A><BR>
+    <I>Thu Oct 27 19:16:44 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="023204.html">[jdev] questions using pubsub
+</A></li>
+        <LI>Next message: <A HREF="023206.html">[jdev] differentiated karma in jabber1.x
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23203">[ date ]</a>
+              <a href="thread.html#23203">[ thread ]</a>
+              <a href="subject.html#23203">[ subject ]</a>
+              <a href="author.html#23203">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+What do people think about extending jabber configuration to allow you
+to specify karma settings, but also define a set of netmask IPs that
+would have unlimited access? Basically, you would allow additional tags
+that look like something this
+
+&lt;karmaExemptions&gt;
+	&lt;exempt netmask=&quot;192.168.255.255&quot;/&gt;
+	&lt;exempt netmask=&quot;10.255.255.255&quot;/&gt;
+	&lt;exempt netmask=&quot;166.77.255.255&quot;/&gt;
+&lt;/karmaExemptions&gt;
+
+I'm looking at jabberd/mio.c and it seems like this could be added with
+just a few lines of code, maybe along the lines of the following:
+
+1. In mio_init() read any exemptions into an array
+2. In mio_listen (and mio_accept) after creating a new mio with
+mio_new(), compare the mio's ip with any exempt netmasks. If the new
+mio's ip is exempt, set mio-&gt;k.dec = 0.
+
+Then again, I'm just scanning through the code and there could be
+dependencies that I don't understand. If I'm missing something, please
+let me know.
+
+CONTEXT FOR THIS:
+
+I'm using jabber as the socket layer in a game engine. Flash game
+clients (I'm fairly invested in jabber1.x for it's Flash support),
+connect to jabber and join a game (MUC) room to recieve game events.
+Game state is primarily managed on an application server, which
+broadcasts game events to the same MUC rooms that the game clients are
+listening on. 
+
+The reason karma is a problem in this architecture is that the game
+application server is sending lots and lots of messages to jabber,
+spread out across the various game/MUC rooms. For this reason, I need
+karma *NOT* to be applied to the application server. On the other hand,
+I do want karma applied to game clients connecting over the Internet to
+help prevent malicious or misbehaving clients from taking jabber down.
+It seems like a good way to achieve this would be to distinquish the
+game servers by their private, in-network IPs and specifically exempt
+them from the karma system.
+
+If there's a better way to handle this problem than what I described
+above, please chime in and let me know. If there isn't, I'll probably
+need to implement the extension described above (or convince real jabber
+developers to do it). If it does come to that, is this a change that the
+jabber community would be interested in having in the public release?
+
+Thanks for your advice and help,
+--Larry Kirschner
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20051027/8c579fd8/attachment.htm">https://www.jabber.org/jdev/attachments/20051027/8c579fd8/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="023204.html">[jdev] questions using pubsub
+</A></li>
+	<LI>Next message: <A HREF="023206.html">[jdev] differentiated karma in jabber1.x
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23203">[ date ]</a>
+              <a href="thread.html#23203">[ thread ]</a>
+              <a href="subject.html#23203">[ subject ]</a>
+              <a href="author.html#23203">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Firefox plugin for bookmarks through XMPP
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Firefox%20plugin%20for%20bookmarks%20through%20XMPP&In-Reply-To=%3CJehan.3kdfmo%40no-mx.jabberforum.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="057989.html">
+   <LINK REL="Next"  HREF="057991.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Firefox plugin for bookmarks through XMPP</H1>
+    <B>Jehan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Firefox%20plugin%20for%20bookmarks%20through%20XMPP&In-Reply-To=%3CJehan.3kdfmo%40no-mx.jabberforum.org%3E"
+       TITLE="[jdev] Firefox plugin for bookmarks through XMPP">Jehan.3kdfmo at no-mx.jabberforum.org
+       </A><BR>
+    <I>Sat Dec 13 13:09:49 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="057989.html">[jdev] Free jabber services
+</A></li>
+        <LI>Next message: <A HREF="057991.html">[jdev] Firefox plugin for bookmarks through XMPP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57990">[ date ]</a>
+              <a href="thread.html#57990">[ thread ]</a>
+              <a href="subject.html#57990">[ subject ]</a>
+              <a href="author.html#57990">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Hi,
+
+I have begun a small plugin for Firefox which enables to store one's
+bookmarks on pubsub nodes (XEP-0048):
+
+<A HREF="https://addons.mozilla.org/en-US/firefox/addon/9970">https://addons.mozilla.org/en-US/firefox/addon/9970</A>
+
+Note that it requires the library xmpp4moz (which is also a Fx plugin)
+to work. Currently the plugin works if you have an account on a ejabberd
+server at least. I could not on Tigase or Openfire. I think I may know
+why but I must do further tests first. So if you have a jabber.org
+account, it will work for instance.
+
+The add-on is still basic, but the XEP is as well. Currently you can
+&quot;only&quot; store your bookmarks all in the same level (no category/tag,
+etc.). Still it is working:
+
+- Once installed, through the add-on page, you click &quot;Preference&quot; to
+configure with your JID.
+
+- Once configured, on any page, you will have a button (yes I know,
+there should be a menu item, but I made temporarily to work around a
+Firefox bug. I will improve this later) on the context menu (click right
+on any page) and a small icon representing a bookmark (with the XMPP
+logo) on the right of the status-bar. You can click right on this icon
+as well to get the same menu. The number on the right of the icon is the
+number of saved bookmarks.
+
+- Then from this menu, you will be able to &quot;connect&quot;. (note that this
+is only the first time. But once the plugin is configured, it will
+connect automatically at each run of Fx).
+
+- Once connected, the contextual menu will be different. You will have
+the possibility to &quot;bookmark this page (XMPP)&quot;. If you don't have this
+menu item, then it means that you are not well connected. Check your JID
+parameters.
+By clicking it, the default page title will be displayed in a dialog
+box and propose to change it before saving.
+
+- Each time you add a bookmark, it will be added to the same menu. You
+will have then 3 possible actions with your mouse:
+* left click: it opens the bookmark in the current tab;
+* middle: it opens in a new tab;
+* right: it opens a dialog box giving the possibility to rename the
+bookmark or to delete it.
+
+------
+
+To be improved:
+
+- I want to add a category/group system for storing bookmarks into
+groups/subgroups.
+- I want to add a tag system (different from group. You can give tags
+like &quot;important&quot;, &quot;to read&quot;, etc.).
+- I would like to add a &quot;comments&quot; system to make further (and longer
+that the title) comments on a bookmark.
+- I would like to propose a system for sharing bookmarks, read-only, or
+else by enabling several users to add bookmarks (white list, roster
+groups, etc.), by using the right system of pubsub.
+- Gestion of several separated bookmarks (which may have differents
+rights, some shared, some private, etc. for instance) for the same JID.
+
+For these 5 items in particular, I think the XEP could be improved
+because it is just too basic. So I will propose some changes. If anyone
+wants to propose what is nice in shared bookmarks, don't hesitate...
+:<i>-)
+</I>
+- Related to Firefox, as you have noticed, I am using a completely
+separated bookmark system than the core one. Yet the development part is
+not so complicated (Fx has a good API to interface with its bookmarks).
+There are several reasons to this:
+* One of them is that if ever you can use Fx but cannot connect to your
+Jabber server, then it could cause a synchronisation issue. And dealing
+with this can be complicated.
+* Another is that this plugin is stocking no bookmark information on
+the client side. Everything is on the server only and just temporary
+displayed in the browser. I like this idea (like you can be on another
+computer with the plugin and just set your jid to have your bookmarks a
+few minutes. Then you remove your jid and it is erased). Using the Fx
+bookmarks API would really complicate this.
+So this is to be thought of...
+
+And finally there is only one problem with this plugin. Because of a
+bug in xmpp4moz apparently (I reported and wait for developpers'
+validation/fix or a solution), on connection a presence stanza is sent.
+I send immediately another with a negative presence so that the plugin
+should never receive any message (which would be lost). But in the few
+microseconds between the 2 sent presences, if you had offline messages
+and no other XMPP chat client opened, I fear the server would forward
+them to the plugin.
+
+Note that it has been tested otherwise that during the normal run of
+the plugin, when someone send a message to you, the server (at least
+ejabberd) does not forward the message to the plugin, as expected with a
+negative priority. It waits for another client to connect.
+Hence I just need this automatic and unrequested presence stanza not
+being sent and it will be &quot;secure&quot; (for not losing info)!
+
+Jehan
+
+
+-- 
+Jehan
+------------------------------------------------------------------------
+Jehan's Profile: <A HREF="http://www.jabberforum.org/member.php?userid=16911">http://www.jabberforum.org/member.php?userid=16911</A>
+View this thread: <A HREF="http://www.jabberforum.org/showthread.php?t=1203">http://www.jabberforum.org/showthread.php?t=1203</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="057989.html">[jdev] Free jabber services
+</A></li>
+	<LI>Next message: <A HREF="057991.html">[jdev] Firefox plugin for bookmarks through XMPP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57990">[ date ]</a>
+              <a href="thread.html#57990">[ thread ]</a>
+              <a href="subject.html#57990">[ subject ]</a>
+              <a href="author.html#57990">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

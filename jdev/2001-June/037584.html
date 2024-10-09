@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] not s2s but s2p --- server to proxy
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20not%20s2s%20but%20s2p%20---%20server%20to%20proxy&In-Reply-To=%3C3B1D0160.1020200%40jabber.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="037580.html">
+   <LINK REL="Next"  HREF="037575.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] not s2s but s2p --- server to proxy</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20not%20s2s%20but%20s2p%20---%20server%20to%20proxy&In-Reply-To=%3C3B1D0160.1020200%40jabber.org%3E"
+       TITLE="[JDEV] not s2s but s2p --- server to proxy">stpeter at jabber.org
+       </A><BR>
+    <I>Tue Jun  5 10:57:20 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="037580.html">[JDEV] not s2s but s2p --- server to proxy
+</A></li>
+        <LI>Next message: <A HREF="037575.html">[JDEV] Subscribing to watcher service.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37584">[ date ]</a>
+              <a href="thread.html#37584">[ thread ]</a>
+              <a href="subject.html#37584">[ subject ]</a>
+              <a href="author.html#37584">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>This sounds similar to what Jer is talking about in his recent proposal 
+for Proxy Accept Socket Service (PASS):
+
+<A HREF="http://core.jabber.org/pass.html">http://core.jabber.org/pass.html</A>
+
+Peter
+
+Edward Geraghty wrote:
+
+&gt;<i> Hello All,
+</I>&gt;<i> 
+</I>&gt;<i>      I brought up the problem with s2s communication with
+</I>&gt;<i> firewalls/NAT networks in April on the jdev group and didn't get
+</I>&gt;<i> any answers. I was chatting on jdev conference about a week
+</I>&gt;<i> ago and the answer I had was to talk to my firewall admin
+</I>&gt;<i> to allow the specific ports open to allow s2s comms. While
+</I>&gt;<i> this is a valid answer, many company's will not allow inbound
+</I>&gt;<i> connections. This even gets more complicated when a company's
+</I>&gt;<i> primary connection is through a NAT/SOCKS firewall where 2
+</I>&gt;<i> way comms is not allowed(pass-thru on a port could work if
+</I>&gt;<i> you were using NAT).
+</I>&gt;<i> 
+</I>&gt;<i>      I just wanted to start a mini discussion on methods
+</I>&gt;<i> to solve these sorts of problems. I realize that the s2s
+</I>&gt;<i> needs to be a bidirectional communication(connections initiated
+</I>&gt;<i> from either side of the firewall). With s2s you may never know
+</I>&gt;<i> who will try to contact you so you must be able to accepts
+</I>&gt;<i> connections from anyone..
+</I>&gt;<i> 
+</I>&gt;<i> Here is my bad attempt at my server to proxy protocol(s2p) :)
+</I>&gt;<i> Hopefully the diagram works out.
+</I>&gt;<i> 
+</I>&gt;<i> INTRANET       FIREWALL       INTERNET(EXTERNAL)
+</I>&gt;<i> &lt;IJAB-US&gt; &lt;--&gt; &lt;JABGATE&gt; &gt;--&gt; &lt;EJAB-US&gt; &lt;---&gt;&lt;jabber.com&gt;
+</I>&gt;<i>       =       -          &gt;--&gt; &lt;EJAB-JP&gt; &lt;---&gt; &lt;jabber.org&gt;
+</I>&gt;<i>       =       -                         &lt;---&gt; &lt;any JABSRV&gt;
+</I>&gt;<i> &lt;IJAB-JP&gt; &lt;----
+</I>&gt;<i> 
+</I>&gt;<i>      A company on its intranet might have a Jabber server in
+</I>&gt;<i> each of its divisions/countries/etc.. us.company.com/jp.company.com.
+</I>&gt;<i> The jabber servers in Japan(IJAB-JP) and US(IJAB-US) would
+</I>&gt;<i> communicate across intranet using the normal s2s component with
+</I>&gt;<i> dialback. In order to facilitate communication with external jabber
+</I>&gt;<i> users on the internet or other companies, we need to have a bastion
+</I>&gt;<i> host on the internet(or DMZ) that would allow s2s with dialback
+</I>&gt;<i> (2 way comms). This bastion host indicated by the TAG &lt;EJAB-US&gt;
+</I>&gt;<i> would have A and SRV DNS records for the EJAB for the jabber domains
+</I>&gt;<i> us.company.com/jp.company.com. The DNS would allow external
+</I>&gt;<i> jabber servers to connect to the bastion host and deliver
+</I>&gt;<i> messages.
+</I>&gt;<i> 
+</I>&gt;<i>      The part I left out was that there needed to be a way to
+</I>&gt;<i> allow the internal Jabber servers to deliver and receive
+</I>&gt;<i> messages to/from the internet. If the IJAB servers could send
+</I>&gt;<i> all messages destined to the internet to another component
+</I>&gt;<i> (jabber server?) that set up a tunnel to the bastion
+</I>&gt;<i> jabber server. The difference between what I'm saying and s2s
+</I>&gt;<i> is that the JABGATE would initiate the connections to the EJAB-XX
+</I>&gt;<i> servers. This would allow you to comply with allowing only
+</I>&gt;<i> outbound connections.
+</I>&gt;<i> 
+</I>&gt;<i>       I know this isn't currently available in the current Jabber
+</I>&gt;<i> protocol but just curious how others have dealt with this problem.
+</I>&gt;<i> Are there any nasty problems out there waiting for people who
+</I>&gt;<i> try to implement(e.g. security). I am not worried if the answer
+</I>&gt;<i> is &quot;it won't work&quot;. Since  there is nothing a bit of code can't
+</I>&gt;<i> fix :)
+</I>&gt;<i> 
+</I>&gt;<i> TIA,
+</I>&gt;<i> 
+</I>&gt;<i> EdGy
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> .
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+
+-- 
+Peter Saint-Andre
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at jabber.org</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="037580.html">[JDEV] not s2s but s2p --- server to proxy
+</A></li>
+	<LI>Next message: <A HREF="037575.html">[JDEV] Subscribing to watcher service.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37584">[ date ]</a>
+              <a href="thread.html#37584">[ thread ]</a>
+              <a href="subject.html#37584">[ subject ]</a>
+              <a href="author.html#37584">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] One more thing about OOB
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20One%20more%20thing%20about%20OOB&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004969.html">
+   <LINK REL="Next"  HREF="004972.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] One more thing about OOB</H1>
+    <B>Robert Temple</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20One%20more%20thing%20about%20OOB&In-Reply-To="
+       TITLE="[JDEV] One more thing about OOB">robert.temple at dig.com
+       </A><BR>
+    <I>Sun Dec  3 12:39:56 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004969.html">[JDEV] Integration questions, looking for guidance
+</A></li>
+        <LI>Next message: <A HREF="004972.html">[JDEV] Alpha 1.6 out
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4970">[ date ]</a>
+              <a href="thread.html#4970">[ thread ]</a>
+              <a href="subject.html#4970">[ subject ]</a>
+              <a href="author.html#4970">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>That is a great idea.
+
+-----Original Message-----
+From: Edward J Becker [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Sauron at mediaone.net</A>]
+Sent: Sunday, December 03, 2000 10:49 AM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: RE: [JDEV] One more thing about OOB
+
+
+
+Robert,
+
+ I don't think the way Jabber does file control (or most IMs for that
+matter) is thorough enough.
+
+ If both users are behind firewalls and cannot set up an accept() on a port,
+then your method of allowing them to give it to the server works great.
+
+However, I think there should be an attempt for the connection to go both
+ways. In other words, if user A is behind a firewall and user B is not, when
+user A tries to setup the connection, B should report (through the server)
+there was an error connecting, and then B should attempt to set up the
+accept(), in which case since B is not behind the firewall it should likely
+work.
+
+Does that make sense?  I think we have a responsibility to allow for
+peer-peer *WHENEVER* possible.
+
+Edward
+
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+Robert Temple
+Sent: Sunday, December 03, 2000 12:58 AM
+To: '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'
+Subject: RE: [JDEV] One more thing about OOB
+
+
+I did look at HTTP to see if there was a natural fit for a client not
+being able to connect to a server.  But of course there isn't because
+these errors assume that a connection has been made to the server, since
+its the server that is sending the error codes back.
+
+I only picked 502 because I just saw the &quot;Remote Server Error&quot; next to
+it in the JPG and figured that was good enough for me until the jabber
+community could come up with something better.
+
+I don't think 404 works, that is what the server should send back when
+the client requests a resource that doesn't exist.
+
+I'm not even actually sure if its correct to have one client send
+another client back an error in an iq.  Already the server sends back
+a 503 error if the iq was sent to someone who is not online.  So maybe
+all iq errors should come from the server.  Perhaps the client that
+is a recipient of the oob should send a different type of error message,
+embedded in a &lt;iq type='result'... message.
+
+Just to give you some background of what I'm trying to accomplish.
+Obviously I'm working on file transport.  When a user wants to send
+his buddy a file, his client starts a mini web server, creates a
+resource in the web server for the file and then sends the oob message.
+
+If the recipient user okay's receiving of that file, then it tries
+to connect to the sending person's computer.  If that connection fails
+because they are behind different firewalls, etc, then I'd like to
+sending client to know so that it can tell the user there was a problem
+and ask the user if they want to put their file up on one of our servers
+so that their buddy can download it from there instead.
+
+-Robert
+
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Peter Saint-Andre [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at jabber.org</A>]
+</I>&gt;<i> Sent: Friday, December 01, 2000 2:58 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] One more thing about OOB
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Hi Robert,
+</I>&gt;<i>
+</I>&gt;<i> I poked Jer about the error messages, too. :) Again we might want to
+</I>&gt;<i> look at RFC 2616 (<A HREF="ftp://ftp.isi.edu/in-notes/rfc2616.txt">ftp://ftp.isi.edu/in-notes/rfc2616.txt</A>). Jer thought
+</I>&gt;<i> 401 sounded right but 502 didn't. If the recipient can't
+</I>&gt;<i> connect to the
+</I>&gt;<i> URL, wouldn't we use 404? Maybe I'm misunderstanding exactly what you
+</I>&gt;<i> mean by that scenario.
+</I>&gt;<i>
+</I>&gt;<i> RFC 2616 defines 502 as follows....
+</I>&gt;<i>
+</I>&gt;<i> ******
+</I>&gt;<i>
+</I>&gt;<i> 10.5.3 502 Bad Gateway
+</I>&gt;<i>
+</I>&gt;<i>    The server, while acting as a gateway or proxy, received an invalid
+</I>&gt;<i>    response from the upstream server it accessed in attempting to
+</I>&gt;<i>    fulfill the request.
+</I>&gt;<i>
+</I>&gt;<i> ******
+</I>&gt;<i>
+</I>&gt;<i> Seems to me we'd probably want to stick close to the IETF standards
+</I>&gt;<i> here, which say that:
+</I>&gt;<i>
+</I>&gt;<i>    Response status codes beginning with the digit &quot;5&quot;
+</I>&gt;<i> indicate cases in
+</I>&gt;<i>    which the server is aware that it has erred or is incapable of
+</I>&gt;<i>    performing the request.
+</I>&gt;<i>
+</I>&gt;<i> It seems that by this scenario you mean something closer to 404, or
+</I>&gt;<i> perhaps 503.
+</I>&gt;<i>
+</I>&gt;<i> Best,
+</I>&gt;<i>
+</I>&gt;<i> Peter
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Peter Saint-Andre
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i> &gt; Robert Temple wrote:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; One more thing about OOB iqs.  We need to figure out standard error
+</I>&gt;<i> &gt; codes to use when a recipient is
+</I>&gt;<i> &gt; unable to get a file for some reason.  Right now I'm going
+</I>&gt;<i> to use 401
+</I>&gt;<i> &gt; Unauthorized if the recipient
+</I>&gt;<i> &gt; doesn't want to have the file sent to them.  And I'll use 502 Remote
+</I>&gt;<i> &gt; Server Error if I the recipient cannot
+</I>&gt;<i> &gt; connect to the URL that was sent though Jabber.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; -Robert
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004969.html">[JDEV] Integration questions, looking for guidance
+</A></li>
+	<LI>Next message: <A HREF="004972.html">[JDEV] Alpha 1.6 out
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4970">[ date ]</a>
+              <a href="thread.html#4970">[ thread ]</a>
+              <a href="subject.html#4970">[ subject ]</a>
+              <a href="author.html#4970">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

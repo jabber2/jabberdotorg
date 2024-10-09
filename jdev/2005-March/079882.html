@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] JEP-0138: Stream Compression
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20JEP-0138%3A%20Stream%20Compression&In-Reply-To=%3C004901c52590%24f426a9a0%246401a8c0%40movsoftware.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="079880.html">
+   <LINK REL="Next"  HREF="079884.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] JEP-0138: Stream Compression</H1>
+    <B>Stephen Pendleton</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20JEP-0138%3A%20Stream%20Compression&In-Reply-To=%3C004901c52590%24f426a9a0%246401a8c0%40movsoftware.com%3E"
+       TITLE="[jdev] JEP-0138: Stream Compression">spendleton at movsoftware.com
+       </A><BR>
+    <I>Thu Mar 10 10:48:14 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="079880.html">[jdev] Jabber Problem
+</A></li>
+        <LI>Next message: <A HREF="079884.html">[jdev] JEP-0138: Stream Compression
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79882">[ date ]</a>
+              <a href="thread.html#79882">[ thread ]</a>
+              <a href="subject.html#79882">[ subject ]</a>
+              <a href="author.html#79882">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>After reading through the JEP-0138, I would like to submit some ideas on
+this to the jdev community.  As was mentioned before on the list many mobile
+clients have limited processing and/or memory requirements that may preclude
+the use of zlib at certain compression levels. For example, zlib compression
+at level 3 may perform well on a typical cellphone, but level 9 may produce
+unacceptable performance. It seems to me that this would be a excellent use
+case of JEP-0020 (feature negotiation) to find out what compression levels
+and/or methods (zlib, bzip, foozip, etc) are supported on the endpoints.
+
+A sample session is described below:
+
+CLIENT (query server for features):
+&lt;iq
+    type='get'
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>/imov'
+    to='movcast.movsoftware.com'
+    id='neg1'&gt;
+  &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'/">http://jabber.org/protocol/disco#info'/</A>&gt;
+&lt;/iq&gt;
+
+SERVER (sends back a negotiable feature list):
+&lt;iq
+    type='result'
+    from='movcast.movsoftware.com'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>/imov'
+    id='neg1'&gt;
+  &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'">http://jabber.org/protocol/disco#info'</A>&gt;
+    ...
+    &lt;feature var='<A HREF="http://jabber.org/protocol/feature-neg'/">http://jabber.org/protocol/feature-neg'/</A>&gt;
+    &lt;feature var='zlib-compression-level'/&gt;
+    ...
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+CLIENT (asks to negotiate zlib type compression):
+&lt;iq
+    type='get'
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>/imov'
+    to='movcast.movsoftware.com'
+    id='neg2'&gt;
+  &lt;query xmlns='<A HREF="http://jabber.org/protocol/feature-neg'">http://jabber.org/protocol/feature-neg'</A>&gt;
+    &lt;x xmlns='jabber:x:data' type='submit'&gt;
+      &lt;field var='zlib-compression-level'/&gt;
+    &lt;/x&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+SERVER (server supports both levels 1 and 2 of the zlib compression
+protocol):
+&lt;iq
+    type='result'
+    from='movcast.movsoftware.com'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>/imov'
+    id='neg2'&gt;
+  &lt;query xmlns='<A HREF="http://jabber.org/protocol/feature-neg'">http://jabber.org/protocol/feature-neg'</A>&gt;
+    &lt;x xmlns='jabber:x:data' type='result'&gt;
+      &lt;field var='zlib-compression-level' type='form'&gt;
+        &lt;option&gt;&lt;value&gt;1&lt;/value&gt;&lt;/option&gt;
+        &lt;option&gt;&lt;value&gt;2&lt;/value&gt;&lt;/option&gt;
+      &lt;/field&gt;
+    &lt;/x&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+
+CLIENT (the client selects level 2 of zlib compression):
+&lt;iq type=&quot;result&quot; id=&quot;1&quot; to='movcast.movsoftware.com'&gt;
+  &lt;query xmlns=&quot;<A HREF="http://jabber.org/protocol/feature-neg&quot;">http://jabber.org/protocol/feature-neg&quot;</A>&gt;
+    &lt;x xmlns=&quot;jabber:x:data&quot;&gt;
+      &lt;field var='zlib-compression-level'&gt;
+        &lt;value&gt;2&lt;/value&gt;
+      &lt;/field&gt;    
+    &lt;/x&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+CLIENT (the client must now initiate a new stream using the new compression)
+&lt;stream:stream
+    xmlns='jabber:client'
+    xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>
+    to='movcast.movsoftware.com'&gt;
+
+Any feedback on this scheme would be welcome.
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="079880.html">[jdev] Jabber Problem
+</A></li>
+	<LI>Next message: <A HREF="079884.html">[jdev] JEP-0138: Stream Compression
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79882">[ date ]</a>
+              <a href="thread.html#79882">[ thread ]</a>
+              <a href="subject.html#79882">[ subject ]</a>
+              <a href="author.html#79882">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

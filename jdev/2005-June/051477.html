@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Implementing SOCKS5 file transfers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Implementing%20SOCKS5%20file%20transfers&In-Reply-To=%3C42C1B4AB.8060501%40mindbridge.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="051475.html">
+   <LINK REL="Next"  HREF="051483.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Implementing SOCKS5 file transfers</H1>
+    <B>Alexander Wenckus</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Implementing%20SOCKS5%20file%20transfers&In-Reply-To=%3C42C1B4AB.8060501%40mindbridge.com%3E"
+       TITLE="[jdev] Re: Implementing SOCKS5 file transfers">awenckus at mindbridge.com
+       </A><BR>
+    <I>Tue Jun 28 15:35:55 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="051475.html">[jdev] Re: Implementing SOCKS5 file transfers
+</A></li>
+        <LI>Next message: <A HREF="051483.html">[jdev] Re: Implementing SOCKS5 file transfers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51477">[ date ]</a>
+              <a href="thread.html#51477">[ thread ]</a>
+              <a href="subject.html#51477">[ subject ]</a>
+              <a href="author.html#51477">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Magnus Henoch wrote:
+
+&gt;<i>Alexander Wenckus &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">awenckus at mindbridge.com</A>&gt; writes:
+</I>&gt;<i>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>Hi:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>I am having some trouble implementing file transfers i am using both 
+</I>&gt;&gt;<i>exodus and PSI to test with. I am attempting to do a direct connection 
+</I>&gt;&gt;<i>currently and as far as I know I am implementing the byte stream 
+</I>&gt;&gt;<i>correctly because both PSI and Exodus are connecting to my socket 
+</I>&gt;&gt;<i>successfully but my problem lies in that I am not sure why they are 
+</I>&gt;&gt;<i>sending me what they are sending me and what to do with it. when exodus 
+</I>&gt;&gt;<i>connects it sends me three bytes: 5 1 0. 5 I assume is for socks version 
+</I>&gt;&gt;<i>5, 1 I assume is for command 1 but shouldn't that be followed with the 
+</I>&gt;&gt;<i>addr type, the addr and then the port? Thats if I am reading the JEP 
+</I>&gt;&gt;<i>correctly. Irregardless of whatever it means I send back two bytes, 0 0, 
+</I>&gt;&gt;<i>as an acknowledgement of the connection but then exodus throws up an 
+</I>&gt;&gt;<i>error message, unable to connect to any proxies. From PSI i recieve the 
+</I>&gt;&gt;<i>output on the socket 5 2 0 2 and when i attempt to send the ack 0 0 i 
+</I>&gt;&gt;<i>get the error,  unable to connect to peer for file transfer. Can anyone 
+</I>&gt;&gt;<i>tell me what I am doing wrong? Any help is greatly appreciated.
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>Have you read <A HREF="http://www.faqs.org/rfcs/rfc1928.html">http://www.faqs.org/rfcs/rfc1928.html</A> ?  It will be
+</I>&gt;<i>useful to you.
+</I>&gt;<i>
+</I>&gt;<i>But to your actual problem: Exodus sending the three bytes 5 1 0.  5
+</I>&gt;<i>is indeed the SOCKS version.  1 is the number of authentication
+</I>&gt;<i>methods supported - each of them being identified by one byte.  The
+</I>&gt;<i>following byte is therefore the only method supported, and 0 means &quot;no
+</I>&gt;<i>authentication&quot;.  You're supposed to select one method by sending 5,
+</I>&gt;<i>X, where X is the number of the method.  Thus, send 5 0.
+</I>&gt;<i>
+</I>&gt;<i>Psi apparently supports username/password authentication in addition
+</I>&gt;<i>to no authentication... not sure why.
+</I>&gt;<i>
+</I>&gt;<i>Magnus
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>Hey thanks for the tip!
+
+It go me through the next step but once again when I attempt to respond 
+I hit a snag. Here from both PSI and Exodus i get the same response: 5 1 
+0 3. 5 for socks version 5, 1 for command connect, 0 is reserved and 3 
+is means address type domain. Then the next 41 bytes are SHA1(sid + 
+target + initiator) and then 0 0 for the port. My question is how do I 
+respond next? I attempted just changing the 1 in the Rep part of the 
+message to 0 to specify success but neither PSI or Exodus liked this. 
+What am I doing wrong here? Thanks again in advance for any help that 
+can be provided.
+
+Alex
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="051475.html">[jdev] Re: Implementing SOCKS5 file transfers
+</A></li>
+	<LI>Next message: <A HREF="051483.html">[jdev] Re: Implementing SOCKS5 file transfers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51477">[ date ]</a>
+              <a href="thread.html#51477">[ thread ]</a>
+              <a href="subject.html#51477">[ subject ]</a>
+              <a href="author.html#51477">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

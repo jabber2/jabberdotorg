@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Protocol plugins
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Protocol%20plugins&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="010980.html">
+   <LINK REL="Next"  HREF="010982.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Protocol plugins</H1>
+    <B>James Widman</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Protocol%20plugins&In-Reply-To="
+       TITLE="[JDEV] Protocol plugins">j-widman at cornellcollege.edu
+       </A><BR>
+    <I>Sun Jan 27 17:30:00 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="010980.html">[JDEV] Jabber INST + xdb_sql (mysql) cannot load backend 'mysql'
+</A></li>
+        <LI>Next message: <A HREF="010982.html">[JDEV] Protocol plugins
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10981">[ date ]</a>
+              <a href="thread.html#10981">[ thread ]</a>
+              <a href="subject.html#10981">[ subject ]</a>
+              <a href="author.html#10981">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>This is inspired in large part by Gaim's plugin system.  I thought it 
+would be cool if jabber clients had something similar...let me know what 
+you all think.
+
+[sorry for the length of this email...I don't really know how to make it 
+shorter...]
+
+[I've searched the archives a few times for relevant terms; again, my 
+apologies if something like this has already been discussed]
+
+    Transports are very useful because they simplify the design of 
+jabber clients; a client only has to know jabber protocol, and this is a 
+Good Thing, but it has some limitations. For one, inter-IM-system file 
+transfer:  do the server admins really want all that file traffic going 
+through a box that must already deal with thousands or tens of thousands 
+of users?  Probably not if they don't have to.
+    End users may want to  have a direct connection with a foreign IM 
+system or users on that system, like in GAIM or Trillian.  Passwords are 
+another good reason to have oob (Out of Band) connections: We want our 
+passwords stored in one place (if any), dammit: on our Personal 
+Computers, not jabber servers.  I know one thing that keeps me from 
+inviting other people to use my jabber server is that their passwords 
+for other IM systems would be stored on my machine in plaintext.
+
+    But!  We want to simplify client design, for one thing.  A client 
+shouldn't have to know how to talk to every IM system; just jabber 
+protocol, C-to-S. 
+
+    So now what? 
+
+    Well, what if there were a way to define an IM systems's protocol 
+(or any protocol for which we can make a transport, for that matter) in 
+XML?  Suppose a client sent something like:
+
+
+&lt;iq type=&quot;get&quot; to=&quot;imsystem.somedomain.net&quot;&gt;
+    &lt;query xmlsn=&quot;jabber:iq:protocol_plugin&quot;&gt;
+        &lt;protocol name=&quot;non-jabber-protocol&quot;/&gt;
+    &lt;/query&gt;
+&lt;/iq&gt;
+
+    The server would then respond with the protocol definition for the 
+non-jabber im system if it could supply one, and &quot;error&quot; otherwise. 
+
+    The jabber client would then be able to use this definition as a 
+plugin to communicate with that IM system just as GAIM does.  The 
+protocol definition for an IM system would ideally include definitions 
+for how chats, conferences, single messages, vCard-ish info transfers, 
+and file transfers should be conducted.
+
+There are a lot of potentially nice things about this:  
+
+    - it takes some of the load off of the jabber server, especially if 
+we're going to do file transfers from one IM system to another.
+    
+    - any given protocol only has to be implemented once (probably in 
+XML) and then it can be imported and immediately &quot;plugged in&quot; by both 
+clients and transports...for this to work, the client only has to know 
+how to work with plugins in general (rather than being programmed to 
+know any single protocol) -- we might be able to use GAIM code for 
+leverage here.
+    
+    - no client is required to know how to import protocol plugins (but 
+the cooler ones will ;)
+    
+    - each protocol definition could be time-stamped, and the client 
+could have an option to automatically check for and download new 
+definitions, so that the end user doesn't have to be bugged with plugin 
+maintenance.  
+    
+    - it gives jabber clients more potential for p2p functionality; i.e. 
+we don't have to go through specific servers to communicate, and 
+therefore we don't have to worry about whether those servers have gone 
+down in order to maintain communication or a file transfer.
+
+    - it provides a graceful way around AOL's IP blocking. Jabber.org 
+can usefully run aim-t again, and end-users will have accounts on 
+jabber.org and access jabber.org's aim-t solely for the purpose of 
+getting the protocol plugin.  Registration and IMs no longer need to go 
+through a transport, but they still can; the intent is to only add 
+functionality and not to remove any.  Consequently, the friendly 
+neighborhood jabber server doesn't have to know users' passwords for 
+other IM systems.
+    (Temas, I know you're against trying to get around AOL's blocks, but 
+my intent here is not to &quot;stick it&quot; to AOL; I was primarily thinking of 
+improving functionality for the end user, and maybe competing against 
+Trillian. If we want to avoid stepping on AOL's toes then we could just 
+opt not to release a protocol definition file for AIM; people would 
+probably still use GAIM and Trillian (and aim-t on their personal jabber 
+servers), but at least Jabber.org would be less associated with it.)
+
+    - it might be possible to code and use only one good generic 
+transport that becomes a transport for a specific protocol when it loads 
+a protocol definition file, thus cutting down on the amount of transport 
+code to write/maintain.
+
+    - Ideally, writing a new transport becomes equivalent to defining 
+the protocol in an XML-encoded file.
+
+    And, of course, a lot of client developers will be pleased as punch 
+to implement (or, ideally, #include) a client side plugin system if it 
+means beating the snot out of Trillian when the next C|Net IM client 
+review comes around ;)
+
+
+...So that's about it.   Any comments and/or criticism would be most 
+appreciated. 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="010980.html">[JDEV] Jabber INST + xdb_sql (mysql) cannot load backend 'mysql'
+</A></li>
+	<LI>Next message: <A HREF="010982.html">[JDEV] Protocol plugins
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10981">[ date ]</a>
+              <a href="thread.html#10981">[ thread ]</a>
+              <a href="subject.html#10981">[ subject ]</a>
+              <a href="author.html#10981">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

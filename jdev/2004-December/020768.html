@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Use of $Id$ in source files
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Re%3A%20Use%20of%20%24Id%24%20in%20source%20files&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="020767.html">
+   <LINK REL="Next"  HREF="020769.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Use of $Id$ in source files</H1>
+    <B>Bresler, Jonathan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Re%3A%20Use%20of%20%24Id%24%20in%20source%20files&In-Reply-To="
+       TITLE="[jdev] Re: Use of $Id$ in source files">Jonathan.Bresler at usi.net
+       </A><BR>
+    <I>Wed Dec 22 07:08:13 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="020767.html">[jdev] Compiling gateway transports under cygwin
+</A></li>
+        <LI>Next message: <A HREF="020769.html">[jdev] Re: Use of $Id$ in source files
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20768">[ date ]</a>
+              <a href="thread.html#20768">[ thread ]</a>
+              <a href="subject.html#20768">[ subject ]</a>
+              <a href="author.html#20768">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>While the CVS &quot;sandbox&quot; knows which version is checked out,
+While one can use viewcvs.cgi to compare versions,
+
+One is still left with a significant problem.
+
+What version of each file in included in a particular release?
+
+For example: jabberd/lib/pool.c in jabberd-1.4.3 is version ???
+
+Based upon timestamp in viewcvs.cgi, I would guess that its
+Version 1.5.  Checking the diffs between 1.5 and 1.6 and the
+Diffs between 1.4 and 1.5...i can conclude that 1.5 is indeed
+The right version.
+
+This is sub-optimal.  The addition of less than 80 bytes to the 
+Source file answers the question immediately.
+
+The addition of about 80 bytes to the code
+
+Static const char rcsid[] = &quot;$Id: $
+
+Allows one to use ident(1) to definitively answer the question:
+
+What version of the code are you running?
+
+Example: indent `which ldd`
+/usr/bin/ldd:
+	$FreeBSD: src/usr.bin/ldd/ldd.c,v 1.18.2.4 2001/07/11 23:59:11 obrien Exp $
+
+The merging of two branches will be impacted. There will be one additional conflict
+Per file....a rather small price to pay.
+
+Jonathan M Bresler
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf Of Neil Stevens
+Sent: Wednesday, December 22, 2004 3:06 AM
+To: Jabber software development list
+Subject: [jdev] Re: Use of $Id$ in source files
+
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+On Tuesday 21 December 2004 08:24 am, Bresler, Jonathan wrote:
+&gt;<i> Folks,
+</I>&gt;<i>
+</I>&gt;<i> It is surprising that the source files for jabberd14 and jabberd2
+</I>&gt;<i> do not contain the &quot;$Id&quot; string used by RCS / CVS / SVN(?)
+</I>&gt;<i> To mark each file with its version number.
+</I>&gt;<i>
+</I>&gt;<i> These $Id$ make it much easier to discuss the files.
+</I>&gt;<i> &quot;see version 1.58 of jabberd14/jabberd/jabber.c&quot;
+</I>&gt;<i>
+</I>&gt;<i> Rather than, &quot; the version checked into CVS on 2004-12-21 15:00&quot;
+</I>&gt;<i>
+</I>&gt;<i> Your thoughts?
+</I>&gt;<i>
+</I>&gt;<i> Is this idea complete whacked?
+</I>
+The idea makes merging harder because it adds unnecessary conflicts (as any 
+two branches will have conflicts in the Id line), and isn't necessary to 
+acheive your goal of knowing what version was checked out.  The sandbox 
+knows the version you checked out; use cvs status:
+
+&gt;<i> cvs status index.rhtml
+</I>===================================================================
+File: index.rhtml       Status: Up-to-date
+
+   Working revision:    1.46    Tue Dec 21 03:22:20 2004
+   Repository revision: 1.46    /home/neil/.cvs/neil/index.rhtml,v
+   Sticky Tag:          (none)
+   Sticky Date:         (none)
+   Sticky Options:      (none)
+
+- -- 
+Neil Stevens - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">neil at hakubi.us</A>
+&quot;The world is a dangerous place to live; not because of the people who
+are evil, but because of the people who don't do anything about it.&quot;
+                                                 -- Albert Einstein(?)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (FreeBSD)
+
+iD8DBQFBySrWf7mnligQOmERAtIWAJ4nBywwgySwXuDpylCzytXJ3ptj7gCfVegD
+op01HLqlZjtJsoxwtVJAxDs=
+=mFzL
+-----END PGP SIGNATURE-----
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+
+---
+Incoming mail is certified Virus Free.
+Checked by AVG anti-virus system (<A HREF="http://www.grisoft.com">http://www.grisoft.com</A>).
+Version: 6.0.817 / Virus Database: 555 - Release Date: 12/15/2004
+ 
+
+---
+Outgoing mail is certified Virus Free.
+Checked by AVG anti-virus system (<A HREF="http://www.grisoft.com">http://www.grisoft.com</A>).
+Version: 6.0.817 / Virus Database: 555 - Release Date: 12/15/2004
+ 
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="020767.html">[jdev] Compiling gateway transports under cygwin
+</A></li>
+	<LI>Next message: <A HREF="020769.html">[jdev] Re: Use of $Id$ in source files
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20768">[ date ]</a>
+              <a href="thread.html#20768">[ thread ]</a>
+              <a href="subject.html#20768">[ subject ]</a>
+              <a href="author.html#20768">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

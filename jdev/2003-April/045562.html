@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] JEP-0039 (Statistics Gathering) implementation for jabberd 1.4
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JEP-0039%20%28Statistics%20Gathering%29%20implementation%20for%20jabberd%201.4&In-Reply-To=%3C20030423122803.GC20449%40serwis2.beta%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="045563.html">
+   <LINK REL="Next"  HREF="045568.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] JEP-0039 (Statistics Gathering) implementation for jabberd 1.4</H1>
+    <B>Jacek Konieczny</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JEP-0039%20%28Statistics%20Gathering%29%20implementation%20for%20jabberd%201.4&In-Reply-To=%3C20030423122803.GC20449%40serwis2.beta%3E"
+       TITLE="[JDEV] JEP-0039 (Statistics Gathering) implementation for jabberd 1.4">jajcus at bnet.pl
+       </A><BR>
+    <I>Wed Apr 23 07:28:03 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="045563.html">[JDEV] Sending message  in xml tags
+</A></li>
+        <LI>Next message: <A HREF="045568.html">[JDEV] Choosing the right Java API
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45562">[ date ]</a>
+              <a href="thread.html#45562">[ thread ]</a>
+              <a href="subject.html#45562">[ subject ]</a>
+              <a href="author.html#45562">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+I wrote basic, but very extensible statistics gathering module for
+jabberd1.4. It has handlers to read: uptime, number of users online,
+number of files in a directory (a hack to get number of registered
+users, but works well) and an &quot;external&quot; handler, which starts external
+command to get the statistic (I am not sure if it is OK to use popen()
+in jabberd, but it works for me).
+
+To use it add mod_stats.c file to jsm/modules directory of jabber
+sources, include it in jsm/Makefile and jsm/modules/Makefile and build
+new jsm.so using make in the main directory of jabberd sources.
+
+Configuration is easy, just add &lt;stats/&gt; element listing all stats you
+want to gather to &lt;jsm/&gt; section. 
+
+Example &lt;stats/&gt; section:
+&lt;stats&gt;
+     &lt;stat name='time/uptime' handler='uptime'/&gt;
+     &lt;stat name='users/online' units='users' handler='online_users'/&gt;
+     &lt;stat name='users/registered' units='users' 
+	handler='count_files'&gt;/var/lib/jabber/spool/%H&lt;/stat&gt;
+     &lt;stat name='memory/system-used' units='kbytes'
+	 handler='external'&gt;free | awk '/^Mem:/ {print $3}'&lt;/stat&gt;
+&lt;/stats&gt;
+
+&quot;name&quot; is the name of the stat, as it will be seen by the requester.
+&quot;handler&quot; is a name of internal handler which is responsible for generating
+the stat, &quot;units&quot; contains units to be returned. If not given, then handler's
+default units will be used. The &lt;stat/&gt; element may contain (usually as CDATA)
+extra arguments for the handler.
+
+Following handlers are available:
+
+&quot;uptime&quot; - returns the uptime of the server
+&quot;online_users&quot; - returns the number of users logged in to the server
+&quot;count_files&quot; - returns the number of files in given direcotry
+&quot;external&quot; - returns the output of given command
+
+&quot;%H&quot; in &quot;count_files&quot; and &quot;external&quot; handlers argument will be substituted with
+the servers name.
+
+mod_stats may be used for monitoring jabberd itself, but it can be used to
+gather any other statistics.
+
+I am going to write a python/rrdtool script to gather statistics using
+JEP-0039 and make graphs based on collected data.
+
+The module mod_stats is available here:
+	<A HREF="http://www.bnet.pl/~jajcus/jabberd14/mod_stats.c">http://www.bnet.pl/~jajcus/jabberd14/mod_stats.c</A>
+
+Greets,
+	Jacek
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="045563.html">[JDEV] Sending message  in xml tags
+</A></li>
+	<LI>Next message: <A HREF="045568.html">[JDEV] Choosing the right Java API
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45562">[ date ]</a>
+              <a href="thread.html#45562">[ thread ]</a>
+              <a href="subject.html#45562">[ subject ]</a>
+              <a href="author.html#45562">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

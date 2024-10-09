@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Using JSO for component development
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Using%20JSO%20for%20component%20development&In-Reply-To=FBDFEB68-E8B6-4DE2-A314-09E87C5AF71D%40mac.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="024617.html">
+   <LINK REL="Next"  HREF="024619.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Using JSO for component development</H1>
+    <B>Mridul Muralidharan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Using%20JSO%20for%20component%20development&In-Reply-To=FBDFEB68-E8B6-4DE2-A314-09E87C5AF71D%40mac.com"
+       TITLE="[jdev] Using JSO for component development">mridul at sun.com
+       </A><BR>
+    <I>Thu May 18 21:00:30 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="024617.html">[jdev] Using JSO for component development
+</A></li>
+        <LI>Next message: <A HREF="024619.html">[jdev] VTD-XML version 1.6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24618">[ date ]</a>
+              <a href="thread.html#24618">[ thread ]</a>
+              <a href="subject.html#24618">[ subject ]</a>
+              <a href="author.html#24618">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Christian Cantrell wrote:
+
+&gt;<i> I'm using JSO to build a component, and I'm finding it more than a  
+</I>&gt;<i> little confusing.  I've posted to the JSO list, but it's pretty  
+</I>&gt;<i> quiet, so I thought I'd try my luck here.
+</I>&gt;<i>
+</I>&gt;<i> Using JSO, I'm able to connect to my server, listen for specific  
+</I>&gt;<i> packets, and return packets successfully.  The part I don't  
+</I>&gt;<i> understand is how you continuously listen for packets.  In all the  
+</I>&gt;<i> example code I've found, the authors have set up an infinite loop  
+</I>&gt;<i> inside of which they call Stream.process() to process new incoming  
+</I>&gt;<i> packets, and also keep checking a Queue for new packets to send out.   
+</I>&gt;<i> This technique works fine, but it seems odd to me, and is quite  
+</I>&gt;<i> resource intensive on my development machine.  Can someone explain:
+</I>&gt;<i>
+</I>&gt;<i> 1. Why is it done this way?
+</I>&gt;<i> 2. Is there another way to do it?  It seems that I should simply be  
+</I>&gt;<i> able to call a method that blocks until the packets I need come in  
+</I>&gt;<i> rather than having to process packets in a tight infinite loop.
+</I>&gt;<i>
+</I>&gt;<i> I'm also wondering if anyone can recommend any other Java XMPP  
+</I>&gt;<i> libraries I can use to build an external XMPP component if I can't  
+</I>&gt;<i> get JSO to work like I want it to.
+</I>&gt;<i>
+</I>&gt;<i> Thanks,
+</I>&gt;<i> Christian
+</I>
+
+
+Hi Christian,
+
+  One solution for this would be to invoke stream.process() when you are 
+sure there is some data available.
+Like , if you are using some producer-consumer model , or if you are 
+using java's nio package.
+With the former , it becomes as simple as just triggering a 
+stream.process() as soon as you have produced some data.
+With the latter , you will need to use async io and register your 
+channel with a selector for read events - which will get notified when 
+there is data available to be read.
+
+With your current approach , if your underlying socket is blocking 
+socket , then you need to worry about cpu usage in an infinite loop - it 
+will block until there is data available : with caveat that you will 
+have one thread per component session.
+If you use nio , the only advantage is that you will be able to listen 
+for read events from multiple streams simultaneously.
+
+Not sure if I am answering your question properly enough ...
+
+Regards,
+Mridul
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="024617.html">[jdev] Using JSO for component development
+</A></li>
+	<LI>Next message: <A HREF="024619.html">[jdev] VTD-XML version 1.6
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24618">[ date ]</a>
+              <a href="thread.html#24618">[ thread ]</a>
+              <a href="subject.html#24618">[ subject ]</a>
+              <a href="author.html#24618">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] DNS problems on Cygwin with Jabber 1.4.2 - can't add remote buddies
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20DNS%20problems%20on%20Cygwin%20with%20Jabber%201.4.2%20-%20can%27t%20add%20remote%20buddies&In-Reply-To=%3C003701c354a9%2472d1bca0%241b0fa518%40swbrown%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="046478.html">
+   <LINK REL="Next"  HREF="046480.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] DNS problems on Cygwin with Jabber 1.4.2 - can't add remote buddies</H1>
+    <B>Steven Brown</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20DNS%20problems%20on%20Cygwin%20with%20Jabber%201.4.2%20-%20can%27t%20add%20remote%20buddies&In-Reply-To=%3C003701c354a9%2472d1bca0%241b0fa518%40swbrown%3E"
+       TITLE="[JDEV] DNS problems on Cygwin with Jabber 1.4.2 - can't add remote buddies">swbrown at ucsd.edu
+       </A><BR>
+    <I>Sun Jul 27 20:42:04 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="046478.html">[JDEV] DNS problems on Cygwin with Jabber 1.4.2 - can't add remote buddies
+</A></li>
+        <LI>Next message: <A HREF="046480.html">[JDEV] DNS problems on Cygwin with Jabber 1.4.2 - can't add remote buddies
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46479">[ date ]</a>
+              <a href="thread.html#46479">[ thread ]</a>
+              <a href="subject.html#46479">[ subject ]</a>
+              <a href="author.html#46479">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>] On 
+</I>&gt;<i> Behalf Of Steven Brown
+</I>&gt;<i> Sent: Sunday, July 27, 2003 5:37 PM
+</I>&gt;<i> To: Jdev
+</I>&gt;<i> Subject: [JDEV] DNS problems on Cygwin with Jabber 1.4.2 - 
+</I>&gt;<i> can't add remote buddies
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> I'm having a problem with Jabber on Cygwin that should be 
+</I>&gt;<i> pretty easy to sort out, as either everyone's having the same 
+</I>&gt;<i> problem, or I'm missing an obvious step.  DNS queries always 
+</I>&gt;<i> fail (XP + w2k3), so I can't add non-local buddies.  Btw, 
+</I>&gt;<i> jabadns.exe is in the path, the server looks fine otherwise, 
+</I>&gt;<i> and I have it running problem free on FreeBSD and Linux. Does 
+</I>&gt;<i> anyone know of a fix for this problem?  If not, could you 
+</I>&gt;<i> guess what areas of the dnsrv code I should look at to save 
+</I>&gt;<i> me a bit of debug time?
+</I>&gt;<i> 
+</I>&gt;<i> Example error: &quot;20030728T00:23:58: [notice] (jabber.org): 
+</I>&gt;<i> bouncing a packet to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">swbrown at jabber.org</A> from 
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">swbrown at fictition.variadic.org</A>: Hostname Resolution Timeout&quot;.
+</I>
+Some additional info, the relevant dnsrv portion of Jabber Cygwin
+failing to resolve update.jabber.org:
+
+Sun Jul 27 18:02:48 2003  dnsrv.c:333 dnsrv: Creating lookup request
+queue for update.jabber.org
+Sun Jul 27 18:02:48 2003  dnsrv.c:342 dnsrv: Transmitting lookup
+request: &lt;host&gt;update.jabber.org&lt;/host&gt;
+Sun Jul 27 18:02:49 2003  (null) DNSRV CHILD: starting
+Sun Jul 27 18:02:49 2003  (null) DNSRV CHILD: Read from buffer:
+&lt;host&gt;update.jabber.org&lt;/host&gt;&lt;stream&gt;&lt;resend
+service=&quot;_jabber._tcp&quot;&gt;s2s&lt;/resend&gt;&lt;resend&gt;s2s&lt;/resend&gt;
+Sun Jul 27 18:02:49 2003  (null) DNSRV CHILD: xstream died
+Sun Jul 27 18:02:49 2003  (null) DNSRV CHILD: out of loop.. exiting
+normal
+
+&quot;xstream died&quot; sounds unhappy; it's happening in dnsrv_coprocess.c, but
+I haven't looked into it much further yet.  For comparison, the Linux
+version of the same:
+
+Sun Jul 27 18:30:16 2003  dnsrv.c:264 dnsrv: Creating lookup request
+queue for update.jabber.org
+Sun Jul 27 18:30:16 2003  dnsrv.c:273 dnsrv: Transmitting lookup
+request: &lt;host&gt;update.jabber.org&lt;/host&gt;
+Sun Jul 27 18:30:16 2003  dnsrv.c:144 DNSRV CHILD: starting
+Sun Jul 27 18:30:16 2003  dnsrv.c:159 DNSRV CHILD: Read from buffer:
+&lt;stream&gt;
+Sun Jul 27 18:30:16 2003  dnsrv.c:159 DNSRV CHILD: Read from buffer:
+&lt;host&gt;update.jabber.org&lt;/host&gt;
+Sun Jul 27 18:30:16 2003  dnsrv.c:112 dnsrv: Recv'd lookup request for
+update.jabber.org
+Sun Jul 27 18:30:16 2003  srv_resolv.c:112 srv: SRV resolution of
+_jabber._tcp.update.jabber.org
+Sun Jul 27 18:30:16 2003  srv_resolv.c:99 srv: Standard resolution of
+update.jabber.org
+Sun Jul 27 18:30:16 2003  dnsrv.c:123 Resolved
+update.jabber.org((null)): 208.245.212.108	resend to:s2s
+Sun Jul 27 18:30:16 2003  dnsrv.c:338 incoming resolution: &lt;host
+ip='208.245.212.108' to='s2s'&gt;update.jabber.org&lt;/host&gt;
+Sun Jul 27 18:30:16 2003  deliver.c:474 DELIVER 4:s2s &lt;route to='s2s'
+ip='208.245.212.108'&gt;&lt;presence from='activecampus2.ucsd.edu'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jsm at update.jabber.org</A>/1.4.2'/&gt;&lt;/route&gt;
+Sun Jul 27 18:30:16 2003  deliver.c:678 delivering to instance 's2s'
+Sun Jul 27 18:30:16 2003  dialback_out.c:192 dbout
+packet[208.245.212.108]: &lt;presence from='activecampus2.ucsd.edu'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jsm at update.jabber.org</A>/1.4.2'/&gt;
+Sun Jul 27 18:30:16 2003  dialback_out.c:212 outgoing packet with key
+update.jabber.org/activecampus2.ucsd.edu and located existing 0
+Sun Jul 27 18:30:16 2003  dialback_out.c:99 Attempting to connect to
+update.jabber.org/activecampus2.ucsd.edu at 208.245.212.108
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="046478.html">[JDEV] DNS problems on Cygwin with Jabber 1.4.2 - can't add remote buddies
+</A></li>
+	<LI>Next message: <A HREF="046480.html">[JDEV] DNS problems on Cygwin with Jabber 1.4.2 - can't add remote buddies
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46479">[ date ]</a>
+              <a href="thread.html#46479">[ thread ]</a>
+              <a href="subject.html#46479">[ subject ]</a>
+              <a href="author.html#46479">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

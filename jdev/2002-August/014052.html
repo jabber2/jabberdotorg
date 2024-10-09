@@ -1,0 +1,247 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] xdb_mysql question
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20xdb_mysql%20question&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="014051.html">
+   <LINK REL="Next"  HREF="014054.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] xdb_mysql question</H1>
+    <B>Sameer Verma</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20xdb_mysql%20question&In-Reply-To="
+       TITLE="[JDEV] xdb_mysql question">sverma at sfsu.edu
+       </A><BR>
+    <I>Tue Aug 27 11:34:28 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="014051.html">[JDEV] xdb_mysql question
+</A></li>
+        <LI>Next message: <A HREF="014054.html">[JDEV] xdb_mysql question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14052">[ date ]</a>
+              <a href="thread.html#14052">[ thread ]</a>
+              <a href="subject.html#14052">[ subject ]</a>
+              <a href="author.html#14052">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>PpDorApa wrote:
+
+&gt;<i>i am trying to install jadc2s.. 4 that i have to change xdb_file to
+</I>&gt;<i>xdb_mysql..
+</I>&gt;<i>i install xdb_mysql but jabberd doesnt run it gave me this error:
+</I>&gt;<i>
+</I>&gt;<i>Error: invalid  tag type xdb_sql
+</I>&gt;<i>
+</I>&gt;<i>4 sure i am making something wrong.. if anyone can help me i will be
+</I>&gt;<i>appreciate..
+</I>&gt;<i>thanks in advice..
+</I>&gt;<i>Ppdorapa
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I><A HREF="http://download.jabber.org/contrib/">http://download.jabber.org/contrib/</A>
+
+Here's the Readme:
+
+Sameer
+
+-- 
+Sameer Verma, Ph.D.
+Asst. Professor of Information Systems
+San Francisco State University
+San Francisco CA 94132 USA
+<A HREF="http://verma.sfsu.edu/">http://verma.sfsu.edu/</A> 
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$Id: README,v 1.5 2001/03/19 17:08:45 jpinon Exp $
+
+xdb_sql 
+
+Release 1.0
+
+This an xdb implementation for Jabber 1.4 and later using an SQL database.
+It is heavily based on xdb_mysql (by the Jabber Team) from Jabber 1.0.
+
+xdb_sql is standalone, to keep MySQL/Postgresql/... details outside Jabber.
+
+
+This code was developped by IDEALX (<A HREF="http://www.IDEALX.org">http://www.IDEALX.org</A>), for
+LibertySurf T&#233;l&#233;com (<A HREF="http://www.libertysurftelecom.fr">http://www.libertysurftelecom.fr</A>).
+
+This program is Open Source software and is subject to specific
+conditions of distribution and modification (see the COPYING file).
+
+
+***
+Installation:
+
+&quot;Standard&quot; installs of mysql and postgres should be found automatically.
+
+Use xdb_sql.xml as config file for xdb_sql (it contains explanations
+on how to use it from jabber.xml).  The database can be created with
+the help of sample_database.sql for mysql or sample_database.pg.sql
+
+***
+
+In xdb_mysql, SQL requests were not hardcoded, but instead given in a
+configuration file. Thus entire liberty is given for the tables layout.
+
+The sample SQL tables and related XML config are from xdb_mysql,
+with slight modifications for the new functionnalities.
+
+Supported namespaces:
+* jabber:iq:register
+* jabber:iq:auth
+
+* jabber:iq:roster
+    Store user and group roster
+
+* jabber:x:offline
+    Store offline messages
+
+* jabber:iq:filter
+    Support the &quot;from&quot; condition, without action (blacklist)
+
+***
+General note on querydefs :
+
+querydefs are given in the config file, and handle the SQL/XML mapping.
+Usually, an xdb_get translate to a SELECT, and an xdb_set
+translates to a DELETE or UPDATE, followed with an
+INSERT or UPDATE. But it depends on your particular
+database layout, and the concerned namespace.
+
+In the &lt;text&gt; node, you have the SQL query, with special
+words which will be substitued atr query time (these are
+the $$foo$$ words).
+
+&lt;bindvar&gt; substitutes a query parameter.
+&lt;bindcol&gt; allows to retrieve an SQL result field (after a SELECT query)
+
+***
+Configuration and extensibility :
+
+There's the old, powerful but painful way, and the new,
+simple, generic way.
+
+1. The old, powerful, painful way :
+
+xdb_mysql, then xdb_sql, used both a config file and C code
+to handle SQL/XML mapping.
+To add a new namespace, go to xdb_sql_config.c :
+* check if existing validators (validate_xxx)
+  can fit your queries (validate_simple_user is often useful)
+   * if yes :
+      * good !
+   * if not :
+      * add new validator function
+      * add validator declaration with others
+* insert query name and validator ptr into s_query_table array
+* create a new source file with the set/get functions
+* insert the source name in Makefile.am
+* insert functions declarations in xdb_sql.h
+* insert functions ptrs and namespace into static_modules
+* insert queries in the XML config file
+
+2. The new, simple, generic way (dtd=&quot;2&quot;)
+
+In xdb_sql, a new query config format has been added,
+which allow to support moderatly complex processing on xml nodes 
+without adding C code (before, a small part of code was needed to
+fetch/store SQL params/results from/to XML nodes).
+These are the &lt;querydef&gt; with attribute dtd=&quot;2&quot;.
+
+On a xdb_set, it will try to execute N queries if N query datas
+are supplied. On a xdb_set, the N tuples will be stored
+in a given top node and optionnaly a per-tuple node.
+
+Example 1:
+xdb_set on a &quot;jabber:iq:url&quot; namespace to store an URL
+associated with an user:
+
+      &lt;querydef name=&quot;url-set&quot; dtd=&quot;2&quot; type=&quot;set&quot; namespace=&quot;jabber:iq:url&quot;&gt;
+        &lt;text&gt;
+          UPDATE user SET site = '$$domain$$',
+                              page = '$$file$$'
+          WHERE jid = '$$user$$'&lt;/text&gt;
+        &lt;user&gt;$$user$$&lt;/user&gt;
+        &lt;bindvar tag=&quot;domain&quot;&gt;$$domain$$&lt;/bindvar&gt;
+        &lt;bindvar tag=&quot;file&quot;&gt;$$file$$&lt;/bindvar&gt;
+	&lt;purge&gt;url-remove&lt;/purge&gt;
+      &lt;/querydef&gt;
+
+querydef:
+  name is mostly for humans and referencing;
+  dtd will allow correct handling of the configuration;
+  type is important for query dispatch, as is namespace;
+
+text: SQL query template;
+user: to substitute in text;
+bindvar: will retrieve the cdata of the given tag in the
+supplied xmlnode (this is used in an xdb_set), and substitute
+this value in the text;
+purge: name of a querydef executed prior to any set query.
+
+Example 2:
+xdb_get:
+
+      &lt;querydef name=&quot;url-get&quot; dtd=&quot;2&quot; type=&quot;get&quot; namespace=&quot;jabber:iq:url&quot;&gt;
+        &lt;text&gt;
+          SELECT site, page FROM user WHERE jid = '$$u$$'
+        &lt;/text&gt;
+        &lt;user&gt;$$u$$&lt;/user&gt;
+        &lt;top-result&gt;
+           &lt;x xmlns='jabber:iq:url'/&gt;
+        &lt;/top-result&gt;
+        &lt;bindcol tag=&quot;domain&quot; offset=&quot;0&quot;/&gt;
+        &lt;bindcol tag=&quot;file&quot; offset=&quot;1&quot;/&gt;
+      &lt;/querydef&gt;
+
+top-result: node created to contain query results
+bindcol: will store the value found in field 0 of each tuple
+as cdata for a node domain inserted in top-result.
+
+It is possible to specify a node created for each tuple,
+using tuple-node as child of the querydef.
+Example: &lt;tuple-node&gt;&lt;item/&gt;&lt;/tuple-node&gt;
+
+Values will be inserted in the tuple-related node, and if
+none exists, they will be inserted in the top-result node
+(because the inner node is tried first).
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="014051.html">[JDEV] xdb_mysql question
+</A></li>
+	<LI>Next message: <A HREF="014054.html">[JDEV] xdb_mysql question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14052">[ date ]</a>
+              <a href="thread.html#14052">[ thread ]</a>
+              <a href="subject.html#14052">[ subject ]</a>
+              <a href="author.html#14052">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

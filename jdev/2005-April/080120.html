@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Why are we doing math on socket handles?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Why%20are%20we%20doing%20math%20on%20socket%20handles%3F&In-Reply-To=%3CE7650E6BCAF2414E8134C60A29AE288002F222A6%40ms3aex05.USIEXCHANGE.COM%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="080117.html">
+   <LINK REL="Next"  HREF="080121.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Why are we doing math on socket handles?</H1>
+    <B>Bresler, Jonathan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Why%20are%20we%20doing%20math%20on%20socket%20handles%3F&In-Reply-To=%3CE7650E6BCAF2414E8134C60A29AE288002F222A6%40ms3aex05.USIEXCHANGE.COM%3E"
+       TITLE="[jdev] Why are we doing math on socket handles?">Jonathan.Bresler at usi.net
+       </A><BR>
+    <I>Tue Apr  5 09:08:09 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="080117.html">[jdev] Serialization in JSO--Using JAVA
+</A></li>
+        <LI>Next message: <A HREF="080121.html">[jdev] Why are we doing math on socket handles?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80120">[ date ]</a>
+              <a href="thread.html#80120">[ thread ]</a>
+              <a href="subject.html#80120">[ subject ]</a>
+              <a href="author.html#80120">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&lt;quote&gt;
+There just seems something fundementally flawed about using the handle
+values the OS gives you as anything meaningful - except possibly for a
+dictionary lookup. I also have a problem with using signals as process
+control, but I can easily state that particular bias is due to my windows
+background.
+&lt;/quote&gt;
+
+By default on may systems the size of the file handle arrays passed to select() are 1024 elements.  There are three arrays: read, write, execptional conditions.  One sets the contents of the arrays to indicate when one is interested in the any combination of the three conditions on any mix of file handles (for example, read on fd 0,4,65; write on 1,2,66; exceptions on 65,66).  One can then set max_fd for this call to select() to indicate to the OS that there is no need to check the arrays past the 67th element (fd 66 is element 67).
+
+Alternatively, one can not do this and always set max_fd to 1024.  In apps that do a lot of socket I/O there is a measureable performance difference.
+
+Additionally, on some systems one can go well beyond 1024 and setting max_fd becomes commensurately more important.
+
+If Windows ignores the max_fd parameter then it must act pessimally and check the entire array for all conditions.  It&#8217;s a choice of the writers of the OS.
+
+&lt;quote&gt;
+After searching the 2s6 code I don't see the use of select or the wrapped up
+mio_select anywhere. Did I miss something? I think this would suggest you
+aren't gauranteed particular handle values under any OS.
+&lt;/quote&gt;
+
+The code is written in such a manner that you must be fluent in expanding C macros. You can run the mio/mio.c file thru &quot;gcc -E&quot; to have the preprocessor expand the macros for you. You will want to search for specific strings in the output, it will be quite verbose as all the include files are....well, included.
+
+The magic you seek is in MIO_CHECK.  Understand it and when mio_run() gets called.  Notice that each mio_t has its own highfd which is used as input to the maxfd parameter to select().
+
+Jonathan
+
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf Of Tim Anderson
+Sent: Monday, April 04, 2005 6:07 PM
+To: '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'
+Subject: RE: [jdev] Why are we doing math on socket handles?
+
+
+&lt;quote&gt;
+Perhaps we can drop the sarcasm.  Surely they are enough warts on all of
+us To spend the rest of the day pointing them out.
+&lt;/quote&gt;
+
+OK, that was probably uncalled for. I tend to get more than my fair share of
+grief simply because I don't spend my every waking hour tweaking the Linux
+kernel or reveling in sed scripts.
+
+&lt;quote&gt;
+Maxfd is used in select() to tell the operating system the highest
+numbered Fd that interests you in __this__ particular call to select()
+&lt;/quote&gt;
+
+Windows ignores this particular number in it's calls to select so there
+isn't much I can do in that regard.
+
+After searching the 2s6 code I don't see the use of select or the wrapped up
+mio_select anywhere. Did I miss something? I think this would suggest you
+aren't gauranteed particular handle values under any OS.
+
+There just seems something fundementally flawed about using the handle
+values the OS gives you as anything meaningful - except possibly for a
+dictionary lookup. I also have a problem with using signals as process
+control, but I can easily state that particular bias is due to my windows
+background.
+
+Tim
+
+#ifdef _WINDOWS_PROGRAMMER_
+#include &lt;stereotypical unix programming nerd jokes.h&gt;
+#else
+#include &lt;stereotypical windows programming nerd jokes.h&gt;
+#endif
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+
+---
+Incoming mail is certified Virus Free.
+Checked by AVG anti-virus system (<A HREF="http://www.grisoft.com">http://www.grisoft.com</A>).
+Version: 6.0.859 / Virus Database: 585 - Release Date: 2/14/2005
+ 
+
+---
+Outgoing mail is certified Virus Free.
+Checked by AVG anti-virus system (<A HREF="http://www.grisoft.com">http://www.grisoft.com</A>).
+Version: 6.0.859 / Virus Database: 585 - Release Date: 2/14/2005
+ 
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="080117.html">[jdev] Serialization in JSO--Using JAVA
+</A></li>
+	<LI>Next message: <A HREF="080121.html">[jdev] Why are we doing math on socket handles?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80120">[ date ]</a>
+              <a href="thread.html#80120">[ thread ]</a>
+              <a href="subject.html#80120">[ subject ]</a>
+              <a href="author.html#80120">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] XMPP Ping/Keepalive: Recommended method ?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP%20Ping/Keepalive%3A%20Recommended%20method%20%3F&In-Reply-To=%3CPine.BSO.4.61.0606271138550.24455%40zerlargal.zerlargal.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="054184.html">
+   <LINK REL="Next"  HREF="054186.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] XMPP Ping/Keepalive: Recommended method ?</H1>
+    <B>Bruce Campbell</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP%20Ping/Keepalive%3A%20Recommended%20method%20%3F&In-Reply-To=%3CPine.BSO.4.61.0606271138550.24455%40zerlargal.zerlargal.org%3E"
+       TITLE="[jdev] XMPP Ping/Keepalive: Recommended method ?">list-jdev at vicious.dropbear.id.au
+       </A><BR>
+    <I>Tue Jun 27 05:09:23 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="054184.html">[jdev] XMPP Ping/Keepalive: Recommended method ?
+</A></li>
+        <LI>Next message: <A HREF="054186.html">[jdev] XMPP Ping/Keepalive: Recommended method ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54185">[ date ]</a>
+              <a href="thread.html#54185">[ thread ]</a>
+              <a href="subject.html#54185">[ subject ]</a>
+              <a href="author.html#54185">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Mon, 26 Jun 2006, Joe Hildebrand wrote:
+
+&gt;<i> On Jun 19, 2006, at 1:15 AM, Sergei Golovan wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> The problem is that this &quot;ping&quot; is not a ping at all because it only
+</I>&gt;&gt;<i> sends data and does not expect reply.
+</I>&gt;<i>
+</I>&gt;<i> Well, not really.  You'll get a TCP ack back, which should be enough to keep 
+</I>&gt;<i> the lights on.
+</I>
+Not if you are dealing with inspection-type firewalls which don't really 
+treat a TCP ACK as a data packet.
+
+&gt;<i> Some servers can also be configured to send space 
+</I>&gt;<i> keep-alives.  If both sides use this algorithm things seem to work pretty 
+</I>&gt;<i> well:
+</I>&gt;<i>
+</I>&gt;<i> 1) set a timer to some amount of time, say 30 seconds
+</I>&gt;<i> 2) when the timer fires, send a space
+</I>&gt;<i> 3) whenever you send something, reset to the timer to zero
+</I>&gt;<i> 4) whenever you receive something, reset the timer to zero
+</I>
+It works to a point (being probably 95% of cases).  If you have a client 
+sending pings every 40 seconds unless first reset, and the server sending 
+pings every 30 seconds unless first reset, the client's first ping will be 
+the one that discovers that the packet-inspecting firewall wants to see 
+non-TCP-ack packets.
+
+If you want to go down that path, you need two timeouts; a short one (30 
+seconds) to be reset each time a packet is sent or received as above, and 
+a longer one (60 seconds) to trigger a send locally.  In practice, this 
+eventually settles down to each side sending a packet at 60 second 
+intervals, with a roughly 30 second gap between them.
+
+Even so, this requires server-side configuration; the server may not do 
+whitespace pings for policy reasons.
+
+&gt;<i> this allows you to detect dead links about as quickly as possible, without 
+</I>&gt;<i> increasing network traffic any more than absolutely necessary.
+</I>
+There isn't a lot of difference between a TCP packet containing a single 
+whitespace character, and a TCP packet containing a dummy &lt;iq/&gt; or 
+&lt;message/&gt; stanza.  Neither will be fragmented.
+
+A whitespace ping is less expensive on the server side, as it gets thrown 
+out by the c2s-equivilant component, and just returns a TCP ack. Conversely,
+a dummy stanza will always be more expensive, as depending on the server 
+design, it may be routed through several components to get to the 
+sm-equivilant, then routed back and sent to the client in a second 
+TCP-data + TCP-ack pair.
+
+However, the gain is that the client 'knows' that the server is fully 
+functioning, and any firewalls in between which expect to see data flowing 
+in both directions have nicely had their idle timers reset, vs the client 
+just knowing that the TCP stream to the c2s component is still 
+functioning.
+
+On the reverse issue, I don't think that servers should generate anything 
+more than whitespace pings to verify an ongoing TCP stream with a client. 
+This would require changes to most client (which are user-driven, not 
+server driven), and generally servers want to clean up after any departed 
+TCP streams as soon as possible.
+
+I guess the point I'm trying to make is, do you want the clients to know 
+that their next &lt;message/&gt; will not generate a TCP error, or do you want 
+clients to know that their next &lt;message/&gt;, if not delivered, will come 
+back with an undeliverable stanza ?
+
+-- 
+   Bruce Campbell
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="054184.html">[jdev] XMPP Ping/Keepalive: Recommended method ?
+</A></li>
+	<LI>Next message: <A HREF="054186.html">[jdev] XMPP Ping/Keepalive: Recommended method ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54185">[ date ]</a>
+              <a href="thread.html#54185">[ thread ]</a>
+              <a href="subject.html#54185">[ subject ]</a>
+              <a href="author.html#54185">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

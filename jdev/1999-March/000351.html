@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Win client, File Transfers, invite tag..
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Win%20client%2C%20File%20Transfers%2C%20invite%20tag..&In-Reply-To=Pine.LNX.4.04.9903261952390.13207-100000%40ziggy.jeremie.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000348.html">
+   <LINK REL="Next"  HREF="000340.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Win client, File Transfers, invite tag..</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Win%20client%2C%20File%20Transfers%2C%20invite%20tag..&In-Reply-To=Pine.LNX.4.04.9903261952390.13207-100000%40ziggy.jeremie.com"
+       TITLE="[JDEV] Win client, File Transfers, invite tag..">tcharron at nermail.ups.com
+       </A><BR>
+    <I>Mon Mar 29 13:59:55 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000348.html">[JDEV] Win client, File Transfers, invite tag..
+</A></li>
+        <LI>Next message: <A HREF="000340.html">[JDEV] Protocl proposal &quot;priority bit&quot;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#351">[ date ]</a>
+              <a href="thread.html#351">[ thread ]</a>
+              <a href="subject.html#351">[ subject ]</a>
+              <a href="author.html#351">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">owner-jdev at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">owner-jdev at jabber.org</A>]On Behalf Of
+</I>&gt;<i> Jeremie
+</I>&gt;<i> Subject: Re: [JDEV] Win client, File Transfers, invite tag..
+</I>&gt;<i> &gt; 	I will promise to at least have a Windows test client ready
+</I>&gt;<i> by then.  I've
+</I>&gt;<i> &gt; been unfortionatly busy as heck, and haven't had any time to
+</I>&gt;<i> have a working
+</I>&gt;<i> &gt; client with the new protocol complete.  Looks for a big Win32
+</I>&gt;<i> checkin to the
+</I>&gt;<i> Excellent on all of the above points!  The C in /lib/* should be mostly
+</I>&gt;<i> XP, so you might want to look at just using the whole common lib... but
+</I>&gt;<i> there might be some excellent reasons not to for win32 stuff.
+</I>
+	Yea, looking at it, I'm going to try to reuse as much of the command line
+code as possible to keep things as the 'same' as possible.  The primary
+difference is I can easily multithread the backend, and keep it seperate
+from the UI.. ;-P
+
+&gt;<i> HTTP/1.1
+</I>&gt;<i> Yup, that's right... let's use HTTP/1.1!  It already has EVERYTHING needed
+</I>&gt;<i> to handle any type of file transfer, and it's commonplace, and it works.
+</I>&gt;<i> Here's how, simple version:
+</I>&gt;<i> 	user x sending file to user z
+</I>&gt;<i> 	z recieves message and uses HTTP/1.1 to GET file
+</I>
+	Only one problem (Which someone else has already pointed out..  Yes, I
+cheat and read ahead.. ;-P).  This make a client to client connection, and
+broadcasts the IP address to clients.  I know, you're addressing it via a
+transport.  (Notice the other message regarding transport overload, as well,
+though)..
+
+&gt;<i> Ok, benifits:
+</I>&gt;<i> 	HTTP/1.1 can do resumes if it get's broken.
+</I>&gt;<i> 	ICQ/AIM transports could impliment &quot;translator&quot; daemons for it
+</I>&gt;<i> 	Recieving client could just spawn browser to fetch file
+</I>&gt;<i> 	Happens in background, leaves Jabber connection to work normally
+</I>&gt;<i> 	This could be simply a URL message, not specific for files
+</I>
+	I like it..  For ordinary file transfers, and a transport of some sort,
+this would be wonderful.
+
+&gt;<i> 	A special module could be written on the Jabber server to use this
+</I>&gt;<i> functionaliy for a &quot;file archive&quot;.  The client would send a jabber message
+</I>&gt;<i> to the module and ask for a repository, this would be configurable
+</I>&gt;<i> obviously so only special users could use it or have size limits. The
+</I>&gt;<i> module would reply with an: <A HREF="http://serverIPaddress:port/.">http://serverIPaddress:port/.</A>  The client
+</I>&gt;<i> would then PUT files up there via HTTP, and authenticate them with the
+</I>&gt;<i> users username/password.  Then it would send out the location to GET them
+</I>&gt;<i> like any other file message as above.  This would allow you to send files
+</I>&gt;<i> to offline users, as well as send files to groups of users, just upload it
+</I>&gt;<i> once and they all download it.  It is also a solution for transferring
+</I>&gt;<i> files if you are going through a firewall.  Actually, it could end up just
+</I>&gt;<i> being a normal apache and a special module or similiar... and you'd have
+</I>&gt;<i> your own personal webspace...
+</I>
+	This I REALLY like..  You could actually automate client upgrades this way,
+but having a server send out a file get message to users clients who have
+'registered' with a transport to recieve update file announcements.
+
+	Heck, a company could use features like this to use jabber client/server as
+their 'support' system fairly easily.  Build in basic jabber support into
+the program, and users can communicate via jabber for technical support,
+file upgrades, new announcements, etc..
+
+&gt;<i> There are some issues here yet, but I think this is the best way to go in
+</I>&gt;<i> some form.  I've really gotta sit down and think this through clearly and
+</I>&gt;<i> get it written down, but hopefully this will get the discussion started :)
+</I>
+	Please do..  I LOVE the idea itself, but I can still see holes that needs
+to be addressed.
+
+--
+Thomas Charron
+United Parcel Service
+Northeast Region
+&quot;Moving at the speed of a T3 Trunk Line!&quot;
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000348.html">[JDEV] Win client, File Transfers, invite tag..
+</A></li>
+	<LI>Next message: <A HREF="000340.html">[JDEV] Protocl proposal &quot;priority bit&quot;
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#351">[ date ]</a>
+              <a href="thread.html#351">[ thread ]</a>
+              <a href="subject.html#351">[ subject ]</a>
+              <a href="author.html#351">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

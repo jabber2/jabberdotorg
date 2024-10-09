@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] XEP-0100 and roster/legacy contact list sync
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20XEP-0100%20and%20roster/legacy%20contact%20list%20sync&In-Reply-To=7FE9200A-266D-4F87-8F4C-AEB772471F3E%40co.sapo.pt">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="026823.html">
+   <LINK REL="Next"  HREF="026826.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] XEP-0100 and roster/legacy contact list sync</H1>
+    <B>Massimiliano Mirra</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20XEP-0100%20and%20roster/legacy%20contact%20list%20sync&In-Reply-To=7FE9200A-266D-4F87-8F4C-AEB772471F3E%40co.sapo.pt"
+       TITLE="[jdev] XEP-0100 and roster/legacy contact list sync">iolgzc102 at sneakemail.com
+       </A><BR>
+    <I>Wed Dec  5 02:53:27 CST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="026823.html">[jdev] XEP-0100 and roster/legacy contact list sync
+</A></li>
+        <LI>Next message: <A HREF="026826.html">[jdev] XEP-0100 and roster/legacy contact list sync
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26824">[ date ]</a>
+              <a href="thread.html#26824">[ thread ]</a>
+              <a href="subject.html#26824">[ subject ]</a>
+              <a href="author.html#26824">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> &gt; Except that how do you know someone is not trying to poison your
+</I>&gt;<i> &gt; roster?
+</I>&gt;<i> &gt; We talk about this in both RFC 3921 and rfc3921bis. For example you
+</I>&gt;<i> &gt; can
+</I>&gt;<i>
+</I>&gt;<i> Well, the remote transport gw.remote.dom will send roster pushes to
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">me at local.dom.</A> So my server gets those.
+</I>&gt;<i>
+</I>&gt;<i> It would then check my roster to see if I have an item for
+</I>&gt;<i> gw.remote.dom. If yes, then it would rewrite the roster push from as
+</I>&gt;<i> local.dom.
+</I>
+I'm doing something like:
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at server</A>' id='rost01' type='get'&gt;
+  &lt;query xmlns='jabber:iq:roster'/&gt;
+&lt;/iq&gt;
+
+&lt;iq from='server' id='rost01' type='result'&gt;
+  &lt;query xmlns='jabber:iq:roster'&gt;
+    ...as usual...
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+&lt;iq from='server' to='transport' type='get' id='deleg01'&gt;
+  &lt;query xmlns='roster-delegation'&gt;
+    &lt;owner jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at server</A>'/&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+...transport logs to legacy service...
+
+&lt;iq from='transport' to='server' type='result' id='deleg01'&gt;
+  &lt;query xmlns='roster-delegation'&gt;
+    &lt;owner jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at server</A>'/&gt;
+    &lt;query xmlns='jabber:iq:roster'&gt;
+      &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">legacy1 at transport</A>'/&gt;
+      &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">legacy2 at transport</A>'/&gt;
+    &lt;/query&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+&lt;iq from='server' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at server</A>' type='set' id='push01'&gt;
+  &lt;query xmlns='jabber:iq:roster'&gt;
+    &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">legacy1 at transport</A>'/&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at server</A>' to='server' type='result' id='push01'/&gt;
+
+&lt;iq from='server' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at server</A>' type='set' id='push02'&gt;
+  &lt;query xmlns='jabber:iq:roster'&gt;
+    &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">legacy2 at transport</A>'/&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">client at server</A>' to='server' type='result' id='push02'/&gt;
+
+
+Wrapping the roster from the transport rather than overloading its
+usual function looked attractive, but maybe there are gotchas with one
+&lt;query&gt; inside another (even if namespaced).
+
+
+Massimiliano
+
+
+
+-- 
+Massimiliano Mirra
+<A HREF="http://sameplace.cc">http://sameplace.cc</A>
+<A HREF="http://hyperstruct.net">http://hyperstruct.net</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="026823.html">[jdev] XEP-0100 and roster/legacy contact list sync
+</A></li>
+	<LI>Next message: <A HREF="026826.html">[jdev] XEP-0100 and roster/legacy contact list sync
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26824">[ date ]</a>
+              <a href="thread.html#26824">[ thread ]</a>
+              <a href="subject.html#26824">[ subject ]</a>
+              <a href="author.html#26824">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

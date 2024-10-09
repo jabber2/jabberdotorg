@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Yahoo-t Transport Problem
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Yahoo-t%20Transport%20Problem&In-Reply-To=%3C3FDE37FA.2040101%40terrapin.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="077001.html">
+   <LINK REL="Next"  HREF="077008.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Yahoo-t Transport Problem</H1>
+    <B>Paul Curtis</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Yahoo-t%20Transport%20Problem&In-Reply-To=%3C3FDE37FA.2040101%40terrapin.com%3E"
+       TITLE="[JDEV] Yahoo-t Transport Problem">pcurtis at terrapin.com
+       </A><BR>
+    <I>Mon Dec 15 16:38:50 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="077001.html">[JDEV] (no subject)
+</A></li>
+        <LI>Next message: <A HREF="077008.html">[JDEV] Yahoo-t Transport Problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77002">[ date ]</a>
+              <a href="thread.html#77002">[ thread ]</a>
+              <a href="subject.html#77002">[ subject ]</a>
+              <a href="author.html#77002">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Some users and admins have benn experiencing connection problems with the Yahoo transport. 
+I have traced the problem to Yahoo, and it seems that upon initial connection, Yahoo is 
+not responding. The problem is random, and I haven't been able to predict when it will 
+occur. This causes problems for user's sessions, as they are left running and connected. 
+Below is a small patch for the yahoo-phandler.c to help with this problem.
+
+I am currently working on an update to the transport, but in the mean time, the below code 
+will reset the user's session when the problem occurs. The symptoms are obvious: the 
+transport sends an error packet to the client approximately 30 seconds after the initial 
+attempt to connect to Yahoo. The below code will not change the behavior of the transport 
+EXCEPT when Yahoo does not respond within the 30 second timeout.
+
+Starting on line 97 of yahoo-phandler.c (version 2.2.0 of the transport) the new code 
+should be:
+
+    if (i &gt;= yi-&gt;timeout) {
+       if (yd)
+          yahoo_close(yd);
+       jutil_error(jp-&gt;x, TERROR_INTERNAL);
+       yahoo_deliver(NULL,jp-&gt;x);
+       return;
+    }
+
+Please make the changes to the source code, compile, and restart the transport. I'll be 
+updating more soon.
+
+Regards,
+Paul
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="077001.html">[JDEV] (no subject)
+</A></li>
+	<LI>Next message: <A HREF="077008.html">[JDEV] Yahoo-t Transport Problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77002">[ date ]</a>
+              <a href="thread.html#77002">[ thread ]</a>
+              <a href="subject.html#77002">[ subject ]</a>
+              <a href="author.html#77002">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

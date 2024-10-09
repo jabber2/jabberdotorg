@@ -1,0 +1,192 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: Re: xdb_sql
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20Re%3A%20xdb_sql&In-Reply-To=bfefg7%249ou%241%40main.gmane.org">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="017097.html">
+   <LINK REL="Next"  HREF="017098.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: Re: xdb_sql</H1>
+    <B>Anton Raharja</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20Re%3A%20xdb_sql&In-Reply-To=bfefg7%249ou%241%40main.gmane.org"
+       TITLE="[JDEV] Re: Re: xdb_sql">anton at ngoprek.org
+       </A><BR>
+    <I>Sun Jul 20 15:30:33 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="017097.html">[JDEV] Re: Re: Re: xdb_sql
+</A></li>
+        <LI>Next message: <A HREF="017098.html">[JDEV] Re: Re: Re: xdb_sql
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17096">[ date ]</a>
+              <a href="thread.html#17096">[ thread ]</a>
+              <a href="subject.html#17096">[ subject ]</a>
+              <a href="author.html#17096">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>ok now you know that xdb_sql sent you <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at domain</A> but your PHP script more
+to 'user' and 'domain' separately saved
+my choice is to let PHP keep old setting and xdb_sql tricked
+heres some example of my jabber-sql.xml:
+
+    &lt;queries&gt;
+      &lt;!-- Authentication get query (all queries have standard names) --&gt;
+      &lt;querydef name=&quot;auth-get&quot;&gt;
+        &lt;text&gt;SELECT PersonPassword FROM tblPerson WHERE PersonUsername =
+SUBSTRING_INDEX('$$username$$','@',1)&lt;/text&gt;
+        &lt;bindvar name=&quot;user&quot;&gt;$$username$$&lt;/bindvar&gt;
+        &lt;bindcol name=&quot;password&quot; offset=&quot;0&quot;/&gt;
+      &lt;/querydef&gt;
+
+      &lt;!-- Authentication set query --&gt;
+      &lt;querydef name=&quot;auth-set&quot;&gt;
+        &lt;text&gt;UPDATE tblPerson SET PersonPassword = '$$p$$' WHERE
+PersonUsername = SUBSTRING_INDEX('$$username$$','@',1)&lt;/text&gt;
+        &lt;bindvar name=&quot;user&quot;&gt;$$username$$&lt;/bindvar&gt;
+        &lt;bindvar name=&quot;password&quot;&gt;$$p$$&lt;/bindvar&gt;
+      &lt;/querydef&gt;
+   ...
+   ...
+   &lt;/queries&gt;
+
+there, when user auth xdb_sql pass <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at domain</A> replacing $$username$$ but
+than SUBSTRING_INDEX makes the query only recognize 'user' part
+do some changes on xml file to suite your needs
+
+*********** REPLY SEPARATOR  ***********
+
+On 20/07/2003 at 11:24 Sonic98 wrote:
+
+&gt;<i>So, what you're saying is that when a user registers and it stores thier
+</I>&gt;<i>information in the database it stores it as &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at site.com</A>&quot; ? That would
+</I>be
+&gt;<i>ok for my exisiting memebers cause I could just make a PHP script use pull
+</I>&gt;<i>out the username but stick @site.com on the end of it? But for new members
+</I>&gt;<i>it would be no good because it would create a new user in my database for
+</I>&gt;<i>my
+</I>&gt;<i>site, but then jabber would also store &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at site.com</A>&quot; in the database. I
+</I>&gt;<i>don't know if I want it doing that. There has to be another way. I would
+</I>&gt;<i>really hate to have my users have to register seperately for the jabber
+</I>&gt;<i>client.
+</I>&gt;<i>
+</I>&gt;<i>&quot;Hernux&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hernuz at etherac.com.ar</A>&gt; wrote in message
+</I>&gt;<i>news:001501c34ed6$5017f0e0$<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">0200a8c0 at acer...</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Yes. You can use an existing DB.
+</I>&gt;&gt;<i> I've tried it, but not too much...you just need to set your queries to
+</I>&gt;<i>the
+</I>&gt;&gt;<i> table where you have your usernames and password...thats all you need,
+</I>&gt;<i>other
+</I>&gt;&gt;<i> data is created automatically by de server.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> The problem I found, which made it unsuitable for me, is that it looks
+</I>&gt;<i>for
+</I>&gt;&gt;<i> usernames in the way &quot;user = '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at foo.com</A>'&quot; and I think I'd be better
+</I>&gt;&gt;<i> looking for &quot;user = 'user' AND domain = 'foo.com'&quot;.  This way, I can use
+</I>&gt;<i>the
+</I>&gt;&gt;<i> domain as identifier of the user's company....or may be better, just
+</I>&gt;<i>making
+</I>&gt;&gt;<i> a join at the select and look for the domain in other table (companies
+</I>&gt;<i>table
+</I>&gt;&gt;<i> may be).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Anyway, now I'm trying LDAP authentication.  And it doesn't work the way
+</I>&gt;<i>I
+</I>&gt;&gt;<i> need too.
+</I>&gt;&gt;<i> :'(
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Hernux
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> ----- Original Message -----
+</I>&gt;&gt;<i> From: &quot;Sonic98&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">raymondcox at redlasertech.com</A>&gt;
+</I>&gt;&gt;<i> To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;&gt;<i> Sent: Sunday, July 20, 2003 12:16 PM
+</I>&gt;&gt;<i> Subject: [JDEV] Re: xdb_sql
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> &gt; Anyway to get this to work with a current database? I think this
+</I>&gt;&gt;<i> &gt; documentation is for setting up a new database to work with your
+</I>jabber
+&gt;&gt;<i> &gt; server. What about if you already have a database with member
+</I>&gt;<i>information
+</I>&gt;&gt;<i> &gt; already in it? Can you make is just pull usernames and passwords from
+</I>&gt;<i>that
+</I>&gt;&gt;<i> &gt; database?
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; &quot;Raymond Cox&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">raymondcox at redlasertech.com</A>&gt; wrote in message
+</I>&gt;&gt;<i> &gt; news:bfe9vp$jt9$<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1 at main.gmane.org...</A>
+</I>&gt;&gt;<i> &gt; &gt; That is actually one of the sites I'd looked at already. I was
+</I>hoping
+&gt;&gt;<i> for
+</I>&gt;&gt;<i> &gt; &gt; just a little bit more docuomentation about xdb_sql and how it works
+</I>&gt;&gt;<i> &gt; because
+</I>&gt;&gt;<i> &gt; &gt; I know nothing about it. Plus, I'm using PHP not Perl although the
+</I>&gt;&gt;<i> syntax
+</I>&gt;&gt;<i> &gt; is
+</I>&gt;&gt;<i> &gt; &gt; similar.
+</I>&gt;&gt;<i> &gt; &gt; &quot;Anton Raharja&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">anton at ngoprek.org</A>&gt; wrote in message
+</I>&gt;&gt;<i> &gt; &gt; news:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">200307201422380651.01B941D8 at 192.168.0.6...</A>
+</I>&gt;&gt;<i> &gt; &gt; &gt; this site gave me right direction:
+</I>&gt;&gt;<i> &gt; &gt; &gt; <A HREF="http://docs.myjabber.net/howto/mysql.htm">http://docs.myjabber.net/howto/mysql.htm</A>
+</I>&gt;&gt;<i> &gt; &gt; &gt;
+</I>&gt;&gt;<i> &gt; &gt; &gt; *********** REPLY SEPARATOR  ***********
+</I>&gt;&gt;<i> &gt; &gt; &gt;
+</I>&gt;&gt;<i> &gt; &gt; &gt; On 20/07/2003 at 0:43 Raymond Cox wrote:
+</I>&gt;&gt;<i> &gt; &gt; &gt;
+</I>&gt;&gt;<i> &gt; &gt; &gt; &gt;I downloaded the files and read the readme. It's kind of a poor
+</I>&gt;&gt;<i> excuse
+</I>&gt;&gt;<i> &gt; &gt; for
+</I>&gt;&gt;<i> &gt; &gt; &gt; &gt;documenation. Where can I go to really find some information on
+</I>&gt;&gt;<i> &gt; xdb_sql,
+</I>&gt;&gt;<i> &gt; &gt; &gt; &gt;how
+</I>&gt;&gt;<i> &gt; &gt; &gt; &gt;it works, what it does, and whether I really need it or not.
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt;
+</I>&gt;&gt;<i> &gt; _______________________________________________
+</I>&gt;&gt;<i> &gt; jdev mailing list
+</I>&gt;&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="017097.html">[JDEV] Re: Re: Re: xdb_sql
+</A></li>
+	<LI>Next message: <A HREF="017098.html">[JDEV] Re: Re: Re: xdb_sql
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17096">[ date ]</a>
+              <a href="thread.html#17096">[ thread ]</a>
+              <a href="subject.html#17096">[ subject ]</a>
+              <a href="author.html#17096">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

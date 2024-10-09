@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] SASL EXTERNAL for s2s in jabberd14
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SASL%20EXTERNAL%20for%20s2s%20in%20jabberd14&In-Reply-To=%3C200511041427.18784.justin-keyword-jabber.093179%40affinix.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="081813.html">
+   <LINK REL="Next"  HREF="081816.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] SASL EXTERNAL for s2s in jabberd14</H1>
+    <B>Justin Karneges</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20SASL%20EXTERNAL%20for%20s2s%20in%20jabberd14&In-Reply-To=%3C200511041427.18784.justin-keyword-jabber.093179%40affinix.com%3E"
+       TITLE="[jdev] SASL EXTERNAL for s2s in jabberd14">justin-keyword-jabber.093179 at affinix.com
+       </A><BR>
+    <I>Fri Nov  4 16:27:18 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="081813.html">[jdev] SASL EXTERNAL for s2s in jabberd14
+</A></li>
+        <LI>Next message: <A HREF="081816.html">[jdev] SASL EXTERNAL for s2s in jabberd14
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81814">[ date ]</a>
+              <a href="thread.html#81814">[ thread ]</a>
+              <a href="subject.html#81814">[ subject ]</a>
+              <a href="author.html#81814">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Friday 04 November 2005 12:33, Matthias Wimmer wrote:
+&gt;<i> - When do you offer SASL EXTERNAL on an incoming connection? I
+</I>&gt;<i> implemented, that the s2s connection manager always checks the peers
+</I>&gt;<i> certificate as soon as a TLS layer is established. Only if the
+</I>&gt;<i> certificate could be validated (not expired, if the incoming stream had
+</I>&gt;<i> a from attribute if this matches the certificate, signed by a trusted
+</I>&gt;<i> CA, ...) I offer the peer to use SASL EXTERNAL. In all other cases I
+</I>&gt;<i> know that SASL EXTERNAL would fail anyway so I do not have to offer it.
+</I>&gt;<i> Better for the peer to try dialback.
+</I>
+This sounds fine to me.
+
+&gt;<i> - What do you do if you connected to an other server which offered you
+</I>&gt;<i> SASL auth but the authentication failed? Do you retry the connection
+</I>&gt;<i> using dialback or do you consider it as a final auth failure? Currently
+</I>&gt;<i> I do not retry it using dialback but bounce the stanza back to the
+</I>&gt;<i> sender. I am aware that this might be wrong and retrying the connection
+</I>&gt;<i> using dialback could be better.
+</I>
+Since I suspect it will be easy to have TLS misconfigurations, I would 
+recommend that we treat a failed TLS/SASL auth as the same as not even 
+supporting it in the first place.  In that case, I would not consider it 
+wrong to attempt dialback as a fallback.
+
+I'd say this is just a policy choice for the sending server.
+
+Personally, I don't like these kinds of auto-mechanisms because they are 
+susceptible to downgrade attacks.  If I were designing a server, maybe I'd 
+have two security modes:
+  1) default insecure, have a list of domains required to be secure
+  2) default secure, have a list of domains allowed to be insecure
+
+For auto-security, you'd probably go with #1 and keep the list empty.  This 
+means there should never be any assumption about having s2s security.  It 
+might be there, or it might not.
+
+For full security you could go with #2 and keep the list empty.  But things 
+would probably be very boring.
+
+&gt;<i> - I guess at least for now we have to handle certificates, that do not
+</I>&gt;<i> contain the id-on-xmppAddr object as well and therefore have to support
+</I>&gt;<i> domains as commonName as well. Right? In that case, it is known practice
+</I>&gt;<i> in such certificates to have wildcards in domains, e.g. &quot;*.example.com&quot;.
+</I>&gt;<i> Do you handle these? How do you handle these? I am allowing this
+</I>&gt;<i> certificate for &quot;subdomain.example.com&quot;, but not for &quot;example.com&quot;.
+</I>
+XMPP-Core 14.2 says: 'The certificate SHOULD then be checked against the 
+expected identity of the peer following the rules described in [RFC 2818], 
+except that a subjectAltName extension of type &quot;xmpp&quot; MUST be used as the 
+identity if present.'
+
+It is unclear how this pertains to wildcards though, since the xmpp extension 
+contains a JID and not a domain.  If I had to make a decision here, I'd say 
+that for domain-only JIDs, wildcards should be allowed.  The RFC 3920bis todo 
+grows...
+
+&gt;<i> - If the certificate is for &quot;example.com&quot;, do you accept this
+</I>&gt;<i> certificate to be used for &quot;service.example.com&quot; as well? Currently I
+</I>&gt;<i> don't. But I am not sure if this is correct/intended by RFC3920.
+</I>
+You shouldn't.  And I don't think XMPP-Core says to do this either.  However, 
+given that the draft does mention subdomains in places, maybe we could use a 
+clarification.  I personally don't think the word 'subdomain' should exist in 
+the entire draft, but it is there.
+
+&gt;<i> - Do you support having a SASL authenticated link in one direction and a
+</I>&gt;<i> dialback &quot;authenticated&quot; link in the other direction between two
+</I>&gt;<i> servers? Especially do you accept and process to receive db:verify
+</I>&gt;<i> requests on a SASL link? Currently I do.
+</I>
+Protocol-wise, I'd say having different types of channels is allowed.  
+However, this again seems like a security policy decision.  If a domain is 
+explicitly configured to be secure, then I would want to protect both 
+directions.
+
+Allowing &lt;db:verify&gt; requests over a SASL link is questionable.  I'm still 
+very confused about the intermixing of dialback, SASL, stream:features, and 
+the notion of a &quot;1.0&quot; stream.
+
+&gt;<i> - Do you package a set of CA certificates with your server distribution?
+</I>&gt;<i> Which CAs should be trusted/included?
+</I>
+I say leave the selection of CAs to others more qualified.
+
+My recommendation is to use the certificates of the operating system if 
+possible, or ship a copy of the CAs found in Mozilla.  This is how QCA 2.0 
+works.
+
+If you need a way to extract from Mozilla, there are some tools you might be 
+able to google for.  If you have trouble finding something usable, QCA 2 has 
+one called 'mozcerts'.  If you want to try it, you can get 2.0 beta1 and the 
+qca-openssl plugin here:
+  <A HREF="http://delta.affinix.com/qca/2.0/beta1/">http://delta.affinix.com/qca/2.0/beta1/</A>
+Note: you need Qt 4 and openssl libraries to build.  and of course a copy of 
+the firefox source code to extract from.
+
+From your other mail:
+&gt;<i> I got asked (on Jabber) how I do this verification and how I know which
+</I>&gt;<i> domain the server wants to authenticate later on.
+</I>&gt;<i>
+</I>&gt;<i> If the connecting server sent a from attribute in the stream root, I am
+</I>&gt;<i> checking against this. If there was no from attribute (the other server
+</I>&gt;<i> does not have to send this attribute), I just check if the certificate
+</I>&gt;<i> is not expired and I can validate the certification chain up to a
+</I>&gt;<i> trusted root CA certificate.
+</I>
+Of course, this is only a problem with a wildcard domain or multiple domains 
+in the connecting server's cert, correct?
+
+This is an interesting problem.  I could be wrong, but I think you can pass an 
+identifier with SASL EXTERNAL.  Maybe in here we should pass a JID?
+
+-Justin
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="081813.html">[jdev] SASL EXTERNAL for s2s in jabberd14
+</A></li>
+	<LI>Next message: <A HREF="081816.html">[jdev] SASL EXTERNAL for s2s in jabberd14
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81814">[ date ]</a>
+              <a href="thread.html#81814">[ thread ]</a>
+              <a href="subject.html#81814">[ subject ]</a>
+              <a href="author.html#81814">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jpolld with jabberd 1.4.2
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jpolld%20with%20jabberd%201.4.2&In-Reply-To=%3CDIEDIPNDFFMOGEMFKBNKAEFMCCAA.jack%40valko.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="071803.html">
+   <LINK REL="Next"  HREF="071779.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jpolld with jabberd 1.4.2</H1>
+    <B>Jack Valko</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jpolld%20with%20jabberd%201.4.2&In-Reply-To=%3CDIEDIPNDFFMOGEMFKBNKAEFMCCAA.jack%40valko.org%3E"
+       TITLE="[JDEV] jpolld with jabberd 1.4.2">jack at valko.org
+       </A><BR>
+    <I>Tue Jun 25 16:17:18 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="071803.html">[JDEV] Problem with xdb_mysql : cannot load backend 'mysql'
+</A></li>
+        <LI>Next message: <A HREF="071779.html">[JDEV] jpolld with jabberd 1.4.2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71777">[ date ]</a>
+              <a href="thread.html#71777">[ thread ]</a>
+              <a href="subject.html#71777">[ subject ]</a>
+              <a href="author.html#71777">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm attempting to setup jpolld and jabberd on separate boxes and am running
+into a configuration or name resolution issue.
+
+&gt;<i>From jabber.xml:
+</I>  &lt;!--
+  jpolld service
+  --&gt;
+  &lt;service id=&quot;c2s&quot;&gt;
+     &lt;accept&gt;
+        &lt;ip&gt;{jabberd server IP}&lt;/ip&gt;
+        &lt;port&gt;5225&lt;/port&gt;
+        &lt;secret&gt;test&lt;/secret&gt;
+     &lt;/accept&gt;
+  &lt;/service&gt;
+
+I have commented out the stock c2s service.
+
+jabberd starts as expected.  I run jpolld as:
+
+./jpolld -h {jabberd server IP} -d 5225 -n c2s -s test
+
+jpolld connects to jabberd with no difficulty.  When I attempt to auth thru
+the jpolld process, it fails.  jabberd logs the following debug output:
+
+Tue Jun 25 15:11:36 2002  mio.c:760 MIO read from socket 14: &lt;route
+type='auth' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">2 at c2s</A>/134717632' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jack at slave0.unknown.com</A>'&gt;&lt;iq
+type='get' id='JCOM_11'&gt;&lt;query
+xmlns='jabber:iq:auth'&gt;&lt;username&gt;jack&lt;/username&gt;&lt;/query&gt;&lt;/iq&gt;&lt;/route&gt;
+Tue Jun 25 15:11:36 2002  base_accept.c:120 process XML: m:814A280 state:3,
+arg:80D42C0, x:819C000
+Tue Jun 25 15:11:36 2002  deliver.c:474 DELIVER 4:slave0.unknown.com &lt;route
+type='auth' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">2 at c2s</A>/134717632' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jack at slave0.unknown.com</A>'&gt;&lt;iq
+type='get' id='JCOM_11'&gt;&lt;query
+xmlns='jabber:iq:auth'&gt;&lt;username&gt;jack&lt;/username&gt;&lt;/query&gt;&lt;/iq&gt;&lt;/route&gt;
+Tue Jun 25 15:11:36 2002  deliver.c:678 delivering to instance 'dnsrv'
+Tue Jun 25 15:11:36 2002  deliver.c:606 delivery failed (Internal Delivery
+Error)
+Tue Jun 25 15:11:36 2002  log.c:116 &lt;log type='notice'
+from='slave0.unknown.com'&gt;bouncing a routed packet to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jack at slave0.unknown.com</A> from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">2 at c2s</A>/134717632: Internal Delivery Error&lt;/log&gt;
+Tue Jun 25 15:11:36 2002  deliver.c:474 DELIVER 3:slave0.unknown.com &lt;log
+type='notice' from='slave0.unknown.com'&gt;bouncing a routed packet to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jack at slave0.unknown.com</A> from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">2 at c2s</A>/134717632: Internal Delivery Error&lt;/log&gt;
+Tue Jun 25 15:11:36 2002  deliver.c:678 delivering to instance 'elogger'
+20020625T22:11:36: [notice] (slave0.unknown.com): bouncing a routed packet
+to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jack at slave0.unknown.com</A> from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">2 at c2s</A>/134717632: Internal Delivery Error
+Tue Jun 25 15:11:36 2002  deliver.c:474 DELIVER 4:c2s &lt;route type='error'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jack at slave0.unknown.com</A>' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">2 at c2s</A>/134717632' error='Internal Delivery
+Error'&gt;&lt;iq type='get' id='JCOM_11'&gt;&lt;query
+xmlns='jabber:iq:auth'&gt;&lt;username&gt;jack&lt;/username&gt;&lt;/query&gt;&lt;/iq&gt;&lt;/route&gt;
+Tue Jun 25 15:11:36 2002  deliver.c:678 delivering to instance 'c2s'
+Tue Jun 25 15:11:36 2002  mio.c:1054 mio_write called on x: 819C000 buffer:
+(null)
+Tue Jun 25 15:11:36 2002  mio.c:279 write_dump writing data: &lt;route
+type='error' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jack at slave0.unknown.com</A>' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">2 at c2s</A>/134717632'
+error='Internal Delivery Error'&gt;&lt;iq type='get' id='JCOM_11'&gt;&lt;query
+xmlns='jabber:iq:auth'&gt;&lt;username&gt;jack&lt;/username&gt;&lt;/query&gt;&lt;/iq&gt;&lt;/route&gt;
+
+It appears that things go awry when deliver_instance hand the xml off the
+dnsrv.  Is this a name resolution issue??  How do I fix this?
+
+Thanks!
+
+Jack
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="071803.html">[JDEV] Problem with xdb_mysql : cannot load backend 'mysql'
+</A></li>
+	<LI>Next message: <A HREF="071779.html">[JDEV] jpolld with jabberd 1.4.2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71777">[ date ]</a>
+              <a href="thread.html#71777">[ thread ]</a>
+              <a href="subject.html#71777">[ subject ]</a>
+              <a href="author.html#71777">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

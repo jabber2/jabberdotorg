@@ -1,0 +1,273 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Replication &amp; revision protocol
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Replication%20%26%20revision%20protocol&In-Reply-To=%3C41bc5e6c1001201639l51dd68f9yd6ef89b71cab26d6%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088005.html">
+   <LINK REL="Next"  HREF="088007.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Replication &amp; revision protocol</H1>
+    <B>Liam</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Replication%20%26%20revision%20protocol&In-Reply-To=%3C41bc5e6c1001201639l51dd68f9yd6ef89b71cab26d6%40mail.gmail.com%3E"
+       TITLE="[jdev] Replication &amp; revision protocol">pubsub at networkimprov.net
+       </A><BR>
+    <I>Wed Jan 20 18:39:17 CST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088005.html">[jdev] Replication &amp; revision protocol
+</A></li>
+        <LI>Next message: <A HREF="088007.html">[jdev] Multiplexing large number of client connections
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88006">[ date ]</a>
+              <a href="thread.html#88006">[ thread ]</a>
+              <a href="subject.html#88006">[ subject ]</a>
+              <a href="author.html#88006">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The protocol sequence below is derived from an exchange between instances of
+my app. Typos could have crept in during editing!
+
+There are features missing... splitting &lt;revision/&gt; messages to fit the max
+payload size for the node, and types for diff formats.
+
+Feedback welcome!
+
+
+1. Creator makes a pubsub node for incoming messages, and subscribes to it:
+(These nodes give us IQ for 1-to-1 messaging, even if recipient is offline.)
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/
+reprev' to='pubsub.localhost'
+    type='set' id='9365' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;create node='creator'/&gt;
+    &lt;configure&gt;&lt;x xmlns='jabber:x:data' type='submit'&gt;
+      &lt;field var='FORM_TYPE' type='hidden'&gt;&lt;value&gt;
+<A HREF="http://jabber.org/protocol/pubsub#node_config&lt;/value">http://jabber.org/protocol/pubsub#node_config&lt;/value</A>&gt;&lt;/field&gt;
+      &lt;field var='pubsub#notify_retract'&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='pubsub#persist_items'&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='pubsub#publish_model'&gt;&lt;value&gt;open&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='pubsub#access_model'&gt;&lt;value&gt;whitelist&lt;/value&gt;&lt;/field&gt;
+      &lt;field
+var='pubsub#send_last_published_item'&gt;&lt;value&gt;never&lt;/value&gt;&lt;/field&gt;
+&lt;/x&gt;&lt;/configure&gt;&lt;/pubsub&gt;&lt;/iq&gt;
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev' to='pubsub.localhost'
+    type='set' id='9366' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;subscribe node='creator' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev'/&gt;
+&lt;/pubsub&gt;&lt;/iq&gt;
+
+
+2. Contributor does the same:
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">contributor at localhost</A>/reprev' to='pubsub.localhost'
+    type='set' id='8776' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;create node='contributor'/&gt;
+    &lt;configure&gt;&lt;x xmlns='jabber:x:data' type='submit'&gt;
+      &lt;field var='FORM_TYPE' type='hidden'&gt;&lt;value&gt;
+<A HREF="http://jabber.org/protocol/pubsub#node_config&lt;/value">http://jabber.org/protocol/pubsub#node_config&lt;/value</A>&gt;&lt;/field&gt;
+      &lt;field var='pubsub#notify_retract'&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='pubsub#persist_items'&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='pubsub#publish_model'&gt;&lt;value&gt;open&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='pubsub#access_model'&gt;&lt;value&gt;whitelist&lt;/value&gt;&lt;/field&gt;
+      &lt;field
+var='pubsub#send_last_published_item'&gt;&lt;value&gt;never&lt;/value&gt;&lt;/field&gt;
+&lt;/x&gt;&lt;/configure&gt;&lt;/pubsub&gt;&lt;/iq&gt;
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">contributor at localhost</A>/reprev' to='pubsub.localhost'
+    type='set' id='8777' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;subscribe node='contributor' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">contributor at localhost</A>/reprev'/&gt;
+&lt;/pubsub&gt;&lt;/iq&gt;
+
+
+3. Creator makes a pubsub node for a shared collection, and subscribes:
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev' to='pubsub.localhost'
+    type='set' id='9367' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;create node='uuid1.105'/&gt;
+    &lt;configure&gt;&lt;x xmlns='jabber:x:data' type='submit'&gt;
+      &lt;field var='FORM_TYPE' type='hidden'&gt;&lt;value&gt;
+<A HREF="http://jabber.org/protocol/pubsub#node_config&lt;/value">http://jabber.org/protocol/pubsub#node_config&lt;/value</A>&gt;&lt;/field&gt;
+      &lt;field var='pubsub#notify_retract'&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='pubsub#persist_items'&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='pubsub#publish_model'&gt;&lt;value&gt;subscribers&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='pubsub#access_model'&gt;&lt;value&gt;whitelist&lt;/value&gt;&lt;/field&gt;
+      &lt;field
+var='pubsub#send_last_published_item'&gt;&lt;value&gt;never&lt;/value&gt;&lt;/field&gt;
+&lt;/x&gt;&lt;/configure&gt;&lt;/pubsub&gt;&lt;/iq&gt;
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev' to='pubsub.localhost'
+    type='set' id='9368' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;subscribe node='uuid1.105' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev'/&gt;
+&lt;/pubsub&gt;&lt;/iq&gt;
+
+
+4. Creator revs the collection whitelist, notifies collection members of the
+whitelist change, and invites Contributor to join the collection:
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev' to='pubsub.localhost'
+    type='set' id='9372' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;affiliations node='uuid1.105'&gt;
+      &lt;affiliation jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">contributor at localhost</A>' affiliation='publisher'/&gt;
+&lt;/affiliations&gt;&lt;/pubsub&gt;&lt;/iq&gt;
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev' to='pubsub.localhost'
+    type='set' id='9370' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;publish node='uuid1.105' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev'&gt;&lt;item&gt;
+      &lt;member xmlns='reprev_ns' uid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">contributor at localhost</A>&quot; added=&quot;pending&quot;&gt;
+        <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">contributor at localhost</A>
+&lt;/member&gt;&lt;/item&gt;&lt;/publish&gt;&lt;/pubsub&gt;&lt;/iq&gt;
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev' to='pubsub.localhost'
+    type='set' id='9369' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;publish node='contributor' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev'&gt;&lt;item&gt;
+      &lt;invite xmlns='reprev_ns' collection=&quot;uuid1.105&quot;&gt;
+        &lt;from uid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>&quot;&gt;Liam&lt;/from&gt;
+        &lt;date&gt;2010-01-19T20:45:26Z&lt;/date&gt;
+        &lt;name&gt;Cornucopia&lt;/name&gt;
+        &lt;blurb&gt;A non-descript invitation&lt;/blurb&gt;
+&lt;/invite&gt;&lt;/item&gt;&lt;/publish&gt;&lt;/pubsub&gt;&lt;/iq&gt;
+
+
+5. Contributor subscribes to the collection, and notifies Creator:
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">contributor at localhost</A>/reprev' to='pubsub.localhost'
+    type='set' id='8778' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;subscribe node='uuid1.105' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">contributor at localhost</A>/reprev'/&gt;
+&lt;/pubsub&gt;&lt;/iq&gt;
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">contributor at localhost</A>/reprev' to='pubsub.localhost'
+    type='set' id='8779' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;publish node='creator' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">contributor at localhost</A>/reprev'&gt;&lt;item&gt;
+      &lt;join xmlns='reprev_ns' collection=&quot;uuid1.105&quot;
+uid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">contributor at localhost</A>&quot;/&gt;
+&lt;/item&gt;&lt;/publish&gt;&lt;/pubsub&gt;&lt;/iq&gt;
+
+
+6. Creator replicates collection to Contributor, first meta/data and then
+revision history:
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev' to='pubsub.localhost'
+    type='set' id='9375' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;publish node='contributor' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev'&gt;&lt;item&gt;
+      &lt;replica xmlns='reprev_ns' collection='uuid1.105'&gt;
+        &lt;!-- app-defined data --&gt;
+&lt;/replica&gt;&lt;/item&gt;&lt;/publish&gt;&lt;/pubsub&gt;&lt;/iq&gt;
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev' to='pubsub.localhost'
+    type='set' id='9376' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;publish node='contributor' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">creator at localhost</A>/reprev'&gt;&lt;item&gt;
+      &lt;revision xmlns='reprev_ns' collection=&quot;uuid1.105&quot;&gt;
+        &lt;revlist touch=&quot;2010-01-19T20:52:34Z&quot; oid=&quot;uuid1.118&quot;&gt;
+          &lt;object oid=&quot;uuid1.115&quot; op=&quot;+&quot; touch=&quot;2010-01-20T00:29:26Z&quot;
+diff=&quot;uuid1.120&quot;&gt;
+            &lt;object oid=&quot;uuid1.116&quot; op=&quot;+&quot; touch=&quot;2010-01-20T00:29:26Z&quot;
+diff=&quot;uuid1.121&quot;/&gt;&lt;/object&gt;&lt;/revlist&gt;
+        &lt;diff orig=&quot;uuid1.115&quot; oid=&quot;uuid1.120&quot; type=&quot;not-implemented&quot;&gt;
+          &lt;!-- app-defined content --&gt;&lt;/diff&gt;
+        &lt;diff orig=&quot;uuid1.116&quot; oid=&quot;uuid1.121&quot; type=&quot;not-implemented&quot;&gt;
+          &lt;!-- app-defined content --&gt;&lt;/diff&gt;
+&lt;/revision&gt;&lt;/item&gt;&lt;/publish&gt;&lt;/pubsub&gt;&lt;/iq&gt;
+
+
+7. Contributor makes a revision to collection:
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">contributor at localhost</A>/reprev' to='pubsub.localhost'
+    type='set' id='8784' xmlns='jabber:client'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+    &lt;publish node='uuid1.105' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">contributor at localhost</A>/reprev'&gt;&lt;item
+id='uuid2.106'&gt;
+      &lt;revision xmlns='reprev_ns' collection=&quot;uuid1.105&quot;&gt;
+        &lt;revlist touch=&quot;2010-01-19T21:00:36Z&quot; oid=&quot;uuid2.106&quot;&gt;
+          &lt;object oid=&quot;uuid1.116&quot; op=&quot;!&quot; touch=&quot;2010-01-20T00:29:26Z&quot;
+diff=&quot;uuid2.107&quot;/&gt;&lt;/revlist&gt;
+        &lt;diff orig=&quot;uuid1.116&quot; oid=&quot;uuid2.107&quot; type=&quot;not-implemented&quot;&gt;
+          &lt;!-- app-defined content --&gt;&lt;/diff&gt;
+&lt;/revision&gt;&lt;/item&gt;&lt;/publish&gt;&lt;/pubsub&gt;&lt;/iq&gt;
+
+
+8. Contributor resigns from collection:
+
+&lt;!-- not yet implemented --&gt;
+
+
+On Wed, Jan 20, 2010 at 3:44 PM, Liam &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pubsub at networkimprov.net</A>&gt; wrote:
+
+&gt;<i> I'm building an app which replicates collections of data objects among
+</I>&gt;<i> groups of contributors/subscribers.
+</I>&gt;<i>
+</I>&gt;<i> I use XMPP for transport &amp; store-forward, and I've built a simple
+</I>&gt;<i> replication &amp; revision system on top of PubSub.
+</I>&gt;<i>
+</I>&gt;<i> I'm considering open sourcing this code and documenting the protocol.
+</I>&gt;<i> (Source is javascript requiring Strophe.) Creating a separate package for
+</I>&gt;<i> this would entail some work, so I'd like to gauge potential interest...
+</I>&gt;<i>
+</I>&gt;<i> My replication &amp; revision system does the following:
+</I>&gt;<i>
+</I>&gt;<i> Establishes pubsub nodes for shared collections
+</I>&gt;<i> Reliably transmits (reliable requires IQ Notifications):
+</I>&gt;<i>   - invitations to join a collection
+</I>&gt;<i>   - invitation acceptances
+</I>&gt;<i>   - collection replicas to new members
+</I>&gt;<i>   - resignations from a collection
+</I>&gt;<i>   - revisions to a collection, containing:
+</I>&gt;<i>     a) list of revised objects
+</I>&gt;<i>     b) diffs for added/modified objects
+</I>&gt;<i>        format is app-specific; common diff types may be specified
+</I>&gt;<i>
+</I>&gt;<i> Obviously, it's very lightweight. It's not focused on real-time apps per
+</I>&gt;<i> se, but could be applied thereto.
+</I>&gt;<i>
+</I>&gt;<i> Also, I'd love pointers to other forums where folks could be interested...
+</I>&gt;<i>
+</I>&gt;<i> Liam
+</I>&gt;<i>
+</I>&gt;<i> PS: protocol specifics to follow...
+</I>&gt;<i>
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20100120/6d7f8e4c/attachment-0001.htm">https://www.jabber.org/jdev/attachments/20100120/6d7f8e4c/attachment-0001.htm</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088005.html">[jdev] Replication &amp; revision protocol
+</A></li>
+	<LI>Next message: <A HREF="088007.html">[jdev] Multiplexing large number of client connections
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88006">[ date ]</a>
+              <a href="thread.html#88006">[ thread ]</a>
+              <a href="subject.html#88006">[ subject ]</a>
+              <a href="author.html#88006">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

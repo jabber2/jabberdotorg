@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] sasl digest-response
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20sasl%20digest-response&In-Reply-To=444a9bc644e85%40wp.pl">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="024511.html">
+   <LINK REL="Next"  HREF="024489.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] sasl digest-response</H1>
+    <B>Asia G&#261;siewska</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20sasl%20digest-response&In-Reply-To=444a9bc644e85%40wp.pl"
+       TITLE="[jdev] sasl digest-response">gasiewska at wp.pl
+       </A><BR>
+    <I>Sun Apr 23 13:51:34 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="024511.html">[jdev] sasl digest-response
+</A></li>
+        <LI>Next message: <A HREF="024489.html">[jdev] sasl digest-response
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24487">[ date ]</a>
+              <a href="thread.html#24487">[ thread ]</a>
+              <a href="subject.html#24487">[ subject ]</a>
+              <a href="author.html#24487">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thank you so much for the explaination. I have changed all the values to binary and the charset sent is utf-8 so the problem with my code was not as I thought with the encoding. However still I receive a response of a failure which is not very helpful and I don't know what to do. I am not sure if I correctly understand how to compute the response value which is probably the cause of this.
+According to the formulea in rfc2831
+
+Let { a, b, ... } be the concatenation of the octet strings a, b, ...
+   Let H(s) be the 16 octet MD5 hash [RFC 1321] of the octet string s.
+Let KD(k, s) be H({k, &quot;:&quot;, s}), i.e., the 16 octet hash of the string
+   k, a colon and the string s.
+
+
+response-value  =
+HEX( KD ( HEX(H(A1)),
+                 { nonce-value, &quot;:&quot; nc-value, &quot;:&quot;,
+                   cnonce-value, &quot;:&quot;, qop-value, &quot;:&quot;, HEX(H(A2)) }))
+ 
+ A1 = { H( { username-value, &quot;:&quot;, realm-value, &quot;:&quot;, passwd } ),
+           &quot;:&quot;, nonce-value, &quot;:&quot;, cnonce-value }
+
+If the &quot;qop&quot; directive's value is &quot;auth&quot;, then A2 is:
+
+      A2       = { &quot;AUTHENTICATE:&quot;, digest-uri-value }
+
+   If the &quot;qop&quot; value is &quot;auth-int&quot; or &quot;auth-conf&quot; then A2 is:
+
+      A2       = { &quot;AUTHENTICATE:&quot;, digest-uri-value,
+               &quot;:00000000000000000000000000000000&quot; }
+
+what I did was
+1.concatenated strings username-value, &quot;:&quot;, realm-value, &quot;:&quot;, passwd  and changed to bytes and made a hash md5 from this returning bytes 
+2. changed the concatenated strings  &quot;:&quot;, nonce-value, &quot;:&quot;, cnonce-value to bytes 
+3 glued bytes from 1 and 2 =&gt; A1
+4.hased A1 bytes and converted to hexadecimal =&gt;HEX(H(A1))
+5.computed a2 string concatenating &quot;AUTHENTICATE:&quot;, digest-uri-value    and converted to bytes, hashed them and converted to hexadecimal =&gt;HEX(H(A2))
+6. connected string HEX(H(A1)) with : and concatenation of (nonce-value, &quot;:&quot; nc-value, &quot;:&quot;, cnonce-value, &quot;:&quot;, qop-value, &quot;:&quot; and  HEX(H(A2))) converted this big resulting string to bytes and hashed them and converted to hexadecimal form
+
+Is this how it should work? Thank you for help in advance.
+cheers,
+Joanna G&#261;siewska
+
+
+Dnia 23-04-2006 o godz. 12:43 Bruce Campbell napisa&#322;(a):
+&gt;<i> On Sat, 22 Apr 2006, [ISO-8859-2] Asia G?siewska wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; during digest- response. After reading RFC2831 I just don' t 
+</I>&gt;<i> understand 
+</I>&gt;<i> &gt; this part:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; passwd   = *OCTET
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;   The &quot;username-value&quot;, &quot;realm-value&quot; and &quot;passwd&quot; are encoded
+</I>&gt;<i> &gt;   according to the value of the &quot;charset&quot; directive. If &quot;charset=UTF-8&quot;
+</I>&gt;<i> &gt;   is present, and all the characters of either &quot;username-value&quot; or
+</I>&gt;<i> &gt;   &quot;passwd&quot; are in the ISO 8859-1 character set, then it must be
+</I>&gt;<i> &gt;   converted to ISO 8859-1 before being hashed.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; What does it mean *OCTET
+</I>&gt;<i> 
+</I>&gt;<i> '*OCTET' - as many octets (bytes, 8 bits) as required for the password.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; and should I change everything everytime to iso 
+</I>&gt;<i> &gt; 8859-1 ?
+</I>&gt;<i> 
+</I>&gt;<i> The whole reference to ISO 8859-1 is to maintain compatibility with 
+</I>&gt;<i> HTTP. 
+</I>&gt;<i> The way it works is that for the 'username-value' and 'password' fields, 
+</I>&gt;<i> you scan through the field looking for any characters that are _not_ in 
+</I>&gt;<i> ISO 8859-1 .  If there are no characters outside ISO 8859-1 in the 
+</I>&gt;<i> field, 
+</I>&gt;<i> you send that field in ISO 8859-1, assuming that the value of the 
+</I>&gt;<i> 'charset' directive is 'ISO 8859-1' for that specific field.
+</I>&gt;<i> 
+</I>&gt;<i> So, if you have a username of 'ez$' with a password of '&#260;$&#728;&#321;??' (Yen 
+</I>&gt;<i> Dollar Cents Pounds Francs Euro), the 'username-value' only contains 
+</I>&gt;<i> characters in ISO 8859-1, and should be sent in ISO 8859-1.  The 
+</I>&gt;<i> 'password' contains characters outside of ISO 8859-1, and should be sent 
+</I>&gt;<i> in 'UTF-8', _but_ only if the 'charset' directive is already set to 
+</I>&gt;<i> 'UTF-8'.
+</I>&gt;<i> 
+</I>&gt;<i> Section 8 of 2831 contains a snippet of C which will do all of this for 
+</I>&gt;<i> you.
+</I>&gt;<i> 
+</I>&gt;<i> -- 
+</I>&gt;<i>    Bruce Campbell
+</I>&gt;<i> 
+</I>
+----------------------------------------------------
+Koncert zespo&#322;u TOOL! 
+24 czerwca w katowickim Spodku!
+<A HREF="http://klik.wp.pl/?adr=http%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Ftool.html&amp;sid=733">http://klik.wp.pl/?adr=http%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Ftool.html&amp;sid=733</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="024511.html">[jdev] sasl digest-response
+</A></li>
+	<LI>Next message: <A HREF="024489.html">[jdev] sasl digest-response
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24487">[ date ]</a>
+              <a href="thread.html#24487">[ thread ]</a>
+              <a href="subject.html#24487">[ subject ]</a>
+              <a href="author.html#24487">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

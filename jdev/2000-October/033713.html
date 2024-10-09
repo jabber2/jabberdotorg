@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Karma and Jabber 1.2 RC
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Karma%20and%20Jabber%201.2%20RC&In-Reply-To=%3C20001030140317.D2779%40Flint.digix.dyndns.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="033709.html">
+   <LINK REL="Next"  HREF="033726.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Karma and Jabber 1.2 RC</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Karma%20and%20Jabber%201.2%20RC&In-Reply-To=%3C20001030140317.D2779%40Flint.digix.dyndns.org%3E"
+       TITLE="[JDEV] Karma and Jabber 1.2 RC">keith at digix.dyndns.org
+       </A><BR>
+    <I>Mon Oct 30 13:03:17 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="033709.html">[JDEV] Karma and Jabber 1.2 RC
+</A></li>
+        <LI>Next message: <A HREF="033726.html">[JDEV] Karma and Jabber 1.2 RC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33713">[ date ]</a>
+              <a href="thread.html#33713">[ thread ]</a>
+              <a href="subject.html#33713">[ subject ]</a>
+              <a href="author.html#33713">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&lt;snip/&gt;
+&gt;<i> to a file.  The file contained lots of messages saying that the two sockets
+</I>&gt;<i> involved in the message
+</I>&gt;<i> exchanges were &quot;out of karma&quot;.  No data transfer was taking place at all at
+</I>&gt;<i> this point!
+</I>
+well, they will still exchange data, only *slowly*.. the karma system is an i/o rate limiting system, to prevent users from sending too much data to fast.. by default, it will allow up to 5.5K of data to be sent in 2 seconds, or a sustained rate of 1K/2sec.. when you get the &quot;out of karma&quot; message, you will only be allowed to send data about 1.5K every 10 seconds... since you broke the rate limits..
+
+&gt;<i> There is a document describing karma in the docs directory in the
+</I>&gt;<i> jabber_1.2RC package.  
+</I>&gt;<i> Apparently karma is a flow-control mechanism imposed on socket connections
+</I>&gt;<i> from the client.
+</I>
+Yeah, this document is pretty up to date, and i believe explains all the configurable &quot;knobs&quot; for karma control...
+
+&lt;snip/&gt;
+&gt;<i> Karma is used in the pthsock code contained in the Jabber_1.2RC package.
+</I>
+Just as an FYI, karma will be moving into libjabber, as soon as the API becomes solid.
+
+&lt;snip/&gt;
+&gt;<i> I did find a setting that got around
+</I>&gt;<i> my problem but is it the correct
+</I>&gt;<i> solution?
+</I>
+Yes, you did find the correct solution.. setting &lt;dec/&gt; to 0 will disable karma, since it will never decline any.
+
+&gt;<i> o  I tried various karma configuration settings, like raising the max to 100
+</I>&gt;<i> or so.  Some of these attempts
+</I>&gt;<i>    resulted in Jabber 1.2 exiting (no core dump, just an exit or an abort)
+</I>&gt;<i> when I ran my client tests.
+</I>
+That's interesting.. can you give me the values that are causing the server to crash? (it should always be core dumping if it's related to karma.. there are no exit calls in there) -- check your 'ulimit -c' to see if you can produce a core file.. if it returns 0, enter 'ulimit -c unlimited' at the shell prompt.
+
+&gt;<i> What is the intent of karma and its use?  Should I somehow compute an
+</I>
+as i mentioned above, it limits the ammount of data a &quot;malicious&quot; user can send at a time, to flood the server, or another user.  it's an i/o limiter.
+
+&gt;<i> expected maximum throughput
+</I>&gt;<i> and derive a set of karma values and then recompile the source to reflect
+</I>&gt;<i> this instead of just turning it off?
+</I>
+karma can be configured from your jabberd config file, under either the pthsock_client or pthsock_server config sections.
+
+&gt;<i> Is Karma going to be used in 1.3 when you shift to pthreads (I presume you
+</I>&gt;<i> guys mean GNU pthreads?)?
+</I>
+Yes, karma will be used in 1.3+ versions of the server, as it is an important part of scalability, and to some extent abuse limiting... it is not dependant on pth, or the pthsock component -- (the pthsock component will survive the move to pthreads by the way, just may get a new name *g*)
+
+&gt;<i> What are the possible range of values for the various karma settings in the
+</I>&gt;<i> Jabber.xml file?
+</I>
+there is no exeption on the range of values, which is probably why you got it to core.  however, some values when put in will not function properly, or the way you expect.. (like setting max less than zero).
+
+Keith Minkler
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="033709.html">[JDEV] Karma and Jabber 1.2 RC
+</A></li>
+	<LI>Next message: <A HREF="033726.html">[JDEV] Karma and Jabber 1.2 RC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33713">[ date ]</a>
+              <a href="thread.html#33713">[ thread ]</a>
+              <a href="subject.html#33713">[ subject ]</a>
+              <a href="author.html#33713">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

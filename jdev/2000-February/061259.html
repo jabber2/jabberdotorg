@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] scaling a single server?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20scaling%20a%20single%20server%3F&In-Reply-To=%3C00d401bf6f53%24a1bc1590%240203010a%40webmessenger.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="061254.html">
+   <LINK REL="Next"  HREF="061261.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] scaling a single server?</H1>
+    <B>Stanislav Angelov</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20scaling%20a%20single%20server%3F&In-Reply-To=%3C00d401bf6f53%24a1bc1590%240203010a%40webmessenger.com%3E"
+       TITLE="[JDEV] scaling a single server?">stanjo at mailandnews.com
+       </A><BR>
+    <I>Fri Feb  4 15:05:54 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="061254.html">[JDEV] scaling a single server?
+</A></li>
+        <LI>Next message: <A HREF="061261.html">[JDEV] scaling a single server?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61259">[ date ]</a>
+              <a href="thread.html#61259">[ thread ]</a>
+              <a href="subject.html#61259">[ subject ]</a>
+              <a href="author.html#61259">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I don't know what the limitation of Linux for the sockets are, but the
+absolute limitation is 64k since the port value is 2 bytes wide. So, with
+TCP/IP you cannot have more then 64k connections (this is a theoretical
+maximum, in reality more limitations apply) even if you have a
+server-machine that can handle the load.
+
+Also consider this: it is typical for IM systems to have many users
+connected to the server who do but not generating any traffic. It is natural
+for the people to stay online just in case somebody wants to talk to them.
+So, a very typical scenario for an IM server is to have thousands of users
+staying passively online, taking up socket connections and not generating
+any messages. You may end up with a server that processes nearly no data,
+but all its resources are exhausted because of the users connected.
+
+I strongly recommend connectionless protocols and UDP!
+
+Regards,
+Stanislav
+
+
+----- Original Message -----
+From: &quot;Jacob O'Reilly&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jacob at clear.net.nz</A>&gt;
+To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Sent: Thursday, February 03, 2000 9:27 PM
+Subject: Re: [JDEV] scaling a single server?
+
+
+&gt;<i> I can't give you any idea about scalability of Jabber, but I do know that
+</I>&gt;<i> the number of sockets a process can have open is tunable in the kernel.  I
+</I>&gt;<i> don't know for Linux (as opposed to the commercial Unices I've used)
+</I>whether
+&gt;<i> that is a socket specific parameter or just a factor of NFILE.  I imagine
+</I>&gt;<i> that with that many users tho., a fair few parameters might need to be
+</I>&gt;<i> changed.
+</I>&gt;<i>
+</I>&gt;<i> One of the things I've seen software do to scale better (to thousands of
+</I>&gt;<i> concurrent users) is to use the UDP protocol -- and maintain the idea of a
+</I>&gt;<i> connection at an application layer.  This doesn't provide for the simplest
+</I>&gt;<i> coding, but given that your average user may not act to cause any traffic
+</I>&gt;<i> very often at all, it provides the least load on the server machine (in
+</I>&gt;<i> terms of kernel/network resources anyway).
+</I>&gt;<i>
+</I>&gt;<i> It seems to me that a system of tiering connections through to a server
+</I>&gt;<i> would provide the most scalability.  Can etherx run on a different machine
+</I>&gt;<i> from the Jabber server?
+</I>&gt;<i>
+</I>&gt;<i> -- Jacob.
+</I>&gt;<i>
+</I>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Russell Nelson &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nelson at crynwr.com</A>&gt;
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> Date: Friday, 4 February 2000 09:48
+</I>&gt;<i> Subject: [JDEV] scaling a single server?
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &gt;I've got a customer with 25 lakh users.  In case you're not familiar
+</I>&gt;<i> &gt;with the units they use in India (I wasn't), 1 lakh == 10,000.  They
+</I>&gt;<i> &gt;also comma-ize in an original and inventive manner, so they have
+</I>&gt;<i> &gt;2,50,000 users.  I'm trying to convince them NOT to implement a
+</I>&gt;<i> &gt;proprietary system.  This should not be impossible since they have
+</I>&gt;<i> &gt;developed a predilection to Open Source solutions.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;They want to add all 25 lakh users to Jabber all at once, and announce
+</I>&gt;<i> &gt;it.  Clearly there is not going to be a ramp-up period to give them
+</I>&gt;<i> &gt;time to gain experience with Jabber.  They need to know that it will
+</I>&gt;<i> &gt;scale from the get-go.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;Obviously this is OS dependent.  My customer is running Redhat 6.1 on
+</I>&gt;<i> &gt;a machine with 18GB of hard drive and 1GB of memory.  Those values
+</I>&gt;<i> &gt;should not be the constraint.  I'm more concerned with the number of
+</I>&gt;<i> &gt;sockets that can be open at any one time.  If Linux has a limit of
+</I>&gt;<i> &gt;1,000 sockets, and they have (they estimate) 25 thousand users online
+</I>&gt;<i> &gt;at any one time, that means they need 25 servers.  This is double-plus
+</I>&gt;<i> &gt;ungood.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;Does anyone have any experience with how big a single Jabber server
+</I>&gt;<i> &gt;can scale?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;--
+</I>&gt;<i> &gt;-russ nelson &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sig at russnelson.com</A>&gt;  <A HREF="http://russnelson.com">http://russnelson.com</A>
+</I>&gt;<i> &gt;Crynwr sells support for free software  | PGPok | &quot;Ask not what your
+</I>&gt;<i> country
+</I>&gt;<i> &gt;521 Pleasant Valley Rd. | +1 315 268 1925 voice | can force other people
+</I>to
+&gt;<i> &gt;Potsdam, NY 13676-3213  | +1 315 268 9201 FAX   | do for you...&quot;  -Perry
+</I>M.
+&gt;<i> &gt;
+</I>&gt;<i> &gt;_______________________________________________
+</I>&gt;<i> &gt;jdev mailing list
+</I>&gt;<i> &gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt;<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="061254.html">[JDEV] scaling a single server?
+</A></li>
+	<LI>Next message: <A HREF="061261.html">[JDEV] scaling a single server?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61259">[ date ]</a>
+              <a href="thread.html#61259">[ thread ]</a>
+              <a href="subject.html#61259">[ subject ]</a>
+              <a href="author.html#61259">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

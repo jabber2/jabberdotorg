@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Questions on the protocol
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Questions%20on%20the%20protocol&In-Reply-To=%3CPine.LNX.4.10.9908242153080.6803-100000%40lor.jeremie.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="059904.html">
+   <LINK REL="Next"  HREF="059907.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Questions on the protocol</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Questions%20on%20the%20protocol&In-Reply-To=%3CPine.LNX.4.10.9908242153080.6803-100000%40lor.jeremie.com%3E"
+       TITLE="[JDEV] Questions on the protocol">jeremie at jabber.org
+       </A><BR>
+    <I>Tue Aug 24 22:34:21 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="059904.html">[JDEV] Questions on the protocol
+</A></li>
+        <LI>Next message: <A HREF="059907.html">[JDEV] Questions on the protocol
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59905">[ date ]</a>
+              <a href="thread.html#59905">[ thread ]</a>
+              <a href="subject.html#59905">[ subject ]</a>
+              <a href="author.html#59905">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> Some question that has arisen during my work with the protocol.
+</I>&gt;<i> They're not very pressing, just my musings and some unclear issues.
+</I>&gt;<i> 
+</I>&gt;<i> 1. Are we allowed to put subsessions within a session? Eg
+</I>
+Nope... that would and could really complicate things(recursive xml
+definition), and I don't see the use, but any client is free to create
+multiple seperate sessions to a server at any time if there was a need for
+it.
+
+&gt;<i> 2. We should stipulate that the &lt;login&gt;&lt;user&gt;&lt;/user&gt;&lt;/login&gt; always
+</I>&gt;<i>    contains the user's whole address including domain. This would make
+</I>&gt;<i>    it possible to create transparent proxies.
+</I>
+Excellent idea!  I can't see any drawbacks with this approach either,
+great!
+
+&gt;<i> 3. Current examples enters addresses for other transports as
+</I>&gt;<i>    <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">12341424 at ICQ.</A> I'd like to propose the less ambiguous form
+</I>&gt;<i>    icq:12312313. This will take care of the fact that someone else may
+</I>&gt;<i>    come up with the same scheme as we have. Of course, pedants may use
+</I>&gt;<i>    jabber:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at blah.org.</A> Incidentally, we now have a subset uf the URI
+</I>&gt;<i>    standard. 
+</I>&gt;<i> 
+</I>&gt;<i>    This will conflict with current description which allows special
+</I>&gt;<i>    characters in the ID. These should then be escaped in accordance
+</I>&gt;<i>    with URI standard.
+</I>
+There's a major problem with that approach, and the problem is that the
+server would have to &quot;know&quot; where the ICQ transport is.  As it stands now,
+the ICQ transport could be foobar.server.com and nobody would know the
+difference.  You could layer that on and say icq:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">12345 at server.com</A>, but why
+even have the distinction between different addresses?
+
+Also, we wouldn't have any way of knowing all the possible transports out
+there and specifying them, there will likely be third party services that
+put up a special closed service on their server, and this should be
+transparent to the end user, just <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">blah at service.com.</A>
+
+Pure and absolute transparency is one of the essential goals of Jabber,
+there shouldn't be any way of distingushing the type of user from the
+address.
+
+&gt;<i> 4. According to various example docs (eg
+</I>&gt;<i>    docs.jabber.org/overview.html) the sender's server is responsible
+</I>&gt;<i>    for storing messages until recipient is back online. Like this:
+</I>&gt;<i> 
+</I>&gt;<i>       Message &gt;&gt; Client &gt;&gt; Server &gt;&gt; Offline storage
+</I>&gt;<i> 
+</I>&gt;<i>    Rather than:
+</I>&gt;<i> 
+</I>&gt;<i>       Message &gt;&gt; Client &gt;&gt; Server &gt;&gt; Server &gt;&gt; Offline storage
+</I>&gt;<i> 
+</I>&gt;<i>    Is this how we want it?
+</I>
+The docs are wrong, everything is stored offline on the recipients server,
+sorry about the confusion!
+
+&gt;<i> 5. Overview says:
+</I>&gt;<i> 
+</I>&gt;<i>    Each &quot;user&quot; has multiple &quot;sessions&quot; 
+</I>&gt;<i>        Every connection to a Jabber server can be &quot;addressed&quot;
+</I>&gt;<i>        uniquely. This allows every user to connect multiple times, or
+</I>&gt;<i>        use their account from
+</I>&gt;<i>        several locations(home and work), and still be able to
+</I>&gt;<i>        send/recieve messages at any one of the locations uniquely. 
+</I>&gt;<i> 
+</I>&gt;<i>    How is this identification/addressing done? If a user is running
+</I>&gt;<i>    two different sessions, which one do we send status &amp; messages to?
+</I>
+Every session is uniquely identified by the combination of the users
+address and the nickname they choose for that session, so I might be:
+  nick=&quot;work&quot; user=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jer at jeremie.com</A>&quot;
+and
+  nick=&quot;server shell&quot; user=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jer at jeremie.com</A>&quot;
+which would be two unique sessions.  That's why you can specify nick=&quot;&quot; in
+to tags.
+
+If there are multiple sessions and no nick is specified, it will be up to
+the module to decide based on user preferences, but it will likely go to
+the session with the highest priority.
+
+&gt;<i> 6. Receipts and confirmations. The current protocol examples does not
+</I>&gt;<i>    include any mechanisms for receipts or confirmations that an XML
+</I>&gt;<i>    fragment has been received. Is this intentional?
+</I>
+Yes, it's intentional.  There is a whole slew of features including and
+related to this, receipts, unique ids, server tracking, date/timestamping,
+and more.  There are quite a few different ideas I've had along these
+lines, and I'm sure others have had some too.  It's been my goal to
+produce a working platform that provides the core functionality, and then
+we can all start experimenting with different ways of layering on this
+&quot;higher&quot; level functionality.
+
+So I'd say these things will and must come, but we need a working platform
+to experiment with them first :)  So in a few weeks after 0.7 is making
+considerable progress I'll toss out a few ideas again...
+
+Jer
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="059904.html">[JDEV] Questions on the protocol
+</A></li>
+	<LI>Next message: <A HREF="059907.html">[JDEV] Questions on the protocol
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59905">[ date ]</a>
+              <a href="thread.html#59905">[ thread ]</a>
+              <a href="subject.html#59905">[ subject ]</a>
+              <a href="author.html#59905">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

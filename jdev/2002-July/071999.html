@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Namespaces vs. Attributes
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Namespaces%20vs.%20Attributes&In-Reply-To=%3C3D326A4E.40303%40akuma.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="071998.html">
+   <LINK REL="Next"  HREF="072000.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Namespaces vs. Attributes</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Namespaces%20vs.%20Attributes&In-Reply-To=%3C3D326A4E.40303%40akuma.org%3E"
+       TITLE="[JDEV] Namespaces vs. Attributes">mass at akuma.org
+       </A><BR>
+    <I>Mon Jul 15 01:23:10 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="071998.html">[JDEV] Namespaces vs. Attributes
+</A></li>
+        <LI>Next message: <A HREF="072000.html">[JDEV] Namespaces vs. Attributes
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71999">[ date ]</a>
+              <a href="thread.html#71999">[ thread ]</a>
+              <a href="subject.html#71999">[ subject ]</a>
+              <a href="author.html#71999">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Ari Johnson wrote:
+
+&gt;<i>Looking at the jabberd code, it does indeed treat these as xmlns and
+</I>&gt;<i>xmlns:stream attributes on the element.  Can anyone explain the reasoning
+</I>&gt;<i>behind this method, or if a fix might be possible without severely
+</I>&gt;<i>injuring the Jabber server itself?  I really don't want to have to
+</I>&gt;<i>redesign my project around an incorrect subset of the XML standard if I
+</I>&gt;<i>can avoid it.  Thanks.
+</I>&gt;<i>
+</I>This (together with the 'jabber:server' / 'jabber:component:accept' 
+namespace usage) would be rather difficult to fix at this point without 
+breaking interoperability with nearly every client, server, and server 
+component - many of these use custom parsers which do not have any 
+support for namespaces, and rely on a particular prefix just like the 
+open-source server.
+
+Another problem is the way data gets multiplexed and demuxed throughout 
+the server.  A single inter-server connection will represent a subset of 
+users, and this requires the appropriate portions of those 'user' 
+documents to be represented in the 'inter-server' document.
+
+Currently, first-level elements are treated as independant sub-documents 
+when being routed, because namespaces are ignored - namespaces are the 
+only construct which really requires this subset to be dependant on its 
+ancestors. The sub-documents (&quot;XML chunks&quot;) are simply assumed to have a 
+set of namespaces required by the base document - any other declared 
+namespaces are not added to the opposite document for correctness. For 
+proper namespace support, all first-level elements would need to be 
+reprocessed at some level to make them suitable for importing into a new 
+document.
+
+In short, I don't think it is really anything that can be cleverly 
+hacked in. Either a lot of things will break, or a lot of logic will 
+need to be added for supporting legacy clients/servers. It has been off 
+and on the roadmap for the open-source server, but I don't believe it 
+will ever be changed/fixed until someone who actually cares decides to 
+change/fix it.
+
+-David Waite
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="071998.html">[JDEV] Namespaces vs. Attributes
+</A></li>
+	<LI>Next message: <A HREF="072000.html">[JDEV] Namespaces vs. Attributes
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71999">[ date ]</a>
+              <a href="thread.html#71999">[ thread ]</a>
+              <a href="subject.html#71999">[ subject ]</a>
+              <a href="author.html#71999">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

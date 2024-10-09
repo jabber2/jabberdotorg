@@ -1,0 +1,397 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber Server faild in testing
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20Server%20faild%20in%20testing&In-Reply-To=%3C3A55D49F.FDE9CC70%40jabber.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034748.html">
+   <LINK REL="Next"  HREF="034749.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber Server faild in testing</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20Server%20faild%20in%20testing&In-Reply-To=%3C3A55D49F.FDE9CC70%40jabber.com%3E"
+       TITLE="[JDEV] Jabber Server faild in testing">dwaite at jabber.com
+       </A><BR>
+    <I>Fri Jan  5 08:05:19 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034748.html">[JDEV] Jabber Server faild in testing
+</A></li>
+        <LI>Next message: <A HREF="034749.html">[JDEV] Jabber Server faild in testing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34751">[ date ]</a>
+              <a href="thread.html#34751">[ thread ]</a>
+              <a href="subject.html#34751">[ subject ]</a>
+              <a href="author.html#34751">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Just brief observations:
+
+first, try removing this line:
+
+   &lt;host&gt;&lt;jabberd:cmdline flag=&quot;h&quot;/&gt;&lt;/host&gt;
+
+If you do not specify a server on the command-line, it will insert a null host tag, meaning that the session manager should consider all traffic as local. The
+session manager is probably what is crashing, due to this.
+
+Also, you may wish to remove this line as well:
+
+    &lt;host&gt;192.168.0.2&lt;/host&gt;
+
+Jabber is a DNS-based system, and thus you should use DNS names and not IPs on the server. Simple solution if you do not have a local DNS server is to modify
+/etc/hosts on all the systems (even windows systems have this file)
+
+- David Waite
+
+Gang Liu wrote:
+
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i>         I run jabber 1.2 in my linux box which is redhat 6.1. I setup jabberd with jpolld succefully.Jabberd is pre-compiled downloaded from jabber.org.
+</I>&gt;<i>         I do tests to see how stable the jabberd is. But the linux box crashed in my tests.There is some information about jabber and linux.
+</I>&gt;<i>         Thank you for your help.
+</I>&gt;<i>
+</I>&gt;<i> [<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at dev</A> /]# uname -a
+</I>&gt;<i> Linux dev.vista.internal 2.2.16 #5 Sat Dec 2 23:01:23 CST 2000 i686 unknown
+</I>&gt;<i>
+</I>&gt;<i> [<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at dev</A> /]# ulimit -a
+</I>&gt;<i> core file size (blocks)  1000000
+</I>&gt;<i> data seg size (kbytes)   unlimited
+</I>&gt;<i> file size (blocks)       unlimited
+</I>&gt;<i> max memory size (kbytes) unlimited
+</I>&gt;<i> stack size (kbytes)      8192
+</I>&gt;<i> cpu time (seconds)       unlimited
+</I>&gt;<i> max user processes       2045
+</I>&gt;<i> pipe size (512 bytes)    8
+</I>&gt;<i> open files               8192
+</I>&gt;<i> virtual memory (kbytes)  2105343
+</I>&gt;<i>
+</I>&gt;<i> last information about jabber:
+</I>&gt;<i>
+</I>&gt;<i> 1. top message
+</I>&gt;<i>  10:55pm  up  9:28,  2 users,  load average: 1.57, 0.86, 0.37
+</I>&gt;<i> 42 processes: 36 sleeping, 6 running, 0 zombie, 0 stopped
+</I>&gt;<i> CPU states: 59.2% user, 21.1% system,  0.0% nice, 19.5% idle
+</I>&gt;<i> Mem:   63268K av,  62244K used,   1024K free,   1980K shrd,   1308K buff
+</I>&gt;<i> Swap: 265032K av,  31304K used, 233728K free                  1768K cached
+</I>&gt;<i>
+</I>&gt;<i>   PID USER     PRI  NI  SIZE  RSS SHARE STAT  LIB %CPU %MEM   TIME COMMAND
+</I>&gt;<i>   620 jabber    19   0 26276  14M   460 R       0 41.3 23.8   3:35 jabberd
+</I>&gt;<i>   622 jabber    11   0 49648  36M   392 R       0 29.3 59.1   1:43 jpolld
+</I>&gt;<i>   896 root       2   0   184  120    80 R       0  5.6  0.1   0:22 simulator
+</I>&gt;<i>
+</I>&gt;<i> 2. simulator output msg
+</I>&gt;<i> OUT: 30208 msgs, 511 new in 4 secs 71532 bytes = 17883 bytes/sec
+</I>&gt;<i>  368 users connected
+</I>&gt;<i>  369 users connected
+</I>&gt;<i>  370 users connected
+</I>&gt;<i> OUT: 30720 msgs, 511 new in 3 secs 72307 bytes = 24102 bytes/sec
+</I>&gt;<i>  371 users connected
+</I>&gt;<i>  372 users connected
+</I>&gt;<i>  373 users connected
+</I>&gt;<i>
+</I>&gt;<i> 3. jabber error.log
+</I>&gt;<i> 20010105T07:44:46: [warn] (192.168.0.2): xdb_file failed to open file ./spool/19
+</I>&gt;<i> 2.168.0.2/r1365.xml: No such file or directory
+</I>&gt;<i> 20010105T07:44:46: [warn] (192.168.0.2): xdb_file failed to open file ./spool/19
+</I>&gt;<i> 2.168.0.2/r1202.xml: No such file or directory
+</I>&gt;<i> 20010105T07:44:48: [warn] (192.168.0.2): xdb_file failed to open file ./spool/19
+</I>&gt;<i> 2.168.0.2/r2911.xml: No such file or directory
+</I>&gt;<i> 20010105T07:44:50: [warn] (192.168.0.2): xdb_file failed to open file ./spool/19
+</I>&gt;<i> 2.168.0.2/r2699.xml: No such file or directory
+</I>&gt;<i> 20010105T07:44:50: [warn] (192.168.0.2): xdb_file failed to open file ./spool/19
+</I>&gt;<i> 2.168.0.2/r3014.xml: No such file or directory
+</I>&gt;<i> 20010105T07:44:50: [warn] (192.168.0.2): xdb_file failed to open file ./spool/19
+</I>&gt;<i> 2.168.0.2/r1672.xml: No such file or directory
+</I>&gt;<i> 20010105T07:44:52: [warn] (192.168.0.2): xdb_file failed to open file ./spool/19
+</I>&gt;<i> 2.168.0.2/r1272.xml: No such file or directory
+</I>&gt;<i> 20010105T07:44:52: [warn] (192.168.0.2): xdb_file failed to open file ./spool/19
+</I>&gt;<i> 2.168.0.2/r3908.xml: No such file or directory
+</I>&gt;<i> 20010105T14:47:22: [warn] (-internal): Packet Delivery Failed, invalid packet, d
+</I>&gt;<i> ropping &lt;route type='error' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1026 at c2s</A>/142175880'/&gt;
+</I>&gt;<i>
+</I>&gt;<i> 4. /var/log/message
+</I>&gt;<i> Jan  5 22:27:46 dev named[399]: XSTATS 978704866 978672466 RR=75 RNXD=9 RFwdR=38
+</I>&gt;<i>  RDupR=10 RFail=0 RFErr=0 RErr=0 RAXFR=0 RLame=0 ROpts=0 SSysQ=19 SAns=592 SFwdQ
+</I>&gt;<i> =32 SDupQ=39 SErr=0 RQ=632 RIQ=0 RFwdQ=0 RDupQ=10 RTCP=0 SFwdR=38 SFail=0 SFErr=
+</I>&gt;<i> 0 SNaAns=589 SNXD=481
+</I>&gt;<i> Jan  5 22:46:41 dev PAM_pwdb[860]: (login) session opened for user liugang by (u
+</I>&gt;<i> id=0)
+</I>&gt;<i> Jan  5 22:46:49 dev PAM_pwdb[875]: (su) session opened for user root by liugang(
+</I>&gt;<i> uid=501)
+</I>&gt;<i> Jan  5 22:52:03 dev named[399]: unapproved query from [61.141.229.8].137 for &quot;PN
+</I>&gt;<i> PDATA.vista&quot;
+</I>&gt;<i> Jan  5 22:53:03 dev named[399]: unapproved query from [61.141.229.8].137 for &quot;PN
+</I>&gt;<i> PDATA.vista&quot;
+</I>&gt;<i> Jan  5 22:55:03 dev last message repeated 2 times
+</I>&gt;<i> Jan  5 23:09:56 dev syslogd 1.3-3: restart.
+</I>&gt;<i> Jan  5 23:09:56 dev syslog: syslogd startup succeeded
+</I>&gt;<i> Jan  5 23:09:56 dev syslog: klogd startup succeeded
+</I>&gt;<i> Jan  5 23:09:56 dev kernel: klogd 1.3-3, log source = /proc/kmsg started.
+</I>&gt;<i> Jan  5 23:09:57 dev kernel: Inspecting /boot/System.map-2.2.16
+</I>&gt;<i> Jan  5 23:09:57 dev kernel: Loaded 6189 symbols from /boot/System.map-2.2.16.
+</I>&gt;<i> Jan  5 23:09:57 dev kernel: Symbols match kernel version 2.2.16.
+</I>&gt;<i> Jan  5 23:09:57 dev kernel: No module symbols loaded.
+</I>&gt;<i> Jan  5 23:09:57 dev kernel: Linux version 2.2.16 (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at dev.vista.internal</A>) (gcc
+</I>&gt;<i> version egcs-2.91.66 19990314/Linux (egcs-1.1.2 release)) #5 Sat Dec
+</I>&gt;<i>
+</I>&gt;<i> 5. jabber.xml
+</I>&gt;<i> &lt;jabber&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;!--
+</I>&gt;<i>   This is the Jabber Server configuration file.
+</I>&gt;<i>   The file is broken into different sections based on the services being managed by jabberd, the server daemon.
+</I>&gt;<i>   Most of the important sections are commented on and easy to modify, full instructions are contained at <A HREF="http://docs.jabber.org/.">http://docs.jabber.org/.</A>
+</I>&gt;<i>   When you see a tag like &quot;jabberd:cmdline&quot;, it's automatically replaced on startup with the command line flag to jabberd.
+</I>&gt;<i>   --&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;!-- This section is for the session manager, the most important component within the server. --&gt;
+</I>&gt;<i>   &lt;service id=&quot;sessions&quot;&gt;
+</I>&gt;<i>
+</I>&gt;<i>     &lt;!--
+</I>&gt;<i>     Change hostname below to something other than &quot;localhost&quot;, or use the &quot;jabberd -h hostname&quot; command line flag.
+</I>&gt;<i>     Multiple &lt;host&gt;...&lt;/host&gt; entries are allowed, each one is a seperate virtual server.
+</I>&gt;<i>     --&gt;
+</I>&gt;<i>     &lt;host&gt;dev.vista.internal&lt;/host&gt;
+</I>&gt;<i>     &lt;host&gt;192.168.0.2&lt;/host&gt;
+</I>&gt;<i>     &lt;host&gt;&lt;jabberd:cmdline flag=&quot;h&quot;/&gt;&lt;/host&gt;
+</I>&gt;<i>
+</I>&gt;<i>     &lt;!-- This is the custom configuration section for the session manager. --&gt;
+</I>&gt;<i>     &lt;jsm xmlns=&quot;jabber:config:jsm&quot;&gt;
+</I>&gt;<i>
+</I>&gt;<i>       &lt;info&gt;
+</I>&gt;<i>         &lt;name&gt;Jabber Server&lt;/name&gt;
+</I>&gt;<i>         &lt;description&gt;A Jabber Server!&lt;/description&gt;
+</I>&gt;<i>         &lt;url&gt;<A HREF="http://foo.bar/&lt;/url">http://foo.bar/&lt;/url</A>&gt;
+</I>&gt;<i>       &lt;/info&gt;
+</I>&gt;<i>
+</I>&gt;<i>       &lt;register&gt;
+</I>&gt;<i>         &lt;instructions&gt;Choose a username and password to register with this server.&lt;/instructions&gt;
+</I>&gt;<i>         &lt;name/&gt;&lt;email/&gt;
+</I>&gt;<i>       &lt;/register&gt;
+</I>&gt;<i>
+</I>&gt;<i>       &lt;agents&gt;
+</I>&gt;<i>
+</I>&gt;<i>         &lt;!-- This is the default agent for the master jabber user directory, this section can be duplicated for additional user custom/company directories. --&gt;
+</I>&gt;<i>         &lt;agent jid=&quot;users.jabber.org&quot;&gt;
+</I>&gt;<i>           &lt;name&gt;Jabber User Directory&lt;/name&gt;
+</I>&gt;<i>           &lt;description&gt;You may register and create a public searchable profile, and search for other registered Jabber users.&lt;/description&gt;
+</I>&gt;<i>           &lt;service&gt;jud&lt;/service&gt;
+</I>&gt;<i>           &lt;register/&gt;
+</I>&gt;<i>           &lt;search/&gt;
+</I>&gt;<i>         &lt;/agent&gt;
+</I>&gt;<i>
+</I>&gt;<i>         &lt;!-- These are just examples, you will receive instructions on what to place here when you install a real agent.
+</I>&gt;<i>         &lt;agent jid=&quot;aim.jabber.org&quot;&gt;
+</I>&gt;<i>           &lt;name&gt;AIM Transport&lt;/name&gt;
+</I>&gt;<i>           &lt;description&gt;This is the AIM Transport&lt;/description&gt;
+</I>&gt;<i>           &lt;transport&gt;AIM/AOL ScreenName&lt;/transport&gt;
+</I>&gt;<i>           &lt;service&gt;aim&lt;/service&gt;
+</I>&gt;<i>           &lt;register/&gt;
+</I>&gt;<i>         &lt;/agent&gt;
+</I>&gt;<i>         &lt;agent jid=&quot;icq.jabber.org&quot;&gt;
+</I>&gt;<i>           &lt;name&gt;ICQ Transport&lt;/name&gt;
+</I>&gt;<i>           &lt;description&gt;This is the ICQ Transport&lt;/description&gt;
+</I>&gt;<i>           &lt;transport&gt;ICQ#&lt;/transport&gt;
+</I>&gt;<i>           &lt;service&gt;icq&lt;/service&gt;
+</I>&gt;<i>           &lt;register/&gt;
+</I>&gt;<i>         &lt;/agent&gt;
+</I>&gt;<i>         --&gt;
+</I>&gt;<i>         &lt;!-- This is OK, config two --&gt;
+</I>&gt;<i>         &lt;agent jid=&quot;conference.vista.internal&quot;&gt;
+</I>&gt;<i>           &lt;name&gt;Group Conferencing&lt;/name&gt;
+</I>&gt;<i>           &lt;description&gt;You can create and participate in private chatrooms.&lt;/description&gt;
+</I>&gt;<i>           &lt;service&gt;conference.vista.internal&lt;/service&gt;
+</I>&gt;<i>           &lt;groupchat/&gt;
+</I>&gt;<i>           &lt;register/&gt;
+</I>&gt;<i>         &lt;/agent&gt;
+</I>&gt;<i>
+</I>&gt;<i>       &lt;/agents&gt;
+</I>&gt;<i>
+</I>&gt;<i>       &lt;!-- Session log file --&gt;
+</I>&gt;<i>       &lt;log&gt;
+</I>&gt;<i>         &lt;file&gt;session.log&lt;/file&gt;
+</I>&gt;<i>         &lt;type&gt;session&lt;/type&gt;
+</I>&gt;<i>       &lt;/log&gt;
+</I>&gt;<i>
+</I>&gt;<i>       &lt;!-- List of IDs with administrative access, all will receive administrator messages
+</I>&gt;<i>       &lt;admin&gt;
+</I>&gt;<i>         &lt;read&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">support at localhost</A>&lt;/read&gt;
+</I>&gt;<i>         &lt;write&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">admin at localhost</A>&lt;/write&gt;
+</I>&gt;<i>       &lt;/admin&gt;
+</I>&gt;<i>       --&gt;
+</I>&gt;<i>
+</I>&gt;<i>       &lt;!-- Server version update notification, set to the server name so that all administrators (above) will be notified, or set to any ID
+</I>&gt;<i>       &lt;update&gt;&lt;jabberd:cmdline flag=&quot;h&quot;/&gt;&lt;/update&gt; --&gt;
+</I>&gt;<i>
+</I>&gt;<i>     &lt;/jsm&gt;
+</I>&gt;<i>
+</I>&gt;<i>     &lt;!-- This section dynamically loads the session manager, remove or comment out modules to disable them. --&gt;
+</I>&gt;<i>     &lt;load main=&quot;jsm&quot;&gt;
+</I>&gt;<i>       &lt;jsm&gt;./jsm.so&lt;/jsm&gt;
+</I>&gt;<i>       &lt;mod_echo&gt;./jsm.so&lt;/mod_echo&gt;
+</I>&gt;<i>       &lt;mod_roster&gt;./jsm.so&lt;/mod_roster&gt;
+</I>&gt;<i>       &lt;mod_time&gt;./jsm.so&lt;/mod_time&gt;
+</I>&gt;<i>       &lt;mod_vcard&gt;./jsm.so&lt;/mod_vcard&gt;
+</I>&gt;<i>       &lt;mod_version&gt;./jsm.so&lt;/mod_version&gt;
+</I>&gt;<i>       &lt;mod_announce&gt;./jsm.so&lt;/mod_announce&gt;
+</I>&gt;<i>       &lt;mod_agents&gt;./jsm.so&lt;/mod_agents&gt;
+</I>&gt;<i>       &lt;mod_admin&gt;./jsm.so&lt;/mod_admin&gt;
+</I>&gt;<i>       &lt;mod_private&gt;./jsm.so&lt;/mod_private&gt;
+</I>&gt;<i>       &lt;mod_filter&gt;./jsm.so&lt;/mod_filter&gt;
+</I>&gt;<i>       &lt;mod_presence&gt;./jsm.so&lt;/mod_presence&gt;
+</I>&gt;<i>       &lt;mod_auth_plain&gt;./jsm.so&lt;/mod_auth_plain&gt;
+</I>&gt;<i>       &lt;mod_auth_digest&gt;./jsm.so&lt;/mod_auth_digest&gt;
+</I>&gt;<i>       &lt;mod_auth_0k&gt;./jsm.so&lt;/mod_auth_0k&gt;
+</I>&gt;<i>       &lt;mod_register&gt;./jsm.so&lt;/mod_register&gt;
+</I>&gt;<i>       &lt;mod_log&gt;./jsm.so&lt;/mod_log&gt;
+</I>&gt;<i>     &lt;/load&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;!-- This component handles all data storage, using the filesystem. --&gt;
+</I>&gt;<i>   &lt;xdb id=&quot;xdb&quot;&gt;
+</I>&gt;<i>     &lt;host/&gt;
+</I>&gt;<i>     &lt;load&gt;&lt;xdb_file&gt;./xdb_file.so&lt;/xdb_file&gt;&lt;/load&gt;
+</I>&gt;<i>     &lt;xdb_file xmlns=&quot;jabber:config:xdb_file&quot;&gt;&lt;spool&gt;./spool&lt;/spool&gt;&lt;/xdb_file&gt;
+</I>&gt;<i>   &lt;/xdb&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;!-- Service to manage incoming client socket connections. --&gt;
+</I>&gt;<i>   &lt;service id=&quot;c2s&quot;&gt;
+</I>&gt;<i>          &lt;host&gt;jpolld.192.168.0.2&lt;/host&gt;
+</I>&gt;<i>          &lt;accept&gt;
+</I>&gt;<i>              &lt;ip/&gt;
+</I>&gt;<i>              &lt;port&gt;5225&lt;/port&gt;
+</I>&gt;<i>              &lt;secret&gt;secret&lt;/secret&gt;
+</I>&gt;<i>          &lt;/accept&gt;
+</I>&gt;<i>    &lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;!-- Default server logging component, copies to a file and STDERR. --&gt;
+</I>&gt;<i>   &lt;log id='logger'&gt;
+</I>&gt;<i>     &lt;host/&gt;
+</I>&gt;<i>     &lt;format&gt;%d: [%t] (%h): %s&lt;/format&gt;
+</I>&gt;<i>     &lt;file&gt;error.log&lt;/file&gt;
+</I>&gt;<i>     &lt;stderr/&gt;
+</I>&gt;<i>   &lt;/log&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;!-- The following two services are for handling server to server traffic. --&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;!-- External asychronous DNS resolver --&gt;
+</I>&gt;<i>   &lt;service id=&quot;dnsrv&quot;&gt;
+</I>&gt;<i>     &lt;host/&gt;
+</I>&gt;<i>     &lt;load&gt;&lt;dnsrv&gt;./dnsrv.so&lt;/dnsrv&gt;&lt;/load&gt;
+</I>&gt;<i>     &lt;dnsrv xmlns=&quot;jabber:config:dnsrv&quot;&gt;
+</I>&gt;<i>         &lt;resend service=&quot;_jabber._tcp&quot;&gt;s2s&lt;/resend&gt; &lt;!-- for supporting SRV records --&gt;
+</I>&gt;<i>         &lt;resend&gt;s2s&lt;/resend&gt;
+</I>&gt;<i>     &lt;/dnsrv&gt;
+</I>&gt;<i>   &lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;!-- Handles server connections and dialback hostname verification --&gt;
+</I>&gt;<i>   &lt;service id=&quot;s2s&quot;&gt;
+</I>&gt;<i>     &lt;load&gt;&lt;pthsock_server&gt;./pthsock_server.so&lt;/pthsock_server&gt;&lt;/load&gt;
+</I>&gt;<i>     &lt;pthssock xmlns='jabber:config:pth-ssock'&gt;
+</I>&gt;<i>       &lt;legacy/&gt; &lt;!-- allow communication with old 1.0-style servers --&gt;
+</I>&gt;<i>       &lt;rate time=&quot;5&quot; points=&quot;25&quot;/&gt; &lt;!-- 25 connects in 5 seconds limit (per IP) --&gt;
+</I>&gt;<i>       &lt;!-- Karma based I/O rate limits, per connection, set a little higher for server connections --&gt;
+</I>&gt;<i>       &lt;karma&gt;
+</I>&gt;<i>         &lt;max&gt;30&lt;/max&gt;
+</I>&gt;<i>         &lt;inc&gt;2&lt;/inc&gt;
+</I>&gt;<i>         &lt;dec&gt;1&lt;/dec&gt;
+</I>&gt;<i>         &lt;restore&gt;15&lt;/restore&gt;
+</I>&gt;<i>         &lt;penalty&gt;-1&lt;/penalty&gt;
+</I>&gt;<i>       &lt;/karma&gt;
+</I>&gt;<i>       &lt;!-- Use these to listen on particular addresses and/or ports.
+</I>&gt;<i>       &lt;ip port=&quot;7000&quot;/&gt;
+</I>&gt;<i>       &lt;ip port=&quot;5269&quot;&gt;127.0.0.1&lt;/ip&gt;
+</I>&gt;<i>       --&gt;
+</I>&gt;<i>     &lt;/pthssock&gt;
+</I>&gt;<i>   &lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;!-- GroupChat --&gt;
+</I>&gt;<i>   &lt;!-- This is OK, config one --&gt;
+</I>&gt;<i>   &lt;!--
+</I>&gt;<i>   &lt;service id=&quot;groupchat_transport&quot;&gt;
+</I>&gt;<i>     &lt;host&gt;conference.vista.internal&lt;/host&gt;
+</I>&gt;<i>     &lt;exec&gt;jabberd -c ./jabberd_groupchat.xml&lt;/exec&gt;
+</I>&gt;<i>   &lt;/service&gt;
+</I>&gt;<i>   --&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;!-- This is OK, config two --&gt;
+</I>&gt;<i>   &lt;service id=&quot;conference.vista.internal&quot;&gt;
+</I>&gt;<i>     &lt;load&gt;&lt;groupchat&gt;./groupchat.so&lt;/groupchat&gt;&lt;/load&gt;
+</I>&gt;<i>     &lt;config xmlns=&quot;jabberd:gc:config&quot;&gt;
+</I>&gt;<i>     &lt;history&gt;20&lt;/history&gt;
+</I>&gt;<i>     &lt;/config&gt;
+</I>&gt;<i>   &lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i>   &lt;log id=&quot;gc_log&quot;&gt;
+</I>&gt;<i>     &lt;file&gt;./grouchat.log&lt;/file&gt;
+</I>&gt;<i>   &lt;/log&gt;
+</I>&gt;<i>
+</I>&gt;<i> &lt;/jabber&gt;
+</I>&gt;<i>
+</I>&gt;<i> 6. simulate.cfg
+</I>&gt;<i> server=192.168.0.2
+</I>&gt;<i> port=5222
+</I>&gt;<i> users=512
+</I>&gt;<i> message_delay=2
+</I>&gt;<i> login_delay=1
+</I>&gt;<i> login_duration=300000
+</I>&gt;<i> user_letter=r
+</I>&gt;<i> message=Hi There
+</I>&gt;<i> message=How are you?
+</I>&gt;<i> message=This is a long, \
+</I>&gt;<i>         multiline message.
+</I>&gt;<i> message=This message should be quite a bit longer than the others. \
+</I>&gt;<i>         I dunno why it should be longer, I just decided that it should, \
+</I>&gt;<i>         that's all!
+</I>&gt;<i> message=This is another short message!
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i>
+</I>&gt;<i> - Lg
+</I>&gt;<i>
+</I>&gt;<i> 2001-1-5 23:02:09
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i>   Gang Liu / Vista Team / ShenZhen City / China
+</I>&gt;<i>   Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gang_l at 21cn.com</A> &amp; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gang_l at hotmail.com</A>
+</I>&gt;<i>   Phone: +86 13923425035
+</I>&gt;<i>   ICQ: 70670666   Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gang_l at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034748.html">[JDEV] Jabber Server faild in testing
+</A></li>
+	<LI>Next message: <A HREF="034749.html">[JDEV] Jabber Server faild in testing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34751">[ date ]</a>
+              <a href="thread.html#34751">[ thread ]</a>
+              <a href="subject.html#34751">[ subject ]</a>
+              <a href="author.html#34751">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

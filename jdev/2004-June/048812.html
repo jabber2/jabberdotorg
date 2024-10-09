@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] TOR 0.0.7. is out: an anonymizing overlay network for	TCP-p2p - was: private routing 
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20TOR%200.0.7.%20is%20out%3A%20an%20anonymizing%20overlay%20network%20for%0A%09TCP-p2p%20-%20was%3A%20private%20routing%20&In-Reply-To=%3C4E15F46D.41366A53.00175F91%40aol.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="048811.html">
+   <LINK REL="Next"  HREF="048815.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] TOR 0.0.7. is out: an anonymizing overlay network for	TCP-p2p - was: private routing </H1>
+    <B>Euseval at aol.com</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20TOR%200.0.7.%20is%20out%3A%20an%20anonymizing%20overlay%20network%20for%0A%09TCP-p2p%20-%20was%3A%20private%20routing%20&In-Reply-To=%3C4E15F46D.41366A53.00175F91%40aol.com%3E"
+       TITLE="[jdev] TOR 0.0.7. is out: an anonymizing overlay network for	TCP-p2p - was: private routing ">Euseval at aol.com
+       </A><BR>
+    <I>Fri Jun  4 12:53:58 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="048811.html">[jdev] Implementation of &lt;history&gt; portion of MUC spec
+</A></li>
+        <LI>Next message: <A HREF="048815.html">[jdev] Passing binary data (.wav, .jpg, .gif,	etc...) to chat/IM clients ...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48812">[ date ]</a>
+              <a href="thread.html#48812">[ thread ]</a>
+              <a href="subject.html#48812">[ subject ]</a>
+              <a href="author.html#48812">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Tor 0.0.7.: an anonymizing overlay network for TCP-p2p 
+
+<A HREF="http://archives.seul.org/or/dev/Jun-2004/msg00002.html">http://archives.seul.org/or/dev/Jun-2004/msg00002.html</A>
+
+
+Tor 0.0.7.: an anonymizing overlay network for TCP-p2p an alternative to six/four-network.
+
+Tor is a connection-based low-latency anonymous communication system which addresses many flaws in the original onion
+routing design. 
+
+
+<A HREF="http://freehaven.net/tor/">http://freehaven.net/tor/</A>
+
+
+The simple version: Tor provides a distributed network of servers (&quot;onion routers&quot;). Users bounce their TCP streams (web traffic,
+FTP, SSH, etc.) around the routers. This makes it hard for recipients, observers, and even the onion routers themselves to track the
+source of the stream.
+
+The complex version: Onion Routing is a connection-oriented anonymizing communication service. Users choose a source-routed
+path through a set of nodes, and negotiate a &quot;virtual circuit&quot; through the network, in which each node knows its predecessor and
+successor, but no others. Traffic flowing down the circuit is unwrapped by a symmetric key at each node, which reveals the
+downstream node.
+
+ Why should I use Tor?
+
+
+Individuals need Tor for privacy: 
+
+     Privacy in web browsing -- both from the remote website (so it can't track and sell your behavior), and similarly from your local ISP. 
+     Safety in web browsing: if your local government doesn't approve of its citizens visiting certain websites, they may monitor the sites and put readers on a list of
+     suspicious persons. 
+     Circumvention of local censorship: connect to resources (news sites, instant messaging, etc) that are restricted from your ISP/school/company/government. 
+     Socially sensitive communication: chat rooms and web forums for rape and abuse survivors, or people with illnesses. 
+
+Journalists and NGOs need Tor for safety: 
+
+     Allowing dissidents and whistleblowers to communicate more safely. 
+     Censorship-resistant publication and reading, e.g. of news sites not permitted in some countries. 
+     Allowing their agents to check back with their home website while they're in a foreign country, without notifying everybody nearby that they're working with
+     that organization. 
+
+Companies need Tor for business security: 
+
+     Competitive analysis: browse the competition's website safely. 
+     Protecting collaborations of sensitive business units or partners. 
+     Protecting procurement suppliers or patterns. 
+     Putting the &quot;P&quot; back in &quot;VPN&quot;: traditional VPNs reveal the exact amount and frequency of communication. Which locations have employees working late?
+     Which locations have employees consulting job-hunting websites? Which research groups are communicating with your company's patent lawyers? 
+
+Governments need Tor for traffic-analysis-resistant communication: 
+
+     Open source intelligence gathering (hiding individual analysts is not enough -- the organization itself may be sensitive). 
+     Defense in depth on open and classified networks -- networks with a million users (even if they're all cleared) can't be made safe just by hardening them to
+     external threat. 
+     Dynamic and semi-trusted international coalitions: the network can be shared without revealing the existence or amount of communication between all parties. 
+     Networks partially under known hostile control: to block communications, the enemy must take down the whole network. 
+     Politically sensitive negotations. 
+     Road warriors. 
+     Protecting procurement patterns. 
+     Anonymous tips. 
+
+Law enforcement needs Tor for safety: 
+
+     Allowing anonymous tips or crime reporting 
+     Allowing agents to observe websites without notifying them that they're being observed (or, more broadly, without having it be an official visit from law
+     enforcement). 
+     Surveillance and honeypots (sting operations) 
+
+Does the idea of sharing the Tor network with all of these groups bother you? It shouldn't -- you need them for your security.
+
+
+
+Changes so far in 0.0.7: - 4. June 2004
+
+  o Fixes for crashes and other obnoxious bugs:
+    - Fix an epipe bug: sometimes when directory connections failed
+      to connect, we would give them a chance to flush before closing
+      them.
+    - When we detached from a circuit because of resolvefailed, we
+      would immediately try the same circuit twice more, and then
+      give up on the resolve thinking we'd tried three different
+      exit nodes.
+    - Limit the number of intro circuits we'll attempt to build for a
+      hidden service per 15-minute period.
+    - Check recommended-software string *early*, before actually parsing
+      the directory. Thus we can detect an obsolete version and exit,
+      even if the new directory format doesn't parse.
+  o Fixes for security bugs:
+    - Remember which nodes are dirservers when you startup, and if a
+      random OR enables his dirport, don't automatically assume he's
+      a trusted dirserver.
+  o Other bugfixes:
+    - Directory connections were asking the wrong poll socket to
+      start writing, and not asking themselves to start writing.
+    - When we detached from a circuit because we sent a begin but
+      didn't get a connected, we would use it again the first time;
+      but after that we would correctly switch to a different one.
+    - Stop warning when the first onion decrypt attempt fails; they
+      will sometimes legitimately fail now that we rotate keys.
+    - Override unaligned-access-ok check when $host_cpu is ia64 or
+      arm. Apparently they allow it but the kernel whines.
+    - Dirservers try to reconnect periodically too, in case connections
+      have failed.
+    - Fix some memory leaks in directory servers.
+    - Allow backslash in Win32 filenames.
+    - Made Tor build complain-free on FreeBSD, hopefully without
+      breaking other BSD builds. We'll see.
+    - Check directory signatures based on name of signer, not on whom
+      we got the directory from. This will let us cache directories more
+      easily.
+  o Features:
+    - Doxygen markup on all functions and global variables.
+    - Make directory functions update routerlist, not replace it. So
+      now directory disagreements are not so critical a problem.
+    - Remove the upper limit on number of descriptors in a dirserver's
+      directory (not that we were anywhere close).
+    - Allow multiple logfiles at different severity ranges.
+    - Allow *BindAddress to specify &quot;:port&quot; rather than setting *Port
+      separately. Allow multiple instances of each BindAddress config
+      option, so you can bind to multiple interfaces if you want.
+    - Allow multiple exit policy lines, which are processed in order.
+      Now we don't need that huge line with all the commas in it.
+    - Enable accept/reject policies on SOCKS connections, so you can bind
+      to 0.0.0.0 but still control who can use your OP.
+
+<A HREF="http://www.zeropaid.com/news/articles/auto/05312004k.php">http://www.zeropaid.com/news/articles/auto/05312004k.php</A>
+
+
+<A HREF="http://freehaven.net/tor/">http://freehaven.net/tor/</A>
+
+tor is a _fully_ anonymous transparent tunneling network for TCP
+with onion routing, and at connection layer OpenSSL, just like
+six/four-p2p, but with N onions instead of 2 now with the version 0.0.7 !. You fire it up and use it as a SOCKS
+proxy (configuration and updates are internal) and that's it.
+
+And it has a better routing strategy than six/four, a message
+always reaches its destination, it's anonymous-remailer like which
+means the only tradeoff is that all OR-servers (they are like
+trusted peers and you need to get your cert signed just like in
+six/four to run one) must be tcp-linked together, not a big one...
+
+The coolest thing are &quot;location hidden services&quot; which means free
+publishing. You &quot;publish&quot; a local directory on your HD and mark it
+as location hidden services and run a normal (non-trusted) server.
+With a freenet-like type of advertising protocol, others can
+access it from anywhere else, if they know the URL. So you can also
+publish in tor without anyone knowing where or who it's coming from...
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="048811.html">[jdev] Implementation of &lt;history&gt; portion of MUC spec
+</A></li>
+	<LI>Next message: <A HREF="048815.html">[jdev] Passing binary data (.wav, .jpg, .gif,	etc...) to chat/IM clients ...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48812">[ date ]</a>
+              <a href="thread.html#48812">[ thread ]</a>
+              <a href="subject.html#48812">[ subject ]</a>
+              <a href="author.html#48812">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

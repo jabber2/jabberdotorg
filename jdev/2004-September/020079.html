@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Proposal for a solution to transport rosters
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Proposal%20for%20a%20solution%20to%20transport%20rosters&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="020078.html">
+   <LINK REL="Next"  HREF="020080.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Proposal for a solution to transport rosters</H1>
+    <B>James Bunton</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Proposal%20for%20a%20solution%20to%20transport%20rosters&In-Reply-To="
+       TITLE="[jdev] Proposal for a solution to transport rosters">james at delx.cjb.net
+       </A><BR>
+    <I>Fri Sep  3 22:23:48 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="020078.html">[jdev] ANNOUNCE: PyMSNt 0.6.1
+</A></li>
+        <LI>Next message: <A HREF="020080.html">[jdev] Proposal for a solution to transport rosters
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20079">[ date ]</a>
+              <a href="thread.html#20079">[ thread ]</a>
+              <a href="subject.html#20079">[ subject ]</a>
+              <a href="author.html#20079">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>This a proposal for a quick and easy solution to the current issues with 
+transport rosters.
+
+The current situation is:
+* A user with an account on a legacy service will have a legacy contact list 
+that will need to be synchronised with their Jabber contact list by the 
+gateway
+* The current way that gateways do this is illegal according to XMPP. It also 
+no longer works in Jabberd2s3 (and it shouldn't, it's a security flaw when it 
+does)
+* There are no existing protocols for shared roster groups, and we need a way 
+for this to work quickly, so that users can see their legacy contacts without 
+hassle.
+* A user should not have to authorise all their legacy system contacts on 
+Jabber. They have already authorised them on the legacy service.
+
+
+My proposal is an extension to the presence subscription packets (allowed by 
+XMPP) which will work in such a way that existing clients will still function 
+(the user will just have to authorise all their contacts again), but modified 
+clients would work securely without bothering the user.
+
+
+An example flow with a modified client follows:
+
+A user has been using MSN Messenger, and has acquired a large contact list on 
+this service. The user has heard about Jabber and wants to try it out. They 
+still want to be able to talk to their MSN friends, so they will use the MSN 
+transport on their server (host.com)
+
+* User registers with msn.host.com
+* The transport obtains the user's MSN contacts from MSN servers and begins 
+the import process
+* The transport sends a series of packets looking like this:
+&lt;presence from=&quot;user%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hotmail.com at msn.host.com</A>&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host.com</A>&quot; 
+type=&quot;subscribe&quot;/&gt;
+&lt;import/&gt;
+&lt;/presence&gt;
+
+* The user's client notices the import tag, and checks to see if the user's 
+contact list contains msn.host.com. It does, so the client then prompts the 
+user in order to double-check that this entity is allowed to send roster 
+imports to the user's contact list.
+* The user gives the affirmative. From now on all presence type=subscribe 
+packets originating from the msn.host.com domain will be automatically 
+authorised by the client.
+* The effect for the user is that by registering with the MSN gateway, and 
+answering yes to one prompt, they now have their entire MSN contact list 
+available.
+
+
+If the user had been using an existing client, they would need to answer yes 
+to every subscription request, but they will still receive their contact list 
+at the end of it. That's the advantage of using this method, any client will 
+support it, and all can be easily modified.
+
+
+Rules for the client:
+* If the client receives a presence subscription packet with an import tag, 
+but the originating domain is not on the user's contact list the client MUST 
+ignore the import tag, and treat the presence packet as normal. (this 
+prevents arbitrary Jabber users from auto-authorising themselves)
+* A client MUST check with the user at least once before auto-importing any 
+contacts. The client SHOULD remember the user's answer for the duration of 
+the session and MAY choose to remember the answer forever. (If the latter, 
+then the transport will be able to transparently keep the user's contact list 
+in sync, if for example it is modified using another legacy client)
+* A client MUST NOT auto-authorise any contacts that do not have an import tag
+
+
+
+
+Rules for the transport:
+* The transport SHOULD send a presence packet with an import tag if the user 
+has already authorised that contact on the legacy service.
+* The transport MUST NOT send a presence packet with an import tag in any 
+other case (eg, when a legacy user requests subscription for the first time)
+
+
+
+
+Comment/Questions?
+
+---
+
+James
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="020078.html">[jdev] ANNOUNCE: PyMSNt 0.6.1
+</A></li>
+	<LI>Next message: <A HREF="020080.html">[jdev] Proposal for a solution to transport rosters
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20079">[ date ]</a>
+              <a href="thread.html#20079">[ thread ]</a>
+              <a href="subject.html#20079">[ subject ]</a>
+              <a href="author.html#20079">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

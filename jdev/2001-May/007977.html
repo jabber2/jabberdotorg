@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] AIX 4.3.3 compilation of 1.4.1 server.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20AIX%204.3.3%20compilation%20of%201.4.1%20server.&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007966.html">
+   <LINK REL="Next"  HREF="007978.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] AIX 4.3.3 compilation of 1.4.1 server.</H1>
+    <B>David Clissold</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20AIX%204.3.3%20compilation%20of%201.4.1%20server.&In-Reply-To="
+       TITLE="[JDEV] AIX 4.3.3 compilation of 1.4.1 server.">cliss at austin.ibm.com
+       </A><BR>
+    <I>Wed May 23 12:10:22 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007966.html">[JDEV] AIX 4.3.3 compilation of 1.4.1 server.
+</A></li>
+        <LI>Next message: <A HREF="007978.html">[JDEV] jabber prepended to domain name
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7977">[ date ]</a>
+              <a href="thread.html#7977">[ thread ]</a>
+              <a href="subject.html#7977">[ subject ]</a>
+              <a href="author.html#7977">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Yes, I've seen the same error, initially with jabber 1.4.0 and pth 1.3.7.
+(Check the mail archives for mid-March; I posted info on what I was
+seeing at the time, but there were no responses.)
+I've tried with 1.4.1 as well, and again with the new version 1.4.0
+of pth instead of the 1.3.7 that is provided along with jabber.
+The dbx traceback is a little different with the new 1.4.0 libpth, but
+failure occurs in the same place:
+
+Floating point exception in swapcontext at 0xd0251348
+0xd0251348 (swapcontext+0x2c) d9c90070       stfd   fr14,0x70(r9)
+(dbx) t
+swapcontext() at 0xd0251348
+pth_yield() at 0xd0ffb330
+pth_wait() at 0xd0ffd8a4
+mtq_main(0x20104e98) at 0x10038d14
+pth_spawn_trampoline() at 0xd0ffab94
+_uc_trampoline() at 0xd0251208
+(dbx)
+
+And when I look at the registers, I see $fr14: 0x0000000000000000
+though I don't know why that is a problem, unless 0x70(r9) is
+a bad memory location.  ($r9:0x2010589c).
+
+I am at something of a loss here.
+The last log entry I get is different than yours, however:
+mio.c:507 calling the connect handler for mio object 200F11C8
+is *always* the last jabber log entry for me.  I've never
+seen it after the &quot;MIO is starting up&quot; message like your entry.
+
+Someone else had posted notes about the server dying after a SIGUSR2;
+I did try their workarounds even though I never saw a SIGUSR2 -- so
+not surprisingly, it didn't help (different problem, I'm sure).  I would
+love to get past this error, and am willing to experiment with it if you
+or anyone have any ideas.
+
+(I was able to debug it a little easier via dbx by switching from gcc
+to the VAC c compiler, though I had to do a little source patching.  The
+error happens with either compiler.  But it goes through the same pth code
+many times before it actually happens -- it isn't consistent).
+----
+David Clissold
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cliss at austin.ibm.com</A>
+
+
+&gt;<i>When I try to run the 1.4.1 jabber server on AIX 4.3.3, I get the
+</I>&gt;<i>following message:
+</I>&gt;<i>
+</I>&gt;<i>$ ./jabberd/jabberd -D
+</I>&gt;<i>Wed May 23 10:09:14 2001  mio.c:568 MIO is starting up
+</I>&gt;<i>Signal 65535
+</I>&gt;<i>$
+</I>&gt;<i>
+</I>&gt;<i>I looked at the core with dbx and get a whole page. I think the line that
+</I>&gt;<i>sticks out the most is this:
+</I>&gt;<i>
+</I>&gt;<i>Floating point exception in swapcontext at 0xd0262918
+</I>&gt;<i>0xd0262918 (swapcontext+0x2c) d9c90070       stfd   fr14,0x70(r9)
+</I>&gt;<i>
+</I>&gt;<i>Has anyone seen this before and came up with a solution? 
+</I>&gt;<i>
+</I>&gt;<i>Thanks!
+</I>&gt;<i>
+</I>&gt;<i>Jonathan Siegle                 Center for Academic Computing
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jsiegle at psu.edu</A>                 Penn State University
+</I>&gt;<i>814-865-5840                    University Park, Pa 16802
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007966.html">[JDEV] AIX 4.3.3 compilation of 1.4.1 server.
+</A></li>
+	<LI>Next message: <A HREF="007978.html">[JDEV] jabber prepended to domain name
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7977">[ date ]</a>
+              <a href="thread.html#7977">[ thread ]</a>
+              <a href="subject.html#7977">[ subject ]</a>
+              <a href="author.html#7977">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

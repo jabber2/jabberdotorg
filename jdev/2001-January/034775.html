@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Idea: Jabber for instrument control
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Idea%3A%20Jabber%20for%20instrument%20control&In-Reply-To=%3CmS/14FOWH-001gDES%40mail.airmail.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034771.html">
+   <LINK REL="Next"  HREF="034776.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Idea: Jabber for instrument control</H1>
+    <B>mark at mjwilcox.com</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Idea%3A%20Jabber%20for%20instrument%20control&In-Reply-To=%3CmS/14FOWH-001gDES%40mail.airmail.net%3E"
+       TITLE="[JDEV] Idea: Jabber for instrument control">mark at mjwilcox.com
+       </A><BR>
+    <I>Sun Jan  7 16:44:17 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034771.html">[JDEV] Idea: Jabber for instrument control
+</A></li>
+        <LI>Next message: <A HREF="034776.html">[JDEV] UNSUBSCRIBE
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34775">[ date ]</a>
+              <a href="thread.html#34775">[ thread ]</a>
+              <a href="subject.html#34775">[ subject ]</a>
+              <a href="author.html#34775">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>How about as an option for the images to use the new Scalable 
+Vector Graphics (SVG) image standard. One of the benefits of 
+SVG is that it's an XML based format. 
+
+The Apache group (courtesy of work donated by Sun) has an 
+excellent Java API and viewer called Batik (xml.apache.org/batik).  
+I've run it on Linux and it works pretty cool (don't know if does 
+animations yet).
+
+And I already think Batik has code to transform from SVG to JPEG 
+&amp; PNG. Thus you could use Jabber as your transport mechanism 
+(and you could just use normal Jabber messages, don't need 
+OOB). Then either use an SVG viewer or convert to another format 
+for Web display.
+
+There's also a SVG Perl module (sorry don't have URL). 
+
+ Adobe has an SVG viewer for Windows and Mac at 
+<A HREF="http://www.adobe.com/svg/viewer/install/beta.htm.">http://www.adobe.com/svg/viewer/install/beta.htm.</A>
+
+The SVG homepage is at:
+<A HREF="http://www.w3.org/Graphics/SVG/">http://www.w3.org/Graphics/SVG/</A>
+
+Good luck,
+
+Mark
+
+
+On 6 Jan 01, at 10:40, A.M. Kuchling wrote:
+
+&gt;<i> I'm wondering about using the Jabber framework for instrument control,
+</I>&gt;<i> and would like to get some advice on the design.
+</I>&gt;<i> 
+</I>&gt;<i> As part of my work, I've been working on a system for controlling a
+</I>&gt;<i> microscope over the Internet; see
+</I>&gt;<i> &lt;URL:<A HREF="http://www.mems-exchange.org/software/microscope/">http://www.mems-exchange.org/software/microscope/</A>&gt; for code and
+</I>&gt;<i> details.  While the system does work, it's not very reliable for a few
+</I>&gt;<i> reasons, one of which is that handling both the hardware and TCP/IP
+</I>&gt;<i> connections in one multithreaded process is tricky.  Sometimes the
+</I>&gt;<i> hardware hangs for a second or two, or does something unexpected,
+</I>&gt;<i> which causes a crash or hang.  I'd like to reuse other software in
+</I>&gt;<i> order to avoid having to write and debug a server on my own, and
+</I>&gt;<i> Jabber seems like the best candidate.  I'm thinking of the following
+</I>&gt;<i> arrangement:
+</I>&gt;<i> 
+</I>&gt;<i> * Run a Jabber server on the microscope's computer.
+</I>&gt;<i> 
+</I>&gt;<i> * The process controlling the hardware is also a Jabber client, so it
+</I>&gt;<i>   receives commands through the contents of Jabber messages (perhaps
+</I>&gt;<i>   using SOAP, perhaps some new DTD I'll invent), performs the command,
+</I>&gt;<i>   and returns a message with the new microscope position, settings,
+</I>&gt;<i>   etc.
+</I>&gt;<i> 
+</I>&gt;<i> * Users run client software that also act as Jabber clients, receiving
+</I>&gt;<i>   the special messages from the microscope and displaying them
+</I>&gt;<i>   appropriately.
+</I>&gt;<i> 
+</I>&gt;<i> The big question is how to deal with images?  Some microscopes have
+</I>&gt;<i> slow digital cameras (3 frames per second, max), but some have
+</I>&gt;<i> framegrabbers (30 frames per second).  The jabber:x:oob namespace
+</I>&gt;<i> provides a way to send a URL to be retrieved by the client, but this
+</I>&gt;<i> seems unappealing; the client has to initiate the retrieval of an
+</I>&gt;<i> image, rather than just having it be sent along.  The server would
+</I>&gt;<i> also need to be running another server (HTTP, FTP, or something) in
+</I>&gt;<i> order to let clients retrieve images, which goes against my goal of
+</I>&gt;<i> reducing the complexity of the system.  Images should really be pushed
+</I>&gt;<i> at the client, not pulled by it.  
+</I>&gt;<i> 
+</I>&gt;<i> Images could be base-64 encoded and embedded in Jabber's XML messages,
+</I>&gt;<i> at the cost of increasing image size by 33% and requiring more XML
+</I>&gt;<i> parsing.  (Or perhaps the image data could be embedded in a CDATA
+</I>&gt;<i> section, but character encodings make this seem dodgy.)  Does this
+</I>&gt;<i> seem practical?  Can Jabber servers parse only the headers of messages
+</I>&gt;<i> in order to route them, or does the whole message have to be parsed?
+</I>&gt;<i> Would there be some other way of sending binary files along?
+</I>&gt;<i> 
+</I>&gt;<i> On a related note, can messages be sent to multiple recipients and
+</I>&gt;<i> routed without copying the message more often than is needed?  For
+</I>&gt;<i> example, if client A was connected to server 1 and sent a message to
+</I>&gt;<i> clients B and C, connected to server 2, are the Jabber servers smart
+</I>&gt;<i> enough to send only one copy of the message from server 1 to 2?  And
+</I>&gt;<i> can messages be marked as &quot;bulk&quot;, so the servers can drop them if
+</I>&gt;<i> needed (for example, if a user on a slow connection is using a 30
+</I>&gt;<i> frame/sec microscope, there's no point in forcing every frame at them.
+</I>&gt;<i> 
+</I>&gt;<i> --amk
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+
+Mark Wilcox
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A>
+Got LDAP?
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034771.html">[JDEV] Idea: Jabber for instrument control
+</A></li>
+	<LI>Next message: <A HREF="034776.html">[JDEV] UNSUBSCRIBE
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34775">[ date ]</a>
+              <a href="thread.html#34775">[ thread ]</a>
+              <a href="subject.html#34775">[ subject ]</a>
+              <a href="author.html#34775">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

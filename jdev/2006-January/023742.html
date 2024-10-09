@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> Stream feature negotiation ordering. Was: Re: [jdev] S2S questions	-	from attribute and version support
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Stream%20feature%20negotiation%20ordering.%20Was%3A%20Re%3A%20%5Bjdev%5D%20S2S%20questions%0A%09-%09from%20attribute%20and%20version%20support&In-Reply-To=20060110121409.GA72794%40ik.nu">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="023741.html">
+   <LINK REL="Next"  HREF="023743.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>Stream feature negotiation ordering. Was: Re: [jdev] S2S questions	-	from attribute and version support</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Stream%20feature%20negotiation%20ordering.%20Was%3A%20Re%3A%20%5Bjdev%5D%20S2S%20questions%0A%09-%09from%20attribute%20and%20version%20support&In-Reply-To=20060110121409.GA72794%40ik.nu"
+       TITLE="Stream feature negotiation ordering. Was: Re: [jdev] S2S questions	-	from attribute and version support">stpeter at jabber.org
+       </A><BR>
+    <I>Tue Jan 10 11:24:51 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="023741.html">Stream feature negotiation ordering. Was: Re: [jdev]	S2S	questions - from attribute and version support
+</A></li>
+        <LI>Next message: <A HREF="023743.html">Stream feature negotiation ordering. Was: Re: [jdev] S2S questions	-	from attribute and version support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23742">[ date ]</a>
+              <a href="thread.html#23742">[ thread ]</a>
+              <a href="subject.html#23742">[ subject ]</a>
+              <a href="author.html#23742">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Ralph Meijer wrote:
+&gt;<i> On Fri, Dec 30, 2005 at 08:57:38AM -0700, Peter Saint-Andre wrote:
+</I>&gt;&gt;&gt;&gt;<i>   12. If the TLS negotiation is successful, the initiating entity MUST
+</I>&gt;&gt;&gt;&gt;<i>       continue with SASL negotiation.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> So I infer from the above that any entity that would specify its
+</I>&gt;&gt;&gt;&gt;<i> version to be 1.0 would have support for TLS as well.  And if TLS is
+</I>&gt;&gt;&gt;&gt;<i> done successfully, SASL MUST be done as well.
+</I>&gt;&gt;<i> That is correct.
+</I>&gt;<i> 
+</I>&gt;<i> I want to note here that JEP-0138, Stream Compression, should be done
+</I>&gt;<i> after TLS negotiation. The JEP does not mention that it should also go
+</I>&gt;<i> before SASL but that seems fairly logical.
+</I>&gt;<i> 
+</I>&gt;<i> As we may come up with more and more stream features, it might be good
+</I>&gt;<i> to think about how to do the ordering of steps correctly, before actual
+</I>&gt;<i> XML Stanzas can start to be communicated.
+</I>
+You raise a good point. We need do a better job of defining the order of 
+any stream feature negotiations, and defining exactly what stream 
+feature negotiation is and what it should look like (e.g., one of the 
+implicit rules seems to be &quot;don't use stanzas to negotiate stream 
+features&quot; since stream feature negotiation is seen as a preliminary to 
+sending stanzas).
+
+<A HREF="http://www.jabber.org/registrar/stream-features.html">http://www.jabber.org/registrar/stream-features.html</A> currently lists 8 
+stream features. The RFCs define an ordering for the features defined 
+therein, namely:
+
+1. TLS
+2. SASL
+3. Resource binding
+4. IM session establishment
+
+&gt;<i> And we also seem to have at least one stream feature that works with XML
+</I>&gt;<i> Stanzas themselves, jabber:iq:auth.
+</I>
+Although non-SASL authentication (jabber:iq:auth) is a stream feature, 
+it uses IQ stanzas for the negotiation and essentially it is an older 
+way of doing what the RFCs define in SASL + bind + session. So the 
+following order seems appropriate:
+
+1. TLS
+2. jabber:iq:auth
+
+Normally, however, if channel encryption is desired then clients connect 
+on an old-fashioned SSL port (normally 5223) and do jabber:iq:auth 
+there, rather than doing the TLS upgrade on 5222 and then iq:auth. 
+Though I suppose that nothing really forbids that (except RFC 3920 says 
+to use SASL!).
+
+Similarly, in-band registration (jabber:iq:register) uses IQ stanzas. 
+When it is used to establish an account, it would definitely be 
+completed before SASL because you can't auth if you don't have an 
+account (leaving aside SASL ANONYMOUS for now). So the order would be:
+
+1. TLS
+2. jabber:iq:register
+3. SASL etc. (or jabber:iq:auth)
+
+Advanced message processing is advertised as a stream feature but its 
+use is not negotiated and does not really need to be before sending 
+stanzas (e.g., support for it could be discovered via service discovery 
+and we added the stream feature to JEP-0079 mainly for purposes of 
+potential efficiency). So we don't need to define an order here. (Indeed 
+it could be argued that we don't need a stream feature for this.)
+
+Stream compression is negotiated when you can't set the TLS compression 
+bit for whatever reason. I'd agree with Ralph that negotiating this 
+after TLS and before SASL (or jabber:iq:auth) makes the most sense. So:
+
+1. TLS
+2. Stream compression
+3. SASL etc. (or jabber:iq:auth)
+
+What if you want to do in-band registration and stream compression? I'd say:
+
+1. TLS
+2. Stream compression
+3. jabber:iq:register
+4. SASL etc. (or jabber:iq:auth)
+
+The more stream features we add, the more complex this all becomes. 
+That's one good reason to not define more stream features than we 
+absolutely need. :-)
+
+Perhaps we need a little JEP that specifies the recommended order of 
+negotiation for the stream features in the registry, and we update that 
+JEP whenever we define a new stream feature?
+
+Peter
+
+-- 
+Peter Saint-Andre
+Jabber Software Foundation
+<A HREF="http://www.jabber.org/people/stpeter.shtml">http://www.jabber.org/people/stpeter.shtml</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 3641 bytes
+Desc: S/MIME Cryptographic Signature
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20060110/d79265e9/attachment.bin">https://www.jabber.org/jdev/attachments/20060110/d79265e9/attachment.bin</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="023741.html">Stream feature negotiation ordering. Was: Re: [jdev]	S2S	questions - from attribute and version support
+</A></li>
+	<LI>Next message: <A HREF="023743.html">Stream feature negotiation ordering. Was: Re: [jdev] S2S questions	-	from attribute and version support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23742">[ date ]</a>
+              <a href="thread.html#23742">[ thread ]</a>
+              <a href="subject.html#23742">[ subject ]</a>
+              <a href="author.html#23742">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] GLOOX: BOSH +TLS+ PROXY
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20GLOOX%3A%20BOSH%20%2BTLS%2B%20PROXY&In-Reply-To=%3CE4A787F3C2AB024DBA41CDCD9987AF534FBCC78304%40NDA-HCLT-EVS05.HCLT.CORP.HCL.IN%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089251.html">
+   <LINK REL="Next"  HREF="089253.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] GLOOX: BOSH +TLS+ PROXY</H1>
+    <B>Taranbir Singh - ERS, HCL Tech</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20GLOOX%3A%20BOSH%20%2BTLS%2B%20PROXY&In-Reply-To=%3CE4A787F3C2AB024DBA41CDCD9987AF534FBCC78304%40NDA-HCLT-EVS05.HCLT.CORP.HCL.IN%3E"
+       TITLE="[jdev] GLOOX: BOSH +TLS+ PROXY">Taranbir.Singh at hcl.com
+       </A><BR>
+    <I>Thu Nov 22 14:39:37 UTC 2012</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089251.html">[jdev] GLOOX: BOSH +TLS+ PROXY
+</A></li>
+        <LI>Next message: <A HREF="089253.html">[jdev] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89252">[ date ]</a>
+              <a href="thread.html#89252">[ thread ]</a>
+              <a href="subject.html#89252">[ subject ]</a>
+              <a href="author.html#89252">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks Kevin for the response.
+
+It works with Swiften, but unfortunately the License cost of Swiften is much higher than Gloox :-(
+
+
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">k.i.smith at gmail.com</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">k.i.smith at gmail.com</A>] On Behalf Of Kevin Smith
+Sent: Thursday, November 22, 2012 8:04 PM
+To: Jabber/XMPP software development list; Taranbir Singh - ERS, HCL Tech
+Cc: Anurag Srivastava - ERS, HCL Tech
+Subject: Re: [jdev] GLOOX: BOSH +TLS+ PROXY
+
+On Thu, Nov 22, 2012 at 1:44 PM, Taranbir Singh - ERS, HCL Tech &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Taranbir.Singh at hcl.com</A>&gt; wrote:
+&gt;<i> We want to make GLOOX library to make BOSH+TLS+PROXY Connection.
+</I>&gt;<i> We are trying to make a connection with the combination BOSH +TLS + PROXY. Unfortunately things are not working, I have attached code and logs. Would request you help.
+</I>&gt;<i> Even we are okay to use some other library to make this connection via C++, please suggest.
+</I>
+Hi,
+  Can't help with Gloox, but the equivalent Swiften code ( <A HREF="http://swift.im/swiften">http://swift.im/swiften</A> ) would be (I haven't checked this is exactly correct by compiling it):
+
+&gt;<i> ConnectionTCPClient* tcp_client = new ConnectionTCPClient( 
+</I>&gt;<i> client-&gt;logInstance(), proxy_host, proxy_password);
+</I>&gt;<i> ConnectionHTTPProxy* http_proxy = new ConnectionHTTPProxy(client, 
+</I>&gt;<i> tcp_client, client-&gt;logInstance(),bosh_server,bosh_port);
+</I>&gt;<i> http_proxy-&gt;setProxyAuth(proxy_user,proxy_password);
+</I>&gt;<i> ConnectionTLS* tls_connection= new 
+</I>&gt;<i> ConnectionTLS(http_proxy,client-&gt;logInstance());
+</I>&gt;<i> ConnectionBOSH* bosh_connection = new ConnectionBOSH( client, 
+</I>&gt;<i> tls_connection, client-&gt;logInstance(), bosh_server, xmpp_server);
+</I>&gt;<i> client-&gt;setConnectionImpl( bosh_connection );
+</I>
+#include &lt;Swiften/Swiften.h&gt;
+
+using namespace Swift;
+
+int main(int, char**) {
+SimpleEventLoop eventLoop;
+BoostNetworkFactories networkFactories(&amp;eventLoop);
+Client* client = new Client(&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">me at server.lit</A>&quot;, &quot;mypassword&quot;, networkFactories); /* Substituting the JID and password accordingly.
+*/
+ClientOptions options;
+options.boshURL= URL::fromString(&quot;<A HREF="http://server.lit/http-bind/">http://server.lit/http-bind/</A>&quot;); /* Substituting the correct URL to the BOSH endpoint */ options.boshHTTPConnectProxyURL = URL::fromString(&quot;<A HREF="https://wwwproxy.server.lit:8080/">https://wwwproxy.server.lit:8080/</A>&quot;); /* Substituting the host/port for those of the proxy */ options.boshHTTPConnectProxyAuthID = &quot;proxy username&quot;; /* substituting the user name needed to authenticate with the proxy. Remove this line if the proxy doesn't require authentication */ options.boshHTTPConnectProxyAuthPassword = &quot;proxy password&quot;; /* substituting the user password needed to authenticate with the proxy.
+Remove this line if the proxy doesn't require authentication */
+/* Insert here whatever handlers you want for receiving messages etc.
+- see <A HREF="http://swift.im/swiften/guide/">http://swift.im/swiften/guide/</A> */
+client-&gt;connect(options);
+eventLoop.run();
+return 0;
+}
+
+Hope that helps.
+Kev.
+
+
+::<i>DISCLAIMER::
+</I>----------------------------------------------------------------------------------------------------------------------------------------------------
+
+The contents of this e-mail and any attachment(s) are confidential and intended for the named recipient(s) only.
+E-mail transmission is not guaranteed to be secure or error-free as information could be intercepted, corrupted,
+lost, destroyed, arrive late or incomplete, or may contain viruses in transmission. The e mail and its contents
+(with or without referred errors) shall therefore not attach any liability on the originator or HCL or its affiliates.
+Views or opinions, if any, presented in this email are solely those of the author and may not necessarily reflect the
+views or opinions of HCL or its affiliates. Any form of reproduction, dissemination, copying, disclosure, modification,
+distribution and / or publication of this message without the prior written consent of authorized representative of
+HCL is strictly prohibited. If you have received this email in error please delete it and notify the sender immediately.
+Before opening any email and/or attachments, please check them for viruses and other defects.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089251.html">[jdev] GLOOX: BOSH +TLS+ PROXY
+</A></li>
+	<LI>Next message: <A HREF="089253.html">[jdev] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89252">[ date ]</a>
+              <a href="thread.html#89252">[ thread ]</a>
+              <a href="subject.html#89252">[ subject ]</a>
+              <a href="author.html#89252">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

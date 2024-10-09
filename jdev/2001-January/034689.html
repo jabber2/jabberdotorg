@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] j1.2 on RH 6.2 --??
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20j1.2%20on%20RH%206.2%20--%3F%3F&In-Reply-To=%3C20010102134336.A24549%40blank.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034688.html">
+   <LINK REL="Next"  HREF="034690.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] j1.2 on RH 6.2 --??</H1>
+    <B>Nathan J. Mehl</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20j1.2%20on%20RH%206.2%20--%3F%3F&In-Reply-To=%3C20010102134336.A24549%40blank.org%3E"
+       TITLE="[JDEV] j1.2 on RH 6.2 --??">memory at blank.org
+       </A><BR>
+    <I>Tue Jan  2 12:43:36 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034688.html">[JDEV] j1.2 on RH 6.2 --??
+</A></li>
+        <LI>Next message: <A HREF="034690.html">[JDEV] j1.2 on RH 6.2 --??
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34689">[ date ]</a>
+              <a href="thread.html#34689">[ thread ]</a>
+              <a href="subject.html#34689">[ subject ]</a>
+              <a href="author.html#34689">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>In the immortal words of John Hebert (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">john at vedalabs.com</A>):
+&gt;<i> There is no inetd config associated with jabberd-1.2 in the default
+</I>&gt;<i> install. It could be configured that way, but inetd is normally used for
+</I>&gt;<i> services that are brought up when needed. Since you want jabberd to
+</I>&gt;<i> always be running, you need to start it at boot time with the rest of
+</I>&gt;<i> the init.d scripts. I've configured jabberd to start under
+</I>&gt;<i> /etc/rc.d/init.d/jabberd using jtournier's script, but note that this
+</I>&gt;<i> method is RedHat specific:
+</I>&gt;<i> 
+</I>&gt;<i> #!/bin/sh
+</I>&gt;<i> # Script for starting jabber
+</I>&gt;<i> ###
+</I>&gt;<i> ### 2000 IDEALX S.A.S.
+</I>&gt;<i> ### author <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jtournier at idealx.com</A>
+</I>&gt;<i> ###
+</I>
+As a counter-idea (not that there's anything wrong with the above, but
+as usual there's More Than One Way To Do It), I recommend running
+jabberd under Dan Bernstein's daemontools package:
+
+<A HREF="http://cr.yp.to/daemontools.html">http://cr.yp.to/daemontools.html</A>
+
+Specficially, I use svscan and supervise to ensure that jabberd and
+all of the transport daemons stay up.  I find it especially helpful
+with managing the transports, as some of them will happily drop core
+or otherwise abort if jabberd is restarted; supervise will just keep
+restarting them until jabberd is back.
+
+For a /service/jabberd/run init file, I use:
+
+	#!/bin/sh
+	exec env - PATH=&quot;/usr/local/jabber/bin:$PATH&quot; \
+        	setuidgid jabber \
+        	/usr/local/jabber/jabber-1.2/jabberd/jabberd
+
+For /service/aimtrans/run:
+
+	exec env - PATH=&quot;/usr/local/jabber/bin:$PATH&quot; \
+        	setuidgid jabber \
+        	aimtrans -n aim.example.com \
+                	-e aim.example.com -s yoursecret -p 7009
+
+...adjust paths, ports and secrets to local custom and taste.  You get
+the idea. :)
+
+-n
+
+------------------------------------------------------------&lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">memory at blank.org</A>&gt;
+&lt;sunshine&gt; Dear Future Employer: Who's your daddy? Who's your daddy? I think
+we know. Thanks! $100,000 a year, I'll be there on monday, please.
+                                                                  -chelleMarie
+&lt;<A HREF="http://www.blank.org/memory/">http://www.blank.org/memory/</A>&gt;------------------------------------------------
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034688.html">[JDEV] j1.2 on RH 6.2 --??
+</A></li>
+	<LI>Next message: <A HREF="034690.html">[JDEV] j1.2 on RH 6.2 --??
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34689">[ date ]</a>
+              <a href="thread.html#34689">[ thread ]</a>
+              <a href="subject.html#34689">[ subject ]</a>
+              <a href="author.html#34689">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

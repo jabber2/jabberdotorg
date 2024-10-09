@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] The future of Jabber/XMPP?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20The%20future%20of%20Jabber/XMPP%3F&In-Reply-To=%3CAANLkTik1vy3ucozMf91F0voqaAAPUuXvoeuMKhCnL46d%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088422.html">
+   <LINK REL="Next"  HREF="088423.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] The future of Jabber/XMPP?</H1>
+    <B>Waqas Hussain</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20The%20future%20of%20Jabber/XMPP%3F&In-Reply-To=%3CAANLkTik1vy3ucozMf91F0voqaAAPUuXvoeuMKhCnL46d%40mail.gmail.com%3E"
+       TITLE="[jdev] The future of Jabber/XMPP?">waqas20 at gmail.com
+       </A><BR>
+    <I>Sat Sep 18 20:08:03 CST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088422.html">[jdev] XEP-0115 Caps Verification
+</A></li>
+        <LI>Next message: <A HREF="088423.html">[jdev] Best ways for a JID to advertise what services it uses?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88417">[ date ]</a>
+              <a href="thread.html#88417">[ thread ]</a>
+              <a href="subject.html#88417">[ subject ]</a>
+              <a href="author.html#88417">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Late response. I have acquired this bad habit of forgetting to hit
+send on drafts. This message had been sitting around for 2+ weeks...
+
+On Sat, Aug 28, 2010 at 7:34 AM, Evgeniy Khramtsov &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">xramtsov at gmail.com</A>&gt; wrote:
+&gt;<i> 28.08.2010 02:36, Waqas Hussain wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> 2. A table of local accounts mapped to list of subscriptions. Each
+</I>&gt;&gt;<i> subscription is just two pointers (one to a shared caps hash table,
+</I>&gt;&gt;<i> and one to a JID). 1M * 64 bytes = 64MB (just roughly picked 64
+</I>&gt;&gt;<i> bytes).
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Let me clarify if you don't mind ;) Do you mean 'recipients' table here? If
+</I>&gt;<i> yes, then I have some questions:
+</I>&gt;<i>
+</I>&gt;<i> 1) is it shared/mutable/global table?
+</I>
+It's local to the module. That's to say there's one per-host, and yes
+it's mutable.
+
+&gt;<i> 2) I see only one deletion there, in line 128 of mod_pep.lua (I'm looking at
+</I>&gt;<i> 0.7.0 release). Does that mean recipients[user] is deleted somewhere else
+</I>&gt;<i> when the corresponding user's session terminates?
+</I>
+While subscriptions are deleted, the user's subscription table itself
+isn't deleted. There wasn't much point in deleting it as the overhead
+was very low (typically less than 128 bytes per subscription table). I
+might change that.
+
+&gt;<i> 3) Do you limit the number of recipients you cached for local user?
+</I>
+I'll discuss this below.
+
+&gt;<i>
+</I>&gt;&gt;<i> &#160;3. The caps hash table, mapping caps hashes to a list of +notify
+</I>&gt;&gt;<i> &#160;namespaces.
+</I>&gt;<i>
+</I>&gt;<i> I guess you are talking about hash_map table. Do you care about the size of
+</I>&gt;<i> this table? I don't see any checks in the code :)
+</I>&gt;<i>
+</I>
+No, I don't. This table has an upper bound: It's never greater than
+the maximum number of subscriptions.
+
+&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Regards,
+</I>&gt;<i> Evgeniy Khramtsov, ProcessOne.
+</I>&gt;<i> xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">xram at jabber.ru.</A>
+</I>
+Alright, let's discuss the subscription list and limits.
+
+The main issue you are concerned about is that the list of
+subscriptions is unbounded, and is dependent on a remote server. We
+are not in disagreement over whether the problem exists. I disagree
+with your solution.
+
+Now let's discuss what's wrong with your proposed solution: spam.
+
+In my experience, most users on a given server tend to be offline.
+Most contacts in a given roster tend to be offline. A significant
+portion of online contacts are not interested in PEP. I went ahead and
+gathered some statistics on thiessen.im/org. During the time of the
+test, the number of online resources of remote contacts was typically
+near 20%, and always below 40% of the total number of contacts of all
+online users. This matches what I see in my roster, and what others
+have told me about their's.
+
+60-80% of the stanzas your solution would be sending would be useless.
+Also, when a new user comes online, they don't get older PEP data, do
+they? Or do you resend it each time a contact sends a presence?
+
+A quick and simple fix in my implementation is limiting the number of
+subscribed resources per bare JID. This puts an upper bound on the
+size of all tables, without harming a typical user's experience.
+
+The 'perfect' solution would be smart (PEP-aware) remote stanza
+fan-out. This is something which interests me a lot, and would
+significantly cut down on XMPP traffic.
+
+--
+Waqas Hussain
+</PRE>
+
+
+
+
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088422.html">[jdev] XEP-0115 Caps Verification
+</A></li>
+	<LI>Next message: <A HREF="088423.html">[jdev] Best ways for a JID to advertise what services it uses?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88417">[ date ]</a>
+              <a href="thread.html#88417">[ thread ]</a>
+              <a href="subject.html#88417">[ subject ]</a>
+              <a href="author.html#88417">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

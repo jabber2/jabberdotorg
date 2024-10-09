@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re:Creating a presence server component?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3ACreating%20a%20presence%20server%20component%3F&In-Reply-To=%3C3D5C4973.8050906%40easynet.be%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="072466.html">
+   <LINK REL="Next"  HREF="072517.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re:Creating a presence server component?</H1>
+    <B>Philippe Raxhon</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3ACreating%20a%20presence%20server%20component%3F&In-Reply-To=%3C3D5C4973.8050906%40easynet.be%3E"
+       TITLE="[JDEV] Re:Creating a presence server component?">raxhonp at easynet.be
+       </A><BR>
+    <I>Thu Aug 15 19:38:11 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="072466.html">[JDEV] Re:Creating a presence server component?
+</A></li>
+        <LI>Next message: <A HREF="072517.html">[JDEV] Re:Creating a presence server component?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72516">[ date ]</a>
+              <a href="thread.html#72516">[ thread ]</a>
+              <a href="subject.html#72516">[ subject ]</a>
+              <a href="author.html#72516">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I now remember another solution. In the jsm section of jabber.xml, one 
+can add:
+&lt;archive&gt;
+  &lt;service&gt;myservice.myhost&lt;/service&gt;
+&lt;archive&gt;
+
+given you have defined such a service in the service section of 
+jabber.xml, for instance:
+&lt;service id =&quot;myservice&quot;&gt;
+  &lt;host&gt;myservice.myhost&gt;
+  &lt;accept&gt;
+     &lt;ip&gt;localhost&lt;/ip&gt;
+     &lt;port&gt;5999&lt;/port&gt;
+     &lt;secret&gt;secret&lt;/secret&gt;
+  &lt;/accept&gt;
+&lt;/service&gt;
+
+The accept component (it can be writen in any language and doesn't have 
+to run on the same host) will receive a copy of every message sent by 
+the users. The interesting part is that I think it's easy to hack the 
+mod_log module to &quot;archive&quot; not only the messages, but also the presence 
+or iq.
+
+Please, correct me if I'm wrong.
+
+Jean-Louis Seguineau /EXC/TEC wrote:
+
+&gt;<i>Hey,
+</I>&gt;<i>
+</I>&gt;<i>That's easy ! And it has nothing to do with whatever language you use. It
+</I>&gt;<i>does it requires to write a JSM module as long as your component is only
+</I>&gt;<i>meant to process the received packets and not interfere with the JSM
+</I>&gt;<i>processing. This can be applied to build a kind of packet &quot;sniffer&quot; and
+</I>&gt;<i>allow you to count, record, monitor, etc...
+</I>&gt;<i>
+</I>&gt;<i>You just need to declare a service in your jabber.xml so to receive a copy
+</I>&gt;<i>of all packets going through the server.
+</I>&gt;<i>
+</I>&gt;<i>&lt;service id=&quot;sniffer.myserver&quot;&gt;
+</I>&gt;<i>    &lt;host&gt;myserver&lt;/host&gt;
+</I>&gt;<i>    &lt;host&gt;myjpolld.myserver&lt;/host&gt;
+</I>&gt;<i>    &lt;host&gt;sniffer.myserver&lt;/host&gt;
+</I>&gt;<i>....
+</I>&gt;<i>  plus any aother internal JID that you want to monitor
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>    &lt;accept&gt;
+</I>&gt;<i>        &lt;ip/&gt;
+</I>&gt;<i>        &lt;port&gt;myport&lt;/port&gt;
+</I>&gt;<i>        &lt;secret&gt;secret&lt;/secret&gt;
+</I>&gt;<i>    &lt;/accept&gt;
+</I>&gt;<i>&lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i>Then the sniffer component will receive a copy of all traffic for the
+</I>&gt;<i>&lt;host&gt;s. The component can sit on another server as any component can.
+</I>&gt;<i>
+</I>&gt;<i>There is no way that I jnow of to separate the packets types before they are
+</I>&gt;<i>sent to the component. But you can either make one component per packet type
+</I>&gt;<i>and filter the input, or make a filter component that in turn direct the
+</I>&gt;<i>right packet type to a specific processor component.
+</I>&gt;<i>
+</I>&gt;<i>Hope it helps
+</I>&gt;<i>
+</I>&gt;<i>Jean-Louis
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>----- Original Message -----
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>Message: 3
+</I>&gt;&gt;<i>Date: Sun, 11 Aug 2002 12:48:49 +0200
+</I>&gt;&gt;<i>From: &quot;Sylvain Roberdeau&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sylvain.roberdeau at terravirtual.net</A>&gt;
+</I>&gt;&gt;<i>Organization: Terra Virtual
+</I>&gt;&gt;<i>To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i>Subject: Re: [JDEV] Creating a presence server component?
+</I>&gt;&gt;<i>Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Hi,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>     sorry if I was not clear :)
+</I>&gt;&gt;<i>    I hope to create an &quot;element&quot; for Jabber server which can intercept
+</I>&gt;&gt;<i>&lt;presence&gt;, &lt;message&gt; and &lt;iq&gt; and apply some specific process. For
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>example, log
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>all data with a specific structure, file repartition, SNMP messages,
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>MRTG...
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>    I haven't a good grip on C to build all with this language and I want
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>to
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>split process in a separate Jabberd (to avoid overload)
+</I>&gt;&gt;<i>    The only way if find it's to build a JSM Module which send specific
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>message
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>to a service (write in Java, Perl, Python,...)
+</I>&gt;&gt;<i>    Jabberd -&gt;JSM module -&gt; Service
+</I>&gt;&gt;<i>    The constraint is to create a specific message structure between JSM
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>Module
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>and Service (maybe with &lt;x&gt; namespace).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>    I was looking for an other way :  build a specific service which can
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>receive
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>all blocks in a separate server. I don't kown if it's possible and I guess
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>there
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>are some limitations (presence = avalaible or unavalaible, none other by
+</I>&gt;&gt;<i>example).
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>    If somebody knows an other solution than the first...
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Sylvain
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="072466.html">[JDEV] Re:Creating a presence server component?
+</A></li>
+	<LI>Next message: <A HREF="072517.html">[JDEV] Re:Creating a presence server component?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72516">[ date ]</a>
+              <a href="thread.html#72516">[ thread ]</a>
+              <a href="subject.html#72516">[ subject ]</a>
+              <a href="author.html#72516">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

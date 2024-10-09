@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] dealing with looping subscription establishment
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20dealing%20with%20looping%20subscription%20establishment&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="024844.html">
+   <LINK REL="Next"  HREF="024841.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] dealing with looping subscription establishment</H1>
+    <B>Robert McQueen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20dealing%20with%20looping%20subscription%20establishment&In-Reply-To="
+       TITLE="[jdev] dealing with looping subscription establishment">robert.mcqueen at collabora.co.uk
+       </A><BR>
+    <I>Thu Jun 15 16:02:43 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="024844.html">[jdev] Jabber Error Codes
+</A></li>
+        <LI>Next message: <A HREF="024841.html">[jdev] Tkabber 0.9.9 released
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24839">[ date ]</a>
+              <a href="thread.html#24839">[ thread ]</a>
+              <a href="subject.html#24839">[ subject ]</a>
+              <a href="author.html#24839">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm facing some trouble with my client interoperating with jabberd2.
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest1 at noise</A> and <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest2 at noise</A> are both accounts with empty rosters
+on a jabberd2 server. The logs are from the perspective of colltest1.
+
+When we send an outgoing subscription request. Send:
+&lt;presence type=&quot;subscribe&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest2 at noise</A>&quot;
+id=&quot;msg_18064968_cdc9ed2c_11&quot;/&gt;
+
+The server pushes us the pending roster entry. Receive:
+&lt;iq xmlns='jabber:client' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest1 at noise</A>/Telepathy'
+type='set'&gt;&lt;query xmlns='jabber:iq:roster'&gt;&lt;item ask='subscribe'
+subscription='none' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest2 at noise</A>'/&gt;&lt;/query&gt;&lt;/iq&gt;
+
+The remote client then accepts the request. We get their presence. Receive:
+&lt;presence xmlns='jabber:client' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest1 at noise</A>/Telepathy'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest2 at noise</A>/Gajim' id='16'/&gt;
+
+We get the roster push. Receive:
+&lt;iq xmlns='jabber:client' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest1 at noise</A>/Telepathy'
+type='set'&gt;&lt;query xmlns='jabber:iq:roster'&gt;&lt;item subscription='to'
+jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest2 at noise</A>'/&gt;&lt;/query&gt;&lt;/iq&gt;
+
+And we get the notification of presence=subscribed. Received:
+&lt;presence xmlns='jabber:client' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest2 at noise</A>' id='19'
+type='subscribed' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest1 at noise</A>'/&gt;
+
+Note that these three seems to be in the reverse order to the example in
+the RFC. As detailed in the RFC, we send presence=subscribe as an
+acknowledgement to the presence=subscribed. Send:
+&lt;presence type=&quot;subscribe&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest2 at noise</A>&quot;
+id=&quot;msg_18064968_cdc9ed2c_12&quot;/&gt;
+
+Now the fun starts. jabberd2 doesn't seem to understand this as an
+acknowledgement, but another subscription request. We arrive at the
+unusual state of subscription=to ask=subscribe. Receive:
+&lt;iq xmlns='jabber:client' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest1 at noise</A>/Telepathy'
+type='set'&gt;&lt;query xmlns='jabber:iq:roster'&gt;&lt;item ask='subscribe'
+subscription='to' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest2 at noise</A>'/&gt;&lt;/query&gt;&lt;/iq&gt;
+
+Then the server talks to itself and realises this is silly. Receive:
+&lt;iq xmlns='jabber:client' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest1 at noise</A>/Telepathy'
+type='set'&gt;&lt;query xmlns='jabber:iq:roster'&gt;&lt;item subscription='to'
+jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest2 at noise</A>'/&gt;&lt;/query&gt;&lt;/iq&gt;
+
+Another presence=subscribed. Receive:
+&lt;presence xmlns='jabber:client' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest2 at noise</A>'
+id='msg_18064968_cdc9ed2c_12' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest1 at noise</A>' type='subscribed'/&gt;
+
+And then we get their presence again. Receive:
+&lt;presence xmlns='jabber:client' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest1 at noise</A>/Telepathy'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">colltest2 at noise</A>/Gajim' id='16' /&gt;
+
+Unfortunately, we ack the presence=subscribed with another
+presence=subscribe, and the loop starts again and goes infinitely. This
+doesn't happen on any other XMPP servers I've found.
+
+My first instinct to fix this was not to ack presence=subscribed,
+unsubscribed or unsubscribe unless they actually result in a state
+change against our local idea of subscription states, so the loop can
+only go around once.
+
+This fix does stop the looping, but unfortunately means that on any
+other working server where we get pushed the changed roster item before
+the presence, we won't ack presence sub'd/unsub'd/unsub at all, which
+sucks. I can't ignore the subscription state changes in roster pushes
+because I use the ask=... to know when another resource requested
+authorisation, and I really don't want to start mangling that (working)
+code just for the benefit of jabberd2.
+
+So, how important is it that we send these acks? Does it matter that my
+fix means we don't send them sometimes? Can anyone think of a better
+solution that I've missed?
+
+As a total side point, is there any point acknowledging roster push IQs?
+Most servers I've seen just send the ack back to us, which we then ignore.
+
+Regards,
+Rob
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="024844.html">[jdev] Jabber Error Codes
+</A></li>
+	<LI>Next message: <A HREF="024841.html">[jdev] Tkabber 0.9.9 released
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24839">[ date ]</a>
+              <a href="thread.html#24839">[ thread ]</a>
+              <a href="subject.html#24839">[ subject ]</a>
+              <a href="author.html#24839">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

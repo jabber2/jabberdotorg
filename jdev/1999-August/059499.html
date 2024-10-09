@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] message extensions thoughts
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20message%20extensions%20thoughts&In-Reply-To=%3C004601bedc97%2418f2f2a0%245875c897%40scylla%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="059498.html">
+   <LINK REL="Next"  HREF="059500.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] message extensions thoughts</H1>
+    <B>Patrick McCuller</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20message%20extensions%20thoughts&In-Reply-To=%3C004601bedc97%2418f2f2a0%245875c897%40scylla%3E"
+       TITLE="[JDEV] message extensions thoughts">patrick at kia.net
+       </A><BR>
+    <I>Sun Aug  1 22:28:32 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="059498.html">[JDEV] existing protocol questions
+</A></li>
+        <LI>Next message: <A HREF="059500.html">[JDEV] Testing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59499">[ date ]</a>
+              <a href="thread.html#59499">[ thread ]</a>
+              <a href="subject.html#59499">[ subject ]</a>
+              <a href="author.html#59499">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+	Who's interested in discussing message extensions?
+
+	My understanding of message extensions is that they give clients a way to
+stuff additional information in a message sent to another client through
+Jabber. This is only really useful to a client if both the sending and
+receiving clients:
+
+1) support the specific message extension (receipts, hashes, contact
+exchange, etc.)
+2) agree on where and how to put the relevant information in a message
+extension &lt;ext&gt;&lt;/ext&gt;
+
+
+	Again this leads directly to feature negotiation, which Jeremie's previous
+document, <A HREF="http://www.jabber.org/developers/archive/9904/msg00022.html">http://www.jabber.org/developers/archive/9904/msg00022.html</A> seems
+to put into the category of profiles. In this way, a user's server stores
+information about a user in a user profile. The profile is then queried to
+determine what features a client has.
+
+	Users may use many different clients. A Windows or Java client at the
+office, perhaps, Palm client on the road, XWindows at home. Each client
+would be required to upload all of its extension feature support into the
+user's profile as soon as the user logs in. This would make 'high read low
+write' Jabber server backends less feasible (LDAP, for instance, though
+that's just an example.)
+
+	Also, a user may wish to configure his client such that it offers features
+only to certain users, or a group of users. The client might  disavow
+features in the same way. ('I will not send receipts to nor accept receipts
+from Bob.')  That would not really be possible if the client is required to
+upload its extension support to the user's profile, but the client could
+always ignore those features. Again that might not work well, especially if
+the feature would alter the very content of the message: end to end
+encryption for instance.  (My public key is in my profile, and PK supporting
+clients send me encrypted messages: disabling that feature on my client for
+those users means that I will be unable to read their messages. This is
+probably not an issue but maybe it should be explored.)
+
+
+	So having established through the user profile that a
+Client-&gt;Server-&gt;Client feature (as opposed to Client-&gt;Client, which may have
+a totally orthogonal protocol) is supported by Client B, they still need to
+agree on the location and content of the extension in the &lt;ext&gt;, an XML
+document fragment if I recall Jer correctly. Is it time to start discussing
+a standardization on a few simple extensions, such as message ordering?
+
+
+Patrick
+
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">owner-jdev at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">owner-jdev at jabber.org</A>]On Behalf Of
+</I>&gt;<i> Jeremie
+</I>&gt;<i> Sent: Friday, July 30, 1999 5:19 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: RE: [JDEV] existing protocol questions
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &gt; 	Jer, thanks for answering questions 1-4 so quickly  :)
+</I>&gt;<i>
+</I>&gt;<i> No prob, sometimes it takes me a week, sometimes only a few minutes, *g*.
+</I>&gt;<i>
+</I>&gt;<i> &gt; 	About message &lt;ext&gt;&lt;/ext&gt; : why not structure extensions
+</I>&gt;<i> internally as an
+</I>&gt;<i> &gt; XML document in a CDATA field? My reasoning is this: if the
+</I>&gt;<i> extended data is
+</I>&gt;<i> &gt; structured, then clients will be less likely to trample on each
+</I>&gt;<i> other.  For
+</I>&gt;<i> &gt; instance:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Client A likes to send receipts, so it stuffs a 'message ID' which is
+</I>&gt;<i> &gt; essentially a hash of the last message received into the &lt;ext&gt;
+</I>&gt;<i> of the first
+</I>&gt;<i> &gt; response it sends to Client B.  Client B, however, expects
+</I>&gt;<i> &lt;timestamp&gt; or
+</I>&gt;<i> &gt; &lt;favorite color&gt; or goodness knows what. As a result, the secure hash is
+</I>&gt;<i> &gt; totally inappropriate and neither side really knows why.
+</I>&gt;<i>
+</I>&gt;<i> Actually, I don't think I really documented it anywhere, but my intention
+</I>&gt;<i> for the &lt;ext&gt;&lt;/ext&gt; field was to have an XML tree stuck within it, so each
+</I>&gt;<i> client would have their own tag space to do whatever they wanted, for
+</I>&gt;<i> example:
+</I>&gt;<i>
+</I>&gt;<i> &lt;ext&gt;&lt;JavaObjID&gt;&lt;id&gt;2134&lt;/id&gt;&lt;id&gt;76345&lt;/id&gt;&lt;/JavaObjID&gt;&lt;/ext&gt;
+</I>&gt;<i>
+</I>&gt;<i> Each client would be restricted to use their own tag names containing
+</I>&gt;<i> their own data.
+</I>&gt;<i>
+</I>&gt;<i> &gt; 	This leads into feature negotiation, which you mentioned
+</I>&gt;<i> previously, but
+</I>&gt;<i> &gt; perhaps it is time to get back to that discussion.
+</I>&gt;<i>
+</I>&gt;<i> Some feature negotiation will be part of the info/query proposal, I'll
+</I>&gt;<i> post more detail next week :)
+</I>&gt;<i>
+</I>&gt;<i> Jer
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="059498.html">[JDEV] existing protocol questions
+</A></li>
+	<LI>Next message: <A HREF="059500.html">[JDEV] Testing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59499">[ date ]</a>
+              <a href="thread.html#59499">[ thread ]</a>
+              <a href="subject.html#59499">[ subject ]</a>
+              <a href="author.html#59499">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

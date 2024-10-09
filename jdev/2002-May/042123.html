@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Patch to mod_groups.c to add remove capability for admins
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Patch%20to%20mod_groups.c%20to%20add%20remove%20capability%20for%20admins&In-Reply-To=%3C3CF3B16B.4070700%40phoenix-int.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042119.html">
+   <LINK REL="Next"  HREF="042125.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Patch to mod_groups.c to add remove capability for admins</H1>
+    <B>Nathan Sharp</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Patch%20to%20mod_groups.c%20to%20add%20remove%20capability%20for%20admins&In-Reply-To=%3C3CF3B16B.4070700%40phoenix-int.com%3E"
+       TITLE="[JDEV] Patch to mod_groups.c to add remove capability for admins">spamnps+jabber at phoenix-int.com
+       </A><BR>
+    <I>Tue May 28 11:33:47 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042119.html">[JDEV] Problems compiling MySQL under Cygwin
+</A></li>
+        <LI>Next message: <A HREF="042125.html">[JDEV] Heartbeat patch for dialup and laptop users and faulty presence info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42123">[ date ]</a>
+              <a href="thread.html#42123">[ thread ]</a>
+              <a href="subject.html#42123">[ subject ]</a>
+              <a href="author.html#42123">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Using mod_groups you can add groups which are forced into everyone's 
+rosters from the server-side.  As an admin, you can send &lt;iq&gt; packets 
+which add users to groups in the xdb backend.  The problem was that 
+there was no equivalent remove capability.  This patch adds the ability 
+to remove users with a slightly modified &lt;iq&gt;.  Note that this has no 
+effect on users &quot;registering&quot; and &quot;unregistering&quot; themselves from public 
+groups, only on &lt;required&gt; groups which the admin maintains.  
+
+The IQ to add a user looks more or less like:
+&lt;iq type=&quot;set&quot; to=&quot;domain.com/groups/MyGroup&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">adminUser at domain.com</A>&quot;&gt;
+  &lt;query xmlns=&quot;jabber:iq:browse&quot;&gt;
+    &lt;user jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">someUser at domain.com</A>' name='UserAlias' /&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+And to remove add an action='remove' to the &lt;user&gt; tag:
+&lt;iq type=&quot;set&quot; to=&quot;domain.com/groups/MyGroup&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">adminUser at domain.com</A>&quot;&gt;
+  &lt;query xmlns=&quot;jabber:iq:browse&quot;&gt;
+    &lt;user action=&quot;remove&quot; jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">someUser at domain.com</A>' name='UserAlias' /&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+Note that this patch includes a patch I found somewhere a while back 
+which fixes a bug w/ the admin &lt;iq&gt;s.   This patch should be applied 
+against the 1.4.2 jabberd server.  
+
+  Nathan
+
+-- 
+Nathan P Sharp
+Phoenix Integration
+1715 Pratt Dr
+Suite 2000
+540-961-7215
+540-961-5831 (fax)
+
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: mod_groups.c.patch
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20020528/933b54bb/attachment-0001.txt">https://www.jabber.org/jdev/attachments/20020528/933b54bb/attachment-0001.txt</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042119.html">[JDEV] Problems compiling MySQL under Cygwin
+</A></li>
+	<LI>Next message: <A HREF="042125.html">[JDEV] Heartbeat patch for dialup and laptop users and faulty presence info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42123">[ date ]</a>
+              <a href="thread.html#42123">[ thread ]</a>
+              <a href="subject.html#42123">[ subject ]</a>
+              <a href="author.html#42123">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

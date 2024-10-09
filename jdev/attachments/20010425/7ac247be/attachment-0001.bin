@@ -1,0 +1,20 @@
+
+On Wednesday, April 25, 2001, at 04:18 PM, David Waite wrote:
+
+
+<excerpt>bytes >127 are actually supposed to be UTF8-encoded
+
+</excerpt>
+
+That's actually almost certainly why the server was barfing on the
+data -- bad UTF-8, not bad XML. For example, IIRC, a byte >127
+indicates the first byte of a multibyte character, and the subsequent
+byte(s) of the same character are supposed to also have the high bit
+set. So any three byte sequence of the form [<<128] [>=128] [<<128]
+would be illegal UTF-8 and cause the parser to barf.
+
+
+So David's recommendation to go with base64 should fix the problem.
+
+
+<bold>--Jens</bold>

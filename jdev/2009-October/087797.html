@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Avatar loop on Google Jabber servers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Avatar%20loop%20on%20Google%20Jabber%20servers&In-Reply-To=%3C20091002130725.11abc679%40chocolatine.cbg.collabora.co.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="087800.html">
+   <LINK REL="Next"  HREF="087799.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Avatar loop on Google Jabber servers</H1>
+    <B>Alban Crequy</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Avatar%20loop%20on%20Google%20Jabber%20servers&In-Reply-To=%3C20091002130725.11abc679%40chocolatine.cbg.collabora.co.uk%3E"
+       TITLE="[jdev] Avatar loop on Google Jabber servers">alban.crequy at collabora.co.uk
+       </A><BR>
+    <I>Fri Oct  2 07:07:25 CDT 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="087800.html">[jdev] MS + XMPP
+</A></li>
+        <LI>Next message: <A HREF="087799.html">[jdev] mod_purple.erl
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87797">[ date ]</a>
+              <a href="thread.html#87797">[ thread ]</a>
+              <a href="subject.html#87797">[ subject ]</a>
+              <a href="author.html#87797">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+There is a bug [1] in Telepathy Gabble which become visible since 0.8.3
+(or maybe before) when the user connects 2 times (with 2 different
+resources) on a Google Jabber server. There is an infinite loop of
+&lt;presence&gt; stanza sent from both Jabber clients: when each client
+receives a &lt;presence&gt; stanza, it replies with a presence stanza, and
+there is an infinite ping-pong.
+
+It seems to happen only when connected to a Google Jabber server. The
+reason is that Google Jabber servers modify the &lt;presence&gt; stanza sent
+by a client before broadcasting it to the other resources (see
+thread [2]). I think it is a bug in the Google Jabber server with
+regard to XEP-0153 section 4.4 [3]. It should be ok if the server add
+the photo in &lt;presence&gt; stanza when the client does not put any
+&quot;&lt;x xmlns='vcard-temp:x:update'&gt;&quot; node. In this case, the client does
+not support XEP-0153 and the server may want to simulate it. But if the
+client adds such a node without any &lt;photo&gt; node inside, the server
+should not attempt to modify it: the absence of &lt;photo&gt; node is done on
+purpose either to indicate the client does not advertise any image (see
+XEP-0153 section 4.1.2.) or to resolve an avatar conflict between 2
+resources (see XEP-0153 section 4.4).
+
+The loop is the following:
+1. we get a &lt;presence&gt; stanza with a new photo hash
+2. we send a &lt;presence&gt; stanza immediately without &lt;photo&gt; node as per
+   XEP-0153 section 4.4.
+3. Google server adds a photo stanza and broadcast our &lt;presence&gt;
+   stanza to other resources 
+4. we send a vCard request to the server
+5. the server replies with an error resource-constraint with error type
+   &quot;wait&quot;
+6. the other resource receives our modified stanza, and performs step 1
+   to 5.
+
+The fixes in Gabble 0.8.4 are not enough. The fixes we want to do:
+
+- When the server replies to a vCard request with an error of type
+  &quot;wait&quot;, do not send again a vCard request to the same JID for some
+  time.
+- When we are in a conflict resolution (XEP-0153 section 4.4), and
+  Gabble receives a new presence stanza, do not enter again in the
+  conflict resolution: it is not supposed to be recursive.
+
+[1] <A HREF="https://bugs.freedesktop.org/show_bug.cgi?id=23684">https://bugs.freedesktop.org/show_bug.cgi?id=23684</A>
+[2] <A HREF="https://www.jabber.org/jdev/2009-September/029222.html">https://www.jabber.org/jdev/2009-September/029222.html</A>
+[3] <A HREF="http://xmpp.org/extensions/xep-0153.html">http://xmpp.org/extensions/xep-0153.html</A>
+
+-- 
+Alban
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="087800.html">[jdev] MS + XMPP
+</A></li>
+	<LI>Next message: <A HREF="087799.html">[jdev] mod_purple.erl
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87797">[ date ]</a>
+              <a href="thread.html#87797">[ thread ]</a>
+              <a href="subject.html#87797">[ subject ]</a>
+              <a href="author.html#87797">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

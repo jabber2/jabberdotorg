@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Why XML for everything?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Why%20XML%20for%20everything%3F&In-Reply-To=%3CPine.LNX.4.10.9909292107050.12313-100000%40droopy.gcfl.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="030932.html">
+   <LINK REL="Next"  HREF="030939.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Why XML for everything?</H1>
+    <B>John Price</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Why%20XML%20for%20everything%3F&In-Reply-To=%3CPine.LNX.4.10.9909292107050.12313-100000%40droopy.gcfl.net%3E"
+       TITLE="[JDEV] Why XML for everything?">linux-guru at gcfl.net
+       </A><BR>
+    <I>Wed Sep 29 21:54:15 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="030932.html">[JDEV] Why XML for everything?
+</A></li>
+        <LI>Next message: <A HREF="030939.html">[JDEV] Why XML for everything?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#30936">[ date ]</a>
+              <a href="thread.html#30936">[ thread ]</a>
+              <a href="subject.html#30936">[ subject ]</a>
+              <a href="author.html#30936">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+On Wed, 29 Sep 1999, Zoom Juice wrote:
+&gt;<i> There are two questions here: (1) What about the extra
+</I>&gt;<i> parsing time? (2) What about the increased message
+</I>&gt;<i> size?
+</I>&gt;<i> 
+</I>&gt;<i> (1) Increased parsing time
+</I>&gt;<i> Exactly what will the increase be?  This is determined
+</I>&gt;<i> by the complexity of the grammar, the number of input
+</I>&gt;<i> tokens to be resolved, the average length of the input
+</I>&gt;<i> tokens, and a few other factors.  XML can be parsed by
+</I>&gt;<i> a simple push-down automaton that runs in linear time
+</I>&gt;<i> with respect to total input tokens.  That is because
+</I>&gt;<i> there is very little branching, and no ambiguity in
+</I>&gt;<i> the grammar - basically you just process the tokens as
+</I>&gt;<i> they come in, looking for 3 types: (a) open angle
+</I>&gt;<i> bracket (b) close angle bracket (c) neither of the
+</I>&gt;<i> above, i.e., a normal token.  Suppose you classify the
+</I>&gt;<i> 3 types with codes 0, 1, 2.  You can use a jump table
+</I>&gt;<i> to implement the gramma - very fast.  Resolving the
+</I>&gt;<i> stream of input characters into tokens is similarly
+</I>&gt;<i> fast - it can all be done with lookups indexed by
+</I>&gt;<i> character values and jump tables (handling 16 bit
+</I>&gt;<i> characters could make this a little more complex, but
+</I>&gt;<i> not much).  Looking up the tags in your symbol
+</I>&gt;<i> dictionary could potentially dominate the process, but
+</I>&gt;<i> not if you were to, say, use a tool to generate a
+</I>&gt;<i> &quot;perfect hash table&quot;, thus resolving the tags in
+</I>&gt;<i> linear time with a very small &quot;k&quot;.  The total number
+</I>&gt;<i> of input characters that have to be processed has a
+</I>&gt;<i> small effect on the final parsing time, but it's not
+</I>&gt;<i> much at all - write a c program that just reads every
+</I>&gt;<i> character in a file to find out just how fast it is. 
+</I>&gt;<i> If it's still not fast enough for you (for some
+</I>&gt;<i> hard-to-imagine reason), read the entire message into
+</I>&gt;<i> a memory buffer with a single read operation and parse
+</I>&gt;<i> out the charaters from memory using while (n--)
+</I>&gt;<i> parse1(*p++); or something similar.  So parse time
+</I>&gt;<i> just isn't really a problem, agreed?  BTW, this can
+</I>&gt;<i> all be done using YACC and/or LEX, or equivalent. 
+</I>&gt;<i> Check out JIKES (free from IBM) for an alternative,
+</I>&gt;<i> ultra-modern approach.  Or just implement a
+</I>&gt;<i> simple-minded, sloppy parser and you'll *still*
+</I>&gt;<i> scarcely notice the parsing time, next to the time to
+</I>&gt;<i> actually transfer the message across your network link
+</I>&gt;<i> or modem interface, say.
+</I>
+I guess I was comparing your XML messages to, say, a packet type
+protocol, with a fixed header that had the type of message, maybe a
+couple of other fields common to all packets, a 32-bit from ID
+(dynamically assigned to each user on login), a 32-bit to ID, and a
+variable-length data field.
+
+So, for example, instead of a message like one of your example
+messages:
+
+&lt;message&gt;
+        &lt;from name='nickname'&gt;fred&lt;/from&gt;
+        &lt;thread&gt;sdfa&lt;/thread&gt;
+        &lt;priority&gt;1&lt;/priority&gt;
+        &lt;subject&gt;Did you see that?&lt;/subject&gt;
+        &lt;say&gt;asdgf asdfkjasgoijqwert asdgaldgjkas&lt;/say&gt;
+&lt;/message&gt;
+
+You might have the following:
+
+[packet type byte]
+[1-2 other fixed bytes]
+[4 bytes-from ID]
+[4 bytes-to ID]
+[data length byte]
+Subject: Here's a subject of you want one.
+Who needs threads?  I just want to send my buddy at message! :-)
+Here you can have all kinds of XML (or HTML) attributes, fonts, etc...
+asdgf asdfkjasgoijqwert asdgaldgjkas
+&lt;NULL&gt;
+
+Sure, it's somewhat more cryptic, but it's A LOT easier to parse
+with a program than XML.  There is a defined order and length to
+nearly every field.  You don't need a &quot;perfect hash table,&quot; no token
+parsing, and really only one jump table indexed by the packet type.
+
+Plus, from what I can tell, there are no real &quot;formal defs of XML.&quot;
+It seems like a make-it-up-as-you-go protocol, which makes it VERY
+expandable, but at the expense of added complication.  XML was
+created as a solve-all-the-world's-problems structure.  You are try
+to get a message from point A to point B.  Why complicate it to
+death?
+
+One of your objectives to keep the client simple...  To me, XML is
+far from simple.
+
+And XML complicates the server too.  If you are talking about
+possibly thousands of messages being routed at a time, why make it
+harder on the server?  With my example, the server doesn't hardly
+parse the message at all.  It just looks at the packet type, then
+looks at the To ID, and routes the packet to the other client (or
+another server).  Can't get much simpler than that!
+
+
+&gt;<i> (2) Increased message size
+</I>&gt;<i> OK, maybe you have a point, but let's look at it
+</I>&gt;<i> anyway.  If you go check out the formal defs of XML
+</I>&gt;<i> you'll see, front and center, that compactness is
+</I>&gt;<i> explicitly not a goal.  Why?  Hmmm.  Because if you
+</I>&gt;<i> want compactness, use a compressor.  XML has other
+</I>&gt;<i> (arguably more important) goals, like readability,
+</I>&gt;<i> power and flexibility for example.  XML does compress
+</I>&gt;<i> wonderfully - try it (I recommend bzip for your
+</I>&gt;<i> tests). 
+</I>&gt;<i> So, yes, perhaps we could design compression into the
+</I>&gt;<i> jabber protocol - though I think the effort and
+</I>&gt;<i> resulting increase in complexity would be hard to
+</I>&gt;<i> justify... see below.
+</I>
+Message size directly determines 1) how much bandwidth the server
+requires, and 2) how much memory it needs for a given number of
+messages routed per time unit.
+
+If I'm an ISP wanting to provide a message gateway, I'm VERY
+interested in how much bandwidth your server is going to be using on
+my link, not if the messages are easy to read.  Only the developers
+would care about that.
+
+And who says a packet protocol can't be flexible?
+
+I agree the bzip idea is not a bad one for compression and
+encryption...
+
+
+- -- 
+John Price &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">linux-guru at gcfl.net</A>&gt;
+
+PGP key at <A HREF="http://www.gcfl.net/~linux-guru/publickey.txt">http://www.gcfl.net/~linux-guru/publickey.txt</A>
+
+John's FreeDOS page -&gt; <A HREF="http://www.gcfl.net/FreeDOS">http://www.gcfl.net/FreeDOS</A>
+
+AIM ID &quot;GCFL Owner&quot;
+ICQ 24079586
+
+- -----BEGIN GEEK CODE BLOCK-----
+Version: 3.21
+GE d-&gt; s++:+ a C++ UL++++ P+ L+++&gt; E- W+++ N+ o+ K- W--- O- M-- V--
+PS-- PE+ Y+ PGP++&gt; t+ 5 X++ R- tv+ b+ DI+ D+ G+ e++&gt; h r+++ y+++
+- ------END GEEK CODE BLOCK------
+
+-----BEGIN PGP SIGNATURE-----
+Version: PGPfreeware 5.0i for non-commercial use
+Charset: noconv
+
+iQA/AwUBN/LCyrR4GidzvvE7EQKm0wCfflrKS5F/l/Wqlv3HkvRFswfBX74AoJ4N
+2nTln32XQj7k5f/3xZ6mmDt7
+=/4jW
+-----END PGP SIGNATURE-----
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="030932.html">[JDEV] Why XML for everything?
+</A></li>
+	<LI>Next message: <A HREF="030939.html">[JDEV] Why XML for everything?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#30936">[ date ]</a>
+              <a href="thread.html#30936">[ thread ]</a>
+              <a href="subject.html#30936">[ subject ]</a>
+              <a href="author.html#30936">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

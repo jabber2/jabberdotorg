@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Alternate MUC Authentication Mechanisms
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3C63F921AC-DB9A-4ED1-BF7A-053B0B91F8FD%40Isode.COM%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088468.html">
+   <LINK REL="Next"  HREF="088470.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Alternate MUC Authentication Mechanisms</H1>
+    <B>Kurt Zeilenga</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3C63F921AC-DB9A-4ED1-BF7A-053B0B91F8FD%40Isode.COM%3E"
+       TITLE="[jdev] Alternate MUC Authentication Mechanisms">Kurt.Zeilenga at Isode.COM
+       </A><BR>
+    <I>Wed Oct 20 07:41:30 CST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088468.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+        <LI>Next message: <A HREF="088470.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88469">[ date ]</a>
+              <a href="thread.html#88469">[ thread ]</a>
+              <a href="subject.html#88469">[ subject ]</a>
+              <a href="author.html#88469">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+On Oct 20, 2010, at 6:39 AM, Kurt Zeilenga wrote:
+
+&gt;<i> 
+</I>&gt;<i> On Oct 20, 2010, at 1:11 AM, Dave Cridland wrote:
+</I>&gt;<i> 
+</I>&gt;&gt;<i> On Wed Oct 20 01:47:58 2010, Alex Milowski wrote:
+</I>&gt;&gt;&gt;<i> On Sun, Oct 17, 2010 at 5:32 AM, Kurt Zeilenga &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Kurt.Zeilenga at isode.com</A>&gt; wrote:
+</I>&gt;&gt;&gt;&gt;<i> User provides hash:
+</I>&gt;&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;&gt;<i> &lt;presence
+</I>&gt;&gt;&gt;&gt;<i>   from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+</I>&gt;&gt;&gt;&gt;<i>   to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>/thirdwitch'&gt;
+</I>&gt;&gt;&gt;&gt;<i> &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'">http://jabber.org/protocol/muc'</A>&gt;
+</I>&gt;&gt;&gt;&gt;<i>   &lt;hash algorithm=&quot;sha2&quot;&gt;hash&lt;/hash&gt;
+</I>&gt;&gt;&gt;&gt;<i> &lt;/x&gt;
+</I>&gt;&gt;&gt;&gt;<i> &lt;/presence&gt;
+</I>&gt;&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;&gt;<i> where hash was the base64 encoded sha2 hash over the concat of subscribers' normalized bare jid, &quot; &quot;, the room's normalized bare jid, &quot; &quot;, and the shared password.
+</I>&gt;&gt;&gt;<i> Yes, this is something like what I'm after.  I'm not really looking to
+</I>&gt;&gt;&gt;<i> have individual identities authenticate.  Instead, I'm looking for a
+</I>&gt;&gt;&gt;<i> more secure way to send the shared credentials for the room.
+</I>&gt;&gt;<i> At the risk of somewhat contradicting my colleague...
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> That's equally (in)secure, since the hash is a plaintext equivalent.
+</I>&gt;<i> 
+</I>&gt;<i> For a particular subscribers bare jid and room bare jid.
+</I>&gt;<i> 
+</I>&gt;&gt;<i> That's protecting you from a different user joining, but someone able to spoof the user can just blindly resend the hash.
+</I>&gt;<i> 
+</I>&gt;<i> Well, that's a 'duh'.
+</I>
+and if a significant concern, a time stamp could be added to hinder replay.
+
+
+&gt;<i> As I noted in my post, if you don't trust servers to a significant degree, you have bigger things to worry about.
+</I>&gt;<i> 
+</I>&gt;&gt;<i> If you sign stanzas, on the other hand, the hash is pointless.
+</I>&gt;<i> 
+</I>&gt;<i> And that's actually solving a different problem.  That is, the OP didn't want identity-based access controls, but just better protection of transmissions of a shared secret.
+</I>&gt;<i> 
+</I>&gt;<i> And I have to note that signing itself is only as good as the key management system behind it, which has yet to be discussed or detailed.   It may be best not to make great assumptions on the value of signing just yet.
+</I>&gt;<i> 
+</I>&gt;&gt;<i> I suppose there's three cases:
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> a) You trust the servers/administrators, and trust them to be doing TLS (to at least prevent eavesdropping, which requires endpoint authentication), such that MITMs are not practical. In this case, the current plaintext password seems OK.
+</I>&gt;<i> 
+</I>&gt;<i> Generally speaking, I concur.  I was just throwing up a strawman which seems to address the desire to better protect the transmission of the shared secret.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> b) You trust the servers/administrators, but you consider an MITM on S2S (or C2S, I suppose) to be a threat. In this case, a simple hash allows a replay, and offers little beyond the password, and signed stanzas are required. As noted above, if you already sign the stanzas, then any &quot;password&quot; is pointless.
+</I>&gt;<i> 
+</I>&gt;<i> I would argue that if this be the case, you better off jumping to encrypted tunnel between the client and the MUC service.
+</I>&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> c) You don't trust the servers/administrators.
+</I>&gt;<i> 
+</I>&gt;<i> My answer to b helps with lack of trust of the subscribers' servers.   But if you don't trust the MUC server itself, then you are really screwed.
+</I>&gt;<i> 
+</I>&gt;&gt;<i> In principle, such a situation might well lead to the wrong certificate being provisioned, but either way, signing/encrypting stanzas is effectively your only way out now.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> In order to provision a certificate, you could consider one of:
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 1) The MUC runs (or has access to ) a CA, and you sign a CSR provided during registration.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 2) The MUC has shared Trust Anchors with the users.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 3) The MUC is supplied with a certificate (possibly self-signed) during registration.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> In either 1/3, then one assumes that you would need some other credential during registration - this is where I'd envision using SASL, to buy you reasonable password (or shared-secret) based protection without trying to hack it into the MUC join presence.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;&gt;<i> I suppose this should be shared on the muc list (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">muc at xmpp.org</A>) but I
+</I>&gt;&gt;&gt;<i> haven't heard much come across that yet.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> There's also a security list, which might be more useful for this.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Dave.
+</I>&gt;&gt;<i> -- 
+</I>&gt;&gt;<i> Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at dave.cridland.net</A>
+</I>&gt;&gt;<i> - <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+</I>&gt;&gt;<i> - <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+</I>&gt;&gt;<i> Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i> JDev mailing list
+</I>&gt;&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> Forum: <A HREF="http://www.jabberforum.org/forumdisplay.php?f=20">http://www.jabberforum.org/forumdisplay.php?f=20</A>
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088468.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+	<LI>Next message: <A HREF="088470.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88469">[ date ]</a>
+              <a href="thread.html#88469">[ thread ]</a>
+              <a href="subject.html#88469">[ subject ]</a>
+              <a href="author.html#88469">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,334 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> Fw: [JDEV] Proper use of Perl Net::Jabber calls
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20Fw%3A%20%5BJDEV%5D%20Proper%20use%20of%20Perl%20Net%3A%3AJabber%20calls&In-Reply-To=%3C001f01c2b727%24baea4cc0%24ab0aa8c0%40YXIAO1%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="074028.html">
+   <LINK REL="Next"  HREF="074031.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>Fw: [JDEV] Proper use of Perl Net::Jabber calls</H1>
+    <B>Yanming Xiao</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20Fw%3A%20%5BJDEV%5D%20Proper%20use%20of%20Perl%20Net%3A%3AJabber%20calls&In-Reply-To=%3C001f01c2b727%24baea4cc0%24ab0aa8c0%40YXIAO1%3E"
+       TITLE="Fw: [JDEV] Proper use of Perl Net::Jabber calls">xiao at legatovideo.com
+       </A><BR>
+    <I>Wed Jan  8 09:07:58 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="074028.html">[JDEV] presence control
+</A></li>
+        <LI>Next message: <A HREF="074031.html">[JDEV] Question regarding jabberd
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74025">[ date ]</a>
+              <a href="thread.html#74025">[ thread ]</a>
+              <a href="subject.html#74025">[ subject ]</a>
+              <a href="author.html#74025">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Rebbaj,
+
+I found a segment of code in my files listed in following, and 
+you can see that I am using &quot;$iq-&gt;GetXML()&quot; and &quot;$iq_result-&gt;GetXML()&quot;
+to check the IQ packet to be sent and the IQ packet result. 
+As long as the format of XML is right, it should work. 
+
+So, please check your XML before sending. 
+
+Good luck.
+
+-Yanming
+
+
+...
+
+    print &quot;Connecting: $username\@$server:$port/$resource\n&quot;;
+
+    # initialize the Jabber client object
+#    $Connection = new Net::Jabber::Client(debuglevel=&gt;2, debugfile=&gt;&quot;debug&quot;, debugtime=&gt;1);
+    $Connection = new Net::Jabber::Client;
+
+    print &quot;.\n&quot;;
+    # try the connection and get the status of it
+    $status = $Connection-&gt;Connect(&quot;hostname&quot; =&gt; $server,
+       &quot;port&quot; =&gt; $port);
+    print &quot;.\n&quot;;
+    # If something's wrong with the connection
+    if (!(defined($status))) 
+    {
+ print &quot;&lt;br /&gt;ERROR:  Jabber server is down or connection was not allowed.\n&quot;;
+ print &quot;&lt;br /&gt;($!)\n&quot;;
+ 
+ &amp;print_file(&quot;./jru-bottom.inc&quot;);
+ exit(0);
+    }
+
+    print &quot;.\n&quot;;
+
+    # Set callbacks for incoming info
+   $Connection-&gt;SetCallBacks(&quot;message&quot; =&gt; \&amp;InMessage,
+    &quot;presence&quot; =&gt; \&amp;InPresence,
+    &quot;iq&quot; =&gt; \&amp;InIQ);
+
+    # Connect!
+    $Connection-&gt;Connect();
+    print &quot;.\n&quot;;
+    # Try authorization
+    @result = $Connection-&gt;AuthSend(&quot;username&quot; =&gt; $username,
+    &quot;password&quot; =&gt; $password,
+    &quot;resource&quot; =&gt; $resource);
+    print &quot;.\n&quot;;
+    # If the auth went awry
+    if ($result[0] ne &quot;ok&quot;) 
+    {
+ print &quot;&lt;br /&gt;ERROR: Authorization failed: $result[0] - $result[1]\n&lt;br /&gt;&quot;;
+ exit(0);
+    }
+    print &quot;.\n&quot;;
+    print &quot;&lt;br /&gt;Logged in successfully to $server:$port as $username...\n&quot;;
+
+#    print &quot;&lt;br /&gt;Getting your roster...\n&quot;;
+#
+#   this step is important --- to behavior as a regualr Jabber client.  
+#
+    %roster = $Connection-&gt;RosterGet();
+
+### Start of Subscription ####
+
+print &quot;&lt;br /&gt;Sending presence...\n&quot;;
+$Connection-&gt;PresenceSend();
+#$Connection-&gt;Process(1);
+
+my ($iq, $iq_query, $iq_result, my $from);
+#
+#&lt;iq id=&quot;jcl_44&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1st at mla.lvj1</A>&quot; type=&quot;set&quot;&gt;
+# &lt;query xmlns=&quot;jabber:iq:register&quot;&gt;
+#  &lt;nick&gt;reminder&lt;/nick&gt;
+# &lt;/query&gt;
+#&lt;/iq&gt;
+#
+
+$from = &quot;$username\@$server/$resource&quot;;
+
+print &quot;&lt;br /&gt;from= $from\n&quot;;
+
+$iq = Net::Jabber::IQ-&gt;new();
+$iq-&gt;SetIQ(
+ from  =&gt; $from,
+ type  =&gt; 'set',
+ to    =&gt; $service_jid,
+ id    =&gt; 'jru_02',
+ query =&gt; 'info'
+);
+
+$iq_query = $iq-&gt;NewQuery(&quot;jabber:iq:register&quot;);
+$iq_query-&gt;SetNick($nick);
+
+print &quot;&lt;br /&gt;Sending iq...\n&quot;.$iq-&gt;GetXML().&quot;\n&quot;;
+
+$iq_result = $Connection-&gt;SendAndReceiveWithID($iq, 1);
+# Success
+if ($iq_result-&gt;GetType() eq 'result')
+{
+        print &quot;&lt;br /&gt;&quot;;
+        print $iq_result-&gt;GetXML();
+        print &quot;&lt;br /&gt;\n&quot;;
+}
+# Failure
+else
+{
+ print &quot;&lt;br /&gt;Error: &quot;, $iq_result-&gt;GetErrorCode(), &quot; (&quot;, $iq_result-&gt;GetError(), &quot;)\n&quot;;
+# 
+#         print &quot;&lt;br /&gt;ERROR: IQ failed: $result[0] - $result[1]\n&lt;br /&gt;&quot;;
+#  print &quot;&lt;br /&gt;&lt;TEXTAREA NAME=RECV ROWS=10 COLS=70&gt;\n&quot;;
+#  print $result-&gt;toStr;
+#                print &quot;&lt;/TEXTAREA&gt;&lt;br /&gt;\n&quot;;
+#
+ exit(0);
+}
+
+#$Connection-&gt;Process(1);
+
+##########################
+my $presence = Net::Jabber::Presence-&gt;new();
+$presence-&gt;SetTo($service_jid);
+#$presence-&gt;SetFrom($from);
+$presence-&gt;SetType('subscribed'); 
+
+
+#while( $first_run &amp;&amp; defined($Connection-&gt;Process()))
+print &quot;&lt;br /&gt;Sending presence...\n&quot;.$presence-&gt;GetXML().&quot;\n&quot;;
+$iq_result = $Connection-&gt;SendAndReceiveWithID($presence, 1);
+
+
+### End of Subscription ####
+
+    # Should be all done, so why don't we disconnect?  Sounds like fun to me.. but fun to you?  Could be.  Give it a shot, anyway...
+    print &quot;&lt;br /&gt;Disconnecting...\n&quot;;
+#
+    #$do_subscribe = '';
+    #$query-&gt;delete_all();
+    #print $query-&gt;start_multipart_form();
+    #print $query-&gt;end_form();
+#
+    $Connection-&gt;Disconnect();
+    print &quot;&lt;br /&gt;Disconnected.\n&quot;;
+
+#    print &quot;\n&lt;script type=\&quot;text/javascript\&quot;&gt;\n&lt;!--\nfunction popUpLog() {\n newWindow = window.open('', 'newWin', 'toolbar=no,location=no,scrollbars=yes,resizable=yes,width=300,height=300')\n\n   newWindow.document.write(\&quot;&lt;html&gt;&lt;head&gt;&lt;title&gt;Jabber roster utility Log&lt;/title&gt;&lt;/head&gt;&lt;body bgcolor=ffffff text=000000&gt;&lt;b&gt;&lt;font face=sans-serif&gt;&lt;div align=left&gt;&lt;br /&gt;&quot;, $log, &quot;&lt;/div&gt;&lt;/font&gt;&lt;/b&gt;&lt;/body&gt;&lt;/html&gt;\&quot;)\n}\n --&gt;\n &lt;/script&gt;&quot;;
+#    print &quot;&lt;br /&gt;&lt;a href=\&quot;\#\&quot; onmousedown=\&quot;popUpLog(); return true;\&quot;&gt;Click here&lt;/a&gt; to view a log of all users updated and all errors.\n&lt;br /&gt;&lt;br /&gt;&quot;;
+#
+#    print &quot;&lt;hr width=\&quot;75%\&quot; noshade=\&quot;noshade\&quot; /&gt;&quot;;
+
+
+----- Original Message ----- 
+From: rebbaj rebbaj 
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> 
+Sent: Tuesday, January 07, 2003 5:39 PM
+Subject: Re: [JDEV] Proper use of Perl Net::Jabber calls
+
+
+Thanks Yanming.  I took a good long look at the code found at <A HREF="http://www.jabberstudio.org/cgi-bin/viewcvs.cgi/*checkout*/netjabber/examples/client.pl?rev=1.4&amp;content-type=text/plain">http://www.jabberstudio.org/cgi-bin/viewcvs.cgi/*checkout*/netjabber/examples/client.pl?rev=1.4&amp;content-type=text/plain</A> 
+
+What I still do not understand is why the $Connection-&gt;RosterGet(); call does not result in all of the roster entries being sent back from the server and hence triggering the sub InIQ routine.  If I manually enter the following XML &quot;&lt;iq type=&quot;get&quot;&gt;&lt;query xmlns=&quot;jabber:iq:roster&quot;/&gt;&lt;/iq&gt;, I get all the entries back. 
+
+The docs state &quot;RosterGet() - sends an empty Net::Jabber::IQ::Roster tag to the server so the server will send the Roster to the client.&quot; 
+
+Any other ideas? 
+
+Regards, 
+
+Rebbaj 
+
+ Yanming Xiao &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">xiao at legatovideo.com</A>&gt; wrote: 
+
+  Rabbaj,
+
+  It seems to me that you are using 2 different packages.  
+
+  There is a function called &quot;RosterGet()&quot; in Net::Jabber::Client. 
+  find the sample code in:
+  <A HREF="http://jru.jabberstudio.org/">http://jru.jabberstudio.org/</A>
+
+
+  -Yanming
+    ----- Original Message ----- 
+    From: rebbaj rebbaj 
+    To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> 
+    Sent: Tuesday, January 07, 2003 9:40 AM
+    Subject: [JDEV] Proper use of Perl Net::Jabber calls
+
+
+    Hello jabber people.
+
+    I am hoping that someone can help me out with how the Perl Net::Jabber library should be used.  Note that I am also somewhat new to perl so if I get confused by some of the syntax, you will have to excuse me.  The examples in the Oreily book were rather helpful but I seem to be having problems in calling and receiving IQ information.
+
+    Here is what I am trying to send and receive in XML:
+
+    SENT:
+    &lt;iq id=&quot;jcl_9&quot; type=&quot;get&quot;&gt;
+        &lt;query xmlns=&quot;jabber:iq:roster&quot;/&gt;
+    &lt;/iq&gt;
+
+    RECV:
+    &lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rebbaj at jabber.org</A>/Perl' id='jcl_9' type='result'&gt;
+      &lt;query xmlns='jabber:iq:roster'&gt;
+        &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rebbaj at jabber.com</A>' name='rebbaj' subscription='both'/&gt;
+        &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rebbaj2 at jabber.com</A>' name='rebbaj2' subscription='both'/&gt;
+      &lt;/query&gt;
+    &lt;/iq&gt;
+
+    The code stub that I have written to do this is as follows.  I suspect that I have the flow a bit wrong and I am not using the optimal calls to parse the resulting returned roster data...  Any help would be appreciated....
+
+    rebbaj
+
+    ------------------------------------------------
+    #!/usr/bin/perl
+    use Net::Jabber qw(Client);
+    use strict;
+    my $c=Net::Jabber::Client-&gt;new();
+    $c-&gt;Connect('hostname'=&gt; 'jabber.org', 'port'=&gt;5222);
+
+    $c-&gt;AuthSend('username'=&gt; 'rebbaj',
+          'password'=&gt; 'secret',
+          'resource'=&gt; 'Perl');
+
+    $c-&gt;SetCallBacks('presence'=&gt; \&amp;handle_presence);
+    $c-&gt;SetCallBacks('iq'=&gt; \&amp;handle_iq);
+    $c-&gt;PresenceSend();
+
+    My $IQ = new Net::Jabber::IQ();
+    $IQ-&gt;NewQuery(&quot;jabber:iq:roster&quot;);  # Does this actually make the IQ get request?$c-&gt;Send($IQ); # is this call necessary?
+
+    print &quot;involking process\n&quot;;
+    $c-&gt;Process();
+
+
+
+
+
+
+    $c-&gt;Disconnect;
+    exit(0);
+
+    sub handle_presence {
+     my ($sid, $presence) = @_;
+
+     my $show = $presence-&gt;GetShow() || 'online';
+     
+     print &quot;presence packet received $show\n&quot;;
+    }
+
+    sub handle_iq {
+     my ($sid, $iq) = @_;
+
+     my $querytag = $iq-&gt;GetQuery();
+
+
+     print &quot;iq packet received $querytag\n&quot;;
+    }
+
+
+
+
+
+
+----------------------------------------------------------------------------
+    With Yahoo! Mail you can get a bigger mailbox -- choose a size that fits your needs
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+With Yahoo! Mail you can get a bigger mailbox -- choose a size that fits your needs
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20030108/7cc98933/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20030108/7cc98933/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="074028.html">[JDEV] presence control
+</A></li>
+	<LI>Next message: <A HREF="074031.html">[JDEV] Question regarding jabberd
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74025">[ date ]</a>
+              <a href="thread.html#74025">[ thread ]</a>
+              <a href="subject.html#74025">[ subject ]</a>
+              <a href="author.html#74025">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

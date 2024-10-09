@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] GEOLOC Support
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20GEOLOC%20Support&In-Reply-To=%3CBAY138-W2063F65CB796D727D73610DD540%40phx.gbl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="086812.html">
+   <LINK REL="Next"  HREF="086822.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] GEOLOC Support</H1>
+    <B>Stephen Pendleton</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20GEOLOC%20Support&In-Reply-To=%3CBAY138-W2063F65CB796D727D73610DD540%40phx.gbl%3E"
+       TITLE="[jdev] GEOLOC Support">stephenpendleton at hotmail.com
+       </A><BR>
+    <I>Tue Sep  9 11:24:35 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="086812.html">[jdev] website  transition
+</A></li>
+        <LI>Next message: <A HREF="086822.html">[jdev] GEOLOC Support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86816">[ date ]</a>
+              <a href="thread.html#86816">[ thread ]</a>
+              <a href="subject.html#86816">[ subject ]</a>
+              <a href="author.html#86816">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi, I thought I would put together a simple &quot;cookbook&quot; on how to add GEOLOC XEP-0080 support to a client. Hopefully it will help someone else out. If anyone sees any problems with the steps below, please let me know. BTW, I am not sure why Step 1 is needed since Step 2 advertises the same capabilities.
+ 
+STEPS TO ADD GEOLOC SUPPORT:
+1) Client should respond to iq query <A HREF="http://jabber.org/protocol/disco#info">http://jabber.org/protocol/disco#info</A> with a stanza like: &lt;iq type='result'...&gt;&lt;&lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'">http://jabber.org/protocol/disco#info'</A>&gt;&lt;feature var='<A HREF="http://jabber.org/geoloc'/">http://jabber.org/geoloc'/</A>&gt;&lt;feature var='<A HREF="http://jabber.org/geoloc+notify'/">http://jabber.org/geoloc+notify'/</A>&gt;
+ 
+2) Client should add &lt;c&gt; stanza to presence stanza with the proper &quot;ver&quot; attribute indicating geoloc support. The &quot;ver&quot; attribute is a SHA-1 hash of a string like:&quot;client/pc//fooclient 1.0&lt;<A HREF="http://jabber.org/protcol/geoloc&lt;http://jabber.org/protcol/geoloc+notify&lt;&quot;">http://jabber.org/protcol/geoloc&lt;http://jabber.org/protcol/geoloc+notify&lt;&quot;</A>
+ 
+The stanza looks something like:
+&lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.lit</A>/orchard'&gt;  &lt;c xmlns='<A HREF="http://jabber.org/protocol/caps'">http://jabber.org/protocol/caps'</A>      hash='sha-1'     node='<A HREF="http://www.chatopus.com'">http://www.chatopus.com'</A>     ver='zHyEOgxTrkpSdGcQKH8EFPLsriY='/&gt;&lt;/presence&gt;
+ 
+3) When location changes the client publishes its new location:
+&lt;iq type='set' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">portia at merchantofvenice.lit</A>/pda' id='publish1'&gt;  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;    &lt;publish node='<A HREF="http://jabber.org/protocol/geoloc'">http://jabber.org/protocol/geoloc'</A>&gt;      &lt;item&gt;        &lt;geoloc xmlns='<A HREF="http://jabber.org/protocol/geoloc'">http://jabber.org/protocol/geoloc'</A> xml:lang='en'&gt;          &lt;country&gt;Italy&lt;/country&gt;          &lt;lat&gt;45.44&lt;/lat&gt;          &lt;locality&gt;Venice&lt;/locality&gt;          &lt;lon&gt;12.33&lt;/lon&gt;        &lt;/geoloc&gt;      &lt;/item&gt;    &lt;/publish&gt;  &lt;/pubsub&gt;&lt;/iq&gt;
+4) Subscribers will receive:&lt;message from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">portia at merchantofvenice.lit</A>'          to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bassanio at merchantofvenice.lit</A>'&gt;  &lt;event xmlns='<A HREF="http://jabber.org/protocol/pubsub#event'">http://jabber.org/protocol/pubsub#event'</A>&gt;    &lt;items node='<A HREF="http://jabber.org/protocol/geoloc'">http://jabber.org/protocol/geoloc'</A>&gt;      &lt;item id='d81a52b8-0f9c-11dc-9bc8-001143d5d5db'&gt;        &lt;geoloc xmlns='<A HREF="http://jabber.org/protocol/geoloc'">http://jabber.org/protocol/geoloc'</A> xml:lang='en'&gt;          &lt;country&gt;Italy&lt;/country&gt;          &lt;lat&gt;45.44&lt;/lat&gt;          &lt;locality&gt;Venice&lt;/locality&gt;          &lt;lon&gt;12.33&lt;/lon&gt;        &lt;/geoloc&gt;      &lt;/item&gt;    &lt;/items&gt;  &lt;/event&gt;&lt;/message&gt;
+ 
+_________________________________________________________________
+Stay up to date on your PC, the Web, and your mobile phone with Windows Live.
+<A HREF="http://clk.atdmt.com/MRT/go/msnnkwxp1020093185mrt/direct/01/">http://clk.atdmt.com/MRT/go/msnnkwxp1020093185mrt/direct/01/</A>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20080909/65844e5a/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20080909/65844e5a/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="086812.html">[jdev] website  transition
+</A></li>
+	<LI>Next message: <A HREF="086822.html">[jdev] GEOLOC Support
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86816">[ date ]</a>
+              <a href="thread.html#86816">[ thread ]</a>
+              <a href="subject.html#86816">[ subject ]</a>
+              <a href="author.html#86816">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

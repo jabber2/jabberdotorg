@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] kerberos authentication for jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20kerberos%20authentication%20for%20jabber&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006369.html">
+   <LINK REL="Next"  HREF="006384.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] kerberos authentication for jabber</H1>
+    <B>Donn Cave</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20kerberos%20authentication%20for%20jabber&In-Reply-To="
+       TITLE="[JDEV] kerberos authentication for jabber">donn at u.washington.edu
+       </A><BR>
+    <I>Tue Feb 27 14:01:22 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006369.html">[JDEV] kerberos authentication for jabber
+</A></li>
+        <LI>Next message: <A HREF="006384.html">[JDEV] kerberos authentication for jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6370">[ date ]</a>
+              <a href="thread.html#6370">[ thread ]</a>
+              <a href="subject.html#6370">[ subject ]</a>
+              <a href="author.html#6370">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Quoth Jonathan Siegle &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jsiegle at psu.edu</A>&gt;:
+|<i> I am looking into using kerberos authentication for my server. The
+</I>|<i> user-user example in the kerberos sample code suggests that I open another
+</I>|<i> port to do the auth. My question is: would it be difficult to create an
+</I>|<i> xml tag to the kerberos auth over the standard jabber port or should I
+</I>|<i> just do the auth over the kerberos port and send the result to the server.
+</I>|<i> I am thinking it would be easier to do the second solution, but would I
+</I>|<i> take a performance hit by doing it this way.
+</I>
+No, I think you have the right idea.  I don't know user/user Kerberos,
+so I can't say why they call for a separate connection, but then if
+you're looking at a normal server based authentication you don't have
+to worry about user/user.
+
+The system works like this:
+  1. Client connects to server.  This first, so it's clear who the
+     actual server turns out to be.  (In practice you probably have
+     only one server, but in theory it could be cluster and you need
+     the specific host.)
+  2. Client gets jabber/jabberservice.psu.edu service ticket from the
+     Kerberos KDC, sends it to the application server.  Along with the
+     user identity _and_ the authenticated principal.
+  3. Server decrypts/verifies service ticket with its key.
+  4. Server makes up an encrypted mutual authentication reply, sends
+     it back to the client.
+  5. Client decrypts the reply, verifying bona fide application server.
+
+That takes one round trip.  The tickets are just blocks of data, you
+can base 64 encode them or something and drop them in the XML stream.
+
+Now, the politically correct perspective is that you should use GSSAPI
+to handle the Kerberos transaction.  (I assume you are working with
+Kerberos 5.)  It's theoretically able to accommodate other authentication
+options, and I'm told it's similar enough to the Microsoft Kerberos
+(SSPI?) API that they're relatively easily adapted to each other, though
+of course (go, US Dept. of Justice!) neither directly supports the other.
+
+I believe that to do it right, you have to give GSS the opportunity
+to decide how many trips it needs.  GSS-Kerberos needs only the same
+1 round trip, but if you provide for only that, you're sort of defeating
+the purpose if any of the alternative authentications could need more.
+I personally think that if that's a big problem for the application
+protocol, then sort it out later and implement today what you have to
+work with today.
+
+When I was looking at this, the protocol and server architecture worked
+out fine, at least for the 1-round-trip model.  I didn't do so well for
+clients, though, since I could not find a client to try it with that
+looked like it was worth bothering with, where I could modify the library
+level source and build on a useful range of platforms.  That must have
+gotten better since, or were you going to write your own application?
+
+	Donn Cave, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">donn at u.washington.edu</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006369.html">[JDEV] kerberos authentication for jabber
+</A></li>
+	<LI>Next message: <A HREF="006384.html">[JDEV] kerberos authentication for jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6370">[ date ]</a>
+              <a href="thread.html#6370">[ thread ]</a>
+              <a href="subject.html#6370">[ subject ]</a>
+              <a href="author.html#6370">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

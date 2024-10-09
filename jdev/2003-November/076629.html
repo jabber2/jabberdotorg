@@ -1,0 +1,297 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: jabberd 1.4.3 release candidate again
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20jabberd%201.4.3%20release%20candidate%20again&In-Reply-To=%3Cbof1be%24qpg%241%40sea.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="076627.html">
+   <LINK REL="Next"  HREF="076632.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: jabberd 1.4.3 release candidate again</H1>
+    <B>Frank Seesink</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20jabberd%201.4.3%20release%20candidate%20again&In-Reply-To=%3Cbof1be%24qpg%241%40sea.gmane.org%3E"
+       TITLE="[JDEV] Re: jabberd 1.4.3 release candidate again">frank at mail.wvnet.edu
+       </A><BR>
+    <I>Thu Nov  6 20:51:23 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="076627.html">[JDEV] MSN-T not sending presences to real MSN users
+</A></li>
+        <LI>Next message: <A HREF="076632.html">[JDEV] JEP-0124: HTTP transport binding
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76629">[ date ]</a>
+              <a href="thread.html#76629">[ thread ]</a>
+              <a href="subject.html#76629">[ subject ]</a>
+              <a href="author.html#76629">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">maqi at jabberstudio.org</A> wrote:
+&gt;<i> jabberd 1.4.3 will be released the next days. It's a maintenance release
+</I>&gt;<i> including some fixes and several features.
+</I>&gt;<i> <A HREF="http://jabberd.jabberstudio.org/1.4/release-1.4.3.shtml">http://jabberd.jabberstudio.org/1.4/release-1.4.3.shtml</A>
+</I>&gt;<i> 
+</I>&gt;<i> Please check out the jabberd14 HEAD code from CVS for testing and post
+</I>&gt;<i> comments here.
+</I>
+Maqi,
+
+Hope it's ok that I post this updated info here, but figured anyone out 
+there considering doing modules/plugins might care to know what I've 
+discovered (though odds are you all knew this already).
+
+In short, attached here are submissions for newly updated Makefiles for 
+Jabberd v1.4.3, including a diff file--jabberd143.diff--generated with 
+'cvs diff -u'...hope I did that right, and a tar/gz 
+file--newMakes.tar.gz--containing the full Makefiles in case the diff 
+file is no good.These Makefiles are much streamlined compared to my last 
+submission, as I've learned that my hack was doing things &quot;the old way.&quot;
+
+End result:
+
+	* cleaner Makefiles--only differences between Cygwin build and
+	  *nix build of dynamic libraries--beyond the file extension
+	  .dll vs. .so respectively--is the compile line itself.
+
+	* elimination on the dependence/need for ./cygwin/dllinit.c
+	  (though I'd suggest leaving it in 1.4.3 just...in...case).
+
+	* compiled modules that are 30-50% SMALLER than before (in
+	  a few cases, over 50%)!!
+
+I have set up two different Windows XP Pro boxes with Cygwin, built 
+Jabberd 1.4.3 from CVS as of today (6Nov2003), and tested communications 
+from 1-on-1 chat to JUD lookups to MU-Conference to s2s communications. 
+  I even fired up a Jabber client which I connected to an account at 
+Rhymbox.com, then chatted with myself via an account on one of the two 
+servers.  Yeah, it's so bad I'm talking to myself...again. :-)
+
+With this last submission (and respective submissions to the authors of 
+JUD, MU-C, xdb_ldap, and xdb_sql), I think I'm finished.
+
+____________________________________________________________
+MORE DETAIL FOR THOSE SO INCLINED
+
+[Rather long, so get caffeine or skip if not interested.]
+
+I achieved my original hack using various information, including that on 
+the Cygwin FAQ page at
+
+	<A HREF="http://cygwin.com/faq/faq_4.html#SEC109">http://cygwin.com/faq/faq_4.html#SEC109</A>
+
+As you can see, this page indicates it's out-of-date (though I don't 
+recall seeing that message when I read it awhile ago).
+
+The basic process was an ugly one, but it all revolves around the same 
+fundamental principles involved when working on dynamic libraries. 
+Typically, in order to build an application which relies on dynamic 
+libraries, you write the main code and link in stub files (in *nix, 
+these tend to be lib&lt;modulename&gt;.a files).  These stub files are to 
+dynamic libraries what .h files are to .c files in many cases:  they 
+provide the linker with enough information to resolve functions/etc. in 
+your main code so that your program will link into an executable.  At 
+runtime, the OS will then &quot;hook in&quot; the matching dynamic library (again, 
+in *nix these tend to be lib&lt;modulename&gt;.so files), making the 
+functionality of that library available to your running program.
+
+However, dynamic libraries are built/handled differently by different 
+OSes.  Since Jabberd was built &quot;the Unix way&quot;, let's look at that first. 
+  When you compile a dynamic library in Linux, for example, a lot of the 
+dirty work is done by gcc and ld.  For example, even though libraries 
+must somehow &quot;export&quot; a list of functions/variables that are accessible 
+to the calling program, you don't really have to do much as the 
+programmer to make this happen.  You just type the appropriate gcc/ld 
+switches on the command line, and magically all that is done for you.
+
+Windows is not quite so elegant, howver, and when it comes to Cygwin and 
+trying to build *nix style libraries under Windows, it gets messy. 
+Windows calls these files Dynamic Link Libraries (DLLs), and their file 
+extension is just that, &quot;.DLL&quot;.  That's a cosmetic difference.
+
+OLD WAY
+
+But up until the more recent net release of Cygwin, building such DLLs 
+under Cygwin was a royal pain.  You had to manually build the DEFinition 
+list of EXPORTed functions/etc., then take extra steps to basically 
+&quot;wrap&quot; this information around your *nix dynamic library.  The procedure 
+went something like this:
+
+	* Create a .DEF text file containing the list of EXPORTed
+	  functions a library offered.
+	* run a special &quot;wrapper&quot; command which would wrap this
+	  information around your library so that, when compiled into a
+	  .DLL, it would work correctly.
+
+The trick is, how do you build the .DEF file and what are the special 
+commands?
+
+The .DEF file is just a text file of the form
+	____________________
+	EXPORT
+	function1
+	function2
+	...
+	____________________
+
+where the first line literally says &quot;EXPORT&quot;, and the functions/etc. the 
+library offers are written one per line after that.  Often (as was done 
+in Jabberd 1.4.2's Cygwin code), these .DEF files were made by hand, 
+which gave the programmer control over what functions were &quot;visible&quot; 
+outside the library (for you C++ types, this is similar to public vs. 
+private methods).
+
+However, a tool named 'nm' does exist in Cygwin which will automatically 
+list all the symbols in given object files, letting you automate that 
+step in the process.  But it does require organizing the output from 
+'nm' to match what is expected in a .DEF file.
+
+Next up is the tool which takes the .DEF file and object code, links 
+everything together and builds the library.  This is 'dlltool'. 
+However, to speed up the process, another tool exists called 'dllwrap' 
+which uses 'dlltool' by default, saving you a bit of work.
+
+As an example of how this works, here is the relevant portion of the 
+Jabberd dialback module Makefile, as it was written by me originally so 
+Jabberd compiled under Cygwin:
+________________________________________
+ifeq ($(__CYGWIN__),1)
+	# Make .def file:
+	echo EXPORTS &gt; dialback.def
+	nm $(dialback_OBJECTS) $(PTHLIB) | grep '^........ [T] _' | \
+		sed 's/[^_]*_//' | sort &gt;&gt; dialback.def
+	dllwrap --def dialback.def --driver-name $(CC) -o dialback.dll\
+		$(dialback_OBJECTS) ../jabberd/jabberd.a $(LDFLAGS) \
+		$(LIBS)
+else
+         $(CC) $(CFLAGS) $(MCFLAGS) -o dialback.so $(dialback_OBJECTS) \
+		$(LDFLAGS) $(LIBS)
+endif
+________________________________________
+
+
+NEW WAY
+
+As it turns out, this is no longer necessary, as the gcc folks have 
+added a wonderful switch called '-shared' that works under Cygwin just 
+as it does elsewhere, allowing the creation of shared libraries to be 
+much more painless.  Now, in short, the above can be reduced to just
+
+________________________________________
+ifeq ($(__CYGWIN__),1)
+	$(CC) $(CFLAGS) $(MCFLAGS) -o dialback.dll $(dialback_OBJECTS) \
+		../jabberd/jabberd.a $(LDFLAGS) $(LIBS)
+else
+         $(CC) $(CFLAGS) $(MCFLAGS) -o dialback.so $(dialback_OBJECTS) \
+		$(LDFLAGS) $(LIBS)
+endif
+________________________________________
+
+NOTE:  Since &quot;MCFLAGS = -shared&quot; in ./platform-settings, we did not
+        need to set that explicitly.  Otherwise we would have simply
+        added that to the list of compiler switches.
+
+Notice in the above revised section that the only difference, besides 
+the file extension of the library, is one additional object called 
+&quot;../jabberd/jabberd.a&quot;.  This brings us to the one crux in developing in 
+Cygwin currently.
+
+MAIN EXECUTABLES SHARING SYMBOLS
+
+The 'jabberd.a' file looks like a stub file because it is.  However, 
+there is no jabberd.so or jabberd.dll in the ./jabberd directory.  That 
+'jabberd.a' file is actually a stub file for the main executable, 
+'jabberd.exe'!  This is due to the modular/plugin nature of the Jabberd 
+program.
+
+When you think of how Jabberd works, with the various modules like jsm 
+and dialback hooked into the main server via the jabber.xml 
+configuration file, it becomes clear that the server process &quot;hooks 
+into&quot; the modules.  This is how it is with most dynamic libraries. 
+However, unlike more common coding, there are also times when the 
+modules interact with the server processes functions/variables, and this 
+requires that the modules can &quot;see&quot; the executables symbols just as the 
+executable can see theirs.  [Think Netscape/Mozilla with plugins, for 
+example.]
+
+In *nix this isn't much of an issue, as compiling an executable and 
+exporting its symbols takes no more effort than doing so with libraries. 
+  Unfortunately, at least at this point, 'ld' under Cygwin doesn't work 
+that way.  It seems that you can EITHER
+
+	1. build an executable, or
+	2. build a shared library with its matching .a stub file.
+
+You cannot do both.
+
+If you try to pass linker options on the compiler line as you might in 
+*nix, attempting to build an executable AND a stub file, things just 
+don't work right.
+
+$(CC) -shared -o library.dll -Wl,--out-implib,liblibrary.dll.a
+
+is the usual way to build a library and matching stub, and this works. 
+However,
+
+$(CC) -shared -o program.exe -Wl,--out-implib,program.a
+
+currently results in 'program.exe' and 'program.a' being generated, but 
+'program.exe' isn't actually an executable.  It's a library!  And 
+attempts to run it fail.
+
+$(CC) -o program.exe -Wl,--out-implib,program.a
+
+results in a working 'program.exe', but a silent failure on creating 
+'program.a', so no such file exists when this command is done.
+
+And the reason all this is necessary is so that you can compile/link the 
+various modules like dialback, jsm, pthsock, etc., where they may be 
+coded to hook back into the main executable.  In *nix, these kinds of 
+issues don't seem to exist as they do currently in Cygwin.
+
+End result:  For the main executable code in ./jabberd, I simply left 
+the Makefile alone for now, using a very old way of building such things 
+under Cygwin.  Please see that Makefile or read the outdated Cygwin FAQ 
+page for more details.
+
+Anyway, hopefully this information might be of use to someone.  I'll 
+quit now as my fingers are a little sore :-/ and I'm getting tired. 
+Please note, as I've stated more than once, I don't code professionally, 
+so please go easy on the flaming if I'm way off-base here.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: newMakes.tar.gz
+Type: application/x-gzip
+Size: 3226 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20031106/8d24930e/attachment-0002.bin">https://www.jabber.org/jdev/attachments/20031106/8d24930e/attachment-0002.bin</A>&gt;
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: jabberd143.diff
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20031106/8d24930e/attachment-0001.asc">https://www.jabber.org/jdev/attachments/20031106/8d24930e/attachment-0001.asc</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="076627.html">[JDEV] MSN-T not sending presences to real MSN users
+</A></li>
+	<LI>Next message: <A HREF="076632.html">[JDEV] JEP-0124: HTTP transport binding
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76629">[ date ]</a>
+              <a href="thread.html#76629">[ thread ]</a>
+              <a href="subject.html#76629">[ subject ]</a>
+              <a href="author.html#76629">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] How to specify username with SASL ANONYMOUS
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20How%20to%20specify%20username%20with%20SASL%20ANONYMOUS&In-Reply-To=%3C20071018152958.GG11601%40stpeter.im%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="055980.html">
+   <LINK REL="Next"  HREF="055982.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] How to specify username with SASL ANONYMOUS</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20How%20to%20specify%20username%20with%20SASL%20ANONYMOUS&In-Reply-To=%3C20071018152958.GG11601%40stpeter.im%3E"
+       TITLE="[jdev] How to specify username with SASL ANONYMOUS">stpeter at stpeter.im
+       </A><BR>
+    <I>Thu Oct 18 10:29:58 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="055980.html">[jdev] How to specify username with SASL ANONYMOUS
+</A></li>
+        <LI>Next message: <A HREF="055982.html">[jdev] How to specify username with SASL ANONYMOUS
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55981">[ date ]</a>
+              <a href="thread.html#55981">[ thread ]</a>
+              <a href="subject.html#55981">[ subject ]</a>
+              <a href="author.html#55981">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Thu, Oct 18, 2007 at 10:19:40AM +0200, Ralph Meijer wrote:
+&gt;<i>
+</I>&gt;<i> On Wed, 2007-10-17 at 15:48 -0600, Peter Saint-Andre wrote:
+</I>&gt;<i> &gt; On Wed, Oct 17, 2007 at 02:40:26PM -0700, Justin Karneges wrote:
+</I>&gt;<i> &gt; &gt; On Wednesday 17 October 2007 2:11 pm, Mark Doliner wrote:
+</I>&gt;<i> &gt; &gt; &gt; So I've read through XEP-0175[1], and I think I have a pretty good idea of
+</I>&gt;<i> &gt; &gt; &gt; how SASL ANONYMOUS login is supposed to work (I love the protocol
+</I>&gt;<i> &gt; &gt; &gt; flow--thank you).
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; But it's not clear to me how the client is supposed to specify a username. 
+</I>&gt;<i> &gt; &gt; &gt; This is supposed to be possible, right?  Or is the node always assigned by
+</I>&gt;<i> &gt; &gt; &gt; the server no matter what?  Should I just send the base64 encoded username
+</I>&gt;<i> &gt; &gt; &gt; as text within the 'auth' element?
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; XEP-175 doesn't seem to mention the fact that SASL ANONYMOUS can send data.  
+</I>&gt;<i> &gt; &gt; The rfc3920bis-04 document even indicates that transmitting an initial 
+</I>&gt;<i> &gt; &gt; response with ANONYMOUS is is invalid (section 7.5.5).  This is wrong, 
+</I>&gt;<i> &gt; &gt; ANONYMOUS can send data, and it can be an initial response or not.  See RFC 
+</I>&gt;<i> &gt; &gt; 4505.
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; The client response for ANONYMOUS is &quot;trace&quot; data.  This is just supposed to 
+</I>&gt;<i> &gt; &gt; be some generic id string, possibly an email address (like how anonymous FTP 
+</I>&gt;<i> &gt; &gt; would often ask you to put your email address as the password, that's what 
+</I>&gt;<i> &gt; &gt; this essentially replaces).  It might be interesting to specify in XEP-175 
+</I>&gt;<i> &gt; &gt; that the trace data may be used as a node suggestion.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; How is ANONYMOUS used right now? Do XMPP servers (1) create a temporary 
+</I>&gt;<i> &gt; node or (2) create a temporary resource for some anonymous user? I think 
+</I>&gt;<i> &gt; that (1) is probably a safer approach, in which case it might be nice to
+</I>&gt;<i> &gt; specify the &quot;trace&quot; data in version 1.1 of XEP-0175 (and of course correct 
+</I>&gt;<i> &gt; rfc3920bis while we're at it).
+</I>&gt;<i> 
+</I>&gt;<i> It seems to me that ANONYMOUS is inherently not intended to give a user
+</I>&gt;<i> a more or less permanent handle that has part of the user's identity
+</I>&gt;<i> encoded in it.
+</I>&gt;<i> 
+</I>&gt;<i> As I see it, the trace data is for allowing administrators to have some
+</I>&gt;<i> way to contact the user. The validity of this information is not
+</I>&gt;<i> verified and also may cause privacy issues if sent automatically by
+</I>&gt;<i> client implementations.
+</I>
+Hmm, that seems correct (yes I contradict myself). As far as I have
+seen, anonymous users get full JIDs like &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">anonymous at example.org</A>/foo&gt;,
+where &quot;foo&quot; is some UUID. And I agree with you that in other systems
+the trace data is used to provide to provide an ID associated with user
+outside the system (similar to providing an email address for anonymous 
+FTP access in the old days).
+
+Although rfc3920bis is not consistent with RFC 4505 on this point (i.e.,
+you can indeed send data), we have not specified any usage for the trace 
+data in XMPP. Until and unless we do so, I don't think it would be good
+to encourage this behavior.
+
+Peter
+
+-- 
+Peter Saint-Andre
+<A HREF="https://stpeter.im/">https://stpeter.im/</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="055980.html">[jdev] How to specify username with SASL ANONYMOUS
+</A></li>
+	<LI>Next message: <A HREF="055982.html">[jdev] How to specify username with SASL ANONYMOUS
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55981">[ date ]</a>
+              <a href="thread.html#55981">[ thread ]</a>
+              <a href="subject.html#55981">[ subject ]</a>
+              <a href="author.html#55981">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

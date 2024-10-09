@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Presence subscription handling bugs in various Jabber	software
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Presence%20subscription%20handling%20bugs%20in%20various%20Jabber%0A%09software&In-Reply-To=20050206151206.GC21618%40serwis2.beta">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="021063.html">
+   <LINK REL="Next"  HREF="021060.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Presence subscription handling bugs in various Jabber	software</H1>
+    <B>Oleg Motienko</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Presence%20subscription%20handling%20bugs%20in%20various%20Jabber%0A%09software&In-Reply-To=20050206151206.GC21618%40serwis2.beta"
+       TITLE="[jdev] Presence subscription handling bugs in various Jabber	software">motienko at gmail.com
+       </A><BR>
+    <I>Tue Feb  8 02:57:17 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="021063.html">[jdev] Presence subscription handling bugs in various	Jabbersoftware
+</A></li>
+        <LI>Next message: <A HREF="021060.html">[jdev] vcard alternative
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#21075">[ date ]</a>
+              <a href="thread.html#21075">[ thread ]</a>
+              <a href="subject.html#21075">[ subject ]</a>
+              <a href="author.html#21075">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello!
+
+Users of our server (running ejabberd) report same bug with jajc
+(<A HREF="http://jajc.ksn.ru">http://jajc.ksn.ru</A>)
+
+
+On Sun, 6 Feb 2005 16:12:06 +0100, Jacek Konieczny &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jajcus at bnet.pl</A>&gt; wrote:
+&gt;<i> Hello,
+</I>&gt;<i> 
+</I>&gt;<i> Most of us know, that some transports abuse
+</I>&gt;<i> &lt;presence type='subscribed'/&gt; stanzas, in a way which is now forbidden
+</I>&gt;<i> by the XMPP-IM specification. That is done because of a very old bug in
+</I>&gt;<i> jabberd-1.x based servers, which accept and process this stanza. It is
+</I>&gt;<i> not good, when anyone is able to add himself to other's roster.
+</I>&gt;<i> 
+</I>&gt;<i> Now, when more and more servers aim at the XMPP compliance I thought
+</I>&gt;<i> such features and abuses are going to die. Unfortunately it seems that
+</I>&gt;<i> I am wrong.
+</I>&gt;<i> 
+</I>&gt;<i> Some users of my server complain, that some users of other servers are
+</I>&gt;<i> able to add themselves to their rosters. It looks like this:
+</I>&gt;<i> 
+</I>&gt;<i>   a - user of my server
+</I>&gt;<i>   A - my server
+</I>&gt;<i>   B - the other server
+</I>&gt;<i>   b - the other user
+</I>&gt;<i> 
+</I>&gt;<i>   They are connected like this:
+</I>&gt;<i> 
+</I>&gt;<i>   a ----(c2s)---- A ------- (s2s) ------ B ------- b
+</I>&gt;<i>   (any        (ejabberd)              (some      (some
+</I>&gt;<i>   client)                              server)    client)
+</I>&gt;<i> 
+</I>&gt;<i>   &quot;a&quot; does not have &quot;b&quot; in his roster, then &quot;b&quot; does &quot;something&quot; that
+</I>&gt;<i>   add it to &quot;a&quot;'s roster by sending &lt;presence type='subscribed'/&gt;
+</I>&gt;<i>   although &quot;a&quot; have never requested it.
+</I>&gt;<i> 
+</I>&gt;<i> Two such cases where reported to me. In the first case, the server &quot;B&quot;
+</I>&gt;<i> was jabber.org (jabberd-1.4.x AFAIK), and the client &quot;b&quot; was (most
+</I>&gt;<i> probably) Psi.
+</I>&gt;<i> 
+</I>&gt;<i> In the second case &quot;B&quot; was WP Jabber (JSM/JSM version 1.1.5 for
+</I>&gt;<i> pthreaded server (Linux 2.6.x)), and &quot;b&quot; Psi (Psi/0.9.3 (SuSE Linux
+</I>&gt;<i> 9.2 (i586))).
+</I>&gt;<i> 
+</I>&gt;<i> Server &quot;A&quot; is always the same: ejabberd/0.7.5 (unix/linux 2.6.7)
+</I>&gt;<i> Client &quot;a&quot; doesn't matter.
+</I>&gt;<i> 
+</I>&gt;<i> Please note, that for that scenario to work there must be bugs
+</I>&gt;<i> on both servers (&quot;A&quot; which should not accept that stanza and &quot;B&quot;, which should
+</I>&gt;<i> not forward it from its client) and a misfeature on the client &quot;b&quot; (I have
+</I>&gt;<i> found nothing in the XMPP specs that forbids client to send unsolicited
+</I>&gt;<i> &lt;presence type=&quot;subscribed&quot; /&gt;). So we have bugs in at least free server
+</I>&gt;<i> implementations (ejabberd, jabberd 1.4.x and WP Jabber) and annoying (for users
+</I>&gt;<i> of buggy servers) misfeature of at least one client (I may be wrong here if it
+</I>&gt;<i> is not the client which generates the &quot;subscribed&quot; stanza). That doesn't look good, as
+</I>&gt;<i> it seems a very big part of global Jabber infrastructure is broken :-(
+</I>&gt;<i> 
+</I>&gt;<i> Or maybe I am wrong and there is only one bug somehere?
+</I>&gt;<i> 
+</I>&gt;<i> I will submit a bug report to the maintainers of the software I use (ejabberd). And
+</I>&gt;<i> I ask you to check your software, and submit the bugs reports or fix the bugs too.
+</I>
+
+-- 
+Regards,
+Oleg
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="021063.html">[jdev] Presence subscription handling bugs in various	Jabbersoftware
+</A></li>
+	<LI>Next message: <A HREF="021060.html">[jdev] vcard alternative
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#21075">[ date ]</a>
+              <a href="thread.html#21075">[ thread ]</a>
+              <a href="subject.html#21075">[ subject ]</a>
+              <a href="author.html#21075">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

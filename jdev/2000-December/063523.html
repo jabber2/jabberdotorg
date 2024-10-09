@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [patch] jabber 1.2 and 1.3 : fix to avoid ignoring new connections
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5Bpatch%5D%20jabber%201.2%20and%201.3%20%3A%20fix%20to%20avoid%20ignoring%20new%20connections&In-Reply-To=%3C3A27895A.CBE6586A%40idealx.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="063522.html">
+   <LINK REL="Next"  HREF="064770.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [patch] jabber 1.2 and 1.3 : fix to avoid ignoring new connections</H1>
+    <B>David Le Corfec</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5Bpatch%5D%20jabber%201.2%20and%201.3%20%3A%20fix%20to%20avoid%20ignoring%20new%20connections&In-Reply-To=%3C3A27895A.CBE6586A%40idealx.com%3E"
+       TITLE="[JDEV] [patch] jabber 1.2 and 1.3 : fix to avoid ignoring new connections">david.le-corfec at idealx.com
+       </A><BR>
+    <I>Fri Dec  1 05:19:54 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="063522.html">[JDEV] Building Jabber 1.2 and the AIM Transport
+</A></li>
+        <LI>Next message: <A HREF="064770.html">[JDEV] Re: [JBUG] [patch] jabber 1.2 and 1.3 : fix to avoid ignoring new connections
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63523">[ date ]</a>
+              <a href="thread.html#63523">[ thread ]</a>
+              <a href="subject.html#63523">[ subject ]</a>
+              <a href="author.html#63523">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>If you attempt to disconnect an user from a JSM module,
+by calling js_session_route(m-&gt;s, NULL) or js_session_end(),
+subsequent connections attempts from any client will fail,
+which is a major bug for a server :)
+
+The following patch is for v1.2 (pthsock/io_select.c),
+but it should be applied to v1.3 (jabberd/mio.c) because
+it's the same code :)
+
+diff -u -p pthsock/io_select.c.orig pthsock/io_select.c
+--- pthsock/io_select.c.orig 2000/11/03 10:10:52
++++ pthsock/io_select.c 2000/12/01 11:02:05
+@@ -360,6 +360,9 @@ void _io_main(void *arg)
+                 /* new connection */
+                 if(cur-&gt;type==type_LISTEN)
+                 {
++                    if (cur-&gt;fd &gt; maxfd)
++                        maxfd = cur-&gt;fd;
++
+                     c = _io_accept(cur);
+                     if(c != NULL)
+                     {
+
+
+-- 
+David Le Corfec
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="063522.html">[JDEV] Building Jabber 1.2 and the AIM Transport
+</A></li>
+	<LI>Next message: <A HREF="064770.html">[JDEV] Re: [JBUG] [patch] jabber 1.2 and 1.3 : fix to avoid ignoring new connections
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63523">[ date ]</a>
+              <a href="thread.html#63523">[ thread ]</a>
+              <a href="subject.html#63523">[ subject ]</a>
+              <a href="author.html#63523">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

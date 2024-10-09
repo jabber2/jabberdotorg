@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] multiple XDB and virtual servers problem
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20multiple%20XDB%20and%20virtual%20servers%20problem&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] multiple XDB and virtual servers problem</H1>
+    <B>Wojciech Dec</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20multiple%20XDB%20and%20virtual%20servers%20problem&In-Reply-To="
+       TITLE="[JDEV] multiple XDB and virtual servers problem">Wojciech.Dec at winuel.com.pl
+       </A><BR>
+    <I>Fri Jan  3 09:55:59 CST 2003</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#15377">[ date ]</a>
+              <a href="thread.html#15377">[ thread ]</a>
+              <a href="subject.html#15377">[ subject ]</a>
+              <a href="author.html#15377">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+
+I have 2 virtual servers at s1.mydomain and s2.mydomain both
+resolved to my ip (where jabberd is running).  I have 3 XDB
+sections and I can't login (or create an account) to second
+virtual server:
+
+  &lt;xdb id=&quot;s1.xdb_java&quot;&gt;
+    &lt;host&gt;s1.mydomain&lt;/host&gt;
+    &lt;ns&gt;jabber:iq:auth&lt;/ns&gt;
+    &lt;ns&gt;jabber:iq:roster&lt;/ns&gt;
+    &lt;ns&gt;vcard-temp&lt;/ns&gt;
+    &lt;accept&gt;
+    ...
+    &lt;/accept&gt;
+  &lt;/xdb&gt;
+
+  &lt;xdb id=&quot;s1.xdb_file&quot;&gt;
+    &lt;host&gt;s1.mydomain&lt;/host&gt;
+    &lt;ns/&gt;
+    &lt;load&gt;
+        &lt;xdb_file&gt;./libs/xdb_file.dll&lt;/xdb_file&gt;
+    &lt;/load&gt;
+    ...
+  &lt;/xdb&gt;
+
+  &lt;xdb id=&quot;s2.xdb_file&quot;&gt;
+    &lt;host&gt;s2.mydomain&lt;/host&gt;
+    &lt;ns/&gt;
+    &lt;load&gt;
+        &lt;xdb_file&gt;./libs/xdb_file.dll&lt;/xdb_file&gt;
+    &lt;/load&gt;
+    ...
+  &lt;/xdb&gt;
+
+I can login to s1.mydomain but I can't login nor register to
+s2.mydomain.  I get the following in server logs:
+  Fri Jan  3 16:04:55 2003  xdb.c:52 xdb_results checking xdb packet
+    &lt;xdb type='error' to='s2.sessions' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">someone at s2.mydomain</A>'
+      ns='jabber:iq:auth' id='4'
+      error='Unable to deliver, destination unknown'&gt;
+      &lt;password xmlns='jabber:iq:auth'&gt;someone&lt;/password&gt;
+    &lt;/xdb&gt;
+and similar entries in error.log file:
+  'bouncing a routed packet to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">someone at s2.mydomain</A> from s2.sessions:
+   Unable to deliver, destination unknown'
+While trying to register as a new user it leaves however some data
+corresponding to 'jabber:iq:last'.
+
+It works fine if I remove &lt;xdb id=&quot;s1.xdb_java&quot;&gt;
+or &lt;xdb id=&quot;s1.xdb_file&quot;&gt;.
+It doesn't work if I join 2nd and 3rd one into common section as
+follows:
+
+  &lt;xdb id=&quot;xdb_file&quot;&gt;
+    &lt;host&gt;s1.mydomain&lt;/host&gt;
+    &lt;host&gt;s2.mydomain&lt;/host&gt;
+    &lt;ns/&gt;
+    &lt;load&gt;
+        &lt;xdb_file&gt;./libs/xdb_file.dll&lt;/xdb_file&gt;
+    &lt;/load&gt;
+    ...
+  &lt;/xdb&gt;
+
+
+What have I to do to make them work all together?
+
+[jabberd 1.4.2 with Cygwin]
+
+
+Thanks for any help.
+
+
+Regards,
+
+Wojciech Dec
+
+
+
+
+</PRE>
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#15377">[ date ]</a>
+              <a href="thread.html#15377">[ thread ]</a>
+              <a href="subject.html#15377">[ subject ]</a>
+              <a href="author.html#15377">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

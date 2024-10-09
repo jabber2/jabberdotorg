@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] possible defect in RosterList behavior
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20possible%20defect%20in%20RosterList%20behavior&In-Reply-To=%3CFF2AF4D762A0D3119E86009027C39A06078AF14F%40sea-ex0.starwave.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="064791.html">
+   <LINK REL="Next"  HREF="064792.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] possible defect in RosterList behavior</H1>
+    <B>Robert Temple</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20possible%20defect%20in%20RosterList%20behavior&In-Reply-To=%3CFF2AF4D762A0D3119E86009027C39A06078AF14F%40sea-ex0.starwave.com%3E"
+       TITLE="[JDEV] possible defect in RosterList behavior">robert.temple at dig.com
+       </A><BR>
+    <I>Tue Feb 13 16:14:42 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="064791.html">[JDEV] possible defect in RosterList behavior
+</A></li>
+        <LI>Next message: <A HREF="064792.html">[JDEV] possible defect in RosterList behavior
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64790">[ date ]</a>
+              <a href="thread.html#64790">[ thread ]</a>
+              <a href="subject.html#64790">[ subject ]</a>
+              <a href="author.html#64790">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I brought this up a few months back and I was told that it was by design.
+
+Here is the archive of that small thread:
+
+<A HREF="http://mailman.jabber.org/pipermail/jdev/2000-September/002997.html">http://mailman.jabber.org/pipermail/jdev/2000-September/002997.html</A>
+
+-----Original Message-----
+From: Jay Chalfant [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at outbackinc.com</A>]
+Sent: Tuesday, February 13, 2001 3:03 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: [JDEV] possible defect in RosterList behavior
+
+
+I noticed today that I won't get any roster item updates from Jabber server
+until I request the entire roster list. Specifically, unless I first do a 
+
+&lt;iq id=&quot;doroster_4&quot; type=&quot;get&quot;&gt;
+  &lt;query xmlns=&quot;jabber:iq:roster&quot; /&gt; 
+&lt;/iq&gt;
+
+I won't get roster updates as I make changes to the roster. I don't see any
+documentation that justifies this behavior so I assume it is a defect. I
+believe it should be considered a defect because the protocol should not
+require a client to retrieve the roster list every time it connects just to
+be able to use the roster list. (We have a specific justification for not
+receiving the roster list on every request.)
+
+Here is a sample sequence (ignore the xml annotation):
+
+- &lt;jabberproxy_add_buddy&gt;
+- &lt;SEND&gt;
+  &lt;presence type=&quot;subscribe&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot;
+/&gt; 
+  &lt;/SEND&gt;
+- &lt;SEND&gt;
+- &lt;iq id=&quot;982087708&quot; type=&quot;set&quot;&gt;
+- &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+  &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; name=&quot;_jchalfan&quot; /&gt; 
+  &lt;/query&gt;
+  &lt;/iq&gt;
+  &lt;/SEND&gt;
+- &lt;RECV&gt;
+  &lt;iq id=&quot;982087708&quot; type=&quot;result&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>/<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">I at P</A>&quot;
+to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>/<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">I at P</A>&quot; /&gt; 
+  &lt;/RECV&gt;
+- &lt;RECV&gt;
+- &lt;presence to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>&quot;
+from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot;&gt;
+  &lt;status&gt;Idle 0 Minutes&lt;/status&gt; 
+  &lt;/presence&gt;
+  &lt;/RECV&gt;
+  &lt;/jabberproxy_add_buddy&gt;
+
+This sequence occured in a session in which I had not requested the whole
+roster list. If I do request the roster list first, I get what I consider is
+a &quot;normal&quot; protocol behavior which includes the 4 (!) roster updates and the
+reverse subscribe request as shown below.
+
+- &lt;winjab_add_buddy&gt;
+- &lt;SENT&gt;
+- &lt;iq id=&quot;JCOM_34&quot; type=&quot;set&quot;&gt;
+- &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+- &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; name=&quot;jchalfan&quot;&gt;
+  &lt;group /&gt; 
+  &lt;/item&gt;
+  &lt;/query&gt;
+  &lt;/iq&gt;
+  &lt;/SENT&gt;
+- &lt;SENT&gt;
+- &lt;presence to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; type=&quot;subscribe&quot;&gt;
+  &lt;status&gt;Normal Subscription Request&lt;/status&gt; 
+  &lt;/presence&gt;
+  &lt;/SENT&gt;
+- &lt;RECV&gt;
+- &lt;iq type=&quot;set&quot;&gt;
+- &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+- &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; name=&quot;jchalfan&quot;
+subscription=&quot;none&quot;&gt;
+  &lt;group /&gt; 
+  &lt;/item&gt;
+  &lt;/query&gt;
+  &lt;/iq&gt;
+  &lt;/RECV&gt;
+- &lt;RECV&gt;
+  &lt;iq id=&quot;JCOM_34&quot; type=&quot;result&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>/a_310&quot;
+to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>/a_310&quot; /&gt; 
+- &lt;iq type=&quot;set&quot;&gt;
+- &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+- &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; name=&quot;jchalfan&quot;
+subscription=&quot;none&quot; ask=&quot;subscribe&quot;&gt;
+  &lt;group /&gt; 
+  &lt;/item&gt;
+  &lt;/query&gt;
+  &lt;/iq&gt;
+- &lt;presence to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>&quot; type=&quot;subscribed&quot;
+from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot;&gt;
+  &lt;status&gt;Normal Subscription Request&lt;/status&gt; 
+  &lt;/presence&gt;
+- &lt;iq type=&quot;set&quot;&gt;
+- &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+- &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; name=&quot;jchalfan&quot;
+subscription=&quot;to&quot;&gt;
+  &lt;group /&gt; 
+  &lt;/item&gt;
+  &lt;/query&gt;
+  &lt;/iq&gt;
+- &lt;presence to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>&quot; type=&quot;subscribe&quot;
+from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot;&gt;
+  &lt;status&gt;Normal Subscription Request&lt;/status&gt; 
+  &lt;/presence&gt;
+- &lt;presence to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>&quot;
+from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot;&gt;
+  &lt;status&gt;Idle 0 Minutes&lt;/status&gt; 
+  &lt;/presence&gt;
+  &lt;/RECV&gt;
+- &lt;SENT&gt;
+  &lt;presence to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; type=&quot;subscribed&quot;
+/&gt; 
+  &lt;/SENT&gt;
+- &lt;RECV&gt;
+- &lt;iq type=&quot;set&quot;&gt;
+- &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+- &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; name=&quot;jchalfan&quot;
+subscription=&quot;both&quot;&gt;
+  &lt;group /&gt; 
+  &lt;/item&gt;
+  &lt;/query&gt;
+  &lt;/iq&gt;
+  &lt;/RECV&gt;
+  &lt;/winjab_add_buddy&gt;
+
+Can someone please clarify if this is a bug or a &quot;feature&quot;.
+
+thanks,
+
+-J
+
+
+
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="064791.html">[JDEV] possible defect in RosterList behavior
+</A></li>
+	<LI>Next message: <A HREF="064792.html">[JDEV] possible defect in RosterList behavior
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64790">[ date ]</a>
+              <a href="thread.html#64790">[ thread ]</a>
+              <a href="subject.html#64790">[ subject ]</a>
+              <a href="author.html#64790">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

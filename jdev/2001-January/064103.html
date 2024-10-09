@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Interesting%20%22service%22%20vs%20%22xdb%22%20vs%20%22agent%22%20thing&In-Reply-To=%3C01011000251902.00457%40dennis%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="064102.html">
+   <LINK REL="Next"  HREF="064104.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing</H1>
+    <B>Dennis Noordsij</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Interesting%20%22service%22%20vs%20%22xdb%22%20vs%20%22agent%22%20thing&In-Reply-To=%3C01011000251902.00457%40dennis%3E"
+       TITLE="[JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing">dennis.noordsij at wiral.com
+       </A><BR>
+    <I>Tue Jan  9 16:25:19 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="064102.html">[JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing
+</A></li>
+        <LI>Next message: <A HREF="064104.html">[JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64103">[ date ]</a>
+              <a href="thread.html#64103">[ thread ]</a>
+              <a href="subject.html#64103">[ subject ]</a>
+              <a href="author.html#64103">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tuesday 09 January 2001 22:51, you wrote:
+&gt;<i> Depends on how attached you are to XDB packets, and
+</I>&gt;<i> if you can build your handler to accept other
+</I>&gt;<i> types of packets. Put simply, the way a
+</I>&gt;<i> base_accept service functions is the exact same
+</I>&gt;<i> way that a base_accept xdb functions. Meaning,
+</I>&gt;<i> set it up as a service (just change your xdb tags to
+</I>&gt;<i> service), and direct your user directory requests to it.
+</I>&gt;<i>
+</I>&gt;<i> Basically, build a second handler to handle iq's or
+</I>&gt;<i> whatever type of request and have it talk
+</I>&gt;<i> to the db... You're not bound to using XDB packets
+</I>&gt;<i> for messages that simply QUERY a database, so set
+</I>&gt;<i> up a similar handler that will accept &lt;iq&gt; requests.
+</I>&gt;<i>
+</I>&gt;<i> Matthew D. Diez
+</I>
+
+So basically duplicate all the code into a new handler? I don't want to 
+divide the system into one program handling xdb requests and one handling 
+search requests. The handler pools a bunch of threads with connections to the 
+database, I would like the pools and connections to handle both xdb and 
+search. (ie more effective pool)
+
+Yes, I can add a service section, and run the exact same program twice. Or I 
+can add a new send/receive thread in the program that connects to jabber 
+again on a different port for the search requests and still distribute them 
+among the same threads. 
+
+Probably best way to do it. 
+
+2 incoming sockets (to jabber), all xml goes onto the same stack.
+
+Threads grab them, process them, they know about both &lt;iq&gt; and &lt;xdb&gt;, then 
+put them on an outgoing queue.
+
+Outgoing queue handler knows that &lt;iq&gt; replies to go socket A and &lt;xdb&gt; 
+replies to go socket B. 
+
+But it would be nicer if I could add 
+&lt;agent id=&quot;name_of_xdb_component&quot;&gt;
+ &lt;search/&gt;
+  &lt;etc../&gt;
+&lt;/agent&gt;
+ 
+and have &lt;iq&gt; packets go to the name_of_xdb_component :-)
+
+
+Regards,
+Dennis
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="064102.html">[JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing
+</A></li>
+	<LI>Next message: <A HREF="064104.html">[JDEV] Interesting &quot;service&quot; vs &quot;xdb&quot; vs &quot;agent&quot; thing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64103">[ date ]</a>
+              <a href="thread.html#64103">[ thread ]</a>
+              <a href="subject.html#64103">[ subject ]</a>
+              <a href="author.html#64103">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

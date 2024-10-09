@@ -1,0 +1,249 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Add-on support from Jabber protocol
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Add-on%20support%20from%20Jabber%20protocol&In-Reply-To=%3C002301c11aa3%24eefb42c0%247f36c5cb%40VAIOASH%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="038222.html">
+   <LINK REL="Next"  HREF="038209.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Add-on support from Jabber protocol</H1>
+    <B>Ashvil</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Add-on%20support%20from%20Jabber%20protocol&In-Reply-To=%3C002301c11aa3%24eefb42c0%247f36c5cb%40VAIOASH%3E"
+       TITLE="[JDEV] Add-on support from Jabber protocol">ashvil at i3connect.net
+       </A><BR>
+    <I>Wed Aug  1 11:05:43 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="038222.html">[JDEV] IQ queries sent to client vs. handled by server?
+</A></li>
+        <LI>Next message: <A HREF="038209.html">[JDEV] ICQ Transport problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38204">[ date ]</a>
+              <a href="thread.html#38204">[ thread ]</a>
+              <a href="subject.html#38204">[ subject ]</a>
+              <a href="author.html#38204">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Julian,
+
+MS Word was giving me headaches trying to get a decent HTML file out of it,
+so I gave up
+and published a PDF file. Here is the same message in text format, but the
+formatted
+PDF is a bit easier to read.
+
+Regards,
+Ashvil
+
+
+Proposed Wire Protocol extensions to the Jabber protocol v0.1
+
+Goal
+This is a mini-project to create and document extensions to the Jabber wire
+protocol. IM clients that support add-ons will use this. Once this is
+complete (Target Date Sept. 1, 2001), this will be submitted to the
+Jabber.org community. This proposal talks about creating three new envelope
+messages with the intention of having client inter-op with other game
+playing systems.
+
+Disclaimer
+This document is at a proposal stage only. The authors are not experts at
+the Jabber protocol, so it is possible there may be serious errors in this
+proposal.
+
+Description
+These are the proposed extensions to the Jabber wire format that we want to
+use in Magrathea, our game playing system built using the Jabber protocol.
+The reason behind documenting this and going thru a review process is to
+encourage other clients to support the protocol and reap the benefits of an
+open IM system. The thing we like most about Jabber is the open wire
+protocol and we to keep it that way.
+
+About Magrathea
+Magrathea is an application that will support different game add-ons. Right
+now, it supports tic-tac-toe and chess, but we envision many more different
+games add-ons. The goal here is to document the wire protocol to as to
+enable others gaming systems to talk to it. You can download Magrathea at
+<A HREF="http://i3Connect.com.">http://i3Connect.com.</A>
+
+NOTE - This protocol is not supported in Magrathea as of yet. We are looking
+for feedback from the Jabber community before implementing it. It may change
+substantially based on feedback from the Jabber community. We encourage you
+to experiment with it and provide your feedback, but keep in mind this is
+only a proposal.
+
+To Do List
+Propose this to the Jabber community and use the feedback to update the
+protocol.
+Document these protocol extensions in a more structured format.
+Implement them in Magrathea beta and check if it works in the real world ;-)
+Close the mini-project and submit the extensions to jabber.org
+Test other clients for inter-op.
+
+
+
+
+
+(contd.)
+There are 3 different messages that we propose
+
+Browsing
+We need to find what add-ons the other client supports.
+
+    Query for getting client information &amp; supported add-ons by client
+        &lt;iq type='get' to='jid2'&gt;
+            &lt;user xmlns='jabber:iq:browse'/&gt;
+        &lt;/iq&gt;
+
+    Response
+        &lt;iq type='result' to='jid1' from='jid2'&gt;
+            &lt;user xmlns='jabber:iq:browse' type='client' name='i3c'&gt;
+                  &lt;addon type='chess'&gt;
+&lt;name&gt;FireChess&lt;/name&gt;
+&lt;displayname&gt;Play FireChess&lt;/displayname&gt;
+     &lt;/addon&gt;
+    &lt;addon type='bridge'&gt;
+..
+                 &lt;addon&gt;
+            &lt;/user&gt;
+        &lt;/iq&gt;
+
+The add-on type determines the actual game type. In this example, 'chess'
+will determine the actual wire format used to transfer information.
+FireChess is the name of the game that support the 'chess' wire protocol.
+
+Issue - How do we ensure uniqueness of both names and type attribute of the
+add-on element?
+
+
+Establishing session between add-ons
+Once a game is to be started, then a session is created. Session ids are
+used to route messages to the right add-on.
+
+    XML Protocol for asking peer to accept &amp; create session.
+        &lt;iq type='set' to='jid2'&gt;
+            &lt;session type='' name=''/&gt;
+        &lt;/iq&gt;
+
+    Response
+        &lt;iq type='result' to='jid1' from='jid2'&gt;
+            &lt;session id=''100' type='chess' name='FireChess' /&gt;
+        &lt;/iq&gt;
+
+Note - It is unclear to the authors (since they not involved with the
+evolution of the Jabber protocol), why the concept of sessions was not
+introduced. Would like feedback on this issue.
+
+
+(contd.)
+XML Protocol for exchanging Messages between add-ons over a session
+This allows you to send  messages to different sessions.
+
+    &lt;iq type='set' to='jid2'&gt;
+        &lt;message sessionid='100' xmlns='chess'&gt;
+            &lt;Move From='D7' To='D5' /&gt;
+        &lt;/message&gt;
+    &lt;/iq&gt;
+
+
+The child elements of the message are defined by the add-on type. They exist
+in the add-on namespace and the add-on needs to decide what elements it
+needs to support.
+
+Please send us your feedback directly to the authors or the jdev mailing
+list at jabber.org. We will announce new versions of the document at
+<A HREF="http://dev.i3Connect.com.">http://dev.i3Connect.com.</A>
+
+Thanks in Advance,
+
+Ashvil D'Costa (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Ashvil at i3Connect.com</A>)
+Vijay Balani (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Vijay at i3Connect.com</A>)
+
+
+
+
+
+
+
+
+
+----- Original Message -----
+From: &quot;Julian Missig&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">julian at aspect.net</A>&gt;
+To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ashvil at i3connect.net</A>&gt;; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Sent: Wednesday, August 01, 2001 8:28 PM
+Subject: Re: [JDEV] Add-on support from Jabber protocol
+
+
+&gt;<i> Well, to start, what do you need with a) that cannot be done with
+</I>jabber:iq:browse?
+&gt;<i> (Sorry, I can't read the PDF here at work)
+</I>&gt;<i>
+</I>&gt;<i> Julian
+</I>&gt;<i>
+</I>&gt;<i> ---- Original Message ----
+</I>&gt;<i> From: Ashvil
+</I>&gt;<i> Date: Wed 8/1/01 9:42
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: [JDEV] Add-on support from Jabber protocol
+</I>&gt;<i>
+</I>&gt;<i> Based on the feedback we got from Thomas Charron on creating some open
+</I>&gt;<i> extensions to the Jabber protocol, we have a first draft on what we think
+</I>&gt;<i> would be needed for Magrathea.
+</I>&gt;<i>
+</I>&gt;<i> We need
+</I>&gt;<i> a) a way for the client to query what add-ons are installed
+</I>&gt;<i> b) a way to establish session to the add-on
+</I>&gt;<i> c) provide the communication envelope between the add-ons.
+</I>&gt;<i>
+</I>&gt;<i> Here is the proposal in PDF format.
+</I>&gt;<i> <A HREF="http://dev.i3connect.com/proposal.pdf">http://dev.i3connect.com/proposal.pdf</A>
+</I>&gt;<i>
+</I>&gt;<i> I hope we can quickly create a simple wire protocol to support the above
+</I>&gt;<i> needs. We have tried to design the wire format in accordance with the
+</I>other
+&gt;<i> jabber messages but we don't have the long history and expertise in
+</I>Jabber,
+&gt;<i> you folks have. So your feedback is highly valued.
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i> Ashvil
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="038222.html">[JDEV] IQ queries sent to client vs. handled by server?
+</A></li>
+	<LI>Next message: <A HREF="038209.html">[JDEV] ICQ Transport problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38204">[ date ]</a>
+              <a href="thread.html#38204">[ thread ]</a>
+              <a href="subject.html#38204">[ subject ]</a>
+              <a href="author.html#38204">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

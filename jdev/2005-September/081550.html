@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Second-guessing dns for s2s
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Second-guessing%20dns%20for%20s2s&In-Reply-To=%3C4335FF09.5030908%40coders.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="081548.html">
+   <LINK REL="Next"  HREF="081551.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Second-guessing dns for s2s</H1>
+    <B>Perry Lorier</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Second-guessing%20dns%20for%20s2s&In-Reply-To=%3C4335FF09.5030908%40coders.net%3E"
+       TITLE="[jdev] Second-guessing dns for s2s">isomer at coders.net
+       </A><BR>
+    <I>Sat Sep 24 20:36:09 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="081548.html">[jdev] Second-guessing dns for s2s
+</A></li>
+        <LI>Next message: <A HREF="081551.html">[jdev] Second-guessing dns for s2s
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81550">[ date ]</a>
+              <a href="thread.html#81550">[ thread ]</a>
+              <a href="subject.html#81550">[ subject ]</a>
+              <a href="author.html#81550">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+&gt;<i> Are you playing devil's advocate or are you serious? If I had to guess,
+</I>&gt;<i> I'd say that 99.9% of public XMPP servers are deployed at [domain].com
+</I>&gt;<i> or [sub].[domain].com. They're not deployed at
+</I>&gt;<i> [sub].[sub].[sub].[domain].com. This means that there are generally
+</I>&gt;<i> never &quot;unused&quot; or &quot;hardly used&quot; domains up the tree from any particular
+</I>&gt;<i> XMPP server that somebody could stealthily take over.
+</I>
+We run our conference server on conference.jabber.meta.net.nz.  This is
+a sub.sub.sub.domain.nz, and is probably very common for companies using
+jabber outside the US where their domain is in a CC TLD.
+
+&gt;<i> What I'd love to see is that people generally agree that this algorithm:
+</I>&gt;<i> 
+</I>&gt;<i>  * Is a miniscule security risk beyond standard dial-back. If you can't
+</I>&gt;<i> trust your DNS tree, you can't trust dial-back.
+</I>
+Perhaps a little aside here, IE looks up <A HREF="http://wpad">http://wpad</A> to try and auto
+discover a proxy.  This means it tends to walk up the DNS tree of the
+host of the machine to find &quot;wpad.somedomain&quot;.
+
+This meant Microsoft had to issue a patch to fix it (
+<A HREF="http://www.microsoft.com/technet/security/bulletin/ms99-054.mspx">http://www.microsoft.com/technet/security/bulletin/ms99-054.mspx</A> ).
+There are a lot of people that don't have this patch applied. You seem
+to be suggesting the same thing.
+
+What happens if I register _tcp.com ?
+
+&gt;<i>  * Is a reasonable workaround given today's environment.
+</I>
+If you can't afford to go buy a domain name that you fully control to
+run your jabber server under, then what kind of quality to end users are
+you going to be able to provide?  This may be useful in a test
+environment, but not on the production Internet.
+
+&gt;<i>  * Is a hack that it would be great to get rid of if a better
+</I>&gt;<i> alternative can be thought of.
+</I>
+Buy a domain name, or get control of a subdomain of one?
+
+&gt;<i> If it's not the general community consensus that the above is true,
+</I>&gt;<i> we'll disable the algorithm by default.
+</I>
+This opens a can of worms.  I occasionally write transports/bots for
+xmpp.  I might convince a server admin to delegate me say
+&quot;nifty.jabber.org&quot;.  Now one day you might want to talk to
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at nifty.jabber.org</A>&quot;, but due to a hiccup on the Internet, the DNS
+fails to resolve (maybe someone walked in front of your wireless card
+just as you were doing the lookup).  Now you start sending messages to
+jabber.org.  You are relying on jabber.org to reject those messages.
+But say that the jabber.org admins are feeling evil, (or even just a bug
+in their software), now the message gets delivered to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at jabber.org</A>,
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at jabber.org</A> isn't anyone at all related to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at nifty.jabber.org.</A>
+
+And before you say that &quot;the server shouldn't do this&quot;, think about a
+server that's configured to listen to *.jabber.org, it's a potentially
+useful feature.  Lots of people actually do this for webservers then
+rely on DNS to not send people to the server if the domain doesn't
+exist, why would this idiom not be used in the jabber world?
+
+You've replaced two security systems (my machine shouldn't be sending
+messages to jabber.org at all and jabber.org should reject them even if
+it does) with only one.  The more layers of security you have the more
+secure you are.
+
+&gt;&gt;<i>While requiring a signed certificate is a step up, it is only 
+</I>&gt;&gt;<i>a small step it. It are still unknown servers you are talking 
+</I>&gt;&gt;<i>to, thus unknown certificates.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> That's the point of a CA. If a CA signs a cert, that means you should
+</I>&gt;<i> trust it. No security is perfect, but the CA system is the bedrock of
+</I>&gt;<i> internet security. I don't particularly like how the CA system works,
+</I>&gt;<i> but that's another issue.
+</I>
+So you can't get a subdomain (for $20 or so[1]), but I can get a SSL
+Cert for ~$1000?[2].  It's not that you can't run services, coz you're
+running a jabber server? What is the problem you're trying to solve here?
+
+&gt;<i> 
+</I>&gt;&gt;<i>No matter how bad you want a feature, compromising security 
+</I>&gt;&gt;<i>is not the right answer.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> I disagree. Nothing is a black and white issue -- features always have
+</I>&gt;<i> to be weighed against security. Many people won't go sky diving, but
+</I>&gt;<i> most feel reasonably safe driving a car despite the fact that tens of
+</I>&gt;<i> thousands die each year in car wrecks. For ultimate safety, s2s should
+</I>&gt;<i> just be disabled. :) In our opinion, our DNS algorithm isn't a
+</I>&gt;<i> significant risk beyond what you get with standard dial-back and is a
+</I>&gt;<i> virtually non-existent risk if you do decide to require CA certs for s2s
+</I>&gt;<i> connections.
+</I>&gt;<i> 
+</I>&gt;<i> If people generally agree with all of the above, then hopefully we can
+</I>&gt;<i> move on to discussing alternatives to sub-domains further.
+</I>
+Why not just use wildcard DNS to achieve what you want to do?
+
+[1]: <A HREF="http://networksolutions.com/">http://networksolutions.com/</A>
+
+[2] <A HREF="http://www.verisign.com/">http://www.verisign.com/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="081548.html">[jdev] Second-guessing dns for s2s
+</A></li>
+	<LI>Next message: <A HREF="081551.html">[jdev] Second-guessing dns for s2s
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81550">[ date ]</a>
+              <a href="thread.html#81550">[ thread ]</a>
+              <a href="subject.html#81550">[ subject ]</a>
+              <a href="author.html#81550">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

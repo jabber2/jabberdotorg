@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] How to handle SRV lookups when the root domain is	referenced
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20How%20to%20handle%20SRV%20lookups%20when%20the%20root%20domain%20is%0A%09referenced&In-Reply-To=%3C4457DFA4.1000001%40tthias.eu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="083118.html">
+   <LINK REL="Next"  HREF="083116.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] How to handle SRV lookups when the root domain is	referenced</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20How%20to%20handle%20SRV%20lookups%20when%20the%20root%20domain%20is%0A%09referenced&In-Reply-To=%3C4457DFA4.1000001%40tthias.eu%3E"
+       TITLE="[jdev] How to handle SRV lookups when the root domain is	referenced">m at tthias.eu
+       </A><BR>
+    <I>Tue May  2 17:39:32 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="083118.html">[jdev] How to handle SRV lookups when the root domain is	referenced
+</A></li>
+        <LI>Next message: <A HREF="083116.html">[jdev] How to handle SRV lookups when the root domain is	referenced
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83115">[ date ]</a>
+              <a href="thread.html#83115">[ thread ]</a>
+              <a href="subject.html#83115">[ subject ]</a>
+              <a href="author.html#83115">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Bruce!
+
+The s2s component in jabberd 1.4.4 will merely ignore the &quot;.&quot; entry. It 
+will try to finde a A record for &quot;.&quot; and as this does not resolve skip 
+to the next resolved entry, if there are entries with lower priority for 
+the same service.
+jabberd 1.4.4 will NOT try to resolve &quot;example.com&quot; after it found a 
+_xmpp-server._tcp.example.com record. - Doesn't matter if one of the 
+result records contained a &quot;.&quot; or not. If there has been a 
+_xmpp-server._tcp.example.com record, there are no further tries. If 
+there is no _xmpp-server._tcp.example.com record, it will try 
+_jabber._tcp.example.com - and if there is also no such record, it will 
+fall back to example.com.
+Other service names are not tried by default, but can be configured - 
+with the exception, that you cannot distinguish between _pres for 
+&lt;presence/&gt; and _im for &lt;message/&gt;.
+
+Therefore I'd say jabberd 1.4.4 works like it should in most of the 
+cases, even if there is a &quot;SRV 0 0 0 .&quot; record - which will result in 
+jabberd 1.4.4 stopping further DNS resolution.
+
+Just in the case, that there is something like the following in DNS, 
+jabberd 1.4.4 would be wrong (but I think this example is of academic 
+nature, and can hardly imagine, that this could be really used in DNS):
+
+_xmpp-server._tcp.example.com 3600 SRV 5 0 0 .
+_xmpp-server._tcp.example.com 3600 SRV 10 0 5269 s2s.example.com
+
+In that case jabberd 1.4.4 would contact s2s.example.com on port 5269 - 
+while it shouldn't.
+
+
+Tot kijk
+    Matthias
+
+
+Bruce Campbell schrieb:
+&gt;<i>
+</I>&gt;<i> In XMPP-IM (rfc3921), the appropriate SRV name to look up for server 
+</I>&gt;<i> to server connections is '_xmpp-server._tcp.HOST', followed by 
+</I>&gt;<i> '_im._xmpp.HOST' or '_pres._xmpp.HOST', followed by 
+</I>&gt;<i> '_jabber._tcp.HOST' (if one wishes compatibility with old records) 
+</I>&gt;<i> finally followed by A/AAAA lookups for 'HOST'.
+</I>&gt;<i>
+</I>&gt;<i> In both XMPP-CORE and XMPP-IM, the wording used is 'if the (previous) 
+</I>&gt;<i> address record resolution fails, (continue with the next resolution)'. 
+</I>&gt;<i> In DNS terms, 'fails' usually means 'if there was no positive answer'.
+</I>&gt;<i>
+</I>&gt;<i> Both of these documents also refer to DNS-SRV (rfc2781), which states 
+</I>&gt;<i> that if the target of the sole (successful) SRV answer is the root 
+</I>&gt;<i> domain ('.'), then 'abort'.
+</I>&gt;<i>
+</I>&gt;<i> Since there appear to be two sides of the fence in what to do after 
+</I>&gt;<i> encountering the DNS-SRV 'abort', I'm interested in knowing what have 
+</I>&gt;<i> Jabber server implementors done with the following corner case, 
+</I>&gt;<i> assuming that they want to deliver a &lt;presence/&gt; and initial 
+</I>&gt;<i> &lt;message/&gt; to a JID @example.com :
+</I>&gt;<i>
+</I>&gt;<i>     _xmpp-server._tcp.example.com.    IN SRV 0 0 5269 .
+</I>&gt;<i>     _im._xmpp.example.com.        IN SRC 0 0 5269 imhandler.example.com.
+</I>&gt;<i>     _pres._xmpp.example.com.    IN SRC 0 0 5269 presence.example.com.
+</I>&gt;<i>     _jabber._tcp.example.com.    IN SRV 0 0 5269 jabber.example.com.
+</I>&gt;<i>     example.com.            IN A        192.168.1.1
+</I>&gt;<i>     jabber.example.com.        IN A        192.168.2.2
+</I>&gt;<i>     imhandler.example.com.        IN A        192.168.3.3
+</I>&gt;<i>     presence.example.com.        IN A        192.168.4.4
+</I>&gt;<i>
+</I>&gt;<i> Since the lookup of _xmpp-server._tcp.example.com is successful, but 
+</I>&gt;<i> returns just one record with a target of '.', have implementors 
+</I>&gt;<i> treated this record as:
+</I>&gt;<i>
+</I>&gt;<i>     'stop attempting to look up an address for &quot;example.com&quot;',
+</I>&gt;<i>     ( my personal intrepretation )
+</I>&gt;<i>  or
+</I>&gt;<i>     'fallback to looking up &quot;_im._xmpp.example.com.&quot; or
+</I>&gt;<i>      &quot;_pres._xmpp.example.com.&quot; as appropriate',
+</I>&gt;<i>     ( after all, there wasn't anything with an address resulting
+</I>&gt;<i>       from the first lookup ).
+</I>&gt;<i>  or
+</I>&gt;<i>     'fallback to looking up &quot;_jabber.example.com.&quot;'
+</I>&gt;<i>     ( the &quot;I haven't read XMPP-IM&quot; response ;) )
+</I>&gt;<i>  or
+</I>&gt;<i>     'stop attempting to look up SRV records and fallback to looking
+</I>&gt;<i>      up A/AAAA for &quot;example.com&quot;'
+</I>&gt;<i>  ?
+</I>&gt;<i>
+</I>&gt;<i> Various giggle searches on this topic haven't really answered the 
+</I>&gt;<i> question, and I'm not really keen on examining source code ;)
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="083118.html">[jdev] How to handle SRV lookups when the root domain is	referenced
+</A></li>
+	<LI>Next message: <A HREF="083116.html">[jdev] How to handle SRV lookups when the root domain is	referenced
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83115">[ date ]</a>
+              <a href="thread.html#83115">[ thread ]</a>
+              <a href="subject.html#83115">[ subject ]</a>
+              <a href="author.html#83115">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

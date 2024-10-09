@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] core dump with 1.0.1 on redhat 6.2 -- back trace
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20core%20dump%20with%201.0.1%20on%20redhat%206.2%20--%20back%20trace&In-Reply-To=%3CPine.BSF.4.20.0009061345220.31864-100000%40eng.cybersites.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="062441.html">
+   <LINK REL="Next"  HREF="062443.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] core dump with 1.0.1 on redhat 6.2 -- back trace</H1>
+    <B>Benjamin Kahn</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20core%20dump%20with%201.0.1%20on%20redhat%206.2%20--%20back%20trace&In-Reply-To=%3CPine.BSF.4.20.0009061345220.31864-100000%40eng.cybersites.com%3E"
+       TITLE="[JDEV] core dump with 1.0.1 on redhat 6.2 -- back trace">xkahn at cybersites.com
+       </A><BR>
+    <I>Wed Sep  6 12:47:56 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="062441.html">[JDEV] core dump with 1.0.1 on redhat 6.2 -- back trace
+</A></li>
+        <LI>Next message: <A HREF="062443.html">[JDEV] what pth configure parameter would you guys recommand
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62442">[ date ]</a>
+              <a href="thread.html#62442">[ thread ]</a>
+              <a href="subject.html#62442">[ subject ]</a>
+              <a href="author.html#62442">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>	When giving a backtrace with gdb, you MUST use this order to
+getting it:
+
+$ gdb jserver
+(gdb) handle SIGUSR1 nostop noprint
+(gdb) run -D
+:<i>
+</I>.
+***crash***
+(gdb) bt
+
+	If you skip the handle command, all your backtraces will look like
+the message below.  That's because Jabber uses PTH which uses SIGUSR1 to
+handle tread switches and GDB flags that as an interesting event.  (The
+other way is to just &quot;cont&quot; until you get a real crash.)
+
+On Wed, 6 Sep 2000, Cheng-Wei Cheng wrote:
+
+&gt;<i> Date: Wed, 6 Sep 2000 10:33:09 -0700 
+</I>&gt;<i> From: Cheng-Wei Cheng &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">CCheng at gluecode.com</A>&gt;
+</I>&gt;<i> Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> To: &quot;'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> Subject: RE: [JDEV] core dump with 1.0.1 on redhat 6.2 -- back trace
+</I>&gt;<i> 
+</I>&gt;<i> (gdb) run 
+</I>&gt;<i> Starting program: /usr/local/jabber/bin/jserver 
+</I>&gt;<i> 
+</I>&gt;<i> Program received signal SIGUSR1, User defined signal 1.
+</I>&gt;<i> 0x400afdeb in __sigsuspend (set=0xbffff79c) at
+</I>&gt;<i> ../sysdeps/unix/sysv/linux/sigsuspend.c:48
+</I>&gt;<i> 48      ../sysdeps/unix/sysv/linux/sigsuspend.c: No such file or directory.
+</I>&gt;<i> (gdb) bt
+</I>&gt;<i> #0  0x400afdeb in __sigsuspend (set=0xbffff79c) at
+</I>&gt;<i> ../sysdeps/unix/sysv/linux/sigsuspend.c:48
+</I>&gt;<i> #1  0x40060ff6 in __pth_mctx_set () from /usr/local/lib/libpth.so.13
+</I>&gt;<i> #2  0x0 in ?? ()
+</I>&gt;<i> 
+</I>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Thomas Muldowney [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">temas at box5.net</A>]
+</I>&gt;<i> Sent: Wednesday, September 06, 2000 10:28 AM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] core dump with 1.0.1 on redhat 6.2
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Could you supply a backtrace?  This information isn't enough to give a good
+</I>&gt;<i> diagnostic of what is happening.
+</I>&gt;<i> 
+</I>&gt;<i> --temas
+</I>&gt;<i> 
+</I>&gt;<i> On Tue, Sep 05, 2000 at 06:59:05PM -0700, Cheng-Wei Cheng wrote:
+</I>&gt;<i> &gt; Here is the complete documentation step by step on what I have done
+</I>&gt;<i> &gt; please help
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; jabber(latest ver 1.0.1)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;   source
+</I>&gt;<i> &gt;   - www.jabber.com
+</I>&gt;<i> &gt;   - www.jabbercentral.org
+</I>&gt;<i> &gt;   - www.jabber.org
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;   Requirement
+</I>&gt;<i> &gt;   - libetherx
+</I>&gt;<i> &gt;   - libxode
+</I>&gt;<i> &gt;   - libjabber
+</I>&gt;<i> &gt;   - GNU-pth - portable thread lib
+</I>&gt;<i> &gt;   - GNU-adns - advance dns client
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;   server
+</I>&gt;<i> &gt;     NOTE: Installation in the order of the dependency
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;     install (libxode)
+</I>&gt;<i> &gt;     - CC=&quot;gcc -O6 &quot; ./configure
+</I>&gt;<i> &gt;     - make
+</I>&gt;<i> &gt;     - make install
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;     install (libjabber)
+</I>&gt;<i> &gt;     - CC=&quot;gcc -O6 &quot; ./configure \
+</I>&gt;<i> &gt;       --with-libxode-includes=/usr/local/include \
+</I>&gt;<i> &gt;       --with-libxode-libs=/usr/local/libs \
+</I>&gt;<i> &gt;       --with-libxode
+</I>&gt;<i> &gt;     - make
+</I>&gt;<i> &gt;     - make install
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;     install (GNU-pth)
+</I>&gt;<i> &gt;     - CC=&quot;gcc -O6 &quot; CFLAGS=-O2 LIBS=-lposix ./configure \
+</I>&gt;<i> &gt;     --enable-optimize \
+</I>&gt;<i> &gt;     - make
+</I>&gt;<i> &gt;     - make test
+</I>&gt;<i> &gt;     - make install
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;     install (GNU-adns)
+</I>&gt;<i> &gt;     - CC=&quot;gcc -O6 &quot; ./configure --disable-dynamic
+</I>&gt;<i> &gt;     - make
+</I>&gt;<i> &gt;     - make install
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;     install (libetherx)
+</I>&gt;<i> &gt;     - CC=&quot;gcc -O6 &quot;  ./configure --disable-rate-limits \
+</I>&gt;<i> &gt;       --with-libxode-includes=/usr/local/include \
+</I>&gt;<i> &gt;       --with-libxode-libs=/usr/local/libs \
+</I>&gt;<i> &gt;       --with-libxode
+</I>&gt;<i> &gt;     - make
+</I>&gt;<i> &gt;     - make install
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;     install (jabber-transport)
+</I>&gt;<i> &gt;     - CC=&quot;gcc -O6 -L/usr/local/lib -I/usr/local/include -L/usr/lib
+</I>&gt;<i> &gt; -I/usr/local/include -I. -L. &quot; LIBS=-lposix ./configure \
+</I>&gt;<i> &gt;     --sysconfdir=/etc \
+</I>&gt;<i> &gt;     --mandir=/usr/man \
+</I>&gt;<i> &gt;     --prefix=/usr/local/jabber \
+</I>&gt;<i> &gt;     --with-libxode-includes=/usr/local/include \
+</I>&gt;<i> &gt;     --with-libxode-libs=/usr/local/lib \
+</I>&gt;<i> &gt;     --with-libxode \
+</I>&gt;<i> &gt;     --with-jabber-includes=/usr/local/include \
+</I>&gt;<i> &gt;     --with-jabber-libs=/usr/local/lib \
+</I>&gt;<i> &gt;     --with-jabber \
+</I>&gt;<i> &gt;     --with-etherx-includes=/usr/local/include \
+</I>&gt;<i> &gt;     --with-etherx-libs=/usr/local/lib \
+</I>&gt;<i> &gt;     --with-etherx \
+</I>&gt;<i> &gt;     --with-svc-client \
+</I>&gt;<i> &gt;     --with-svc-hell \
+</I>&gt;<i> &gt;     --with-svc-irc \
+</I>&gt;<i> &gt;     --with-svc-telnet \
+</I>&gt;<i> &gt;     --with-xdb-file \
+</I>&gt;<i> &gt;     --enable-all-static \
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;     ?--with-svc-http experimental
+</I>&gt;<i> &gt;     ?--enable-dso-modules='dso list'
+</I>&gt;<i> &gt;     ?--enable-static-modules='static list'
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;     - make
+</I>&gt;<i> &gt;     - make install
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+						-Ben
+
+------------------------------------ |\      _,,,--,,_  ,) ----------
+Benjamin Kahn                        /,`.-'`'   -,  ;-;;'
+(212) 924 - 2220 ext 201            |,4-  ) )-,_ ) /\
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ben at cybersites.com</A> --------------- '---''(_/--' (_/-' ---------------
+   I just want to make the world a better place for me to live in.
+			-Lucy in a Peanuts comic
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="062441.html">[JDEV] core dump with 1.0.1 on redhat 6.2 -- back trace
+</A></li>
+	<LI>Next message: <A HREF="062443.html">[JDEV] what pth configure parameter would you guys recommand
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62442">[ date ]</a>
+              <a href="thread.html#62442">[ thread ]</a>
+              <a href="subject.html#62442">[ subject ]</a>
+              <a href="author.html#62442">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

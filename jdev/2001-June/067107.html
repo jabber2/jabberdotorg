@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Doc on MIO API for Transport dev available?---&gt; Modul e API or Transport API exists ?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Doc%20on%20MIO%20API%20for%20Transport%20dev%20available%3F---%3E%20Modul%20e%20API%20or%20Transport%20API%20exists%20%3F&In-Reply-To=%3C20010620003548.E27038%40gnu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="067094.html">
+   <LINK REL="Next"  HREF="067095.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Doc on MIO API for Transport dev available?---&gt; Modul e API or Transport API exists ?</H1>
+    <B>DJ Adams</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Doc%20on%20MIO%20API%20for%20Transport%20dev%20available%3F---%3E%20Modul%20e%20API%20or%20Transport%20API%20exists%20%3F&In-Reply-To=%3C20010620003548.E27038%40gnu%3E"
+       TITLE="[JDEV] Doc on MIO API for Transport dev available?---&gt; Modul e API or Transport API exists ?">dj.adams at pobox.com
+       </A><BR>
+    <I>Tue Jun 19 18:35:48 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="067094.html">[JDEV] Doc on MIO API for Transport dev available?---&gt; Modul	e API or Transport API exists ?
+</A></li>
+        <LI>Next message: <A HREF="067095.html">[JDEV] can i attach the VC++ sample Project ??
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67107">[ date ]</a>
+              <a href="thread.html#67107">[ thread ]</a>
+              <a href="subject.html#67107">[ subject ]</a>
+              <a href="author.html#67107">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tue, Jun 19, 2001 at 05:52:33PM +0200, Riviere St&#233;phane wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for the answer, the Jabberd API will be very helpful !
+</I>&gt;<i> My main question is (in fact) : when the server loads a module, which
+</I>&gt;<i> function(s) does it call on that module. I suppose there must be some sort
+</I>&gt;<i> of Module API :-)
+</I>&gt;<i> 
+</I>&gt;<i> I watched at the different modules and saw they all have a function with a 
+</I>&gt;<i>   mreturn myfunction (jsmi si)
+</I>&gt;<i> prototype. That function registers functions (using the js_mapi_register or
+</I>&gt;<i> js_mapi_session) which have a protype like :  
+</I>&gt;<i>   mreturn myhandlingfunction (mapi m, void *arg)
+</I>
+The JSM modules all follow the same pattern. The function that is called
+when the module is loaded is the one specified in the load part of the
+configuration, e.g. 
+
+    &lt;load main=&quot;jsm&quot;&gt;
+      &lt;jsm&gt;./jsm/jsm.so&lt;/jsm&gt;
+      &lt;mod_echo&gt;./jsm/jsm.so&lt;/mod_echo&gt;
+      &lt;mod_roster&gt;./jsm/jsm.so&lt;/mod_roster&gt;
+      &lt;mod_time&gt;./jsm/jsm.so&lt;/mod_time&gt;
+      ...
+
+the tagname (e.g. 'mod_time') is the name of the function ('mod_time()')
+called.
+
+This function usually is to be found, by convention, at the end of the
+source file, and returns a void:
+
+void mod_xyz(jsmi si)
+{
+  js_mapi_register(e_ ...)
+  ...
+}
+
+This function registers handlers for the master events (e_SERVER,
+e_AUTH, and so on). The e_SESSION master event has 'sub-events'
+es_IN, es_OUT and so on (see jsm/jsm.h), and handlers for these
+sub-events (session events) are set up in a beautifully fractal
+way - the handler function for the e_SESSION event actually sets
+handlers for the es_* events using js_mapi_session() :
+
+mreturn xyz_abc(...)
+{
+  js_mapi_session(es_ ...)
+}
+
+The rest of the functions do the actual work. You might want to
+have a look at jsm/modules/mod_example.c as it's got some useful
+comments in the code.
+
+Good luck!
+
+dj
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="067094.html">[JDEV] Doc on MIO API for Transport dev available?---&gt; Modul	e API or Transport API exists ?
+</A></li>
+	<LI>Next message: <A HREF="067095.html">[JDEV] can i attach the VC++ sample Project ??
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67107">[ date ]</a>
+              <a href="thread.html#67107">[ thread ]</a>
+              <a href="subject.html#67107">[ subject ]</a>
+              <a href="author.html#67107">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

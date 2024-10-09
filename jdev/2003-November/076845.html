@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Videoconferencing with jabber / Re: [speex-dev]Videoconferencing with speex and jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Videoconferencing%20with%20jabber%20/%20Re%3A%20%5Bspeex-dev%5DVideoconferencing%20with%20speex%20and%20jabber&In-Reply-To=%3C20031128084354.GA5068%40hermes.muc.charente.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="076839.html">
+   <LINK REL="Next"  HREF="076847.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Videoconferencing with jabber / Re: [speex-dev]Videoconferencing with speex and jabber</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Videoconferencing%20with%20jabber%20/%20Re%3A%20%5Bspeex-dev%5DVideoconferencing%20with%20speex%20and%20jabber&In-Reply-To=%3C20031128084354.GA5068%40hermes.muc.charente.de%3E"
+       TITLE="[JDEV] Videoconferencing with jabber / Re: [speex-dev]Videoconferencing with speex and jabber">m at tthias.net
+       </A><BR>
+    <I>Fri Nov 28 02:43:55 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="076839.html">[JDEV] Videoconferencing with jabber / Re: [speex-dev]Videoconferencing with speex and jabber
+</A></li>
+        <LI>Next message: <A HREF="076847.html">[JDEV] Videoconferencing with jabber / Re: [speex-dev]Videoconferencing with speex and jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76845">[ date ]</a>
+              <a href="thread.html#76845">[ thread ]</a>
+              <a href="subject.html#76845">[ subject ]</a>
+              <a href="author.html#76845">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Carsten!
+
+Carsten Breuer schrieb am 2003-11-27 23:59:54:
+&gt;<i> OK, but what is the situation if both clients are connected via a ISP.
+</I>&gt;<i> The dont have nothing tu do with NAT etc. What's the situation then.
+</I>&gt;<i> What is if one has a DSL-Router with a VPN behind (192.168) and the 
+</I>&gt;<i> other partner have a direct conection (ISP)?
+</I>
+I am not sure what you want or what the situation is that you try to
+solve. I just wanted to say:
+In case of using UDP, I don't see why an external reflector helps
+crossing NATs. It's not as with TCP where you establish a connection and
+the reflector can send back it's packets on this connection. UDP is
+connection-less and an external reflector has still be able to send
+messages to the client behind the NAT (doesn't matter if there are one
+or both clients behind the NAT).
+
+The only situations where I can see a benefit from using a reflector
+instead of a peer to peer connection:
+- The bandwidth of a client is not enough to send out all streams and
+  the client is not connected to a multicast network.
+- A client is not connected to a mulitcast network and wants to join a
+  multicast conference.
+- Two multicast networks should share a common conference.
+
+I think it should be always the default to use peer to peer, as this
+WILL help to introduce a mutlimedia protocol to Jabber. I don't expect
+that there can be free public relays for Jabber, as multimedia would
+cause many traffic that has to be paied by the reflector owner.
+Where I can imagine that reflectors could be used is in company
+networks, but there I can also imagine that it is better to setup
+multicasting. It is maybe a bit more work to configure this, but it will
+result in much better network performance afterwards. - And even Windows
+95 is multicast ready.
+
+If you try to solve the NAT problem it gets harder, I tried to explain
+this in an other post. Best solution in this case is to use a proxy that
+is capable of handling UDP packets, e.g. a special proxy for your
+transportation protocol like RTP. But you don't have this on every NAT
+router and you are not able to install it on all of them. The next
+solution would be to use a protocol like SOCKS5, which can handle UDP
+partly (externally using UDP, but TCP for the connection to the SOCKS
+proxy). You can get the latency and timing problems of TCP in this case,
+but as you only use TCP on the local network, you have a good chance,
+that these problems are not as big as with a internet wide TCP
+connection. The last fallback can be to use TCP connections, but you
+have to add some additional logic than and can't just stream your audio
+data over this TCP connection. This logic has to care for messurement of
+the jitters in the stream and to report it to the sender. You also have
+to detect stalled connections and have to try to replace such a
+connection as fast as possible.
+(One additional comment: TCP works for streaming of internet radio, as
+the clients can buffer up some data before they start playing the stream
+and therefore are able to use data from the buffer if a new frame from
+the sender doesn't arrive in time. For voice conferencing and internet
+telephonie only delays in the order of tens of ms are acceptable,
+therefore you can't buffer much of the data, as already the encoding of
+the frames can't be faster as the framesize (typically 20 ms), as the
+frame can't be compressed before it is completly recorded.)
+
+
+
+Tot kijk
+    Matthias
+
+-- 
+Fon: +49-(0)70 0770 07770       <A HREF="http://matthias.wimmer.name/">http://matthias.wimmer.name/</A>
+HAM: DB1MW                      xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mawis at charente.de</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: Digital signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20031128/b1bb4a00/attachment-0002.pgp">https://www.jabber.org/jdev/attachments/20031128/b1bb4a00/attachment-0002.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="076839.html">[JDEV] Videoconferencing with jabber / Re: [speex-dev]Videoconferencing with speex and jabber
+</A></li>
+	<LI>Next message: <A HREF="076847.html">[JDEV] Videoconferencing with jabber / Re: [speex-dev]Videoconferencing with speex and jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76845">[ date ]</a>
+              <a href="thread.html#76845">[ thread ]</a>
+              <a href="subject.html#76845">[ subject ]</a>
+              <a href="author.html#76845">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

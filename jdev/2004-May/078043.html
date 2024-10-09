@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: HELP!!! Component devolopment for jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20HELP%21%21%21%20Component%20devolopment%20for%20jabber&In-Reply-To=%3Cc9gmho%2436m%241%40sea.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="078042.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: HELP!!! Component devolopment for jabber</H1>
+    <B>ahmet sevki</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20HELP%21%21%21%20Component%20devolopment%20for%20jabber&In-Reply-To=%3Cc9gmho%2436m%241%40sea.gmane.org%3E"
+       TITLE="[jdev] Re: HELP!!! Component devolopment for jabber">nalcacioglu at hotmail.com
+       </A><BR>
+    <I>Mon May 31 20:35:18 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="078042.html">[jdev] Documentation required
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#78043">[ date ]</a>
+              <a href="thread.html#78043">[ thread ]</a>
+              <a href="subject.html#78043">[ subject ]</a>
+              <a href="author.html#78043">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Jim, these are all ways to write components for 1.4 server. Is there any 
+  sample code which implements a component for jabber2?
+
+I've been searching for the past 2 weeks. I am looking for a decent 
+example where a component written for 1.4 is run using jabber 1.4, and 
+it successfully connects to a jabber2 server and echoes messages. I 
+tried jso, jso etc. I keep getting problems such as &quot;Circular reference 
+detected&quot;. I think it is because I am trying to run both the component 
+and the jabber2 server on the same &quot;localhost&quot;
+
+for instance:
+I tried to run jso framework's echo component.
+I created a jso.xml file to run it with jabber 1.4 server:
+
+jso.xml :
+==========
+      &lt;jabber&gt;
+
+           &lt;service id=&quot;jsolinker&quot;&gt;
+             &lt;uplink/&gt;
+             &lt;connect&gt;
+               &lt;ip&gt;127.0.0.1&lt;/ip&gt; &lt;!-- IP Address of Router here --&gt;
+               &lt;port&gt;5347&lt;/port&gt;
+               &lt;secret&gt;secret&lt;/secret&gt;
+             &lt;/connect&gt;
+           &lt;/service&gt;
+
+           &lt;service id=&quot;jso.localhost&quot;&gt;
+              &lt;accept&gt;
+                &lt;ip/&gt;
+                &lt;port&gt;1213&lt;/port&gt;
+                &lt;secret&gt;secret&lt;/secret&gt;
+              &lt;/accept&gt;
+              &lt;jso xmlns=&quot;jabber:client&quot;/&gt;
+
+           &lt;/service&gt;
+
+           &lt;log id=&quot;jsolog&quot;&gt;
+             &lt;file&gt;/home/.../logs/jso.log&lt;/file&gt;
+             &lt;host/&gt;
+             &lt;logtype/&gt;
+             &lt;format&gt;%d: [%t] (%h): %s&lt;/format&gt;
+           &lt;/log&gt;
+
+           &lt;xdb id=&quot;xdb&quot;&gt;
+             &lt;host&gt;localhost&lt;/host&gt;
+             &lt;load&gt;
+
+&lt;xdb_file&gt;/home/.../jabberd-1.4.3/xdb_file/xdb_file.so&lt;/xdb_file&gt;
+             &lt;/load&gt;
+
+             &lt;xdb_file xmlns=&quot;jabber:config:xdb_file&quot;&gt;
+               &lt;spool&gt;/home/.../jabberd-1.4.3/spool&lt;/spool&gt;
+             &lt;/xdb_file&gt;
+           &lt;/xdb&gt;
+
+         &lt;/jabber&gt;
+
+==========================================================
+
+
+in my router.xml file I have aliased as:
+     &lt;alias name='jso.localhost' target='jsolinker'/&gt;
+
+in my sm.xml file, I added :
+
+     &lt;item category='service' type='jso' jid='jso.localhost' name='JSO 
+Test'/&gt;
+since echo component does not support discover.
+
+
+I started jabber2, and then
+and then ran jabber1.4 server:
+jabberd jso.xml
+===================== from 1.4 log:=================
+Mon May 31 19:46:13 2004  mio.c:977 MIO read from socket 9: &lt;iq 
+xmlns='jabber:client' type='get' to='jsolinker' from='localhost'&gt;&lt;query 
+xmlns='<A HREF="http://jabber.org/protocol/disco#info'/">http://jabber.org/protocol/disco#info'/</A>&gt;&lt;/iq&gt;
+Mon May 31 19:46:13 2004  base_connect.c:129 process XML: m:9EEF7A8 
+state:3, arg:9E489E8, x:9EF5170
+Mon May 31 19:46:13 2004  deliver.c:474 DELIVER 1:jsolinker &lt;iq 
+xmlns='jabber:client' type='get' to='jsolinker' from='localhost'&gt;&lt;query 
+xmlns='<A HREF="http://jabber.org/protocol/disco#info'/">http://jabber.org/protocol/disco#info'/</A>&gt;&lt;/iq&gt;
+Mon May 31 19:46:13 2004  deliver.c:678 delivering to instance 'jsolinker'
+Mon May 31 19:46:13 2004  deliver.c:606 delivery failed (Circular 
+Reference Detected)
+Mon May 31 19:46:13 2004  log.c:116 &lt;log type='notice' 
+from='jsolinker'&gt;bouncing a packet to jsolinker from localhost: Circular 
+Reference Detected&lt;/log&gt;
+=========================================
+
+apparently something is going wrong here. Of course then I try to 
+connect with my EchoComponent to port 1213, however it -naturally- 
+doen't receive anything...
+
+
+
+
+
+
+
+
+
+
+
+Jim Parslow wrote:
+&gt;<i> Hi Raghu;
+</I>&gt;<i> 
+</I>&gt;<i> There are serveral ways you can write a component;
+</I>&gt;<i> 
+</I>&gt;<i> 1: edit the jabbered jsm section of the jabber server, rebuilding it, 
+</I>&gt;<i> can be useful, but then this is server specific!
+</I>&gt;<i> 2: you can write a component that attaches itself to the jabber server, 
+</I>&gt;<i> if you are looking for the ways to this then look at a component called 
+</I>&gt;<i> bandersnatch
+</I>&gt;<i> 
+</I>&gt;<i> you can also look at this url
+</I>&gt;<i> 
+</I>&gt;<i> <A HREF="http://docs.jabber.org/general/html/component-intro.html">http://docs.jabber.org/general/html/component-intro.html</A>
+</I>&gt;<i> Or
+</I>&gt;<i> <A HREF="http://jabbermanual.jabberstudio.org/test/developer/componentdevguide.html">http://jabbermanual.jabberstudio.org/test/developer/componentdevguide.html</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> hope this helps!!
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> From: raghuveer thummala &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rthummal at cs.odu.edu</A>&gt;
+</I>&gt;<i> Reply-To: Jabber software development list &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> Subject: [jdev] HELP!!! Component devolopment for jabber
+</I>&gt;<i> Date: Fri, 5 Mar 2004 01:41:55 -0500 (EST)
+</I>&gt;<i> 
+</I>&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> Is there any document on devoloping a compnent with jabberd 2.0.  I
+</I>&gt;<i> searched some of the documentation in jabber website, but didn`t get much
+</I>&gt;<i> help. Can anybody direct me to a proper place where I can get some
+</I>&gt;<i> documentation on devoloping a component or suggest a possible method in
+</I>&gt;<i> which I should approach.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks,
+</I>&gt;<i> Raghu
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> _________________________________________________________________
+</I>&gt;<i> Stay in touch with absent friends - get MSN Messenger 
+</I>&gt;<i> <A HREF="http://www.msn.co.uk/messenger">http://www.msn.co.uk/messenger</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="078042.html">[jdev] Documentation required
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#78043">[ date ]</a>
+              <a href="thread.html#78043">[ thread ]</a>
+              <a href="subject.html#78043">[ subject ]</a>
+              <a href="author.html#78043">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

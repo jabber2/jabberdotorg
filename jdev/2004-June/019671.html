@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] JEP--0060 implementations?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20JEP--0060%20implementations%3F&In-Reply-To=176AB0A0ADC4734B8FE888D53E75D9D50188B3DF%40s15shefsrv.zoodigitalgroup.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="019670.html">
+   <LINK REL="Next"  HREF="019674.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] JEP--0060 implementations?</H1>
+    <B>Ralph Meijer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20JEP--0060%20implementations%3F&In-Reply-To=176AB0A0ADC4734B8FE888D53E75D9D50188B3DF%40s15shefsrv.zoodigitalgroup.com"
+       TITLE="[jdev] JEP--0060 implementations?">jabber.org at ralphm.ik.nu
+       </A><BR>
+    <I>Wed Jun 23 08:11:01 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="019670.html">[jdev] JEP--0060 implementations?
+</A></li>
+        <LI>Next message: <A HREF="019674.html">[jdev] MUC: setting participant to visitor does not work
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19671">[ date ]</a>
+              <a href="thread.html#19671">[ thread ]</a>
+              <a href="subject.html#19671">[ subject ]</a>
+              <a href="author.html#19671">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, Jun 23, 2004 at 01:41:52PM +0100, Phil Wilson wrote:
+&gt;<i> [...]
+</I>&gt;<i> &gt; By the way, Mimir is not a pubsub service, it /uses/ pubsub, 
+</I>&gt;<i> &gt; and currently it
+</I>&gt;<i> &gt; uses Idavoll for the pubsub service. 
+</I>&gt;<i> 
+</I>&gt;<i> But to a Jabber client, this is transparent isn't it? i.e. it just appears
+</I>&gt;<i> to be A.N.Other pub/sub service?
+</I>
+When, actually not (yet). For now Mimir uses the pubsub service (in this
+case Idavoll) to subscribe to news sources. The core of Mimir is,
+if you look at the diagram on <A HREF="http://mimir.ik.nu/about,">http://mimir.ik.nu/about,</A> the news bot with
+associated database and web site. You can view this as a pubsub client.
+
+The part to the left of that is a system to use legacy news sources like
+RSS files. The aggregator polls RSS files and publishes the news to a
+pubsub service. This is a client, too.
+
+If you look at it more abstractly, the news bot plays two roles.
+
+First, it allows users to subscribe to certain channels and let exisiting
+clients receive plaintext notifications (instead of pubsub notifications). So
+actually, this part is a gateway to the human world, and really a
+reimplementation of a pubsub system using other protocols (the website
+where you can subscribe to channels, and the normal chat messages). It
+proxies real (ie. JEP-0060) pubsub notifications and translates them on the
+fly.
+
+One extra feature there is that it is actually a filtering proxy, in that
+it uses presence to determine whether to relay the pubsub notification
+to a certain user.
+
+Second, each publish has a side effect. All items received by the bot
+are stored in a database, and, when the user didn't receive the notification
+because of presence, it marks that item as being unread for that user. The
+user can at a later point read the item via the web page.
+
+The next generation version of Mimir might actually use more of the
+pubsub protocol to do this, and allow custom clients to receive real pubsub
+notifications. Think of it as a desktop news aggregator that gets the news
+pushed instead of having to pull for it.
+
+&gt;<i> &gt; Pubsub.com as far as I can see, is tailored to the pubsub.com 
+</I>&gt;<i> &gt; application and not a generic pubsub service anyone can use for their own 
+</I>&gt;<i> &gt; applications (Bob, correct me if I'm wrong).
+</I>&gt;<i> 
+</I>&gt;<i> That's the way I understand it, but they're also the only services which
+</I>&gt;<i> provide pub/sub that I could think of, and was hoping there might be some
+</I>&gt;<i> more. :)
+</I>&gt;<i> 
+</I>&gt;<i> &gt; May I ask why you asked?
+</I>&gt;<i> 
+</I>&gt;<i> I just wanted to see what pub/sub services there were out there and see if
+</I>&gt;<i> it was worth writing my own or whether I could piggyback on someone else's
+</I>&gt;<i> code, basically. :)
+</I>
+Depends on what you need for your application. For example, my web site
+subscribes to peoples User Mood (JEP-0107), and dislays it in the Jabber
+World Map, Fish Tank and on <A HREF="http://ralphm.net/moods.">http://ralphm.net/moods.</A> Just as for Mimir,
+it uses a generic pubsub service to do its job. People create their mood
+pubsub node somewhere (currently on my server, but could be anywhere) and
+I let the mood bot subscribe to this node. All incoming notifications are
+stored in a database that is read by the web site.
+
+No special features needed on the pubsub service.
+
+I hope this helps, please ask more if you still have questions.
+
+-- 
+Groetjes,
+
+Ralphm
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="019670.html">[jdev] JEP--0060 implementations?
+</A></li>
+	<LI>Next message: <A HREF="019674.html">[jdev] MUC: setting participant to visitor does not work
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19671">[ date ]</a>
+              <a href="thread.html#19671">[ thread ]</a>
+              <a href="subject.html#19671">[ subject ]</a>
+              <a href="author.html#19671">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

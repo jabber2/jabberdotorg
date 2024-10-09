@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] discovering extensions without disco
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20discovering%20extensions%20without%20disco&In-Reply-To=%3C4432CE01.9040806%40collabora.co.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="053693.html">
+   <LINK REL="Next"  HREF="053694.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] discovering extensions without disco</H1>
+    <B>Robert McQueen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20discovering%20extensions%20without%20disco&In-Reply-To=%3C4432CE01.9040806%40collabora.co.uk%3E"
+       TITLE="[jdev] discovering extensions without disco">robert.mcqueen at collabora.co.uk
+       </A><BR>
+    <I>Tue Apr  4 14:50:25 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="053693.html">[jdev] invisibility on servers with no jabber:iq:privacy
+</A></li>
+        <LI>Next message: <A HREF="053694.html">[jdev] Re: discovering extensions without disco
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53692">[ date ]</a>
+              <a href="thread.html#53692">[ thread ]</a>
+              <a href="subject.html#53692">[ subject ]</a>
+              <a href="author.html#53692">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Google Talk doesn't implement jabber:iq:privacy, and instead they have
+decided to add some simple extensions to their roster for various stuff
+which I don't care about, but also including blocking and unblocking people.
+
+When the Google Talk client signs in,  something like this is sent to
+request the roster:
+&lt;iq type=&quot;get&quot; id=...&gt;
+&lt;query xmlns=&quot;jabber:iq:roster&quot; xmlns:gr=&quot;google:roster&quot; gr:ext=&quot;2&quot; .../&gt;
+&lt;/iq&gt;
+
+And the roster comes back with some extra gr: stuff:
+&lt;iq type=&quot;result&quot; id=...&gt;
+&lt;query xmlns=&quot;jabber:iq:roster&quot; xlmns:gr=&quot;google:roster&quot; gr:ext=&quot;2&quot; ...&gt;
+&lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at bar.org</A>&quot; gr:w=&quot;4&quot; gr:mc=&quot;23&quot; .../&gt;
+&lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bar at foo.com</A>&quot; gr:t=&quot;B&quot; gr:w=&quot;3&quot; gr:mc= .../&gt;
+&lt;/query&gt;
+&lt;/iq&gt;
+
+I don't know or care what gr:w or gr:mc are, but gr:t is set to &quot;B&quot; on a
+blocked contact, and unset when the contact is unblocked, and we'd
+really like to be able to offer block/unblock functionality when we're
+on a Google Talk server.
+
+Now, the problem with this is that Google Talk doesn't implement service
+discovery either, so we can't get a set of &lt;feature var=&quot;yada&quot;/&gt; from
+their server. My first idea of just looking to see if these gr: things
+are set on the roster items does not work if the roster is empty. In
+this case, I've got no idea whether the Google roster extensions are
+implemented and I should hence offer blocking functionality to the user.
+
+Some servers such as jabberd will just return all of the extra xmlns:gr
+stuff to us in the result, like:
+&lt;iq type=&quot;result&quot; id=...&gt;
+&lt;query xmlns=&quot;jabber:iq:roster&quot; xlmns:gr=&quot;google:roster&quot; gr:ext=&quot;2&quot; .../&gt;
+&lt;/iq&gt;
+
+Whereas other servers like jabberd2 strip off all of the unknown xmlns:
+&lt;iq type=&quot;result&quot; id=...&gt;
+&lt;query xmlns=&quot;jabber:iq:roster&quot; /&gt;
+&lt;/iq&gt;
+
+So, the only way I can think of to detect whether the google:roster is
+supported, if the roster is empty, is to set some nonsense in that
+namespace in my roster request:
+&lt;iq type=&quot;get&quot; id=...&gt;
+&lt;query xmlns=&quot;jabber:iq:roster&quot; xmlns:gr=&quot;google:roster&quot; gr:ext=&quot;2&quot;
+gr:hack=&quot;Dear Google, Please implement service discovery, Love Rob&quot; .../&gt;
+&lt;/iq&gt;
+
+In this case, Google's server removes the invalid nonsense in its reply,
+so I can distinguish it from the previous two cases. But this is
+horrific... Ignoring the merits of Google's decision to implement
+blocking using a non-standard extension like this, can anyone think of a
+better way to discover support for their extension?
+
+Or is anyone here from Google and would like to implement service
+discovery? Something like this:
+&lt;iq type=&quot;result&quot; id=...&gt;
+&lt;query xmlns=&quot;<A HREF="http://jabber.org/protocol/disco#info&quot;">http://jabber.org/protocol/disco#info&quot;</A>&gt;
+&lt;feature var=&quot;google:roster&quot; /&gt;
+&lt;/query&gt;
+&lt;/iq&gt;
+Would be great...
+
+Regards,
+Rob
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="053693.html">[jdev] invisibility on servers with no jabber:iq:privacy
+</A></li>
+	<LI>Next message: <A HREF="053694.html">[jdev] Re: discovering extensions without disco
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53692">[ date ]</a>
+              <a href="thread.html#53692">[ thread ]</a>
+              <a href="subject.html#53692">[ subject ]</a>
+              <a href="author.html#53692">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

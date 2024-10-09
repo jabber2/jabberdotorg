@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Minor 'bug'let ?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Minor%20%27bug%27let%20%3F&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000067.html">
+   <LINK REL="Next"  HREF="000073.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Minor 'bug'let ?</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Minor%20%27bug%27let%20%3F&In-Reply-To="
+       TITLE="[JDEV] Minor 'bug'let ?">jeremie at jeremie.com
+       </A><BR>
+    <I>Thu Jan  7 21:41:42 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000067.html">[JDEV] emacs indentation fix
+</A></li>
+        <LI>Next message: <A HREF="000073.html">[JDEV] Minor 'bug'let ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68">[ date ]</a>
+              <a href="thread.html#68">[ thread ]</a>
+              <a href="subject.html#68">[ subject ]</a>
+              <a href="author.html#68">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On the FD_SETSIZE issue in io.c, I updated it to track the largest
+descriptor and use that value... attached is the diff I'm going to check
+in tonight, let me know if it's wrong or broken...
+
+Thanks for letting me know about this :)
+
+Jer
+-------------- next part --------------
+Index: io.c
+===================================================================
+RCS file: /work/cvs/jap/common/io.c,v
+retrieving revision 1.9
+diff -u -r1.9 io.c
+--- io.c	1999/01/05 20:30:10	1.9
++++ io.c	1999/01/08 03:25:58
+@@ -13,7 +13,7 @@
+ void collect_packets(conn *(*handle_packet)())
+ {
+ 	char buffer[MAXMSG];
+-	int new, nbytes, err, first = 1;
++	int new, nbytes, err, maxfd = 0, first = 1;
+ 	fd_set active_fd_set, read_fd_set, write_fd_set;
+ 	struct sockaddr_in sa;
+ 	size_t size = sizeof(sa);
+@@ -37,7 +37,7 @@
+ 		if(!first)
+ 		{
+ 			DBUG(&quot;IO: waiting &quot;,&quot;&quot;)
+-			h_err(select(FD_SETSIZE, &amp;read_fd_set, &amp;write_fd_set, NULL, NULL),&quot;select&quot;);
++			h_err(select(maxfd + 1, &amp;read_fd_set, &amp;write_fd_set, NULL, NULL),&quot;select&quot;);
+ 
+ 			FD_ZERO(&amp;active_fd_set);
+ 		}else{
+@@ -63,6 +63,8 @@
+ 					c = conn_add(c,new);
+ 					c-&gt;name = strdup(inet_ntoa(sa.sin_addr));
+ 					c-&gt;ver = strdup(c_count-&gt;name); /* express the parent socket that it was created from */
++					if(new &gt; maxfd)
++						maxfd = new;
+ 					FD_SET(new, &amp;active_fd_set);
+ 				}else{
+ 					DBUG(&quot;IO: reading data from &quot;,c_count-&gt;name)
+@@ -86,6 +88,8 @@
+ 					}
+ 				}
+ 			}
++			if(c_count-&gt;id &gt; maxfd)
++				maxfd = c_count-&gt;id;
+ 			FD_SET(c_count-&gt;id, &amp;active_fd_set);
+ 			c_count = c_count-&gt;next;
+ 		}
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000067.html">[JDEV] emacs indentation fix
+</A></li>
+	<LI>Next message: <A HREF="000073.html">[JDEV] Minor 'bug'let ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68">[ date ]</a>
+              <a href="thread.html#68">[ thread ]</a>
+              <a href="subject.html#68">[ subject ]</a>
+              <a href="author.html#68">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

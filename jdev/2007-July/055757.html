@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] jabberd2 coponent protocol proposed extension
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20jabberd2%20coponent%20protocol%20proposed%20extension&In-Reply-To=%3CB60AB856-0474-4289-ADEF-68A549A7DF80%40co.sapo.pt%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="055763.html">
+   <LINK REL="Next"  HREF="055758.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] jabberd2 coponent protocol proposed extension</H1>
+    <B>Pedro Melo</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20jabberd2%20coponent%20protocol%20proposed%20extension&In-Reply-To=%3CB60AB856-0474-4289-ADEF-68A549A7DF80%40co.sapo.pt%3E"
+       TITLE="[jdev] jabberd2 coponent protocol proposed extension">melo at co.sapo.pt
+       </A><BR>
+    <I>Sat Jul 21 05:46:58 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="055763.html">[jdev] jabberd2 coponent protocol proposed extension
+</A></li>
+        <LI>Next message: <A HREF="055758.html">[jdev] jabberd2 coponent protocol proposed extension
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55757">[ date ]</a>
+              <a href="thread.html#55757">[ thread ]</a>
+              <a href="subject.html#55757">[ subject ]</a>
+              <a href="author.html#55757">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Jul 20, 2007, at 11:45 PM, Tomasz Sterna wrote:
+
+&gt;<i> I'm going to extend jabberd2 component protocol to allow components
+</I>&gt;<i> access to user roster and presence information.
+</I>&gt;<i> (Mainly for PEP and transports :-)
+</I>&gt;<i>
+</I>&gt;<i> But before I do it I wanted to make a sanity check if the idea makes
+</I>&gt;<i> sense.
+</I>&gt;<i> My proposed changes are described on
+</I>&gt;<i> <A HREF="http://jabberd2.xiaoka.com/wiki/ComponentProtocol">http://jabberd2.xiaoka.com/wiki/ComponentProtocol</A>
+</I>&gt;<i>
+</I>&gt;<i> Any comment is welcome.
+</I>
+I've talked with some of the ejabberd folks about this.
+
+I'll read the above URL later, but my first idea was to make your JSM/ 
+Router a PubSub component, with well known nodes for user presences,  
+roster changes, and other useful information.
+
+This would mean that even XEP-0114 components could be extended to  
+ask for that kind of information.
+
+I don't have any problem replacing XEP-0114, mainly to add a decent  
+XMPP-style handshake at the top. I'll look at your J2 component  
+protocol also.
+
+In a email I sent ejabberd people and others some weeks ago I wrote  
+this:
+
+---- begin paste ----
+
+Apart of the initial handshake, that should be improved to something  
+much more like XMPP handshake (but IMHO, with TLS as an option),  
+there are three areas where I would like to see some improvements:
+
+  * addressing
+
+the component should use the advertised name in the initial handshake  
+as the destination address for all of the following protocols
+
+  * namespace routing
+
+It should be possible for a external component to tell the server  
+that he will be responsible for namespace X for domains A, B and C.
+
+For example, a component connecting to example.com server could:
+
+  &lt;iq type=&quot;set&quot; to=&quot;example.com&quot; from=&quot;component.example.com&quot; id=&quot;1&quot;&gt;
+     &lt;query xmlns=&quot;urn:xmpp:ext:register-route&quot;&gt;
+       &lt;ns&gt;vcard:temp&lt;/ns&gt;
+       &lt;host&gt;example.com&lt;/host&gt;
+       &lt;host&gt;example.net&lt;/host&gt;
+    &lt;/query&gt;
+  &lt;/iq&gt;
+
+This would add to the disco#info reply of example.com and .net the  
+feature vcard:temp and all IQs with that namespace that would require  
+a server response (directed to the domains themselves or to any bare  
+jid inside that domains) would be routed to the component.
+
+* the JSM as a PubSub service
+
+Lots of components require access to all of the user presences,  
+including presences sent to him by elements on his roster. Also  
+access to the roster itself, and roster updates would be helpful for  
+certain protocolos (PEP for example).
+
+This could be implemented by making the JSM act as a PubSub service.  
+An external component would subscribe to a domain like this:
+
+&lt;iq type=&quot;set&quot; to=&quot;example.com&quot; from=&quot;component.example.com&quot; id=&quot;1&quot;&gt;
+   &lt;pubsub xmlns=&quot;<A HREF="http://jabber.org/protocol/pubsub&quot;">http://jabber.org/protocol/pubsub&quot;</A>&gt;
+     &lt;subscribe node=&quot;example.com#presence_incoming&quot;  
+jid=&quot;component.example.com&quot; /&gt;
+   &lt;/pubsub&gt;
+&lt;/iq&gt;
+
+&lt;iq type=&quot;set&quot; to=&quot;example.com&quot; from=&quot;component.example.com&quot; id=&quot;1&quot;&gt;
+   &lt;pubsub xmlns=&quot;<A HREF="http://jabber.org/protocol/pubsub&quot;">http://jabber.org/protocol/pubsub&quot;</A>&gt;
+     &lt;subscribe node=&quot;example.com#presence_outgoing&quot;  
+jid=&quot;component.example.com&quot; /&gt;
+   &lt;/pubsub&gt;
+&lt;/iq&gt;
+
+&lt;iq type=&quot;set&quot; to=&quot;example.com&quot; from=&quot;component.example.com&quot; id=&quot;1&quot;&gt;
+   &lt;pubsub xmlns=&quot;<A HREF="http://jabber.org/protocol/pubsub&quot;">http://jabber.org/protocol/pubsub&quot;</A>&gt;
+     &lt;subscribe node=&quot;example.com#roster&quot; jid=&quot;component.example.com&quot; /&gt;
+   &lt;/pubsub&gt;
+&lt;/iq&gt;
+
+Each node is in the form &quot;domain&quot;#&quot;items&quot;. &quot;domain&quot; could be &quot;*&quot;  
+meaning all domains configured for C2S connections.
+
+There will be 3 (possible 4) &quot;items&quot;. if a specific item is  
+subscribed, the matching stanzas would be sent to the component.
+
+  * presence_incoming: presences received from the C2S module - all  
+the presence changes from our client;
+  * presence_outgoing: presences sent by buddies on the user roster;
+  * roster: the initial roster get result, as all roster pushes would  
+be Cc'ed to the component.
+  * (optional) all: all of the above.
+
+
+  * Roster manipulation
+
+It would also be interesting to allow roster manipulation from a  
+component. I'll expand this soon... I want to see how to leverage  
+roster exchange XEPs.
+
+
+That my initial brain dump.
+
+I'm specially insterested in the namespace routing feature, given  
+that it allows us to extend the core router easily.
+
+
+--- end paste ---
+
+This was sometime in June.
+
+Best regards,
+-- 
+HIId: Pedro Melo
+SMTP: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">melo at co.sapo.pt</A>
+XMPP: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">pedro.melo at sapo.pt</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="055763.html">[jdev] jabberd2 coponent protocol proposed extension
+</A></li>
+	<LI>Next message: <A HREF="055758.html">[jdev] jabberd2 coponent protocol proposed extension
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55757">[ date ]</a>
+              <a href="thread.html#55757">[ thread ]</a>
+              <a href="subject.html#55757">[ subject ]</a>
+              <a href="author.html#55757">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

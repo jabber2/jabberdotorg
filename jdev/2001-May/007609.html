@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] performance numbers.. questions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20performance%20numbers..%20questions&In-Reply-To=3AF99FF4.86E34DDF%40usa.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007608.html">
+   <LINK REL="Next"  HREF="007624.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] performance numbers.. questions</H1>
+    <B>Oliver Jones</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20performance%20numbers..%20questions&In-Reply-To=3AF99FF4.86E34DDF%40usa.net"
+       TITLE="[JDEV] performance numbers.. questions">oj at world.std.com
+       </A><BR>
+    <I>Wed May  9 16:34:54 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007608.html">[JDEV] performance numbers.. questions
+</A></li>
+        <LI>Next message: <A HREF="007624.html">[JDEV] performance numbers.. questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7609">[ date ]</a>
+              <a href="thread.html#7609">[ thread ]</a>
+              <a href="subject.html#7609">[ subject ]</a>
+              <a href="author.html#7609">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey, Dustin, congratulations on actually getting real-live 
+numbers!  Getting a test harness working is a tremendous 
+accomplishment!  Thanks!
+
+At 02:52 PM 5/9/01 -0500, you wrote:
+&gt;<i>...here is how the test works:
+</I>&gt;<i>active_jab basically connects 1..n users serially, and sends x messages
+</I>&gt;<i>when each user connects. It does NOT send messages concurrently for each
+</I>&gt;<i>connected user.
+</I>
+If I understand you, the sequence of events is this, for each user:
+
+a. connect
+b. log in.
+c. send x messages as fast as possible.
+d. stay connected, but stop sending messages.
+
+When you run the test, you run these steps for each virtual user in 
+turn.  Right?
+
+Some questions about your test sequence:
+--Does the log-in step also create an account for the virtual user?
+--What kind of authentication are you using?
+--To what user do the x messages get sent?
+--Is the recipient online or are the messages getting stashed in jspool?
+--Does the volume of the x messages sent cross the karma threshold?
+
+You proposed this scenario:
+
+&gt;<i>for user 1..n do
+</I>&gt;<i>   connect user to jabber
+</I>&gt;<i>   send x messages and track delivery times
+</I>&gt;<i>done
+</I>&gt;<i>
+</I>&gt;<i>for user 1..n do
+</I>&gt;<i>   disconnect user from jabber
+</I>&gt;<i>done
+</I>
+I'd like to see tests that figure out the load that comes on when many 
+users connect and authenticate at once.  The question to ask might be,
+
+  -- when 500 users are already connected to jabber but not doing much,
+     how many new user connections can jabber accept each second?
+
+A subsidiary question might be how the choice of authentication method 
+affects this, and how the choice of xdb_file or other jspool module affects it.
+
+Another subsidiary question might be how many NEW user accounts can be 
+created in a second.
+
+I'd like to see tests that figure out the load that comes on when many 
+connected users send lots of messages.  The question to ask might be,
+
+   -- when 1000 users are already connected, how many messages a second
+       can each user send to some other user -- what's the message throughput?
+
+&gt;<i>Memory
+</I>&gt;<i>=======
+</I>&gt;<i>First of all, I assumed that Jabber would consume a lot of memory, which
+</I>&gt;<i>turned out to be a wrong assumption.
+</I>
+This agrees with my observation.  Our jabber setup typically runs with 
+several hundred users connected -- and neither jabberd nor the half-dozen 
+jpollds we operate take much memory at all.
+
+(Check out our jabber-enabled music community at <A HREF="http://dotclick.com.">http://dotclick.com.</A>)
+
+&gt;<i>CPU=======
+</I>&gt;<i>Big surprise here. Jabber seems to *quickly* begin eating CPU cycles as
+</I>&gt;<i>the number of connected users increases. Here is some data:
+</I>
+Our jabberd and jpollds take very little CPU time, but our users stay 
+connected for long periods and typically don't send huge numbers of 
+messages -- dozens a day.
+
+Your high CPU usage may be due to overhead on new connections, or overhead 
+on karma-throttling virtual users who are sending big bursts of data.
+
+Great progress.
+
+Ollie Jones
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007608.html">[JDEV] performance numbers.. questions
+</A></li>
+	<LI>Next message: <A HREF="007624.html">[JDEV] performance numbers.. questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7609">[ date ]</a>
+              <a href="thread.html#7609">[ thread ]</a>
+              <a href="subject.html#7609">[ subject ]</a>
+              <a href="author.html#7609">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

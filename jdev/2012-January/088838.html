@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] features stanza on a s2s dialback connection
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20features%20stanza%20on%20a%20s2s%20dialback%20connection&In-Reply-To=%3CCAFXQ3PH75hNEL3E6hZQgdr%3Dn9qJxav9uOU64TwZevXvnTveGZA%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088837.html">
+   <LINK REL="Next"  HREF="088845.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] features stanza on a s2s dialback connection</H1>
+    <B>Nobuo Ogashiwa</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20features%20stanza%20on%20a%20s2s%20dialback%20connection&In-Reply-To=%3CCAFXQ3PH75hNEL3E6hZQgdr%3Dn9qJxav9uOU64TwZevXvnTveGZA%40mail.gmail.com%3E"
+       TITLE="[jdev] features stanza on a s2s dialback connection">ogashiwa at c.kyoai.ac.jp
+       </A><BR>
+    <I>Thu Jan  5 14:42:28 UTC 2012</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088837.html">[jdev] Echo outgoing chat messages back to myself
+</A></li>
+        <LI>Next message: <A HREF="088845.html">[jdev] features stanza on a s2s dialback connection
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88838">[ date ]</a>
+              <a href="thread.html#88838">[ thread ]</a>
+              <a href="subject.html#88838">[ subject ]</a>
+              <a href="author.html#88838">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dear all,
+
+Now I'm developing a XMPP server software which supports s2s connection,
+and now I faced a problem of features stanza on a s2s dialback connection.
+If someone knows a right solution, please let me know. The problem is following:
+
+In a case of s2s dialback connection from google talk server,
+If it send a &lt;stream:features&gt; stanza to the google talk server,
+then the google talk server replies a 'not yet authorized' error.
+If it don't send &lt;stream:features&gt; stanza,
+the google talk server replies a &lt;db:verify&gt; stanza and it can
+continue a dial back sequence.
+
+However, in a case of jabber.org,
+if it don't send a &lt;stream:features&gt; stanza, jabber.org server replies nothing
+and it can't continue dial back authentication sequence.
+If it send a &lt;stream:features&gt; stanza to jabber.org server, jabber.org
+server replies a &lt;db:verify&gt; stanza.
+
+Collectively,
+if it dose not send &lt;stream:features&gt; stanza, google =&gt; OK, jabber.org =&gt; NG
+if it send &lt;stream:features&gt; stanza,  google =&gt; NG,  jabber.org =&gt; OK.
+
+How should our implementation support these incompatible behaviors?
+
+I have read RFCs, XEPs and jdev mailing list archive carefully, but I
+couldn't find
+the right sequence of sending &lt;stream:features&gt; stanza on a dial back
+connection.
+If someone knows the right solution, standard sequence, or pointer to
+standards of this,
+please let me know.
+
+
+Anyway, we have temporarily implemented a following two workarounds :
+
+(1) 50% send features stanza, 50% don't send a features stanza,
+ it is just like following code:
+ if (rand()%2==0) { send_features_stanza(); return; }
+ else { return; }
+
+(2) wait &lt;db:verify&gt; stanza to receive for 5 seconds, if nothing
+received, then send &lt;stream:features&gt; stanza
+
+Both of these workarounds works well for now.
+
+Regards,
+
+Nobuo Ogashiwa &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ogashiwa at c.kyoai.ac.jp</A>&gt;
+JID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ogashiwa at c.kyoai.ac.jp</A>
+Web: <A HREF="http://nlab.jp/xmpp/">http://nlab.jp/xmpp/</A>
+</PRE>
+
+
+
+
+
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088837.html">[jdev] Echo outgoing chat messages back to myself
+</A></li>
+	<LI>Next message: <A HREF="088845.html">[jdev] features stanza on a s2s dialback connection
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88838">[ date ]</a>
+              <a href="thread.html#88838">[ thread ]</a>
+              <a href="subject.html#88838">[ subject ]</a>
+              <a href="author.html#88838">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

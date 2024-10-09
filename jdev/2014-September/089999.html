@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] XMPP-PubSub vs. remoteStorag
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP-PubSub%20vs.%20remoteStorag&In-Reply-To=%3C372027BD-ABCF-49D1-A680-E9A47260C9A8%40tobias-kraentzer.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="090022.html">
+   <LINK REL="Next"  HREF="090010.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] XMPP-PubSub vs. remoteStorag</H1>
+    <B>Tobias Kr&#228;ntzer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP-PubSub%20vs.%20remoteStorag&In-Reply-To=%3C372027BD-ABCF-49D1-A680-E9A47260C9A8%40tobias-kraentzer.de%3E"
+       TITLE="[jdev] XMPP-PubSub vs. remoteStorag">info at tobias-kraentzer.de
+       </A><BR>
+    <I>Mon Sep  1 19:12:21 UTC 2014</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="090022.html">[jdev] Simple JavaScript XMPP client example
+</A></li>
+        <LI>Next message: <A HREF="090010.html">[jdev] XMPP-PubSub vs. remoteStorag
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89999">[ date ]</a>
+              <a href="thread.html#89999">[ thread ]</a>
+              <a href="subject.html#89999">[ subject ]</a>
+              <a href="author.html#89999">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+I not sure, which list fits more (jdev or juser). I&#8217;ll try it here.
+
+I&#8217;m planning to build a module that combines XMPP-PubSub with remoteStorage [1]. The idea is to have HTTP-based clients which can store any files via the remoteStorage &#8222;Protocol&#8220; (which is in the end just a few GET, PUT, DELETE request with a defined semantic of If-Match and If-Not-Match). On the other side it should be possible to access the collection via an XMPP-PubSub. The XMPP side should be used to get notifications about changes of various collections without monitoring each collection separately.
+
+The question is, how should the items in the collections be mapped between the two APIs. remoteStorage is tree based and PubSub is somehow &#8222;list-based&#8220;.
+
+service.example.com
+&#9500;&#9472;&#9472; folder A
+&#9474;   &#9500;&#9472;&#9472; item 1
+&#9474;   &#9500;&#9472;&#9472; item 2
+&#9474;   &#9500;&#9472;&#9472; subfolder u
+&#9474;   &#9474;   &#9492;&#9472;&#9472; item x
+&#9474;   &#9492;&#9472;&#9472; subfolder v
+&#9474;       &#9492;&#9472;&#9472; item 7
+&#9500;&#9472;&#9472; folder B
+&#9474;   &#9500;&#9472;&#9472; subfolder u
+&#9474;   &#9474;   &#9492;&#9472;&#9472; item x
+&#9474;   &#9492;&#9472;&#9472; item 1
+&#9500;&#9472;&#9472; folder C
+&#9474;   &#9492;&#9472;&#9472; item y
+&#9500;&#9472;&#9472; item 1
+&#9492;&#9472;&#9472; item 2
+
+My first idea was to represent the folders as nodes and the files as items and use collection nodes to represent a folder hierarchy. Having this, &#8222;folder A&#8220; would be a collection node with the sub nodes &#8222;subfolder u&#8220; and subfolder v&#8220; and the items &#8222;item 1&#8220; and &#8222;item 2&#8220;.
+
+But this does not conform to the specification as a collection can only contain other collections and nodes but no items. Also there would be a naming problem. If I understand the specification correctly, the node id must be unique in the scope of the service (service.example.com) and not in the scope of the parent node. Thus the id &#8222;subfolder u&#8220; can not be used without the prefix of the parent folder in it&#8217;s name.  
+
+I could build an service, that is not compliant to the specification, which I don&#8217;t like. Or I could define another node type (e.g., tree), which could have implications on the request to the service &#8230;
+
+Any thoughts about this are appreciated.
+
+Cheers,
+Tobias
+
+[1] &lt;<A HREF="http://tools.ietf.org/html/draft-dejong-remotestorage-03">http://tools.ietf.org/html/draft-dejong-remotestorage-03</A>&gt;
+
+--
+Tobias Kr&#228;ntzer
+Gr&#252;nberger Stra&#223;e 40 | 10245 Berlin
+
++49-178-1353136
+xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">info at tobias-kraentzer.de</A>
+<A HREF="https://tobias-kraentzer.de">https://tobias-kraentzer.de</A>
+Twitter: @anagrom_ataf
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 496 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20140901/4fac6c8f/attachment.sig">https://www.jabber.org/jdev/attachments/20140901/4fac6c8f/attachment.sig</A>&gt;
+</PRE>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="090022.html">[jdev] Simple JavaScript XMPP client example
+</A></li>
+	<LI>Next message: <A HREF="090010.html">[jdev] XMPP-PubSub vs. remoteStorag
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89999">[ date ]</a>
+              <a href="thread.html#89999">[ thread ]</a>
+              <a href="subject.html#89999">[ subject ]</a>
+              <a href="author.html#89999">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

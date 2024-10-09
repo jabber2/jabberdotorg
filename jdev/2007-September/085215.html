@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Connectivity issues with gmail.com and googlemail.com
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Connectivity%20issues%20with%20gmail.com%20and%20googlemail.com&In-Reply-To=%3Cf60b7eb60709190953g6d71d615h3b01168cafdbfc92%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085214.html">
+   <LINK REL="Next"  HREF="085216.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Connectivity issues with gmail.com and googlemail.com</H1>
+    <B>Sergei Golovan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Connectivity%20issues%20with%20gmail.com%20and%20googlemail.com&In-Reply-To=%3Cf60b7eb60709190953g6d71d615h3b01168cafdbfc92%40mail.gmail.com%3E"
+       TITLE="[jdev] Connectivity issues with gmail.com and googlemail.com">sgolovan at gmail.com
+       </A><BR>
+    <I>Wed Sep 19 11:53:16 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085214.html">[jdev] software pages update
+</A></li>
+        <LI>Next message: <A HREF="085216.html">[jdev] Connectivity issues with gmail.com and googlemail.com
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85215">[ date ]</a>
+              <a href="thread.html#85215">[ thread ]</a>
+              <a href="subject.html#85215">[ subject ]</a>
+              <a href="author.html#85215">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi!
+
+Last few weeks I'm experiencing a loss of connectivity with gmail.com
+and googlemail.com. It's interesting that my messages (from nes.ru to
+gmail.com) rich recipients just fine, but messages from gmail.com
+can't be delivered (users get error messages).
+
+After switching off STARTTLS over S2S (which hides the problem) I got
+the following ejabberd log (it's a typical scenario):
+
+1) Google server connects to nes.ru:
+
+=INFO REPORT==== 2007-09-19 20:35:31 ===
+I(&lt;0.241.0&gt;:ejabberd_listener:90): (#Port&lt;0.6781&gt;) Accepted connection
+{{72,14,252,129},30195} -&gt; {{212,119,199,80},5269}
+
+(Note #Port&lt;0.6781&gt;. It's an Erlang port, which processes the TCP connection.)
+
+2) ejabberd opens an incoming S2S stream:
+
+=INFO REPORT==== 2007-09-19 20:35:31 ===
+I(&lt;0.5062.0&gt;:ejabberd_s2s_in:105): started: {gen_tcp,#Port&lt;0.6781&gt;}
+
+Now the stream is controlled by Erlang process &lt;0.5062.0&gt;.
+
+3) gmail.com sends a key
+
+=INFO REPORT==== 2007-09-19 20:35:32 ===
+I(&lt;0.5062.0&gt;:ejabberd_s2s_in:317): GET KEY: {&quot;nes.ru&quot;,
+                                             &quot;gmail.com&quot;,
+                                             [],
+
+&quot;CAESBxC07cjz0SIaEEWGpREmNkivSJRYciOVI70=&quot;}
+
+Note port number &lt;0.5062.0&gt;.
+
+4) nes.ru opens outgoing S2S stream to verify the key (it's irrelevant here)
+
+5) googlemail.com sends a key over the same TCP connection (!):
+
+=INFO REPORT==== 2007-09-19 20:35:32 ===
+I(&lt;0.5062.0&gt;:ejabberd_s2s_in:317): GET KEY: {&quot;nes.ru&quot;,
+                                             &quot;googlemail.com&quot;,
+                                             [],
+
+&quot;CAESBxC17cjz0SIaEBnkylXoIZMlEI4Y4qYXHDQ=&quot;}
+
+The port is the same &lt;0.5062.0&gt;. After that the connection is stalled.
+ejabberd never receives anything in this stream.
+
+For me it looks like a severe bug in Google Talk server.
+
+Did someone experienced similar problems with gmail.com and
+googlemail.com? May be Google Talk admins read this list and can help?
+
+Cheers!
+-- 
+Sergei Golovan
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085214.html">[jdev] software pages update
+</A></li>
+	<LI>Next message: <A HREF="085216.html">[jdev] Connectivity issues with gmail.com and googlemail.com
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85215">[ date ]</a>
+              <a href="thread.html#85215">[ thread ]</a>
+              <a href="subject.html#85215">[ subject ]</a>
+              <a href="author.html#85215">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

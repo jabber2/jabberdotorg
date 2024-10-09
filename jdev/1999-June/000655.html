@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Protocol bits and discussion
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Protocol%20bits%20and%20discussion&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000654.html">
+   <LINK REL="Next"  HREF="000656.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Protocol bits and discussion</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Protocol%20bits%20and%20discussion&In-Reply-To="
+       TITLE="[JDEV] Protocol bits and discussion">jeremie at jabber.org
+       </A><BR>
+    <I>Wed Jun  2 11:47:09 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000654.html">[JDEV] FREE unlimited job posting/FREE resume posting
+</A></li>
+        <LI>Next message: <A HREF="000656.html">[JDEV] Protocol bits and discussion
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#655">[ date ]</a>
+              <a href="thread.html#655">[ thread ]</a>
+              <a href="subject.html#655">[ subject ]</a>
+              <a href="author.html#655">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>There are some parts of the protocol that haven't been fully defined yet
+as to what their range of values might be.  I'll try to explain my
+intentions for them and we can discuss any variations/changes that need to
+happen.  I'll also post these to the site when ready.
+
+First, the login packet:
+&lt;login&gt;
+	&lt;user&gt;test&lt;/user&gt;
+	&lt;pass&gt;test&lt;/pass&gt;
+	&lt;nick&gt;test user&lt;/nick&gt;
+&lt;/login&gt;
+
+The user/pass fields are obvious, but the nick field is the unique
+identifier for this &quot;session&quot; and is what clients should use when
+displaying the session.  It's similiar to email where 
+&quot;Jeremie &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jer at jeremie.com</A>&gt;&quot; is user=<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jer at jeremie.com</A> and nick=Jeremie.
+
+
+Now, the message packet:
+&lt;message&gt;
+	&lt;to nick='you'&gt;someone&lt;/to&gt;
+	&lt;thread&gt;sdfa&lt;/thread&gt;
+	&lt;priority&gt;1&lt;/priority&gt;
+	&lt;subject&gt;Did you see that?&lt;/subject&gt;
+	&lt;say&gt;asdgf asdfkjasgoijqwert asdgaldgjkas&lt;/say&gt;
+&lt;/message&gt;
+
+## &lt;to nick='you'&gt;someone&lt;/to&gt;
+Contains the recipient id, and the nick attribute suggests a specific
+session of that recipient to send this message to.
+
+## &lt;thread&gt;sdfa&lt;/thread&gt;
+This is a special field for threading conversations in clients or for
+group chats.  This is optional for a client to support, but is suggested
+if possible.  Anytime a user specifically creates a new message or new
+&quot;thread&quot; (depends on client's gui), a new semi-random string should be
+placed in the thread, and when the recipient receives this message+thread,
+it should simply echo the thread value back in any direct responses.  When
+the orginal sender gets a thread back, it should display that message in
+the same window, similiar to AIM or many IRC/chat interfaces.  This is a
+fairly powerful field, and will be better defined as more clients mature
+and start to utilize it.
+
+## &lt;priority&gt;1&lt;/priority&gt;
+Again, an optional field and probably almost always not used(zero by
+default).  It is suggested that modules ignore messages with a priority
+below zero(won't be stored offline) and clients depreciate any major
+notification(audio alerts, popups, etc) for sub-zero. A range needs to be
+specified for other special cases though:
+	1-1000	notify even when status is busy/NA
+	1000+	top priority, client should popup/display first in list
+The range is so that specific actions can be defined later, and general
+actions can be used if a specific is unknown.
+
+## &lt;subject&gt;blah&lt;/subject&gt;
+Optional, just to give a &quot;preview&quot; or topic of a message before/during
+reading or when browsing history/logs.
+
+## &lt;say&gt;sadfasdf&lt;/say&gt;
+Required, contains the text to display.
+
+
+The status packets:
+&lt;status type='online'&gt;
+	&lt;say&gt;This is my status&lt;/say&gt;
+	&lt;priority&gt;10&lt;/priority&gt;
+	&lt;icon&gt;normal&lt;/icon&gt;
+&lt;/status&gt;
+
+First, the type='' attribute can ONLY be 'online' and 'offline' at this
+point.  This is not the place for all of the sub-types like
+away/not-available/etc.  And &lt;say&gt;&lt;/say&gt; is where a user can type in their
+own status message or reason for being away, etc.  This can be a tooltip
+or popup or such. 
+
+## &lt;priority&gt;10&lt;/priority&gt;
+This is going to be a tricky and special field, and is required to be sent
+for at least the initial status packet(else it will default to zero). The
+primary use for this field is by the server to determine which &quot;session&quot;
+of a users is the primary one.  So, incoming messages sent to the user
+will be delivered to the primary session. Basically, the lowest positive
+priority is the primary session.  This is so that the priority field can
+roughly estimate minutes idle.  The user should be able to control this
+and any automation, but a client might automatically send a new status
+packet with a higher priority every five minutes or so.  So: 
+&lt;status&gt;&lt;say&gt;At Work&lt;/say&gt;&lt;priority&gt;35&lt;/priority&gt;&lt;/status&gt; would mean this
+user has been away from their desk for 35 minutes.  All priorities below
+zero are for special devices that should not be considered normal
+sessions, such as a pager, and should never be considered a &quot;primary&quot; 
+session.
+
+## &lt;icon&gt;normal&lt;/icon&gt;
+THIS is where normal types go.  Here are a few possibilites:
+	normal
+	away
+	notavailable
+	busy
+	idle
+and also maybe fun ones like:
+	happy
+	sad
+	excited
+	depressed
+	angry
+	bored
+	havingfun
+	talkative
+or activity ones:
+	sleeping
+	restroom
+	traveling
+	eating
+	meeting
+	coding
+	vacation
+This list needs to be standardized so clients being developed can assign
+actual icons to these values.
+
+
+I'm getting the feeling that I need to dedicate a whole email to
+explaining statuses, sessions, and how they all work/interact :)
+
+Jer
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000654.html">[JDEV] FREE unlimited job posting/FREE resume posting
+</A></li>
+	<LI>Next message: <A HREF="000656.html">[JDEV] Protocol bits and discussion
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#655">[ date ]</a>
+              <a href="thread.html#655">[ thread ]</a>
+              <a href="subject.html#655">[ subject ]</a>
+              <a href="author.html#655">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Data forms, jabber:iq:register,	jabber:x:data and the&lt;x/&gt; tag
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Data%20forms%2C%20jabber%3Aiq%3Aregister%2C%0A%09jabber%3Ax%3Adata%20and%20the%3Cx/%3E%20tag&In-Reply-To=%3C00a901c416b5%24ffa2d690%24e201020a%40pmillard2k%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="077677.html">
+   <LINK REL="Next"  HREF="077688.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Data forms, jabber:iq:register,	jabber:x:data and the&lt;x/&gt; tag</H1>
+    <B>Peter Millard</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Data%20forms%2C%20jabber%3Aiq%3Aregister%2C%0A%09jabber%3Ax%3Adata%20and%20the%3Cx/%3E%20tag&In-Reply-To=%3C00a901c416b5%24ffa2d690%24e201020a%40pmillard2k%3E"
+       TITLE="[jdev] Data forms, jabber:iq:register,	jabber:x:data and the&lt;x/&gt; tag">me at pgmillard.com
+       </A><BR>
+    <I>Tue Mar 30 18:20:39 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="077677.html">[jdev] Data forms, jabber:iq:register, jabber:x:data and the	&lt;x/&gt; tag
+</A></li>
+        <LI>Next message: <A HREF="077688.html">[jdev] Data forms, jabber:iq:register, jabber:x:data and	the&lt;x/&gt; tag
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77678">[ date ]</a>
+              <a href="thread.html#77678">[ thread ]</a>
+              <a href="subject.html#77678">[ subject ]</a>
+              <a href="author.html#77678">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dr. Craig Hollabaugh wrote:
+&gt;<i> On Tue, 2004-03-30 at 11:28, Peter Millard wrote:
+</I>&gt;&gt;<i> Yes. Ideally, you could use adhoc-commands, but you'll need to convince
+</I>&gt;&gt;<i> client developers to add support for it. You could always do both. If I
+</I>&gt;&gt;<i> understand you correctly, you want to use iq:register to &quot;SET&quot; values on
+</I>&gt;&gt;<i> the various devices. Instead of using a node attribute to do this, simply
+</I>&gt;&gt;<i> include a hidden field in the x-data form that has that value. When a
+</I>&gt;&gt;<i> client submits the register back to you, that hidden value should be
+</I>&gt;&gt;<i> included in the response.
+</I>&gt;<i>
+</I>&gt;<i> Excellent idea? However, I still need a logical way to discover the
+</I>&gt;<i> hierarchical node tree of a field device. Having a form with hundreds of
+</I>&gt;<i> fields will be overwhelming. So could I discover the nodes (which
+</I>&gt;<i> contain an entry for this hidden field) then use iq:register with a
+</I>&gt;<i> hidden field to remap things back together.
+</I>
+Correct... however, I think the jid solution (below) is a better idea.
+Specifically, I'm not sure how the client would send the initial
+jabber:iq:register &quot;get&quot; request would include the proper hidden field.
+
+&gt;&gt;<i> The other way around
+</I>&gt;&gt;<i> this, would be to map the device-id's to &quot;user&quot; part of a JID: like this:
+</I>&gt;&gt;<i>     <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">vertical.ch1.scale at scope1.foo.org</A>
+</I>&gt;<i> Let's talk about this, this would lead to thousands of jids, a scope
+</I>&gt;<i> alone has a couple hundred values, so you'd end up with
+</I>[SNIP]
+&gt;<i> This seems like a mess from my limited jabber coding experience. I'm
+</I>&gt;<i> using python and from what I've done, I'd have to start up a thread to
+</I>&gt;<i> handle communications for each of these jids, not to mention that all
+</I>&gt;<i> these need to registered on the server. I suppose there's a better way
+</I>&gt;<i> of doing this. I'm all ears, I'm looking for simplisticity.
+</I>
+You want a single component: scope1.foo.org which would handle packets for ALL
+jids at that domain. (*@scope1.foo.org). You'd have a different component for
+each device. I suppose, you could also multiplex multiple devices to a single
+component by doing:
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">scope1.vertical.ch1.scale at devices.foo.org</A>
+
+The idea with components is that they communicate directly with the jabberd
+server (the router) using a socket. Jabber routers always route by 'domain' so
+any packets destined for your domain will land at your component. You do the
+right thing based on the full jid then. This is exactly how MUC components work
+(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">room at conference.jabber.org</A>) for example. JEP-114 is a document which describes
+the handshaking you need to do in order to connect a component to a jabberd
+1.4.x server. Jabberd2 works slightly different, and docs for that should be on
+jabberd.jabberstudio.org someplace. (Rob would have a better idea.. rob?)
+
+[SNIP]
+
+&gt;<i> I haven't figured out how to distribute these update messages either.
+</I>&gt;<i> Fortunately, the Jabber environment offers several options to send value
+</I>&gt;<i> information including presence via &lt;x/&gt;, chat room message with value info
+</I>&gt;<i> in &lt;x/&gt;, and pubsub. Any other ideas?
+</I>
+Seems like what you really want here is pubsub and a client which can do some
+cool GUI stuff with the data.
+
+pgm.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="077677.html">[jdev] Data forms, jabber:iq:register, jabber:x:data and the	&lt;x/&gt; tag
+</A></li>
+	<LI>Next message: <A HREF="077688.html">[jdev] Data forms, jabber:iq:register, jabber:x:data and	the&lt;x/&gt; tag
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77678">[ date ]</a>
+              <a href="thread.html#77678">[ thread ]</a>
+              <a href="subject.html#77678">[ subject ]</a>
+              <a href="author.html#77678">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

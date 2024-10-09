@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] JIT hackin'
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20JIT%20hackin%27&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="018591.html">
+   <LINK REL="Next"  HREF="018582.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] JIT hackin'</H1>
+    <B>Trejkaz Xaoza</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20JIT%20hackin%27&In-Reply-To="
+       TITLE="[JDEV] JIT hackin'">trejkaz at xaoza.net
+       </A><BR>
+    <I>Sat Jan 10 00:06:37 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="018591.html">[JDEV] Users-Agent bug: type='jid' in x:data results
+</A></li>
+        <LI>Next message: <A HREF="018582.html">[JDEV] JIT hackin'
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#18581">[ date ]</a>
+              <a href="thread.html#18581">[ thread ]</a>
+              <a href="subject.html#18581">[ subject ]</a>
+              <a href="author.html#18581">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Okay I've been tracing around the JIT code trying to figure out why it doesn't 
+add the contacts from the ICQ server when it connects.  This is where I get 
+to.  It seems to exit the while() loop immediately so I guess the list is 
+'empty'.  Has anyone else had any success getting this to work?
+
+TX
+
+void WPclient::SignalServerContactEvent(ServerBasedContactEvent* ev) {
+    log_debug(ZONE,&quot;Got server based contact list, importing&quot;);
+    ContactList l = ev-&gt;getContactList();
+    ContactList::iterator curr = l.begin();
+    while (curr != l.end()) {
+      contact c = it_contact_get(sesja,(*curr)-&gt;getUIN());
+      if (c == NULL) {
+        /* new contact not yet in our list */
+        c = it_contact_add(sesja,(*curr)-&gt;getUIN());
+        if(c != NULL) {
+          it_contact_subscribe(c,(*curr)-&gt;getAlias().c_str());
+        }
+        log_debug(ZONE,&quot;Imported UIN %ul&quot;, (*curr)-&gt;getUIN());
+      } else {
+(*curr)-&gt;getUIN());
+        log_debug(ZONE,&quot;Skipped UIN %ul (already in list)&quot;, 
+(*curr)-&gt;getUIN());
+      }
+      ++curr;
+    }
+    log_debug(ZONE,&quot;Finished import&quot;);
+}
+
+- -- 
+'Every sufficiently advanced technology is indistinguishable from magic' - 
+Arthur C Clarke
+'Every sufficiently advanced magic is indistinguishable from technology' - Tom 
+Graves
+
+      Email: Trejkaz Xaoza &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">trejkaz at xaoza.net</A>&gt;
+   Web site: <A HREF="http://xaoza.net/trejkaz/">http://xaoza.net/trejkaz/</A>
+  Jabber ID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">trejkaz at jabber.xaoza.net</A>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.3 (GNU/Linux)
+
+iD8DBQE//5Z0mifzwBMPxxoRAn5dAJ9frgPUkVjFiOhsw1yImvg2PfwKXACgxKHd
+yWqUtoeI1bhZAioyxoFISpM=
+=mlQB
+-----END PGP SIGNATURE-----
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="018591.html">[JDEV] Users-Agent bug: type='jid' in x:data results
+</A></li>
+	<LI>Next message: <A HREF="018582.html">[JDEV] JIT hackin'
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#18581">[ date ]</a>
+              <a href="thread.html#18581">[ thread ]</a>
+              <a href="subject.html#18581">[ subject ]</a>
+              <a href="author.html#18581">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

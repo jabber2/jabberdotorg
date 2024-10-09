@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] problems compiling
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20problems%20compiling&In-Reply-To=%3C20000710112135.B32125%40orientation.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="032677.html">
+   <LINK REL="Next"  HREF="032671.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] problems compiling</H1>
+    <B>Kurt D. Starsinic</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20problems%20compiling&In-Reply-To=%3C20000710112135.B32125%40orientation.com%3E"
+       TITLE="[JDEV] problems compiling">kstar at orientation.com
+       </A><BR>
+    <I>Mon Jul 10 10:21:35 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="032677.html">[JDEV] problems compiling
+</A></li>
+        <LI>Next message: <A HREF="032671.html">[JDEV] GroupChats in Jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#32669">[ date ]</a>
+              <a href="thread.html#32669">[ thread ]</a>
+              <a href="subject.html#32669">[ subject ]</a>
+              <a href="author.html#32669">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sun, Jul 09, 2000 at 08:32:37PM -0500, Eliot Landrum wrote:
+&gt;<i> If someone can tell me what the equivalent steps are on FreeBSD (or if they are even needed!).. I'll add that to the HOWTO.
+</I>&gt;<i> 
+</I>&gt;<i> On Sun, Jul 09, 2000 at 02:26:44PM -0700, Nitin Borwankar wrote:
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; This is a linker problem and the solution is mentioned
+</I>&gt;<i> &gt; (without mentioning the problem!!) in the Server HOW-TO
+</I>&gt;<i> &gt; which exhorts you to run ldconfig as often as possible.
+</I>
+    I consider that a kludge.  Not only does it not work on FreeBSD, it
+requires you to be root.  I never build (or run) jabber as root, and I
+don't endorse a policy that recommends this.  jserver and the transports
+don't need root privilege for any reason; they don't bind to low ports,
+and they don't read the shadow password file.  They especially don't need
+root privilege to _build_.
+
+    Following are a series of workarounds coupled with complaints.  I
+will be happy to supply patches, now that I know that at least two of
+us are building on FreeBSD.  ;^)
+
+    Enough with the proselytizing, here's how I build jserver and the
+transports on FreeBSD (3.4-RELEASE):
+
+    I install everything with a prefix of /usr/local/jabber&lt;something&gt;.
+This allows me to build and compare multiple versions, and it lets me
+delete an entire build just by saying, e.g.,
+
+        % rm -fr /usr/local/jabber-experiment
+
+    For an example, I'll build a version under /usr/local/jabbertest.
+
+    First of all, there are some things that I had to do once and only
+once.  I installed the gmake and openssl ports:
+
+        % su
+        % cd /usr/ports/dev/gmake
+        % make install
+        % cd /usr/ports/security/openssl
+        % make install
+
+    Then I made a symlink from /usr/local/bin/make to /usr/local/bin/gmake,
+and put /usr/local/bin in my $PATH before /usr/bin.  This is because
+jabber depends on GNU make, and right now there's no way to redefine
+MAKE easily in jabber's autogen scripts.
+
+    Now, we're past the one-time-only actions.  For a particular jserver
+build, I create the directory, and point some environment variables in
+that direction (n.b.:  the -L/usr/local/lib and -I/usr/local/include are
+for the openssl port I installed above):
+
+            % mkdir /usr/local/jabbertest
+            % export LD_LIBRARY_PATH=/usr/local/jabbertest/lib
+            % export LDFLAGS=&quot;-L/usr/local/jabbertest/lib -L/usr/local/lib&quot;
+            % export CPPFLAGS=&quot;-I/usr/local/jabbertest/include \
+                               -I/usr/local/include&quot;
+            % export PATH=&quot;/usr/local/jabbertest/bin:$PATH&quot;
+
+    Then, I autogen build, test, and install each part, giving the
+appropriate prefix:
+    
+            % ./autogen.sh --prefix=/usr/local/jabbertest
+            % make
+            % make check    # Ignore failure, as appropriate
+            % make test     # Ignore failure, as appropriate
+            % make install
+
+    After autogenning and before making jabber-transport, I hand-edit
+jabber-transport/src/Makefile.  Change the `LIBS =' line from:
+
+            LIBS = -lpth -lnsl -ldl
+
+    to:
+
+            LIBS = -lpth -L/usr/local/lib -lssl -lcrypto -lRSAglue -lrsaref
+
+    Otherwise, it's a textbook build.  Comments and questions are welcomed.
+
+    Peace,
+* Kurt Starsinic (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kstar at orientation.com</A>) ---------- Senior Network Engineer *
+|<i>       `If we knew what it was we were doing, it wouldn't be called        |
+</I>|<i>        research, would it?' -- Albert Einstein                            |
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="032677.html">[JDEV] problems compiling
+</A></li>
+	<LI>Next message: <A HREF="032671.html">[JDEV] GroupChats in Jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#32669">[ date ]</a>
+              <a href="thread.html#32669">[ thread ]</a>
+              <a href="subject.html#32669">[ subject ]</a>
+              <a href="author.html#32669">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

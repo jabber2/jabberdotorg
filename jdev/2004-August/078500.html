@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Driving/Routing directions via XMPP
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Driving/Routing%20directions%20via%20XMPP&In-Reply-To=%3Ccft0af%24mgi%241%40sea.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="078505.html">
+   <LINK REL="Next"  HREF="078502.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Driving/Routing directions via XMPP</H1>
+    <B>Gaston Dombiak</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Driving/Routing%20directions%20via%20XMPP&In-Reply-To=%3Ccft0af%24mgi%241%40sea.gmane.org%3E"
+       TITLE="[jdev] Re: Driving/Routing directions via XMPP">dombiak_gaston at hotmail.com
+       </A><BR>
+    <I>Tue Aug 17 08:09:55 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="078505.html">[jdev] Driving/Routing directions via XMPP
+</A></li>
+        <LI>Next message: <A HREF="078502.html">[jdev] Re: Driving/Routing directions via XMPP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#78500">[ date ]</a>
+              <a href="thread.html#78500">[ thread ]</a>
+              <a href="subject.html#78500">[ subject ]</a>
+              <a href="author.html#78500">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Stephen,
+
+I really like this idea. Here are my 2 cents. You propose that the &quot;src&quot; and
+&quot;dst&quot; elements will include the city, state and country attributes. From my
+experience not all the countries split their information in the same form
+and degree. For example, some countries do not have zip code!. For the cases
+where you don't have a zip code you may need to go deeper than a city level.
+
+Disclaimer: I'm definitely not a GIS expert (not even a newbie).  Having
+said that, I propose to have something like:
+
+&lt;src street= '4555 Main Street ' geolevel6='zzz' geolevel5='zzz'
+geolevel4='zzz' geolevel3='zzz' geolevel2='zzz'
+country='USA' code='19117'/ &gt;
+
+where the geolevel* are optional. So your example will look like:
+
+&lt;src street= '4555 Main Street ' geolevel3='Philadelphia' geolevel2='PA'
+country='USA' code='19117'/ &gt;
+
+Regards,
+
+  -- Gato
+
+
+&quot;Stephen Pendleton&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">spendleton at movsoftware.com</A>&gt; wrote in message
+news:009d01c483b5$59049bd0$<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">6401a8c0 at movsoftware.com...</A>
+I am re-introducing a service that client developers may be interested in.
+This service will deliver turn-by-turn routing information (similar to
+MapQuest) between pairs of JID's (that have location information associated
+with them by implementation of the GEOLOC JEP), or pairs of postal addresses
+or latitude/longitude pairs. The service can be used by sending XMPP stanzas
+to '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lbs at movsoftware.com</A>/lbs'
+
+Currently the system can return lists of text strings that describe each
+segment of the route (e.g. &quot;Turn left at Main Street&quot;) and a URL to an
+associated gif graphic that displays the segment.
+
+The proposed protocol is listed below, but I would like feedback on the
+protocol before drafting a JEP. If you have any comments please let me know,
+either by replying to the post - or sending me email directly.
+
+Requesting and Returning Routing Information with XMPP
+
+Entities can request routing information between two jids or two locations
+specified by either latitude/longitude pairs or the postal address of the
+endpoints.
+
+Entity requests routing information between jids <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at jabber.org</A> and
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bar at jabber.org</A>:
+
+&lt;iq
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lbs at movsoftware.com</A>/lbs'
+    from=' <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>/balcony'
+    type='get'
+    id='route1'&gt;
+  &lt;query xmlns='<A HREF="http://www.movsoftware.com/protocol/routing'">http://www.movsoftware.com/protocol/routing'</A>&gt;
+    &lt;src jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at jabber.org</A>'/ &gt;
+    &lt;dst jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bar at jabber.org</A>'/&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+Entity requests routing information between latitude/longitude pairs
+-37.34,-33.33 and -40.433, -20.222:
+
+&lt;iq
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lbs at movsoftware.com</A>/lbs'
+    from=' <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>/balcony'
+    type='get'
+    id='route1'&gt;
+  &lt;query xmlns='<A HREF="http://www.movsoftware.com/protocol/routing'">http://www.movsoftware.com/protocol/routing'</A>&gt;
+    &lt;src lat='-37.24' lon='-33.33'/ &gt;
+    &lt;dst lat='-40.422' lon='-20.222'/&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+Entity requests routing information between postal address pairs 4555 Main
+Street,Philadelphia PA,USA,19117 and 9000 West Elm Street,Philadelphia
+PA,USA,19117 :
+
+&lt;iq
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lbs at movsoftware.com</A>/lbs'
+    from=' <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>/balcony'
+    type='get'
+    id='route1'&gt;
+  &lt;query xmlns='<A HREF="http://www.movsoftware.com/protocol/routing'">http://www.movsoftware.com/protocol/routing'</A>&gt;
+    &lt;src street= '4555 Main Street ' city='Philadelphia' state = 'PA'
+country='USA' code='19117'/ &gt;
+    &lt;dst street= '9000 West Elm Street ' city='Philadelphia' state = 'PA'
+country='USA' code='19117'/ &gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+
+Routing information is returned as a series of segments:
+&lt;iq type='result'
+    id='route1'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>/balcony'
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lbs at movsoftware.com</A>/lbs'&gt;
+  &lt;query xmlns='<A HREF="http://www.movsoftware.com/protocol/routing'">http://www.movsoftware.com/protocol/routing'</A>&gt;
+    &lt;src jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at jabber.org</A>'/ &gt;
+    &lt;dst jid = '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bar at jabber.org</A>'/&gt;
+    &lt;segment id = '1'&gt;Depart Start on Chevy Chase Lake Dr (West)&lt;/segment&gt;
+    &lt;segment id = '2'&gt;Turn RIGHT (North) onto SR-185 [Connecticut
+Ave]&lt;/segment&gt;
+    &lt;segment id = '3'&gt;Take Ramp (Right) onto I-495 [I-495
+Outerloop]&lt;/segment&gt;
+    &lt;segment id = '4'&gt;Turn RIGHT (South) onto S Sherwood Rd [Sherwood Rd]
+&lt;/segment&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+Stephen Pendleton
+mov Software
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="078505.html">[jdev] Driving/Routing directions via XMPP
+</A></li>
+	<LI>Next message: <A HREF="078502.html">[jdev] Re: Driving/Routing directions via XMPP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#78500">[ date ]</a>
+              <a href="thread.html#78500">[ thread ]</a>
+              <a href="subject.html#78500">[ subject ]</a>
+              <a href="author.html#78500">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

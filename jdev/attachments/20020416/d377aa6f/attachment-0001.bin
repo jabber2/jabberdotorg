@@ -1,0 +1,99 @@
+In my answers here I'll assume you are talking about a transport
+component dealing with a JID from multiple resources. These answers
+are my opinion only.
+
+
+<color><param>0000,0000,DEDE</param>Here's a couple of the questions
+I'm wondering
+
+
+- What is the behavior when a lower-priority resource changes presence?
+
+</color>
+
+The presence broadcast through the transport is always the presence of
+the resource with highest priority. If a resource with lower priority
+changes status, nothing changes on the transport side.
+
+
+
+<color><param>0000,0000,DEDE</param>- What is the behavior when a
+lower-priority resource changes to the highest priority, or
+vice-versa? (keep in mind that some clients change priority when they
+go auto-away, and any presence change within a priority level makes
+that client have the highest priority)
+
+</color>
+
+Again, the primary presence broadcast should be the presence of the
+resource with highest priority.
+
+
+<color><param>0000,0000,DEDE</param>- What is the behavior when the
+highest-priority resource logs out? (I'm assuming a lower-priority
+resource is ignored)
+
+</color>
+
+The transport looks for the resource with next-highest priority and
+transmits it's presence if it is different from the presence of the
+resource that just logged out.
+
+
+
+<color><param>0000,0000,DEDE</param>- How should invisible mode
+interact, in both the case where the remote system does and does not
+support invisible mode?
+
+</color>
+
+In the case where it does support invisible:
+
+Broadcast the presence of the resource with the highest priority.
+
+
+In the case where it does not support invisible:
+
+(this one I'm not quite sure about)
+
+Broadcast unavailable, even if lower priorities have non-invisible
+status.
+
+
+<color><param>0000,0000,DEDE</param>- What is the correct behavior
+when a message is sent from a resource which is not the highest
+priority? 
+
+</color>
+
+Replies should always go to the resource from which they were sent,
+that said it is difficult to determine if something is a reply through
+a transport. Therefore I would suggest the following:
+
+
+if a message from bob@jabber.org/lowpriority is sent to a
+bob@aim.jabber.org Then a message coming from bob@aim.jabber.org to
+bob@jabber.org would go to bob@jabber.org/lowpriority under the
+following conditions:
+
+Only a small amount of time from the original message to the 'reply'
+has elapsed
+
+bob@jabber.org/lowpriority is still available.
+
+
+otherwise it would go to the resource with highest priority.
+
+
+Messages coming from all other aim users to bob@jabber.org will go to
+the resource with highest priority.
+
+
+
+
+I hope I was clear enough to understand.
+
+
+--
+
+Casey

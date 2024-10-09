@@ -1,0 +1,282 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] mirroring many presence servers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20mirroring%20many%20presence%20servers&In-Reply-To=%3C46C45A28.2030602%40gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085145.html">
+   <LINK REL="Next"  HREF="085147.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] mirroring many presence servers</H1>
+    <B>Jonathan Dickinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20mirroring%20many%20presence%20servers&In-Reply-To=%3C46C45A28.2030602%40gmail.com%3E"
+       TITLE="[jdev] mirroring many presence servers">chayce.za at gmail.com
+       </A><BR>
+    <I>Thu Aug 16 09:07:36 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085145.html">[jdev] mirroring many presence servers
+</A></li>
+        <LI>Next message: <A HREF="085147.html">[jdev] How about that?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85146">[ date ]</a>
+              <a href="thread.html#85146">[ thread ]</a>
+              <a href="subject.html#85146">[ subject ]</a>
+              <a href="author.html#85146">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey Koder,
+
+First take a look at &lt;<A HREF="http://www.xmpp.org/extensions/xep-0163.html">http://www.xmpp.org/extensions/xep-0163.html</A>&gt;.
+
+&quot;There is no need for multiple publishers to a PEP service, since by 
+definition the service generates information associated with only one 
+entity. The owner-publisher for every node is the bare JID of the 
+account owner.&quot;
+
+ From that it is safe to assume that a server can not subscribe via 
+PubSub. Edit: According to Section 10 it can, but servers/clients may 
+still break, best not to try.
+
+Your server will have a hard time keeping track of all of the 
+information, but I will outline how it could be possible. Two 
+corporations/servers: benvolio (your client), juliet (your client's 
+contact), montague.net (your client's server, a.k.a. your server), 
+capulet.com (juliet's server). By the end of this you will see that it 
+is, unfortunately, not possible.
+
+Firstly, as per the XEP, the Juliet creates the node. That is of no 
+interest to your users, unless the subscription has initial data (in 
+which case their server should forward it anyway).
+
+Second, Juliet updates that data. Benvolio will receive a presence 
+notification via montague.net. It is at this point that montague.net 
+should interpret the data and store it.
+
+&lt;message from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>'
+          to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">benvolio at montague.net</A>'
+          type='headline'
+          id='foo'&gt;
+   &lt;event xmlns='<A HREF="http://jabber.org/protocol/pubsub#event'">http://jabber.org/protocol/pubsub#event'</A>&gt;
+     &lt;items node='<A HREF="http://jabber.org/protocol/tune'">http://jabber.org/protocol/tune'</A>&gt;
+       &lt;item&gt;
+         [...]
+       &lt;/item&gt;
+     &lt;/items&gt;
+   &lt;/event&gt;
+&lt;/message&gt;
+
+Montague.net can now use this opportunity to store the subscription 
+information about <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com.</A> There will be many 'items' 
+elements and many 'item' elements per 'items' element, you will have to 
+decide how to store that in your database (you could piggy-back off the 
+exact same table that your clients use).
+
+Third, Benvolio logs off and on again. First thing his client does is to 
+send his presence.
+
+&lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">benvolio at montague.net</A>'&gt;
+   &lt;c xmlns='<A HREF="http://jabber.org/protocol/caps'">http://jabber.org/protocol/caps'</A>
+      node='<A HREF="http://www.chatopus.com/ec'">http://www.chatopus.com/ec'</A>
+      ver='2.1'
+      ext='foobar pres+'/&gt;
+&lt;/presence&gt;
+
+Montague will now forward that to all his subscriptions (which is 
+important, you CAN'T stop this message, otherwise Juliet will not know 
+about his new log-in, he will appear offline).
+
+&lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">benvolio at montague.net</A>' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>'&gt;
+   &lt;c xmlns='<A HREF="http://jabber.org/protocol/caps'">http://jabber.org/protocol/caps'</A>
+      node='<A HREF="http://www.chatopus.com/ec'">http://www.chatopus.com/ec'</A>
+      ver='2.1'
+      ext='foobar pres+'/&gt;
+&lt;/presence&gt;
+
+Capulet.com now sees this message and realises that it must send 
+Juliet's last subscription notice.
+
+&lt;message from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at capulet.com</A>'
+          to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">benvolio at montague.net</A>'
+          type='headline'
+          id='foo'&gt;
+   &lt;event xmlns='<A HREF="http://jabber.org/protocol/pubsub#event'">http://jabber.org/protocol/pubsub#event'</A>&gt;
+     &lt;items node='<A HREF="http://jabber.org/protocol/tune'">http://jabber.org/protocol/tune'</A>&gt;
+       &lt;item&gt;
+         [...]
+       &lt;/item&gt;
+     &lt;/items&gt;
+   &lt;/event&gt;
+   &lt;x xmlns='jabber:x:delay' stamp='20031213T23:58:37'/&gt;
+&lt;/message&gt;
+
+You can't avoid it. Sorry. Nor would I know why you would want to, maybe 
+if you could explain your situation?
+
+Cheers,
+  Jonathan Dickinson
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cherami at gmx.de</A> wrote:
+&gt;<i> Hi Peter,
+</I>&gt;<i> 
+</I>&gt;<i> could you please elaborate on this subject?
+</I>&gt;<i> 
+</I>&gt;<i> Thank you in advance.
+</I>&gt;<i> Koder
+</I>&gt;<i>         
+</I>&gt;<i>         -------- Original-Nachricht --------
+</I>&gt;<i> Datum: Thu, 16 Aug 2007 09:51:33 +0200
+</I>&gt;<i> Von: Jonathan Dickinson &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chayce.za at gmail.com</A>&gt;
+</I>&gt;<i> An: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cherami at gmx.de</A>
+</I>&gt;<i> Betreff: Re: [jdev] mirroring many presence servers
+</I>&gt;<i> 
+</I>&gt;<i>         Hey,
+</I>&gt;<i>  
+</I>&gt;<i>  Sorry, I don't know of any JEP that would help. You will probably have 
+</I>&gt;<i>  to write it yourself. As I said:
+</I>&gt;<i>  
+</I>&gt;<i>      * Client sends presence notification
+</I>&gt;<i>      * Your server &quot;notices&quot; the notification
+</I>&gt;<i>      * Your server stores this in the database
+</I>&gt;<i>      * Your server forwardes the original notification
+</I>&gt;<i>  
+</I>&gt;<i>  You can also subscribing your sever. As far as I know, that should work, 
+</I>&gt;<i>  but some other clients/servers might break if you try that. Maybe 
+</I>&gt;<i>  someone else could elaborate (Peter)? I have noticed that websites (such 
+</I>&gt;<i>  as the Jabber world map) need a contact in your contact list to 
+</I>&gt;<i>  subscribe, I'm not sure if has occurred to anyone to just subscribe the 
+</I>&gt;<i>  server.
+</I>&gt;<i>  
+</I>&gt;<i>  Cheers,
+</I>&gt;<i>   Jonathan Dickinson
+</I>&gt;<i>  
+</I>&gt;<i>  <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cherami at gmx.de</A> wrote:
+</I>&gt;<i>  &gt; Hi Jonathan,
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; I understand that a client must/can subscribe to an other client to 
+</I>&gt;<i>  &gt; get notifications of his status.
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; But can a presence server do something like that?
+</I>&gt;<i>  &gt; Can a presence server subscribe to other clients?
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; The Idea is, that I have in my organisation Clients, that only needs 
+</I>&gt;<i>  &gt; the presence information of other clients in other organisations. So I 
+</I>&gt;<i>  &gt; want to cache/mirror in my server the presence information ot the 
+</I>&gt;<i>  &gt; clients ot the other organisation, so that I do need to connect the 
+</I>&gt;<i>  &gt; server ot the partners for each request from the clients of my 
+</I>&gt;<i>  &gt; organisation.
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; Thanks
+</I>&gt;<i>  &gt; Koder
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;&gt; -------- Original-Nachricht --------
+</I>&gt;<i>  &gt;&gt; Datum: Wed, 15 Aug 2007 10:34:35 +0200
+</I>&gt;<i>  &gt;&gt; Von: Jonathan Chayce Dickinson &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chayce.za at gmail.com</A>&gt;
+</I>&gt;<i>  &gt;&gt; An: Jabber software development list &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i>  &gt;&gt; Betreff: Re: [jdev] mirroring many presence servers
+</I>&gt;<i>  &gt;&gt;
+</I>&gt;<i>  &gt;&gt; Hey,
+</I>&gt;<i>  &gt;&gt;
+</I>&gt;<i>  &gt;&gt; If you know the language that your server is written in you could catch
+</I>&gt;<i>  &gt;&gt; all the presence notifications before sending them on and store them
+</I>&gt;<i>  &gt;&gt; locally (in your database etc.).
+</I>&gt;<i>  &gt;&gt;
+</I>&gt;<i>  &gt;&gt; However, what you are asking kinda doesn't make sense. If you never get
+</I>&gt;<i>  &gt;&gt; a presence notification from a contact, they *are* offline (if you
+</I>&gt;<i>  &gt;&gt; notice, while your client is connecting to a Jabber server all your
+</I>&gt;<i>  &gt;&gt; contacts briefly show as offline), unless you are not subscribed to
+</I>&gt;<i>  &gt;&gt; them, in which case you would never know anyway.
+</I>&gt;<i>  &gt;&gt;
+</I>&gt;<i>  &gt;&gt; Hope this helps.
+</I>&gt;<i>  &gt;&gt;
+</I>&gt;<i>  &gt;&gt; Cheers,
+</I>&gt;<i>  &gt;&gt; Jonathan Dickinson
+</I>&gt;<i>  &gt;&gt;
+</I>&gt;<i>  &gt;&gt; On Wed, 2007-08-15 at 10:19 +0200, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cherami at gmx.de</A> wrote:
+</I>&gt;<i>  &gt;&gt; &gt; Hi,
+</I>&gt;<i>  &gt;&gt; &gt;
+</I>&gt;<i>  &gt;&gt; &gt; I have the following scenario in my student project. Which solution
+</I>&gt;<i>  &gt;&gt; &gt; would you propose?
+</I>&gt;<i>  &gt;&gt; &gt;
+</I>&gt;<i>  &gt;&gt; &gt; I have many business partners &quot;B&quot;, &quot;C&quot; and &quot;D&quot;, each of them has his
+</I>&gt;<i>  &gt;&gt; &gt; own presence server &quot;PB&quot;, &quot;PC&quot; and &quot;PD&quot;.
+</I>&gt;<i>  &gt;&gt; &gt;
+</I>&gt;<i>  &gt;&gt; &gt; I need in my organisation &quot;A&quot; a presence service &quot;PA&quot;, who &quot;mirros&quot;
+</I>&gt;<i>  &gt;&gt; &gt; the actual status of all the users on PB, PC and PD, to whom I
+</I>&gt;<i>  &gt;&gt; &gt; subscribed.
+</I>&gt;<i>  &gt;&gt; &gt;
+</I>&gt;<i>  &gt;&gt; &gt; I know, that I could implement my presence service PA as a client, 
+</I>&gt;<i> who
+</I>&gt;<i>  &gt;&gt; &gt; subscribes to all the users on PB, PC and PD. What I am asking for: 
+</I>&gt;<i> is
+</I>&gt;<i>  &gt;&gt; &gt; there an other solution?
+</I>&gt;<i>  &gt;&gt; &gt;
+</I>&gt;<i>  &gt;&gt; &gt; 1. Can I be on the one hand a client of the servers PB, PC, PD, and 
+</I>&gt;<i> on
+</I>&gt;<i>  &gt;&gt; &gt; the other hand a &quot;server&quot; for other applications/clients/servers.
+</I>&gt;<i>  &gt;&gt; &gt;
+</I>&gt;<i>  &gt;&gt; &gt; 2. Can I say to the other servers PB, PC and PD &quot;hey, I am a presence
+</I>&gt;<i>  &gt;&gt; &gt; server (and not a client), would you please send me each change of 
+</I>&gt;<i> the
+</I>&gt;<i>  &gt;&gt; &gt; status of my users, to whom I subscribed&quot;.
+</I>&gt;<i>  &gt;&gt; &gt;
+</I>&gt;<i>  &gt;&gt; &gt; 3. Can I make benefit of the s2s protocol in my scenario?
+</I>&gt;<i>  &gt;&gt; &gt;
+</I>&gt;<i>  &gt;&gt; &gt; You can say: What I want to have, is a local presence service in my
+</I>&gt;<i>  &gt;&gt; &gt; organisation, who localy mirros many others presence servers of other
+</I>&gt;<i>  &gt;&gt; &gt; partners. How would be your solution?
+</I>&gt;<i>  &gt;&gt; &gt;
+</I>&gt;<i>  &gt;&gt; &gt; Thank you for your help and your patience.
+</I>&gt;<i>  &gt;&gt; &gt; Koder
+</I>&gt;<i>  &gt;&gt; &gt;
+</I>&gt;<i>  &gt;&gt; &gt;
+</I>&gt;<i>  &gt;&gt; &gt;
+</I>&gt;<i>  &gt;&gt; &gt; --
+</I>&gt;<i>  &gt;&gt; &gt; Psssst! Schon vom neuen GMX MultiMessenger geh&#246;rt?
+</I>&gt;<i>  &gt;&gt; &gt; Der kanns mit allen: <A HREF="http://www.gmx.net/de/go/multimessenger">http://www.gmx.net/de/go/multimessenger</A>
+</I>&gt;<i>  &gt;&gt; -- 
+</I>&gt;<i>  &gt;&gt; Jonathan Dickinson
+</I>&gt;<i>  &gt;&gt; Developer [Xeer Technology]
+</I>&gt;<i>  &gt;&gt;
+</I>&gt;<i>  &gt;&gt; email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chayce.za at gmail.com</A>
+</I>&gt;<i>  &gt;&gt; jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chayce.za at jabber.org</A>
+</I>&gt;<i>  &gt;&gt; twitter: Moitoius
+</I>&gt;<i>  &gt;&gt;
+</I>&gt;<i>  &gt;&gt; Principle will kick us all in the butt one day. If you have principle,
+</I>&gt;<i>  &gt;&gt; you have all you will ever need.
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; -- 
+</I>&gt;<i>  &gt; Psssst! Schon vom neuen GMX MultiMessenger geh&#246;rt?
+</I>&gt;<i>  &gt; Der kanns mit allen: <A HREF="http://www.gmx.net/de/go/multimessenger">http://www.gmx.net/de/go/multimessenger</A>
+</I>&gt;<i>     
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085145.html">[jdev] mirroring many presence servers
+</A></li>
+	<LI>Next message: <A HREF="085147.html">[jdev] How about that?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85146">[ date ]</a>
+              <a href="thread.html#85146">[ thread ]</a>
+              <a href="subject.html#85146">[ subject ]</a>
+              <a href="author.html#85146">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

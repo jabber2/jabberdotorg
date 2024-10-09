@@ -1,0 +1,323 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Patch for service discovery support in JIT
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Patch%20for%20service%20discovery%20support%20in%20JIT&In-Reply-To=%3C20031212003522.GA32222%40hermes.muc.charente.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="076953.html">
+   <LINK REL="Next"  HREF="076955.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Patch for service discovery support in JIT</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Patch%20for%20service%20discovery%20support%20in%20JIT&In-Reply-To=%3C20031212003522.GA32222%40hermes.muc.charente.de%3E"
+       TITLE="[JDEV] Patch for service discovery support in JIT">m at tthias.net
+       </A><BR>
+    <I>Thu Dec 11 18:35:24 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="076953.html">[JDEV] Patch for service discovery support in JIT
+</A></li>
+        <LI>Next message: <A HREF="076955.html">[JDEV] ANNOUNCE: jabberd 2.0 release candidate 1 available for download
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76983">[ date ]</a>
+              <a href="thread.html#76983">[ thread ]</a>
+              <a href="subject.html#76983">[ subject ]</a>
+              <a href="author.html#76983">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi!
+
+
+I updated my patch that implements service discovery in JIT. The
+difference is, that a different name for the SMS part of JIT can be
+specified for discovery (and browsing) in the configuration file.
+Else you get the same description for the transport and the SMS part of
+it in the agents list of jabberd2.
+
+
+Tot kijk
+    Matthias
+
+-- 
+Fon: +49-(0)70 0770 07770       <A HREF="http://matthias.wimmer.name/">http://matthias.wimmer.name/</A>
+HAM: DB1MW                      xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mawis at charente.de</A>
+-------------- next part --------------
+diff -Naur jit/jabberd/lib/lib.h jit-disco/jabberd/lib/lib.h
+--- jit/jabberd/lib/lib.h	2003-06-02 12:10:16.000000000 +0200
++++ jit-disco/jabberd/lib/lib.h	2003-12-12 01:10:16.000000000 +0100
+@@ -650,6 +650,8 @@
+ #define NS_ENVELOPE  &quot;jabber:x:envelope&quot;
+ #define NS_EXPIRE    &quot;jabber:x:expire&quot;
+ #define NS_XHTML     &quot;<A HREF="http://www.w3.org/1999/xhtml&quot;">http://www.w3.org/1999/xhtml&quot;</A>
++#define NS_DISCO_ITEMS &quot;<A HREF="http://jabber.org/protocol/disco#items&quot;">http://jabber.org/protocol/disco#items&quot;</A>
++#define NS_DISCO_INFO &quot;<A HREF="http://jabber.org/protocol/disco#info&quot;">http://jabber.org/protocol/disco#info&quot;</A>
+ 
+ #define NS_XDBGINSERT &quot;jabber:xdb:ginsert&quot;
+ #define NS_XDBNSLIST  &quot;jabber:xdb:nslist&quot;
+diff -Naur jit/jit/jabber-icq.example jit-disco/jit/jabber-icq.example
+--- jit/jit/jabber-icq.example	2003-04-08 12:08:28.000000000 +0200
++++ jit-disco/jit/jabber-icq.example	2003-12-12 01:14:19.000000000 +0100
+@@ -51,6 +51,7 @@
+         &lt;host&gt;sms.icq.localhost&lt;/host&gt;
+   	&lt;show&gt;away&lt;/show&gt;
+ 	&lt;status&gt;&lt;/status&gt;
++	&lt;name&gt;SMS over Jabber ICQ Transport&lt;/name&gt;
+       &lt;/sms&gt;
+ 
+       &lt;instructions&gt;Please enter your UIN and password&lt;/instructions&gt;
+diff -Naur jit/jit/jit/icqtransport.c jit-disco/jit/jit/icqtransport.c
+--- jit/jit/jit/icqtransport.c	2003-04-29 15:35:22.000000000 +0200
++++ jit-disco/jit/jit/icqtransport.c	2003-12-12 01:18:04.000000000 +0100
+@@ -122,6 +122,12 @@
+         if (ti-&gt;sms_status) {
+           log_debug(ZONE,&quot;sms st %s &quot;,ti-&gt;sms_status);
+         }
++
++        ti-&gt;sms_name = pstrdup(p,xmlnode_get_tag_data(cur,&quot;name&quot;));
++
++	if (ti-&gt;sms_name) {
++	  log_debug(ZONE,&quot;sms name %s&quot;,ti-&gt;sms_name);
++	}
+       }
+     }
+ 
+diff -Naur jit/jit/jit/icqtransport.h jit-disco/jit/jit/icqtransport.h
+--- jit/jit/jit/icqtransport.h	2003-06-02 12:10:18.000000000 +0200
++++ jit-disco/jit/jit/icqtransport.h	2003-12-12 01:13:57.000000000 +0100
+@@ -81,6 +81,8 @@
+     icqstatus sms_show;
+     /** Away message of SMS contacts */
+     char *sms_status;
++    /** Name of the SMS node for browsing and discovery */
++    char *sms_name;
+     /** use &quot;chat&quot; as standard message type? */
+     int msg_chat;
+     time_t start;
+@@ -290,6 +292,10 @@
+ void it_iq_gateway_set(session s, jpacket jp);
+ void it_iq_browse_server(iti ti, jpacket jp);
+ void it_iq_browse_user(session s, jpacket jp);
++void it_iq_disco_items_server(iti ti, jpacket jp);
++void it_iq_disco_info_server(iti ti, jpacket jp);
++void it_iq_disco_items_user(session s, jpacket jp);
++void it_iq_disco_info_user(session s, jpacket jp);
+ 
+ 
+ void it_save_contacts(session s);
+diff -Naur jit/jit/jit/iq.c jit-disco/jit/jit/iq.c
+--- jit/jit/jit/iq.c	2003-04-29 15:35:22.000000000 +0200
++++ jit-disco/jit/jit/iq.c	2003-12-12 01:20:36.000000000 +0100
+@@ -29,6 +29,10 @@
+ void it_iq_gateway_set(session s, jpacket jp);
+ void it_iq_browse_server(iti ti, jpacket jp);
+ void it_iq_browse_user(session s, jpacket jp);
++void it_iq_disco_items_server(iti ti, jpacket jp);
++void it_iq_disco_info_server(iti ti, jpacket jp);
++void it_iq_disco_items_user(session s, jpacket jp);
++void it_iq_disco_info_user(session s, jpacket jp);
+ 
+ void SendSearchUINRequest(session s,UIN_t uin);
+ void SendSearchUsersRequest(session s, 
+@@ -73,6 +77,10 @@
+           it_iq_gateway_get(s,jp);
+         else if (j_strcmp(ns,NS_BROWSE) == 0)
+           jp-&gt;to-&gt;user ? it_iq_browse_user(s,jp) : it_iq_browse_server(s-&gt;ti,jp);    
++	else if (j_strcmp(ns,NS_DISCO_ITEMS) == 0)
++	  jp-&gt;to-&gt;user ? it_iq_disco_items_user(s,jp) : it_iq_disco_items_server(s-&gt;ti,jp);
++	else if (j_strcmp(ns,NS_DISCO_INFO) == 0)
++	  jp-&gt;to-&gt;user ? it_iq_disco_info_user(s,jp) : it_iq_disco_info_server(s-&gt;ti,jp);
+         else if (j_strcmp(ns,NS_VCARD) == 0)
+           jp-&gt;to-&gt;user ? it_iq_vcard(s,jp) : it_iq_vcard_server(s-&gt;ti,jp);
+         else if (j_strcmp(ns,NS_LAST) == 0)
+@@ -498,7 +506,10 @@
+ 
+     xmlnode_put_attrib(q,&quot;type&quot;,&quot;icq&quot;);
+     xmlnode_put_attrib(q,&quot;jid&quot;,jp-&gt;to-&gt;server);
+-    xmlnode_put_attrib(q,&quot;name&quot;,xmlnode_get_tag_data(ti-&gt;vcard,&quot;FN&quot;));
++    if (ti-&gt;sms_id &amp;&amp; ti-&gt;sms_name &amp;&amp; j_strcasecmp(jp-&gt;to-&gt;server, ti-&gt;sms_id)==0)
++	xmlnode_put_attrib(q,&quot;name&quot;,ti-&gt;sms_name);
++    else
++	xmlnode_put_attrib(q,&quot;name&quot;,xmlnode_get_tag_data(ti-&gt;vcard,&quot;FN&quot;));
+ 
+     xmlnode_insert_cdata(xmlnode_insert_tag(q,&quot;ns&quot;),NS_REGISTER,-1);
+     xmlnode_insert_cdata(xmlnode_insert_tag(q,&quot;ns&quot;),NS_SEARCH,-1);
+@@ -507,6 +518,55 @@
+     it_deliver(ti,jp-&gt;x);
+ }
+ 
++void it_iq_disco_items_server(iti ti, jpacket jp)
++{
++    xmlnode q;
++
++    q = xmlnode_insert_tag(jutil_iqresult(jp-&gt;x),&quot;query&quot;);
++    xmlnode_put_attrib(q,&quot;xmlns&quot;,NS_DISCO_ITEMS);
++
++    it_deliver(ti,jp-&gt;x);
++}
++
++void it_iq_disco_info_server(iti ti, jpacket jp)
++{
++    xmlnode q, info;
++
++    q = xmlnode_insert_tag(jutil_iqresult(jp-&gt;x),&quot;query&quot;);
++    xmlnode_put_attrib(q,&quot;xmlns&quot;,NS_DISCO_INFO);
++
++    info = xmlnode_insert_tag(q,&quot;identity&quot;);
++    xmlnode_put_attrib(info,&quot;category&quot;, &quot;gateway&quot;);
++    xmlnode_put_attrib(info,&quot;type&quot;, &quot;icq&quot;);
++    if (ti-&gt;sms_id &amp;&amp; ti-&gt;sms_name &amp;&amp; j_strcasecmp(jp-&gt;to-&gt;server, ti-&gt;sms_id)==0)
++	xmlnode_put_attrib(info,&quot;name&quot;,ti-&gt;sms_name);
++    else
++	xmlnode_put_attrib(info,&quot;name&quot;,xmlnode_get_tag_data(ti-&gt;vcard,&quot;FN&quot;));
++
++    info = xmlnode_insert_tag(q,&quot;feature&quot;);
++    xmlnode_put_attrib(info,&quot;var&quot;,NS_REGISTER);
++
++    info = xmlnode_insert_tag(q,&quot;feature&quot;);
++    xmlnode_put_attrib(info,&quot;var&quot;,NS_SEARCH);
++
++    info = xmlnode_insert_tag(q,&quot;feature&quot;);
++    xmlnode_put_attrib(info,&quot;var&quot;,NS_VERSION);
++
++    info = xmlnode_insert_tag(q,&quot;feature&quot;);
++    xmlnode_put_attrib(info,&quot;var&quot;,NS_TIME);
++
++    info = xmlnode_insert_tag(q,&quot;feature&quot;);
++    xmlnode_put_attrib(info,&quot;var&quot;,NS_GATEWAY);
++
++    info = xmlnode_insert_tag(q,&quot;feature&quot;);
++    xmlnode_put_attrib(info,&quot;var&quot;,NS_VCARD);
++
++    info = xmlnode_insert_tag(q,&quot;feature&quot;);
++    xmlnode_put_attrib(info,&quot;var&quot;,NS_LAST);
++
++    it_deliver(ti,jp-&gt;x);
++}
++
+ void it_iq_browse_user(session s, jpacket jp)
+ {
+     xmlnode browse;
+@@ -538,6 +598,81 @@
+     it_deliver(s-&gt;ti,jp-&gt;x);
+ }
+ 
++void it_iq_disco_items_user(session s, jpacket jp)
++{
++    xmlnode q;
++    UIN_t uin;
++
++    if (s-&gt;type == stype_register)
++    {
++	queue_elem queue;
++
++	queue = pmalloco(jp-&gt;p,sizeof(_queue_elem));
++	queue-&gt;elem = (void *)jp;
++      
++	QUEUE_PUT(s-&gt;queue,s-&gt;queue_last,queue);
++	return;
++    }
++
++    uin = it_jid2uin(jp-&gt;from);
++    if (uin == 0)
++    {
++	jutil_error(jp-&gt;x,TERROR_BAD);
++	it_deliver(s-&gt;ti,jp-&gt;x);
++	return;
++    }
++
++    jutil_iqresult(jp-&gt;x);
++    q = xmlnode_insert_tag(jp-&gt;x,&quot;query&quot;);
++    xmlnode_put_attrib(q,&quot;xmlns&quot;,NS_DISCO_ITEMS);
++
++    it_deliver(s-&gt;ti,jp-&gt;x);
++}
++
++void it_iq_disco_info_user(session s, jpacket jp)
++{
++    xmlnode q,info;
++    UIN_t uin;
++    char uinstr[21];
++
++    if (s-&gt;type == stype_register)
++    {
++	queue_elem queue;
++
++	queue = pmalloco(jp-&gt;p,sizeof(_queue_elem));
++	queue-&gt;elem = (void *)jp;
++      
++	QUEUE_PUT(s-&gt;queue,s-&gt;queue_last,queue);
++	return;
++    }
++
++    uin = it_jid2uin(jp-&gt;from);
++    if (uin == 0)
++    {
++	jutil_error(jp-&gt;x,TERROR_BAD);
++	it_deliver(s-&gt;ti,jp-&gt;x);
++	return;
++    }
++
++    jutil_iqresult(jp-&gt;x);
++    q = xmlnode_insert_tag(jp-&gt;x,&quot;query&quot;);
++    xmlnode_put_attrib(q,&quot;xmlns&quot;,NS_DISCO_INFO);
++    
++    info = xmlnode_insert_tag(q,&quot;identity&quot;);
++    xmlnode_put_attrib(info,&quot;category&quot;,&quot;client&quot;);
++    xmlnode_put_attrib(info,&quot;type&quot;,&quot;pc&quot;);
++    snprintf(uinstr,21,&quot;%d&quot;,uin);
++    xmlnode_put_attrib(info,&quot;name&quot;,uinstr);
++
++    info = xmlnode_insert_tag(q,&quot;feature&quot;);
++    xmlnode_put_attrib(info,&quot;var&quot;,NS_VCARD);
++
++    info = xmlnode_insert_tag(q,&quot;feature&quot;);
++    xmlnode_put_attrib(info,&quot;var&quot;,NS_LAST);
++
++    it_deliver(s-&gt;ti,jp-&gt;x);
++}
++
+ /** Send reply to a version inquiry to Jabber */
+ void it_iq_version(iti ti, jpacket jp)
+ {
+diff -Naur jit/jit/jit/unknown.c jit-disco/jit/jit/unknown.c
+--- jit/jit/jit/unknown.c	2003-04-29 15:35:22.000000000 +0200
++++ jit-disco/jit/jit/unknown.c	2003-12-12 01:10:16.000000000 +0100
+@@ -90,6 +90,10 @@
+             it_iq_time(ti,jp);
+         else if (j_strcmp(ns,NS_VCARD) == 0)
+             it_iq_vcard_server(ti,jp);
++	else if (j_strcmp(ns,NS_DISCO_ITEMS) == 0)
++	    it_iq_disco_items_server(ti,jp);
++	else if (j_strcmp(ns,NS_DISCO_INFO) == 0)
++	    it_iq_disco_info_server(ti,jp);
+         else if (j_strcmp(ns,NS_LAST) == 0)
+             jp-&gt;to-&gt;user == NULL ? it_iq_last_server(ti,jp) : xmlnode_free(jp-&gt;x);
+         else
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="076953.html">[JDEV] Patch for service discovery support in JIT
+</A></li>
+	<LI>Next message: <A HREF="076955.html">[JDEV] ANNOUNCE: jabberd 2.0 release candidate 1 available for download
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76983">[ date ]</a>
+              <a href="thread.html#76983">[ thread ]</a>
+              <a href="subject.html#76983">[ subject ]</a>
+              <a href="author.html#76983">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Bug in jabberd-2.0beta2 ldap
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Bug%20in%20jabberd-2.0beta2%20ldap&In-Reply-To=%3C3F990FED.4040203%40altkom.pl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="047211.html">
+   <LINK REL="Next"  HREF="047217.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Bug in jabberd-2.0beta2 ldap</H1>
+    <B>Aleksander Adamowski</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Bug%20in%20jabberd-2.0beta2%20ldap&In-Reply-To=%3C3F990FED.4040203%40altkom.pl%3E"
+       TITLE="[JDEV] Bug in jabberd-2.0beta2 ldap">aleksander.adamowski at altkom.pl
+       </A><BR>
+    <I>Fri Oct 24 06:41:33 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="047211.html">[JDEV] what's the meaning of parse error :XML_ERROR_JUNK_AFTER_DOC_ELEMENT
+</A></li>
+        <LI>Next message: <A HREF="047217.html">[JDEV] msn-t crashes ... ;)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47222">[ date ]</a>
+              <a href="thread.html#47222">[ thread ]</a>
+              <a href="subject.html#47222">[ subject ]</a>
+              <a href="author.html#47222">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On RedHat 9, jabberd-2.0b2 c2s process hangs and has to be killed with 
+signal 9 when:
+ 1) LDAP authentication is used and
+ 2) a user is logged in to the jabberd server and
+ 3) the administarator shuts down jabberd.
+
+Those 3 conditions result in a locked up c2s process. Attaching to this 
+process with gdb and doing a backtrace gives this:
+
+&lt;snip&gt;
+Reading symbols from /usr/lib/sasl/libplain.so...done.
+Loaded symbols for /usr/lib/sasl/libplain.so
+0x42074bf4 in malloc_consolidate () from /lib/tls/libc.so.6
+(gdb) bt
+#0  0x42074bf4 in malloc_consolidate () from /lib/tls/libc.so.6
+#1  0x42074249 in _int_malloc () from /lib/tls/libc.so.6
+#2  0x4207360b in malloc () from /lib/tls/libc.so.6
+#3  0x4017632f in ber_memalloc () from /usr/lib/liblber.so.2
+#4  0x40176467 in ber_memrealloc () from /usr/lib/liblber.so.2
+#5  0x40174e3c in ber_realloc () from /usr/lib/liblber.so.2
+#6  0x40174d3b in ber_write () from /usr/lib/liblber.so.2
+#7  0x40173431 in ber_scanf () from /usr/lib/liblber.so.2
+#8  0x401736fe in ber_scanf () from /usr/lib/liblber.so.2
+#9  0x40174908 in ber_printf () from /usr/lib/liblber.so.2
+#10 0x40155faa in ldap_send_unbind () from /usr/lib/libldap.so.2
+#11 0x4015c973 in ldap_free_connection () from /usr/lib/libldap.so.2
+#12 0x40155eaa in ldap_ld_free () from /usr/lib/libldap.so.2
+#13 0x40155c2b in ldap_unbind_ext () from /usr/lib/libldap.so.2
+#14 0x40155f0f in ldap_unbind_s () from /usr/lib/libldap.so.2
+#15 0x0804d047 in _ldap_free (ar=0x80b5718) at authreg_ldap.c:178
+#16 0x0804a88a in authreg_free (ar=0x80b5718) at authreg.c:192
+#17 0x08053f43 in main (argc=4, argv=0xbfffe664) at main.c:576
+#18 0x420156a4 in __libc_start_main () from /lib/tls/libc.so.6
+&lt;/snip&gt;
+
+
+I've originally thought it to be a bug in RedHat's stock tls libs, and 
+reported it here:
+
+&lt;<A HREF="https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=107613">https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=107613</A>&gt;
+
+See this bug for all the details I've collected.
+
+Best regards,
+
+-- 
+  Aleksander Adamowski
+    Jabber JID (to nie e-mail!): <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">olo at jabber.altkom.pl</A>
+    GG#: 274614
+    ICQ UIN: 19780575 
+    <A HREF="http://olo.office.altkom.com.pl">http://olo.office.altkom.com.pl</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="047211.html">[JDEV] what's the meaning of parse error :XML_ERROR_JUNK_AFTER_DOC_ELEMENT
+</A></li>
+	<LI>Next message: <A HREF="047217.html">[JDEV] msn-t crashes ... ;)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47222">[ date ]</a>
+              <a href="thread.html#47222">[ thread ]</a>
+              <a href="subject.html#47222">[ subject ]</a>
+              <a href="author.html#47222">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

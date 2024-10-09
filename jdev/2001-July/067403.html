@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Resource Routing/Addressing Proposal
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Resource%20Routing/Addressing%20Proposal&In-Reply-To=%3COF28CAFE79.140CBEC3-ON85256A8B.0060D5CA%40pok.ibm.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="067398.html">
+   <LINK REL="Next"  HREF="067415.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Resource Routing/Addressing Proposal</H1>
+    <B>Michael F Lin</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Resource%20Routing/Addressing%20Proposal&In-Reply-To=%3COF28CAFE79.140CBEC3-ON85256A8B.0060D5CA%40pok.ibm.com%3E"
+       TITLE="[JDEV] Resource Routing/Addressing Proposal">mflin at us.ibm.com
+       </A><BR>
+    <I>Mon Jul 16 12:39:47 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="067398.html">[JDEV] Jabber search engine down
+</A></li>
+        <LI>Next message: <A HREF="067415.html">[JDEV] Resource Routing/Addressing Proposal
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67403">[ date ]</a>
+              <a href="thread.html#67403">[ thread ]</a>
+              <a href="subject.html#67403">[ subject ]</a>
+              <a href="author.html#67403">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I have a proposal for a minor change to resource routing that will allow
+endpoint JIDs to address any addressable service. This solution has been
+written up by myself and Julian Missig (x-virge), but it was engineered by
+Chet Murthy, a guy around here much smarter than the two of us combined.
+
+Let's imagine for a moment that you, an average user with JID <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>,
+wanted to run an AIM gateway for others to use. How do messages for any
+arbirtary AIM user get routed to you? &quot;Simple&quot;, you say, &quot;just have other
+people send their messages to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/screenname, then I'll just pick
+the screenname off of the incoming XML and forward it along.&quot;
+
+But there's a clear problem in this, in that in the current implementation
+this would require you to have an open session for all possible AIM
+screennames. Obviously, this is not acceptable.
+
+So how do our transports get around this? Well, just that: they sidestep
+the problem. By requiring special configuration on the server, they simply
+make their JID &quot;server&quot; only, and as a result all messages to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">anyuser at transport.server</A> will be routed to them.
+
+So how does the end user solve this problem? One possible way is to use the
+envelope namespace or a custom x tag along with each message to indicate
+its ultimate AIM destination. But this is clunky. The whole situation, we
+believe, reveals that JIDs as they are now are fundamentally limited in
+their ability to provide universal addressing.
+
+There are easy ways around this. Consider that URLs use the question mark
+(?) as a &quot;separator&quot; character. With respect to addressing, anything
+following the question mark in a URL is ignored by the server and passed
+along to the GGI application or whatever is available to receive it, if
+anything. For example, if you navigate to the following URL in a web
+browser:
+
+<A HREF="http://www.jabber.org/?some_arbitrary_text">http://www.jabber.org/?some_arbitrary_text</A>
+
+You will get the exact same page as if you had just typed
+
+<A HREF="http://www.jabber.org/">http://www.jabber.org/</A>
+
+Because, with respect to addressing, the server ignores everything
+following the question mark. How does this become useful? Well, if the
+server ends up invoking a CGI program (or JSP, whatever), that application
+can use what was passed by the user for its own purposes - whatever they
+may be, and they could be anything. The server doesn't need to have any
+special knowledge whatsoever about the application or its requirements.
+
+So let's imagine we did this with Jabber IDs. Sending a packet to
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/resource?some_arbitrary_text
+
+Is equivalent to sending a packet to
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/resource
+
+Well, this appears to solve our earlier problem. AIM messages can be sent
+to
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host</A>/aim-gateway?screenname
+
+The problem is that this would break, or at least disenfranchise, any
+existing or future software that happens to log in with a ? in its
+resource, which is perfectly allowable in the current standard.
+
+We propose instead a slightly subtler way to route packets. Currently, a
+packet received by the server for a valid username but a nonexistent
+resource is discarded. We propose instead that packets sent to a specific
+resource be routed to the &quot;closest matching&quot; resource, if one is available.
+We define the &quot;closest matching&quot; resource as follows: the resource of
+string length n that matches the first n characters of the requested
+resource, where n is less than or equal to the string length of the
+requested resource, and where n is the value greater than the string
+lengths of all other partially matching resources, if any. If no such
+&quot;closest matching&quot; resource is available, the packet is bounced as it would
+be today. This routing occurs without regard to the current priority
+routing rules, which affect the routing of a packet sent without a
+resource.
+
+For example, if a user has logged in with the following resource (and ONLY
+this resource):
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/res1
+
+Packets directed to all of the following JIDs would be routed to that
+resource:
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/res1
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/res12345
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/res1?blah
+
+In more complex cases, if a user has logged in with the following
+resources, and only the following resources:
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/resource1
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/resource123
+
+Packets directed to the following JIDs will be routed to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/resource123:
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/resource12345
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/resource123blah
+
+Packets directed to the following JIDs will be routed to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/resource1
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/resource135
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/resource1blah
+
+A packet directed to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">username at host</A>/resource will be dropped.
+
+We believe this is a good solution to our problem because it is reasonably
+compatible with the existing standard: it affects only the failure case,
+where a packet that would otherwise have been bounced may now be
+successfully delivered; success cases are entirely unaffected, since they
+currently depend on an exact match of the resource. The implementation of
+this small routing change will allow the Jabber ID to be used to address
+any conceivable service without special knowledge from the server.
+
+-Mike Lin
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mflin at us.ibm.com</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="067398.html">[JDEV] Jabber search engine down
+</A></li>
+	<LI>Next message: <A HREF="067415.html">[JDEV] Resource Routing/Addressing Proposal
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#67403">[ date ]</a>
+              <a href="thread.html#67403">[ thread ]</a>
+              <a href="subject.html#67403">[ subject ]</a>
+              <a href="author.html#67403">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

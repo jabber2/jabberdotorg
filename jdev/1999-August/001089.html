@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Krufty Jabber Client
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Krufty%20Jabber%20Client&In-Reply-To=Pine.SOL.3.91.990809105504.15326E-100000%40travelers.mail.cornell.edu">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001111.html">
+   <LINK REL="Next"  HREF="001092.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Krufty Jabber Client</H1>
+    <B>Patrick McCuller</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Krufty%20Jabber%20Client&In-Reply-To=Pine.SOL.3.91.990809105504.15326E-100000%40travelers.mail.cornell.edu"
+       TITLE="[JDEV] Krufty Jabber Client">patrick at kia.net
+       </A><BR>
+    <I>Mon Aug  9 12:39:42 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001111.html">[JDEV] Krufty Jabber Client
+</A></li>
+        <LI>Next message: <A HREF="001092.html">[JDEV] Krufty Jabber Client
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1089">[ date ]</a>
+              <a href="thread.html#1089">[ thread ]</a>
+              <a href="subject.html#1089">[ subject ]</a>
+              <a href="author.html#1089">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> &gt; 	A more concrete example: streaming media. There are already
+</I>&gt;<i> very good, efficient transport methods for various kinds of streaming
+</I>&gt;<i> media, and trying to encapsulate the media itself would probably - I'm
+</I>sure
+&gt;<i> you'll agree - be a very bad idea. However, a protocol for negotiating the
+</I>connection -
+&gt;<i> &gt; passing IPs, proxies, URIs, and media types around might not be
+</I>&gt;<i> a bad idea. That itself is essentially feature negotiation and I've been
+</I>&gt;<i> trying to poke Jer to spill the beans on what he's been doing with this
+</I>concept.  :)
+&gt;<i>
+</I>&gt;<i> Waitasec...Jabber is not shoutcast ;p  Is this creeping featurism?  I
+</I>&gt;<i> don't think it is worth is to delay Jabber months to incorporate
+</I>&gt;<i> streaming media which other applications are specifically designed for
+</I>&gt;<i> and handle very well.  This could be a content plugin instead (instead of
+</I>&gt;<i> in the &quot;core&quot;).  This leads back to MIME.  If you know the content, then
+</I>&gt;<i> &quot;content plugins&quot; can handle em.
+</I>
+	Please read my messages more thoroughly. I usually spend at least an hour
+composing each one. If you spent only a few minutes reading them, my time
+investment might pay off. Your message demonstrates a remarkable failure to
+understand my point. I have NEVER advocated that we should devote ANY time
+to reinventing ANYTHING. In fact I have devoted a fair amount of energy to
+trying to convice people on this list NOT to do this.
+
+	My point is, again, that there are plenty of really good ways to move
+various kinds of data from point A to point B. FTP, HTTP, RealMedia... these
+are well developed mechanisms with available interfaces. There's simply no
+need to reinvent or repackage this material. And trying to do so would be a
+foolish waste of time.
+
+	So where does Jabber fit in? The Jabber protocol can help clients to figure
+out how to initiate the transfer of data. For instance: the user of Client A
+wants to start streaming audio to the user of Client B. Now, we have a few
+options as to how we should handle this in Jabber, some of them comically
+ridiculous. We'll assume that the clients will be using some kind of direct
+client to client transmission, instead of wasting server time with it. Our
+options? I'll look at two of them:
+
+	1. Establish an XML stream protocol - like or unlike the client to server
+protocol - between the two clients. Package every byte of the streaming
+audio into the XML stream (using an encoding methods, because XML doesn't
+really have a good way to encapsulate purely binary data, CDATA Sections
+being its closest call, but even they must be encoded to avoid certain
+character combinations).
+	This is a silly approach. That should seem pretty obvious for streaming
+media: our Jabber protocol - and derivatives thereof - are not optimized for
+streaming audio, video, or anything like it.
+	What may be less obvious is that it is also a silly approach even for file
+transfers. Why? Because HTTP, for instance, is already pretty damned good at
+this, and it will get better all on its own without our help. We need merely
+plug in our libraries to make it happen. HTTP is just an example. There are
+many ways to move files - and indeed any form of data. We don't need to
+concern ourselves with this.
+	There is one possible exception to the let's-not-invent-our-own-wheel
+principle in this area. And that is in the case of our own particular wheel:
+the Jabber protocol. It may be that the Jabber protocol, or a subset of it,
+is a great way for clients to communicate instant messages and other Jabber
+protocol goals directly to each other. This idea is probably worth pursuing.
+
+	2. Establish a non-protocol-biased framework for clients to negotiate
+client to client transfers. This is feature negotiation and it may work
+pretty well. Let's start with a concrete example of a possilbe interaction
+between clients. This is assumed to me sent through the Jabber transport:
+client to server to client, and it is also written in English for maximum
+clarity.
+
+
+Client A: Hi, I want to send you a binary file.
+Client B: OK, how about HTTP?
+Client A: Alright. Pick up the file at
+<A HREF="http://102.102.102.102.102.102.102:45000/file_6_6_4.tgz">http://102.102.102.102.102.102.102:45000/file_6_6_4.tgz</A>
+
+another example:
+
+Client A: I want to send you an MP3 audio stream.
+Client B: Sorry, I can't support that.
+
+another example:
+
+Client A: I want to send you a RealText stream.
+Client B: Alright, where do I pick it up?
+Client A: Pick it up at <A HREF="pnp://102.102.102...../etc/etc/etc/">pnp://102.102.102...../etc/etc/etc/</A>
+
+[or]
+
+Client A: I want to send you a RealText stream. Pick it up at
+<A HREF="pnp://102.102.102...../etc/etc/etc/">pnp://102.102.102...../etc/etc/etc/</A>
+Client B: Alright.
+
+another example:
+
+Client A: I want to send you a JPG image.
+Client B: Don't. I am a toaster.
+
+another example:
+
+Client A: I want you to send me hash receipts.
+Client B: OK, how about SHA-1 hashes?
+Client A: No. I can support MD5 hashes.
+Client B: OK, I will send you MD5 hash receipts.
+
+another example:
+
+Client A: I want to compress my messages to you. I can use ZIP, GZIP, and
+Bob's Cool New Compression.
+Client B: I don't support compression. I am a wristwatch.
+or:
+Client B: I support ZIP and GZIP.
+
+another example:
+
+Client A: I want to start a Jabber session directly with you.
+Client B: Sorry, I'm behind six firewalls and a cauldron of boiling oil.
+or:
+Client B: Alright, connect at: 102.102.102.102......:5222
+
+
+	I hope this servers to clarify my position. In summary, I think that a
+feature negotiation mechanism is all clients need to start client to client
+transfers. Whether the feature negotiation occurs on a
+query-this-then-query-that basis or on a
+here's-everything-I-can-handle-do-your-worst all at once exposure, it should
+work out about the same architecturally.
+
+
+Patrick
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001111.html">[JDEV] Krufty Jabber Client
+</A></li>
+	<LI>Next message: <A HREF="001092.html">[JDEV] Krufty Jabber Client
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1089">[ date ]</a>
+              <a href="thread.html#1089">[ thread ]</a>
+              <a href="subject.html#1089">[ subject ]</a>
+              <a href="author.html#1089">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

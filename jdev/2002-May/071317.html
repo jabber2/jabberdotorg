@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Non-blocking connect in mio.c
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Non-blocking%20connect%20in%20mio.c&In-Reply-To=%3C3CE2FFF8.4020408%40akuma.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="071316.html">
+   <LINK REL="Next"  HREF="071319.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Non-blocking connect in mio.c</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Non-blocking%20connect%20in%20mio.c&In-Reply-To=%3C3CE2FFF8.4020408%40akuma.org%3E"
+       TITLE="[JDEV] Non-blocking connect in mio.c">mass at akuma.org
+       </A><BR>
+    <I>Wed May 15 19:40:24 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="071316.html">[JDEV] Non-blocking connect in mio.c
+</A></li>
+        <LI>Next message: <A HREF="071319.html">[JDEV] Dialup and laptop users, lost packets, and faulty presence info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71317">[ date ]</a>
+              <a href="thread.html#71317">[ thread ]</a>
+              <a href="subject.html#71317">[ subject ]</a>
+              <a href="author.html#71317">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>These are not the functions you are looking for :-)
+
+Most of the blocking system calls are actually handled by pth rather 
+than directly by the system; pth does a non-blocking call, then shuffles 
+values around to kick into another user-space thread. So the thread is 
+blocked, but it is a user-space threading library which underneath uses 
+non-blocking calls.
+
+-David Waite
+
+Michael Ngarimu wrote:
+
+&gt;<i>Hi all,
+</I>&gt;<i>
+</I>&gt;<i>I'm trying to actually build (from source) and run jabberd 1.4.2. I seem
+</I>&gt;<i>to have a problem with s2s comms so I jumped into the source and strace.
+</I>&gt;<i>
+</I>&gt;<i>strace shows an attempt at a non-blocking connect....(see below)
+</I>&gt;<i>
+</I>&gt;<i>fcntl64(14, F_GETFL)                    = 0x802 (flags
+</I>&gt;<i>O_RDWR|O_NONBLOCK)
+</I>&gt;<i>connect(14, {sin_family=AF_INET, sin_port=htons(5269),
+</I>&gt;<i>sin_addr=inet_addr(&quot;208.245.212.108&quot;)}}, 16) = -1 EINPROGRESS (Operation
+</I>&gt;<i>now in progress)
+</I>&gt;<i>fcntl64(14, F_GETFL)                    = 0x802 (flags
+</I>&gt;<i>O_RDWR|O_NONBLOCK)
+</I>&gt;<i>
+</I>&gt;<i>Unfortunately, mio.c (_mio_connect) doesn't seem to allow for
+</I>&gt;<i>non-blocking connects!
+</I>&gt;<i>
+</I>&gt;<i>see mio.c(approx line 528)
+</I>&gt;<i>
+</I>&gt;<i>    if((*cd-&gt;cf)(new, (struct sockaddr*)&amp;sa, sizeof sa) &lt; 0)
+</I>&gt;<i>    {
+</I>&gt;<i>        if(cd-&gt;cb != NULL)
+</I>&gt;<i>            (*(mio_std_cb)cd-&gt;cb)(new, MIO_CLOSED, cd-&gt;cb_arg);
+</I>&gt;<i>        cd-&gt;connected = -1;
+</I>&gt;<i>
+</I>&gt;<i>        if(new-&gt;fd &gt; 0)
+</I>&gt;<i>            close(new-&gt;fd);
+</I>&gt;<i>        mio_handlers_free(new-&gt;mh);
+</I>&gt;<i>        pool_free(p);
+</I>&gt;<i>        return;
+</I>&gt;<i>    }
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>It calls connect (a few lines above an fcntl is done with flags |=
+</I>&gt;<i>O_NONBLOCK) and then checks for return -1, but within the if block
+</I>&gt;<i>doesn't checking for EINPROGRESS anywhere but instead just cleans up the
+</I>&gt;<i>socket.
+</I>&gt;<i>
+</I>&gt;<i>Surely, this must be an issue for people other than just me?
+</I>&gt;<i>
+</I>&gt;<i>&quot;Help me Obi-Wan-Kenobi, you're my only hope!&quot;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="071316.html">[JDEV] Non-blocking connect in mio.c
+</A></li>
+	<LI>Next message: <A HREF="071319.html">[JDEV] Dialup and laptop users, lost packets, and faulty presence info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71317">[ date ]</a>
+              <a href="thread.html#71317">[ thread ]</a>
+              <a href="subject.html#71317">[ subject ]</a>
+              <a href="author.html#71317">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

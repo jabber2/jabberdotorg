@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Alternate MUC Authentication Mechanisms
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3CD06DF8FD-F544-4606-8D93-92CAF993982A%40Isode.COM%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088490.html">
+   <LINK REL="Next"  HREF="088491.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Alternate MUC Authentication Mechanisms</H1>
+    <B>Kurt Zeilenga</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3CD06DF8FD-F544-4606-8D93-92CAF993982A%40Isode.COM%3E"
+       TITLE="[jdev] Alternate MUC Authentication Mechanisms">Kurt.Zeilenga at Isode.COM
+       </A><BR>
+    <I>Thu Oct 21 20:05:30 CST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088490.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+        <LI>Next message: <A HREF="088491.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88489">[ date ]</a>
+              <a href="thread.html#88489">[ thread ]</a>
+              <a href="subject.html#88489">[ subject ]</a>
+              <a href="author.html#88489">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>So my previous suggestion was subject to a limited replay attack.  In particular, someone who was able to hijack the C2S, S2S, or the intermediate server could do a replay.  Here's another suggestion that eliminates this replay attack and doesn't require any additional roadtrips.
+
+This would look something like:
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+   id='disco3'
+   to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>'
+   type='get'&gt;
+ &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'/">http://jabber.org/protocol/disco#info'/</A>&gt;
+&lt;/iq&gt;
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>'
+   id='disco3'
+   to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+   type='result'&gt;
+ &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'">http://jabber.org/protocol/disco#info'</A>&gt;
+   &lt;identity
+       category='conference'
+       name='A Dark Cave'
+       type='text'/&gt;
+   &lt;feature var='<A HREF="http://jabber.org/protocol/muc'/">http://jabber.org/protocol/muc'/</A>&gt;
+   &lt;feature var='muc_cr_protected'/&gt;
+   &lt;challenge xmlns='<A HREF="http://jabber.org/protocol/muc/cr'">http://jabber.org/protocol/muc/cr'</A> algorithm=&quot;cr-sha2&quot; challenge-attributes=&quot;&quot; /&gt;
+ &lt;/query&gt;
+&lt;/iq&gt;
+
+No hash provided:
+
+&lt;presence
+   from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>'
+   to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+   type='error'&gt;
+ &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'/">http://jabber.org/protocol/muc'/</A>&gt;
+ &lt;error type='auth'&gt;
+   &lt;not-authorized xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/&gt;
+ &lt;/error&gt;
+&lt;/presence&gt;
+
+User provides hash:
+
+&lt;presence
+   from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+   to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>/thirdwitch'&gt;
+ &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'">http://jabber.org/protocol/muc'</A>&gt;
+   &lt;response xmlns='<A HREF="http://jabber.org/protocol/muc/hash'">http://jabber.org/protocol/muc/hash'</A> algorithm=&quot;cr-sha2&quot; response-attributes=&quot;&quot; /&gt;response&lt;/response&gt;
+ &lt;/x&gt;
+&lt;/presence&gt;
+
+This would support any single round-trip challenge-response algorithm, with salts, nonces, and whatever other goodies one might want in the non-cleartext mechanism.  I would suggest something loosely based on SCRAM.  That is, a one-roundtrip version of SCRAM (no mutual auth, no channel binding).  This would should be more than sufficient to mitigate the threat posed by eavesdroppers, would not be subject to replay attack.
+
+Of course, like most of the suggestions discussed in this thread, this would be subject to various hijack attacks.  In particular, if an attacker can hijack the S2S session in/out of the MUC service or the subscribers C2S session, the attacker can then downgrade the disco advertisement to muc_password, wait for the client to respond, and win the password.
+
+If folks were interested in such a single-roundtrip approach, I would be willing to draft an XEP on this.
+
+-- Kurt
+</PRE>
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088490.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+	<LI>Next message: <A HREF="088491.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88489">[ date ]</a>
+              <a href="thread.html#88489">[ thread ]</a>
+              <a href="subject.html#88489">[ subject ]</a>
+              <a href="author.html#88489">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

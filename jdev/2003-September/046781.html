@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Crash in jabberd using mysql
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Crash%20in%20jabberd%20using%20mysql&In-Reply-To=%3C000801c3766f%2418e62810%247801a8c0%40BLR31W2K%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="046780.html">
+   <LINK REL="Next"  HREF="046788.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Crash in jabberd using mysql</H1>
+    <B>Bernard Littau</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Crash%20in%20jabberd%20using%20mysql&In-Reply-To=%3C000801c3766f%2418e62810%247801a8c0%40BLR31W2K%3E"
+       TITLE="[JDEV] Crash in jabberd using mysql">bernardl at acumenassociates.com
+       </A><BR>
+    <I>Mon Sep  8 20:10:02 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="046780.html">[JDEV] Cannot register on jabberd2
+</A></li>
+        <LI>Next message: <A HREF="046788.html">[JDEV] Crash in jabberd using mysql
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46781">[ date ]</a>
+              <a href="thread.html#46781">[ thread ]</a>
+              <a href="subject.html#46781">[ subject ]</a>
+              <a href="author.html#46781">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi All,
+
+So far I have not been able to get the xdb_sql package with mysql to run
+correctly with jabberd 1.4.2.  I figured out how to use enough of gdb to get
+the information pasted below.   Is this a known problem?
+
+Program received signal SIGSEGV, Segmentation fault.
+0x40052e10 in do_replace (qd=0x8206050, var=0x8206158, value=0x1 &lt;Address
+0x1 out of bounds&gt;) at xdb_sql_querydef.c:172
+172         if (ef_value &amp;&amp; strlen(ef_value) == 0 &amp;&amp; var-&gt;default_value)
+(gdb) l
+167         next = strstr(qd-&gt;query_text,var-&gt;replace_text);
+168         if (!next)
+169             return;
+170
+171         ef_value = value;
+172         if (ef_value &amp;&amp; strlen(ef_value) == 0 &amp;&amp; var-&gt;default_value)
+173            ef_value = var-&gt;default_value;
+174         if (ef_value)
+175         { /* may need to escape the value */
+176             int repl_len = strlen(ef_value);
+(gdb) bt
+#0  0x40052e10 in do_replace (qd=0x8206050, var=0x8206158, value=0x1
+&lt;Address 0x1 out of bounds&gt;) at xdb_sql_querydef.c:172
+#1  0x40053077 in xdbsql_querydef_setvar (qd=0x8206050, name=0x40058cb2
+&quot;token&quot;, value=0x1 &lt;Address 0x1 out of bounds&gt;)
+    at xdb_sql_querydef.c:247
+#2  0x4004ec84 in xdbsql_auth0k_set (self=0x8114368, user=0x820f640
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bl34 at plato.acumenassociates.com</A>&quot;, data=0x0)
+    at xdb_sql_auth0k.c:244
+#3  0x4004e292 in module_call (self=0x8114368, mod=0x813f4a0, p=0x820f328,
+user=0x820f640 &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bl34 at plato.acumenassociates.com</A>&quot;)
+    at xdb_sql.c:172
+#4  0x4004e13d in xdb_sql_phandler (i=0x8111ab8, p=0x820f328,
+args=0x8114368) at xdb_sql.c:131
+#5  0x08054698 in deliver_instance (i=0x8111ab8, p=0x820f328) at
+deliver.c:689
+#6  0x08053e35 in deliver (p=0x820f328, i=0x810a6d8) at deliver.c:482
+#7  0x08055de4 in xdb_deliver (i=0x810a6d8, xc=0x8184058) at xdb.c:107
+#8  0x08056300 in xdb_act (xc=0x810a8a8, owner=0x820eca8, ns=0x4002f95a
+&quot;jabber:iq:auth:0k&quot;, act=0x0, match=0x0, data=0x0)
+    at xdb.c:270
+#9  0x0805642b in xdb_set (xc=0x810a8a8, owner=0x820eca8, ns=0x4002f95a
+&quot;jabber:iq:auth:0k&quot;, data=0x0) at xdb.c:296
+#10 0x4002274d in mod_auth_0k_reg (m=0x8184198, arg=0x0) at
+mod_auth_0k.c:217
+#11 0x4001ccc6 in js_mapi_call (si=0x810a858, e=6, packet=0x820eb70,
+user=0x0, s=0x0) at modules.c:160
+#12 0x4001d38d in js_authreg (arg=0x820eb70) at authreg.c:101
+#13 0x080566f6 in mtq_main (arg=0x8152028) at mtq.c:151
+#14 0x0807d4ab in pth_spawn_trampoline ()
+
+
+Thanks,
+
+Bernard Littau
+Acumen Associates
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="046780.html">[JDEV] Cannot register on jabberd2
+</A></li>
+	<LI>Next message: <A HREF="046788.html">[JDEV] Crash in jabberd using mysql
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46781">[ date ]</a>
+              <a href="thread.html#46781">[ thread ]</a>
+              <a href="subject.html#46781">[ subject ]</a>
+              <a href="author.html#46781">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

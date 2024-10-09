@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Implementing SOCKS5 file transfers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Implementing%20SOCKS5%20file%20transfers&In-Reply-To=%3C42C2CE54.4010701%40mindbridge.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="080762.html">
+   <LINK REL="Next"  HREF="080769.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Implementing SOCKS5 file transfers</H1>
+    <B>Alexander Wenckus</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Implementing%20SOCKS5%20file%20transfers&In-Reply-To=%3C42C2CE54.4010701%40mindbridge.com%3E"
+       TITLE="[jdev] Re: Implementing SOCKS5 file transfers">awenckus at mindbridge.com
+       </A><BR>
+    <I>Wed Jun 29 11:37:40 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="080762.html">[jdev] Re: Implementing SOCKS5 file transfers
+</A></li>
+        <LI>Next message: <A HREF="080769.html">[jdev] Re: Implementing SOCKS5 file transfers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80768">[ date ]</a>
+              <a href="thread.html#80768">[ thread ]</a>
+              <a href="subject.html#80768">[ subject ]</a>
+              <a href="author.html#80768">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all:
+
+I am thoroughly confused at this point in getting file transfer to work. 
+I have been able to receive a file successfully but I am still unable to 
+send a file. I complete successfully the authentication method 
+negotiation as specified in rfc 1928 and then proceed to wait for the 
+host name and port from the remote user, in this case both a psi and an 
+exodus client. They send along something similar to this:
+
+VN   5
+CMD  1
+ATYP 3
+ADDR 729990ed12aff38e1e4821d3b1952a8b77c2910f
+PORT 0
+
+and then I respond with:
+
+VN   5
+CMD  0
+ATYP 3
+ADDR 729990ed12aff38e1e4821d3b1952a8b77c2910f
+PORT 0
+
+Then after i send this message both exodus and PSI throw up an error 
+that they could not connect to a stream host. Does anyone know what I am 
+doing wrong or have any insight into what i could do differently? Any 
+help is greatly appreatiated.
+
+Alex
+
+Magnus Henoch wrote:
+
+&gt;<i>Alexander Wenckus &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">awenckus at mindbridge.com</A>&gt; writes:
+</I>&gt;<i>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>Hi:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>I am having some trouble implementing file transfers i am using both 
+</I>&gt;&gt;<i>exodus and PSI to test with. I am attempting to do a direct connection 
+</I>&gt;&gt;<i>currently and as far as I know I am implementing the byte stream 
+</I>&gt;&gt;<i>correctly because both PSI and Exodus are connecting to my socket 
+</I>&gt;&gt;<i>successfully but my problem lies in that I am not sure why they are 
+</I>&gt;&gt;<i>sending me what they are sending me and what to do with it. when exodus 
+</I>&gt;&gt;<i>connects it sends me three bytes: 5 1 0. 5 I assume is for socks version 
+</I>&gt;&gt;<i>5, 1 I assume is for command 1 but shouldn't that be followed with the 
+</I>&gt;&gt;<i>addr type, the addr and then the port? Thats if I am reading the JEP 
+</I>&gt;&gt;<i>correctly. Irregardless of whatever it means I send back two bytes, 0 0, 
+</I>&gt;&gt;<i>as an acknowledgement of the connection but then exodus throws up an 
+</I>&gt;&gt;<i>error message, unable to connect to any proxies. From PSI i recieve the 
+</I>&gt;&gt;<i>output on the socket 5 2 0 2 and when i attempt to send the ack 0 0 i 
+</I>&gt;&gt;<i>get the error,  unable to connect to peer for file transfer. Can anyone 
+</I>&gt;&gt;<i>tell me what I am doing wrong? Any help is greatly appreciated.
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>Have you read <A HREF="http://www.faqs.org/rfcs/rfc1928.html">http://www.faqs.org/rfcs/rfc1928.html</A> ?  It will be
+</I>&gt;<i>useful to you.
+</I>&gt;<i>
+</I>&gt;<i>But to your actual problem: Exodus sending the three bytes 5 1 0.  5
+</I>&gt;<i>is indeed the SOCKS version.  1 is the number of authentication
+</I>&gt;<i>methods supported - each of them being identified by one byte.  The
+</I>&gt;<i>following byte is therefore the only method supported, and 0 means &quot;no
+</I>&gt;<i>authentication&quot;.  You're supposed to select one method by sending 5,
+</I>&gt;<i>X, where X is the number of the method.  Thus, send 5 0.
+</I>&gt;<i>
+</I>&gt;<i>Psi apparently supports username/password authentication in addition
+</I>&gt;<i>to no authentication... not sure why.
+</I>&gt;<i>
+</I>&gt;<i>Magnus
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="080762.html">[jdev] Re: Implementing SOCKS5 file transfers
+</A></li>
+	<LI>Next message: <A HREF="080769.html">[jdev] Re: Implementing SOCKS5 file transfers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80768">[ date ]</a>
+              <a href="thread.html#80768">[ thread ]</a>
+              <a href="subject.html#80768">[ subject ]</a>
+              <a href="author.html#80768">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

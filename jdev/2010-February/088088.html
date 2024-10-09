@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] How to build &quot;response&quot; in sasl digest MD5
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20How%20to%20build%20%22response%22%20in%20sasl%20digest%20MD5&In-Reply-To=%3C4B7C7609.1090606%40yahoo.es%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088089.html">
+   <LINK REL="Next"  HREF="088091.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] How to build &quot;response&quot; in sasl digest MD5</H1>
+    <B>IRcapmail</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20How%20to%20build%20%22response%22%20in%20sasl%20digest%20MD5&In-Reply-To=%3C4B7C7609.1090606%40yahoo.es%3E"
+       TITLE="[jdev] How to build &quot;response&quot; in sasl digest MD5">ircapmail at yahoo.es
+       </A><BR>
+    <I>Wed Feb 17 17:04:41 CST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088089.html">[jdev] Federation server placement
+</A></li>
+        <LI>Next message: <A HREF="088091.html">[jdev] How to build &quot;response&quot; in sasl digest MD5
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88088">[ date ]</a>
+              <a href="thread.html#88088">[ thread ]</a>
+              <a href="subject.html#88088">[ subject ]</a>
+              <a href="author.html#88088">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi, I want to implement md5 digest authentification in my Jabber client. 
+I wrote it years ago, it's very basic (presence, messages, services 
+discovery, vcard) and only supports plain authentification.
+
+I have read some tutorials, but I have problems to bulid the &quot;response&quot;.
+
+
+
+This tutorial ( 
+<A HREF="http://web.archive.org/web/20050224191820/http://cataclysm.cx/wip/digest-md5-crash.html">http://web.archive.org/web/20050224191820/http://cataclysm.cx/wip/digest-md5-crash.html</A> 
+) says:
+
+-------------------------------------------
+Computing the response value
+
+This is where the magic happens. The value of the response directive is 
+computed as follows:
+
+    1. Create a string of the form &quot;username:realm:password&quot;. Call this 
+string X.
+    2. Compute the 16 octet MD5 hash of X. Call the result Y.
+    3. Create a string of the form &quot;Y:nonce:cnonce:authzid&quot;. Call this 
+string A1.
+    4. Create a string of the form &quot;AUTHENTICATE:digest-uri&quot;. Call this 
+string A2.
+    5. Compute the 32 hex digit MD5 hash of A1. Call the result HA1.
+    6. Compute the 32 hex digit MD5 hash of A2. Call the result HA2.
+    7. Create a string of the form &quot;HA1:nonce:nc:cnonce:qop:HA2&quot;. Call 
+this string KD.
+    8. Compute the 32 hex digit MD5 hash of KD. Call the result Z.
+
+The resultant string Z should be sent to the server as the value of the 
+&quot;response&quot; directive.
+-------------------------------------------
+
+
+
+
+In my test, I have used Psi with a ficticious account:
+
+Server send the challenge, decoded is:
+nonce=&quot;x8djfKCd/aoKCUIeI5IwN0lNGzs91oSdMCR7SZT6L9s=&quot;,realm=&quot;jabber.org&quot;,qop=&quot;auth&quot;,maxbuf=16384,charset=utf-8,algorithm=md5-sess
+
+
+And Psi reply:
+username=&quot;testuser456&quot;,realm=&quot;jabber.org&quot;,nonce=&quot;x8djfKCd/aoKCUIeI5IwN0lNGzs91oSdMCR7SZT6L9s=&quot;,cnonce=&quot;EzAaOdnJwGDj2ABlUat3a1ZPeH06Pyzic6PpnVnqkBE=&quot;,nc=00000001,digest-uri=&quot;xmpp/jabber.org&quot;,qop=auth,response=05ec899f842eb50ffbe8a4e85316b630,charset=utf-8
+
+
+
+
+Then, this is my code (app is writen in mIRC scripting language) with 
+the same parameters and steep by steep:
+
+
+1. Create a string of the form &quot;username:realm:password&quot;. Call this 
+string X.
+
+%X = testuser456:jabber.org:pass456
+
+Result= testuser456:jabber.org:pass456
+
+
+
+2. Compute the 16 octet MD5 hash of X. Call the result Y.
+
+%Y = $md5(%X)
+
+Result= 85434cc70bb832bc456c27834bfa5d25
+
+
+
+3. Create a string of the form &quot;Y:nonce:cnonce:authzid&quot;. Call this 
+string A1.
+
+%A1 = %Y $+ 
+:<i>x8djfKCd/aoKCUIeI5IwN0lNGzs91oSdMCR7SZT6L9s=:EzAaOdnJwGDj2ABlUat3a1ZPeH06Pyzic6PpnVnqkBE=:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testuser456 at jabber.org</A>/Psi
+</I>
+Result= 
+85434cc70bb832bc456c27834bfa5d25:x8djfKCd/aoKCUIeI5IwN0lNGzs91oSdMCR7SZT6L9s=:EzAaOdnJwGDj2ABlUat3a1ZPeH06Pyzic6PpnVnqkBE=:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">testuser456 at jabber.org</A>/Psi
+
+
+
+4. Create a string of the form &quot;AUTHENTICATE:digest-uri&quot;. Call this 
+string A2.
+
+%A2 = AUTHENTICATE:xmpp/jabber.org
+
+Result= AUTHENTICATE:xmpp/jabber.org
+
+
+
+5. Compute the 32 hex digit MD5 hash of A1. Call the result HA1.
+
+%HA1 = $md5(%A1)
+
+Result= 9a964814c44a569f669e00cec987b21e
+
+
+
+6. Compute the 32 hex digit MD5 hash of A2. Call the result HA2.
+
+%HA2 = $md5(%A2)
+
+Result= 944bd70f8fa70f4e8e9e17ead871fae3
+
+
+
+7. Create a string of the form &quot;HA1:nonce:nc:cnonce:qop:HA2&quot;. Call this 
+string KD.
+
+%KD = %HA1 $+ 
+:<i>x8djfKCd/aoKCUIeI5IwN0lNGzs91oSdMCR7SZT6L9s=:00000001:EzAaOdnJwGDj2ABlUat3a1ZPeH06Pyzic6PpnVnqkBE=:auth: 
+</I>$+ %HA2
+
+Result= 
+9a964814c44a569f669e00cec987b21e:x8djfKCd/aoKCUIeI5IwN0lNGzs91oSdMCR7SZT6L9s=:00000001:EzAaOdnJwGDj2ABlUat3a1ZPeH06Pyzic6PpnVnqkBE=:auth:944bd70f8fa70f4e8e9e17ead871fae3
+
+
+
+8. Compute the 32 hex digit MD5 hash of KD. Call the result Z.
+
+%Response = $md5(%KD)
+
+Result= dfd661d4a4a26e7b84972e672b8ccc16
+
+
+
+
+But this is incorrect, the valid response is 
+05ec899f842eb50ffbe8a4e85316b630
+
+
+
+
+(In mIRC scripting, variables have the % prefix. $+ is used to 
+concatenate texts and variables with no spaces. $md5 return the hash 
+value. There are also commands to encode/decode base64 and to use binary 
+variables, so, over the paper, have all the neccesary to work).
+
+
+But the response is incorrect and I don't know why. Any idea?
+
+
+(Sorry for my poor english).
+
+C. Esteve
+</PRE>
+
+
+
+
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088089.html">[jdev] Federation server placement
+</A></li>
+	<LI>Next message: <A HREF="088091.html">[jdev] How to build &quot;response&quot; in sasl digest MD5
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88088">[ date ]</a>
+              <a href="thread.html#88088">[ thread ]</a>
+              <a href="subject.html#88088">[ subject ]</a>
+              <a href="author.html#88088">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

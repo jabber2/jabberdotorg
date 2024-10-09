@@ -1,0 +1,235 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] On Privacy/Invisibility (aka: Buddy Permit/Deny)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20On%20Privacy/Invisibility%20%28aka%3A%20Buddy%20Permit/Deny%29&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="011797.html">
+   <LINK REL="Next"  HREF="011789.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] On Privacy/Invisibility (aka: Buddy Permit/Deny)</H1>
+    <B>Jean Louis Seguineau</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20On%20Privacy/Invisibility%20%28aka%3A%20Buddy%20Permit/Deny%29&In-Reply-To="
+       TITLE="[JDEV] On Privacy/Invisibility (aka: Buddy Permit/Deny)">jean-louis.seguineau at antepo.com
+       </A><BR>
+    <I>Mon Mar 18 02:50:07 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="011797.html">[JDEV] JabberApplet - anyone got latest code working?
+</A></li>
+        <LI>Next message: <A HREF="011789.html">[JDEV] jpolld where r u ??
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11788">[ date ]</a>
+              <a href="thread.html#11788">[ thread ]</a>
+              <a href="subject.html#11788">[ subject ]</a>
+              <a href="author.html#11788">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Jim,
+
+Well, my idea was that this kind of xml would be interpreted as
+
+1- I, as the query originating user, don't want to have anything to do with
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jack at jabber.org</A> , hence the &quot;deny&quot; without any kind of sub elements in the
+&lt;item&gt; tag,
+2- <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jill at jabber.org</A> will be denied to receive/send any &lt;message&gt; and &lt;iq&gt; (as
+specified by the tags contained in the &lt;item&gt; element) from the originating
+user (the one that is seting-up the list)
+3- <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jill at jabber.org</A> will be allowed to receive/send &lt;presence&gt; (as specified
+by the &lt;presence&gt; tag contained in the &lt;item&gt; element) to the originating
+user.
+
+If filtering specific namespaces comes into the picture, I gather the
+easiest way to transcribe this kind of constraint would be to include &lt;ns&gt;
+tags inside the &lt;iq&gt; tag, as most namespaces in Jabber are used by info
+queries. A possible use could be
+
+ &lt;iq type=&quot;set&quot; id=&quot;2&quot;&gt;
+   &lt;query xmlns=&quot;jabber:iq:privacy&quot;&gt;
+     &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jill at jabber.org</A>&quot; type=&quot;deny&quot;&gt;
+       &lt;iq&gt;
+         &lt;ns&gt;jabber:iq:browse&lt;/ns&gt;
+         &lt;ns&gt;jabber:iq:oob&lt;/ns&gt;
+        &lt;/iq&gt;
+    &lt;/item&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+which could be interpreted as <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jill at jabber.org</A> is denied to receive/send any
+&lt;iq&gt; packets that pertain to the jabber:iq:browse and jabber:iq:oob
+namespaces, and may receive/send other iq packet to the originating user.
+
+This is obviously not a real life case, just a way to show how the xml tags
+would look like.
+
+As to why I propose this xml syntax rather than modifying the &lt;query&gt;
+element, I tend to agree with Peter in that we should keep the protocol from
+going in too many directions. The &lt;query&gt; element doesn't provide any
+support for attributes outside the xmlns. To keep some kind of consitency in
+the way we build new xml snippets, it is probably best to achieve the
+requested result by specifying differently the inner elements, like the
+&lt;item&gt; tag.
+
+Now the way this would work in practice is a matter of :
+1- agreement of what the defaul behaviour must be
+2- implementation at the server level.
+
+A possible combined white/black list could be to say that anybody not in the
+blacklist is automatically &quot;allowed&quot;. Some others may like the oposite,
+where anything which is not in the whitelist is automatically black listed,
+and probably the best (IMHO) appraoch would be to have the choice of the
+default server behaviour by setting some switch in the configuration file
+(note that this last approach would certainly require that the client be
+able to query what the defaul behaviour of the server is).
+
+As to the way this should be implemented at the server level is at this
+stage a bit premature. But I would think that having this information
+arranged as &quot;attributes&quot; of a user profile that would be interpreted by a
+rule engine could be a way to go.
+
+Coming to the relation that may exists between the privacy namespace and the
+&quot;invisible&quot; attribute in the presence tag, my understanding is that the
+&quot;invisible&quot; state is a transient user status, i.e. something that is only
+valid for the duration of it being set in a user session, whereas the
+privacy namespace manages a persistent state that should be enforced every
+time the user logs in and create a user session. Again what the server
+should do is a matter of agreement, but I would be thinking that if you have
+denied somebody to receive your presence information at the level of the
+privacy namespace this will take precedence on any subsequent change to
+&quot;invisible&quot; status, as the server should not relay that presence info
+anyway.
+
+Does it make sense?
+
+Jean-Louis
+
+&gt;<i> Message: 7
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] On Privacy/Invisibility (aka: Buddy Permit/Deny)
+</I>&gt;<i> Date: Sun, 17 Mar 2002 10:50:59 -0500 (EST)
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jseymour at LinxNet.com</A> (Jim Seymour)
+</I>&gt;<i> Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i> &quot;Jean Louis Seguineau&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jean-louis.seguineau at antepo.com</A>&gt; wrote:
+</I>&gt;<i> &gt;
+</I>&gt;<i> [snip]
+</I>&gt;<i> &gt;  What I meant was to use
+</I>&gt;<i> &gt; something like:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &lt;iq type=&quot;set&quot; id=&quot;2&quot;&gt;
+</I>&gt;<i> &gt;   &lt;query xmlns=&quot;jabber:iq:privacy&quot;&gt;
+</I>&gt;<i> &gt;     &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jack at jabber.org</A>&quot; type=&quot;deny&quot;/&gt;
+</I>&gt;<i> &gt;     &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jill at jabber.org</A>&quot; type=&quot;deny&quot;&gt;
+</I>&gt;<i> &gt;       &lt;message/&gt;
+</I>&gt;<i> &gt;       &lt;iq/&gt;
+</I>&gt;<i> &gt;     &lt;/item&gt;
+</I>&gt;<i> &gt;     &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jill at jabber.org</A>&quot; type=&quot;allow&quot;&gt;
+</I>&gt;<i> &gt;       &lt;presence/&gt;
+</I>&gt;<i> &gt;     &lt;/item&gt;
+</I>&gt;<i> &gt;   &lt;/query&gt;
+</I>&gt;<i> &gt; &lt;/iq&gt;
+</I>&gt;<i> [snip]
+</I>&gt;<i>
+</I>&gt;<i> Forgive me if my comments are nonsense.  I'm relatively new at Jabber
+</I>&gt;<i> and XML.
+</I>&gt;<i>
+</I>&gt;<i> It seems to me the above doesn't work.  How would a combined deny/allow
+</I>&gt;<i> list work in practice?  Specifically: what should the server do in the
+</I>&gt;<i> presence of both, but the absence of a particular JID on either list?
+</I>&gt;<i> Allow?  Deny?  And in the above scenario, what should the server do?
+</I>&gt;<i> First JID match wins or last JID match over-rides?
+</I>&gt;<i>
+</I>&gt;<i> Here are my thoughts, such as they are and keeping the caveat I
+</I>&gt;<i> mentioned above in mind.
+</I>&gt;<i>
+</I>&gt;<i> First of all: I believe &quot;whitelisting&quot; support needs to happen at the
+</I>&gt;<i> start.  Particularly if the goal is to provide support similar to that
+</I>&gt;<i> of AIM.  What I'm mainly working on is Jabber support in Gaim, so both
+</I>&gt;<i> &quot;blacklisting&quot; and &quot;whitelisting&quot; capability would make things
+</I>&gt;<i> considerably easier for consistency's sake.
+</I>&gt;<i>
+</I>&gt;<i> I'm wondering if something more like this wouldn't work better
+</I>&gt;<i> (warning: possibly completely brain-dead XML follows):
+</I>&gt;<i>
+</I>&gt;<i>     &lt;iq type=&quot;result&quot; id=&quot;1&quot;&gt;
+</I>&gt;<i>      &lt;query xmlns=&quot;jabber:iq:privacy&quot; type=&quot;deny&quot;&gt;
+</I>&gt;<i>       &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at jabber.org</A>&quot;/&gt;
+</I>&gt;<i>       &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at jabber.org</A>&quot;&gt;
+</I>&gt;<i>        &lt;message/&gt;
+</I>&gt;<i>       &lt;/item&gt;
+</I>&gt;<i>      &lt;/query&gt;
+</I>&gt;<i>     &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i> Which would provide for:
+</I>&gt;<i>
+</I>&gt;<i>     &lt;iq type=&quot;result&quot; id=&quot;1&quot;&gt;
+</I>&gt;<i>      &lt;query xmlns=&quot;jabber:iq:privacy&quot; type=&quot;permit&quot;&gt;
+</I>&gt;<i>       &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at jabber.org</A>&quot;/&gt;
+</I>&gt;<i>       &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at jabber.org</A>&quot;/&gt;
+</I>&gt;<i>      &lt;/query&gt;
+</I>&gt;<i>     &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i> Then an empty &quot;deny&quot; list would be &quot;permit everybody&quot; and an empty
+</I>&gt;<i> &quot;permit&quot; list would be a &quot;deny everybody&quot;.
+</I>&gt;<i>
+</I>&gt;<i> Admittedly: I'm not sure how this would work in conjunction with
+</I>&gt;<i> &quot;Client Requests to Filter a Specific IQ Namespace&quot; (in the proposal).
+</I>&gt;<i>
+</I>&gt;<i> I'm wondering what the thoughts are wrt interaction between &quot;privacy,&quot;
+</I>&gt;<i> subscription requests, presence and the new &quot;invisible&quot; stuff in 1.4.2?
+</I>&gt;<i> Would privacy &quot;trump&quot; these?  In other words:  if a JID was denied (or
+</I>&gt;<i> not allowed--same thing): would/should the server automatically not
+</I>&gt;<i> propagate subscription requests from the denied JID to the client?
+</I>&gt;<i> And/or should it not propagate presence info back to the denied JID?
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i> Jim
+</I>&gt;<i> --
+</I>&gt;<i> Jim Seymour                  | PGP Public Key available at:
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jseymour at LinxNet.com</A>         |
+</I><A HREF="http://www.uk.pgp.net/pgpnet/pks-commands.html">http://www.uk.pgp.net/pgpnet/pks-commands.html</A>
+&gt;<i> <A HREF="http://jimsun.LinxNet.com">http://jimsun.LinxNet.com</A>    |
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> --__--__--
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> End of jdev Digest
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="011797.html">[JDEV] JabberApplet - anyone got latest code working?
+</A></li>
+	<LI>Next message: <A HREF="011789.html">[JDEV] jpolld where r u ??
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11788">[ date ]</a>
+              <a href="thread.html#11788">[ thread ]</a>
+              <a href="subject.html#11788">[ subject ]</a>
+              <a href="author.html#11788">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

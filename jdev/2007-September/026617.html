@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Perl Net::XMPP::Roster functionality?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Perl%20Net%3A%3AXMPP%3A%3ARoster%20functionality%3F&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="026616.html">
+   <LINK REL="Next"  HREF="026618.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Perl Net::XMPP::Roster functionality?</H1>
+    <B>jdev at eriko.mobi</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Perl%20Net%3A%3AXMPP%3A%3ARoster%20functionality%3F&In-Reply-To="
+       TITLE="[jdev] Perl Net::XMPP::Roster functionality?">jdev at eriko.mobi
+       </A><BR>
+    <I>Thu Sep 13 23:17:10 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="026616.html">[jdev] PubSub XEP-0060 misunderstandings
+</A></li>
+        <LI>Next message: <A HREF="026618.html">[jdev] Perl Net::XMPP::Roster functionality?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26617">[ date ]</a>
+              <a href="thread.html#26617">[ thread ]</a>
+              <a href="subject.html#26617">[ subject ]</a>
+              <a href="author.html#26617">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi, all,
+
+I'm trying to write a simple Perl script to log in, get a list of
+subscribed JIDs that are online, and then log off.  The documentation
+for Net::XMPP indiates that a Roster object will do this:
+
+<A HREF="http://search.cpan.org/~reatmon/Net-XMPP-1.0/lib/Net/XMPP/Protocol.pm">http://search.cpan.org/~reatmon/Net-XMPP-1.0/lib/Net/XMPP/Protocol.pm</A>
+    Roster() - returns a Net::XMPP::Roster object.  This will automatically
+               intercept all of the roster and presence packets sent from
+               the server and give you an accurate Roster.  For more
+               information please read the man page for Net::XMPP::Roster.
+
+And
+<A HREF="http://search.cpan.org/~reatmon/Net-XMPP-1.0/lib/Net/XMPP/Roster.pm">http://search.cpan.org/~reatmon/Net-XMPP-1.0/lib/Net/XMPP/Roster.pm</A>
+  online(jid) - return 1 if the JID is online, undef otherwise.  The
+                jid can either be a string, or a Net::XMPP::JID object.
+
+Here's a simple test program that should do what I want, however the
+online() method just doesn't seem to return anything.  Am I completely
+wrong about what the Roster object does, or could this be a bug?
+
+Thanks,
+Erik
+
+# Simple test code taken from
+# <A HREF="http://www.pervasive-network.org/SPIP/Google-Talk-with-perl-bis">http://www.pervasive-network.org/SPIP/Google-Talk-with-perl-bis</A> and
+# modified to try to grab Presence updates via the Roster.
+use Net::XMPP;
+
+my $username = 'tester1';
+my $password = 'tester1pass';
+
+my $user = '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tester2 at gmail.com</A>';
+my $resource = 'TestingPerl';
+my $hostname = 'talk.google.com';
+my $port = 5222;
+my $componentname = 'gmail.com';
+my $connectiontype = 'tcpip';
+my $tls = 1;
+
+# Connect to Google Talk
+my $Connection = new Net::XMPP::Client();
+$Connection-&gt;Connect(   hostname =&gt; $hostname,
+                        port =&gt; $port,
+                        componentname =&gt; $componentname,
+                        connectiontype =&gt; $connectiontype,
+                        tls =&gt; $tls );
+my $sid = $Connection-&gt;{SESSION}{id};
+$Connection-&gt;{STREAM}-&gt;{SIDS}-&gt;{$sid}-&gt;{hostname} = $componentname;
+$Connection-&gt;AuthSend(  username =&gt; $username,
+                        password =&gt; $password,
+                        resource =&gt; $resource );
+
+# Send empty presenece =&gt; I'm available!
+$Connection-&gt;PresenceSend();
+my $r = Net::XMPP::Roster-&gt;new(connection=&gt;$Connection);
+$Connection-&gt;RosterRequest();
+
+my $isOnline = $r-&gt;online($user);
+print &quot;$user isOnline = $isOnline\n&quot;;
+
+$Connection-&gt;Disconnect();
+exit();
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="026616.html">[jdev] PubSub XEP-0060 misunderstandings
+</A></li>
+	<LI>Next message: <A HREF="026618.html">[jdev] Perl Net::XMPP::Roster functionality?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26617">[ date ]</a>
+              <a href="thread.html#26617">[ thread ]</a>
+              <a href="subject.html#26617">[ subject ]</a>
+              <a href="author.html#26617">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

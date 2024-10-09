@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Help parsing incremental XML
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Help%20parsing%20incremental%20XML&In-Reply-To=%3C8CDC3525190B624F8F740435C7B9A01D0FCA70%40heineken.winfessor.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="048372.html">
+   <LINK REL="Next"  HREF="048357.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Help parsing incremental XML</H1>
+    <B>JD Conley</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Help%20parsing%20incremental%20XML&In-Reply-To=%3C8CDC3525190B624F8F740435C7B9A01D0FCA70%40heineken.winfessor.com%3E"
+       TITLE="[jdev] Help parsing incremental XML">jconley at winfessor.com
+       </A><BR>
+    <I>Sat Mar 27 01:16:16 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="048372.html">[jdev] Help parsing incremental XML
+</A></li>
+        <LI>Next message: <A HREF="048357.html">[jdev] Help parsing incremental XML
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48356">[ date ]</a>
+              <a href="thread.html#48356">[ thread ]</a>
+              <a href="subject.html#48356">[ subject ]</a>
+              <a href="author.html#48356">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Unfortunately the parser masquerading as SAX in the .NET Framework
+doesn't work like that.  It will only raise the callbacks once it finds
+the end of the document.  For example, if you attach the parser to a
+Jabber stream from a socket you will only get a callback for the
+&lt;stream:stream&gt; opening element, then the parser will simply hang until
+it receives the &lt;/stream:stream&gt; closing element, at which point the
+callbacks for anything in between will be raised.  
+
+Obviously this is a limitation in the .NET parser, but I figured it was
+most likely present in other parsers.
+
+JD
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Dr. Craig Hollabaugh [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">craig at hollabaugh.com</A>] 
+</I>&gt;<i> Sent: Friday, March 26, 2004 10:14 PM
+</I>&gt;<i> To: Jabber software development list
+</I>&gt;<i> Subject: RE: [jdev] Help parsing incremental XML
+</I>&gt;<i> 
+</I>&gt;<i> JD and Kevin,
+</I>&gt;<i> 
+</I>&gt;<i> SAX parsers parse as the stream comes in. Your code gets 
+</I>&gt;<i> callbacks on a
+</I>&gt;<i> tag by tag basis. A DOM parser creates a complete document to
+</I>&gt;<i> manipulate. If you're parsing is really simple, you can use a regular
+</I>&gt;<i> expression to find what you're looking for.
+</I>&gt;<i> 
+</I>&gt;<i> Craig
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> On Fri, 2004-03-26 at 23:08, JD Conley wrote:
+</I>&gt;<i> &gt; That sort of parsing is the basis of XMPP/Jabber.  In many 
+</I>&gt;<i> cases SAX and
+</I>&gt;<i> &gt; DOM parsers do require the whole document.  But there are 
+</I>&gt;<i> parsers that
+</I>&gt;<i> &gt; will parse a stream as it comes in.  I'm not sure how it's 
+</I>&gt;<i> usually done
+</I>&gt;<i> &gt; in Java -- I'm a .NET guy myself -- but there are a few 
+</I>&gt;<i> open source Java
+</I>&gt;<i> &gt; Jabber libraries available that you can look at.  The list 
+</I>&gt;<i> of the most
+</I>&gt;<i> &gt; complete/popular libraries is here:
+</I>&gt;<i> &gt; <A HREF="http://www.jabber.org/software/libraries.php">http://www.jabber.org/software/libraries.php</A>
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Are you using Jabber for your project?  If not, you should 
+</I>&gt;<i> check into
+</I>&gt;<i> &gt; it.  It will allow you to send your application's XML as payload in
+</I>&gt;<i> &gt; Jabber stanzas and will handle the routing, authentication, 
+</I>&gt;<i> and all the
+</I>&gt;<i> &gt; particulars you probably don't want to worry about.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; JD 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &gt; -----Original Message-----
+</I>&gt;<i> &gt; &gt; From: Kevin Zablonski [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kzablonski at riches85.com</A>] 
+</I>&gt;<i> &gt; &gt; Sent: Friday, March 26, 2004 7:40 PM
+</I>&gt;<i> &gt; &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; Subject: [jdev] Help parsing incremental XML
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; I am developing an IM client/server application for the 
+</I>&gt;<i> &gt; &gt; visually impaired
+</I>&gt;<i> &gt; &gt; that will make use of the Java Speach API.  I am developing 
+</I>&gt;<i> &gt; &gt; it as a senior
+</I>&gt;<i> &gt; &gt; project and I am stuck on the XML parsing.  I am having 
+</I>&gt;<i> &gt; &gt; trouble finding a
+</I>&gt;<i> &gt; &gt; technology that will allow me to parse XML incrementally.  
+</I>&gt;<i> &gt; &gt; The client will
+</I>&gt;<i> &gt; &gt; connect to the server over a socket connection.  From there, 
+</I>&gt;<i> &gt; &gt; the client
+</I>&gt;<i> &gt; &gt; and the server will continually pass small XML streams back 
+</I>&gt;<i> &gt; &gt; and forth.  I
+</I>&gt;<i> &gt; &gt; have done some research into SAX and DOM, but it looks as if 
+</I>&gt;<i> &gt; &gt; they expect
+</I>&gt;<i> &gt; &gt; the whole document at once.  I was just wondering if it was 
+</I>&gt;<i> &gt; &gt; possible and
+</I>&gt;<i> &gt; &gt; if so, what technologies are being used.  I could just use 
+</I>&gt;<i> &gt; &gt; some direction
+</I>&gt;<i> &gt; &gt; direction right now.  I would appreciate any suggestions 
+</I>&gt;<i> &gt; &gt; and/or comments
+</I>&gt;<i> &gt; &gt; that could stear me in the right direction.  Thanks in Advance.
+</I>&gt;<i> &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; <A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> -- 
+</I>&gt;<i> ------------------------------------------------------------
+</I>&gt;<i> Dr. Craig Hollabaugh, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">craig at hollabaugh.com</A>
+</I>&gt;<i> Author of Embedded Linux: Hardware, Software and Interfacing
+</I>&gt;<i> www.embeddedlinuxinterfacing.com
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="048372.html">[jdev] Help parsing incremental XML
+</A></li>
+	<LI>Next message: <A HREF="048357.html">[jdev] Help parsing incremental XML
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48356">[ date ]</a>
+              <a href="thread.html#48356">[ thread ]</a>
+              <a href="subject.html#48356">[ subject ]</a>
+              <a href="author.html#48356">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

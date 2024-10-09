@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] MUC problems
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20MUC%20problems&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C148002B9D3C1%40ossex1.corp.webb.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="074366.html">
+   <LINK REL="Next"  HREF="074365.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] MUC problems</H1>
+    <B>Constantin Nickonov</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20MUC%20problems&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C148002B9D3C1%40ossex1.corp.webb.net%3E"
+       TITLE="[JDEV] MUC problems">Nickonov at jabber.com
+       </A><BR>
+    <I>Tue Feb 11 09:12:16 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="074366.html">[JDEV] Server Problems, of the lying kind.
+</A></li>
+        <LI>Next message: <A HREF="074365.html">[JDEV] MUC problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74362">[ date ]</a>
+              <a href="thread.html#74362">[ thread ]</a>
+              <a href="subject.html#74362">[ subject ]</a>
+              <a href="author.html#74362">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>see below
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: David Sutton [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber at dsutton.legend.uk.com</A>]
+</I>&gt;<i> Sent: Monday, February 10, 2003 8:51 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] MUC problems
+</I>
+&lt;snip&gt;
+
+&gt;<i> The hex string is actually a SHA1 hash of the users real jid. Its used
+</I>&gt;<i> to reference a user, but not reveal the true jid. If the room 
+</I>&gt;<i> is set up to allow people to see the real jid, then just browse
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">girls at conference.localhost</A>/13c6a01dc31309e331c2b018640b9c03b8534327 and
+</I>&gt;<i> it will show you the true jid. This also helps to keep compatability to
+</I>&gt;<i> existing clients that are used to this form with the
+</I>&gt;<i> groupchat/conferencing module. The real jid is used as the reference, as
+</I>&gt;<i> a person can keep changing their nick throughout a session, but they
+</I>&gt;<i> can't change their real jid
+</I>
+The problem with this is that the MUC standard (JEP-0045) specifies how
+nicknames are passed along with presence information, and how they are
+changed -- and SHA-hashing isn't the way.
+
+Entering a room (JEP-0045, section 6.2):
+
+  SENT: &lt;presence to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at muc.server</A>/nick1'&gt;
+          &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'/">http://jabber.org/protocol/muc'/</A>&gt;
+        &lt;/presence&gt;
+  READ: &lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at muc.server</A>/nick1' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/resource'&gt;
+          &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+            &lt;item affiliation='owner' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/resource'
+role='moderator'/&gt;
+          &lt;/x&gt;
+        &lt;/presence&gt;
+
+Changing the nick (JEP-0045, section 6.4):
+
+  SENT: &lt;presence to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at muc.server</A>/nick2'/&gt;
+  READ: &lt;presence type='unavailable' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at muc.server</A>/nick1'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/resource'&gt;
+          &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+            &lt;item nick='nick2' affiliation='owner'
+jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/resource' role='moderator'/&gt;
+            &lt;status code='303'/&gt;
+          &lt;/x&gt;
+        &lt;/presence&gt;
+        &lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at muc.server</A>/nick2' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/resource'&gt;
+          &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+            &lt;item affiliation='owner' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/resource'
+role='moderator'/&gt;
+          &lt;/x&gt;
+        &lt;/presence&gt;
+
+The MUC protocol wasn't designed to be fully backward-compatible with the
+JCF draft.
+
+Constantin
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="074366.html">[JDEV] Server Problems, of the lying kind.
+</A></li>
+	<LI>Next message: <A HREF="074365.html">[JDEV] MUC problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74362">[ date ]</a>
+              <a href="thread.html#74362">[ thread ]</a>
+              <a href="subject.html#74362">[ subject ]</a>
+              <a href="author.html#74362">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] module development
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20module%20development&In-Reply-To=%3C20020314102525.GA11820%40restamus.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="070362.html">
+   <LINK REL="Next"  HREF="070317.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] module development</H1>
+    <B>Peter Gebauer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20module%20development&In-Reply-To=%3C20020314102525.GA11820%40restamus.org%3E"
+       TITLE="[JDEV] module development">peter-jabber at restamus.org
+       </A><BR>
+    <I>Thu Mar 14 04:25:25 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="070362.html">[JDEV] The logger cc and presence bcc in 1.4.2
+</A></li>
+        <LI>Next message: <A HREF="070317.html">[JDEV] module development
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#70316">[ date ]</a>
+              <a href="thread.html#70316">[ thread ]</a>
+              <a href="subject.html#70316">[ subject ]</a>
+              <a href="author.html#70316">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> What is the good way to develop a jabber module ? External
+</I>&gt;<i> (with JECL for example) or internal with the 'load' method ?
+</I>&gt;<i> And why ?
+</I>&gt;<i> 
+</I>&gt;<i> thanks
+</I>
+It depends on what your goal is. An external connect component (a separate 
+daemon that connects to the Jabber server as a component and not a regular 
+client) is a nice way of making sure that even if your component crashes the 
+Jabber daemon will live on and serve it's clients.
+
+So if you are building a complex system with many components that do many 
+different things it's good.
+
+On the other hand the communication between the Jabber daemon and the 
+component is through one socket only. This means that if one client requests 
+a massive data chunk (or very long list) all other messages to and from that 
+component will be queued, not good if you want multiple simultaneous clients
+to your component.
+
+I made this mistake when creating a Maildir component from which many 
+clients could fetch email simultaneously. I hade to convert into a module 
+since when more than 30 clients tried to fetch email containing large 
+attachments, while as Jabber module I could start a thread per request.
+
+Also, if you create a module you get Jabber API's very nice memory pooling.
+
+So, the crash problem? You can have several Jabber daemons, I have one 
+instance of Jabber only for my maildir module. If it should need to
+communicate with my Jabber daemon that has the IM modules I can route
+packets. I do this so that if my Jabber Maildir instance crashes, my clients 
+will still have IM functions up and running.
+
+Those were my two cents! :-)
+
+/P
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="070362.html">[JDEV] The logger cc and presence bcc in 1.4.2
+</A></li>
+	<LI>Next message: <A HREF="070317.html">[JDEV] module development
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#70316">[ date ]</a>
+              <a href="thread.html#70316">[ thread ]</a>
+              <a href="subject.html#70316">[ subject ]</a>
+              <a href="author.html#70316">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

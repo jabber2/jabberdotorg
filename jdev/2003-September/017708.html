@@ -1,0 +1,264 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: jabber; what would you like to see?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20jabber%3B%20what%20would%20you%20like%20to%20see%3F&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="017718.html">
+   <LINK REL="Next"  HREF="017710.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: jabber; what would you like to see?</H1>
+    <B>Yobb</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20jabber%3B%20what%20would%20you%20like%20to%20see%3F&In-Reply-To="
+       TITLE="[JDEV] Re: jabber; what would you like to see?">yobb at sina.com
+       </A><BR>
+    <I>Thu Sep 25 06:08:04 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="017718.html">[JDEV] Re: jabber; what would you like to see?
+</A></li>
+        <LI>Next message: <A HREF="017710.html">[JDEV] Re: jabber; what would you like to see?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17708">[ date ]</a>
+              <a href="thread.html#17708">[ thread ]</a>
+              <a href="subject.html#17708">[ subject ]</a>
+              <a href="author.html#17708">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The jabberd process gives me a segmentation fault when run with xdb_sql and
+Oracle.  I'm able to run jabberd fine under an identical setup with xdb_sql
+and mysql.  I'm running jabberd 1.4.2, the latest CVS version of xdb_sql,
+and oracle client version 9.2.0.3.0 on Debian linux with libc version 2.3.2.
+
+If I run the daemon without the debug switch the daemon will segault
+immediately after I try to connect to the server.  Here's a backtrace:
+
+(gdb) r
+Starting program: /home/jsmith/jabber/jabber-1.4.2/jabberd/jabberd
+[New Thread 16384 (LWP 5372)]
+xdboracle_backend_new: initialized
+xdboracle_backend_new: initialized
+xdboracle_connect: Logged to Oracle, db=jabber, user=jabberuser, pass=pass
+xdboracle_connect: Logged to Oracle, db=jabber, user=jabberuser, pass=pass
+oracle_query: select SYSDATE from DUAL type 1
+oracle_query: select SYSDATE from DUAL type 1
+xdboracle_is_connected: connected
+xdboracle_is_connected: connected
+xdboracle_free_result: done
+xdboracle_free_result: done
+20030918T08:11:19: [notice] (-internal): initializing server
+
+Program received signal SIGSEGV, Segmentation fault.
+[Switching to Thread 16384 (LWP 5372)]
+0x40bd9426 in __pthread_internal_tsd_get () from /lib/libpthread.so.0
+(gdb) bt
+#0  0x40bd9426 in __pthread_internal_tsd_get () from /lib/libpthread.so.0
+#1  0x400a0de8 in malloc () from /lib/libc.so.6
+#2  0x400a51cc in strdup () from /lib/libc.so.6
+#3  0x0805a5e7 in jlimit_check (r=0x81ce660, key=0x4014e52c &quot;localhost&quot;,
+points=1)
+    at rate.c:82
+#4  0x08050c4b in _mio_accept (m=0x81ce5c0) at mio.c:400
+#5  0x080519da in _mio_main (arg=0x0) at mio.c:704
+#6  0x0807d4af in pth_spawn_trampoline ()
+#7  0x40077014 in makecontext () from /lib/libc.so.6
+
+
+And when I try to run with debugging information, it will segfault when the
+daemon starts up, when it tries to write the debugging output to the
+console:
+
+(gdb) r -D
+[ snip ... ]
+20030918T08:06:26: [notice] (-internal): initializing server
+Thu Sep 18 10:06:26 2003  jabberd.c:255 main load check of 1.00 with 3 total
+threads
+
+Program received signal SIGSEGV, Segmentation fault.
+[Switching to Thread 16384 (LWP 5065)]
+0x4005832e in __ctype_b_loc () from /lib/libc.so.6
+(gdb) bt
+#0  0x4005832e in __ctype_b_loc () from /lib/libc.so.6
+#1  0x0805b708 in format_converter (odp=0x8113ca8, fmt=0x808326d &quot;s:%d&quot;,
+    ap=0x8113cf4 &quot; \027\b\bl\002&quot;) at snprintf.c:579
+#2  0x0805c097 in strx_printv (ccp=0x8113cdc, buf=0x808d580 &quot;jabberd.c:256&quot;,
+len=62,
+    format=0x808326c &quot;%s:%d&quot;, ap=0x8113cf4 &quot; \027\b\bl\002&quot;) at
+snprintf.c:904
+#3  0x0805c0e9 in ap_snprintf (buf=0x808d580 &quot;jabberd.c:256&quot;, len=63,
+    format=0x808326c &quot;%s:%d&quot;) at snprintf.c:918
+#4  0x0805cd03 in zonestr (file=0x8081720 &quot;mio.c&quot;, line=620) at str.c:343
+#5  0x08051545 in _mio_main (arg=0x0) at mio.c:620
+#6  0x0807d4af in pth_spawn_trampoline ()
+#7  0x40077014 in makecontext () from /lib/libc.so.6
+
+
+In both cases, it segfaults when trying to make a libc call.  Also, in the
+first case I noticed the server is making a libpthread call.  Should the
+jabber daemon be using both libpthread and pth?
+
+Does anyone have any suggestions as to what the problem could be or could be
+able to offer any tips on debugging?
+
+Thanks,
+
+----- Original Message ----- 
+From: &quot;Bernino Lind&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lind at hlgroup.dk</A>&gt;
+To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Sent: Thursday, September 25, 2003 4:39 PM
+Subject: RE: [JDEV] Re: jabber; what would you like to see?
+
+
+&gt;<i> Dear sirs,
+</I>&gt;<i> 
+</I>&gt;<i> I would like to see jabber move in a direction where LDAP and RDBM is a
+</I>&gt;<i> robust integrated part of the infrastructure.
+</I>&gt;<i> 
+</I>&gt;<i> Also and in extension I would like to see a non-agent'ified middleware
+</I>&gt;<i> component - ie. that a programmer can pick any packet or piece of packet
+</I>&gt;<i> and apply whatever program to this packet with no restrictions - aka the
+</I>&gt;<i> way FORMs are to http-&gt;html and php is to html.
+</I>&gt;<i> 
+</I>&gt;<i> Right now I have tweaked the current xdb_sql so that it meets my
+</I>&gt;<i> requirements (ie. I have some processing in the C code related to my and
+</I>&gt;<i> only my project which manipulates the packets I receive, for example &quot;if
+</I>&gt;<i> username == bernino { printf 'woooo'; }&quot; - what I call middleware, since
+</I>&gt;<i> it is not backend nor frontend).
+</I>&gt;<i> 
+</I>&gt;<i> I do not like prototyping in C - it reminds me too much of my days in
+</I>&gt;<i> astrophysics doing models of the universe in Fortran 77 on a
+</I>&gt;<i> supercomputer - damn it takes so much time. I like prototyping in Perl
+</I>&gt;<i> or other highlevel language.
+</I>&gt;<i> 
+</I>&gt;<i> So I have made my own xdb method, namely opening for an external
+</I>&gt;<i> component, which then handles packets in the namespaces I have told it
+</I>&gt;<i> to, and passing the data the packets might contain to forexample DBI.
+</I>&gt;<i> Just like the xdb_perl project.
+</I>&gt;<i> 
+</I>&gt;<i> In this work I have met one really irritating limitation: passing data
+</I>&gt;<i> along is not very easy in a iq-get packet. I dont know if it is me who
+</I>&gt;<i> is lame, but I simply cant find any examples of a iq-get packet that
+</I>&gt;<i> sends more data than the username and xmlns.
+</I>&gt;<i> 
+</I>&gt;<i> Lets say I would like to make a query where I fetch entries in my roster
+</I>&gt;<i> groups that have been online within the last day. This is where the
+</I>&gt;<i> current limiation lies within Jabber - its not possible in any other way
+</I>&gt;<i> than creating an external component, a specific xmlns and have this
+</I>&gt;<i> specific xmlns coded with static information, in this case the distance
+</I>&gt;<i> in time from last login.
+</I>&gt;<i> 
+</I>&gt;<i> What I picture is that one could have a scripting languague within the
+</I>&gt;<i> packets, for example:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;iq type=&quot;get&quot;&gt;
+</I>&gt;<i> &lt;query xmlns=&quot;bla bla&quot;&gt;
+</I>&gt;<i> &lt;script&gt;
+</I>&gt;<i> @users=fetchroster(1,2,3);
+</I>&gt;<i> for ($i=0; $i&lt;$@#users) {
+</I>&gt;<i>    echo &quot;&lt;message to=@user[$i]&gt; In my new roster bla bla &quot;;
+</I>&gt;<i> }
+</I>&gt;<i> createrostergroup(@users, &quot;newrostergroup&quot;);
+</I>&gt;<i> return @users;
+</I>&gt;<i> &lt;/script&gt;
+</I>&gt;<i> &lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> And a backend language, jabberlang:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;iq type=&quot;get&quot;&gt;
+</I>&gt;<i> &lt;query xmlns=&quot;jabberlang&quot;&gt;
+</I>&gt;<i> &lt;url&gt;test.jab&lt;/url&gt;
+</I>&gt;<i> &lt;value1&gt;blabla&lt;/value1&gt;
+</I>&gt;<i> &lt;value2&gt;123&lt;/value2&gt;
+</I>&gt;<i> &lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> When jabber sees the jabberlang packet it know to fire off the test.jab
+</I>&gt;<i> file, which is say a python program or whatever and it passes the value1
+</I>&gt;<i> and value2 to the program. The test.jab does whatever to this data with
+</I>&gt;<i> the full access to jabber at hand, ie. xdb etc. is available, and then
+</I>&gt;<i> it returns whatever result to the client.
+</I>&gt;<i> 
+</I>&gt;<i> In this way one it would be trivial to create a groupware project, voip
+</I>&gt;<i> ... whatever utility out of the infrastructure, since in this way what
+</I>&gt;<i> we have achieved is completely generalised generic xml socket server -
+</I>&gt;<i> in difference to what it is now: a more or less specific project aimed
+</I>&gt;<i> at messengers.
+</I>&gt;<i> 
+</I>&gt;<i> It is not that it is not possible doing tricks with jabber - I myself
+</I>&gt;<i> have created a multiuser gameplatform via flash and web and with a
+</I>&gt;<i> PostgreSQL backend - its just that when one works out such a project it
+</I>&gt;<i> becomes evident that the rationale behind jabber is not a generic set of
+</I>&gt;<i> building blocks, as stated in the DJ Adams book, but rather a specific
+</I>&gt;<i> messenger project which can be tweaked to behave as you would like it
+</I>&gt;<i> to.
+</I>&gt;<i> 
+</I>&gt;<i> Best regards,
+</I>&gt;<i> Bernino Lind
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>] On Behalf Of
+</I>&gt;<i> GuruJ
+</I>&gt;<i> Sent: Wednesday, September 24, 2003 12:16 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: [JDEV] Re: jabber; what would you like to see?
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Personally, I'd love to see Jabber making inroads into the 
+</I>&gt;<i> groupware/collaboration scene (maybe along the lines of Groove).
+</I>&gt;<i> 
+</I>&gt;<i> -- GuruJ.
+</I>&gt;<i> 
+</I>&gt;<i> milk wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; out of interest, i was just wondering what everyone thinks about what 
+</I>&gt;<i> &gt; the
+</I>&gt;<i>  &gt; most important current/upcoming jabber features are, what features do
+</I>&gt;<i> &gt; you personally think need to be developed/expanded, and what 
+</I>&gt;<i> tasks/applications
+</I>&gt;<i>  &gt; would you like to see jabber doing/working with in say, one or two  &gt;
+</I>&gt;<i> years time?
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="017718.html">[JDEV] Re: jabber; what would you like to see?
+</A></li>
+	<LI>Next message: <A HREF="017710.html">[JDEV] Re: jabber; what would you like to see?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17708">[ date ]</a>
+              <a href="thread.html#17708">[ thread ]</a>
+              <a href="subject.html#17708">[ subject ]</a>
+              <a href="author.html#17708">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

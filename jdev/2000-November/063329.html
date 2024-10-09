@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Conferencing Module and Jabber Server 1.2
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Conferencing%20Module%20and%20Jabber%20Server%201.2&In-Reply-To=%3C20001118233219.A6732%40Flint.digix.dyndns.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="063325.html">
+   <LINK REL="Next"  HREF="063330.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Conferencing Module and Jabber Server 1.2</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Conferencing%20Module%20and%20Jabber%20Server%201.2&In-Reply-To=%3C20001118233219.A6732%40Flint.digix.dyndns.org%3E"
+       TITLE="[JDEV] Conferencing Module and Jabber Server 1.2">keith at digix.dyndns.org
+       </A><BR>
+    <I>Sat Nov 18 22:32:20 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="063325.html">oops (was: RE: [JDEV] AIM Transport Release)
+</A></li>
+        <LI>Next message: <A HREF="063330.html">[JDEV] FreeBSD woes.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63329">[ date ]</a>
+              <a href="thread.html#63329">[ thread ]</a>
+              <a href="subject.html#63329">[ subject ]</a>
+              <a href="author.html#63329">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello Everyone,
+
+    I've seen a lot of messaging back and forth about getting the conferencing module working in the 1.2 Jabber Server.  and I would like to set everything straight, for the record... 
+
+    First of all, The build system in the conferencing module is non-existant.  it will only compile on Linux most likely.. I am FAR from being a build expert, and was hoping temas would fix this (*nudge* *nudge*)
+
+    Second, The jabberd_groupchat.xml is in there just as an example of how to run the conferencing module from an exec'd jabberd.  This method is only desirable if you have a (suspected) buggy component, that you want to run safely in a child jabberd.. what will happen is that the main jabberd will fork, and exec a second jabberd, with the second config file, and they will talk to each other via STDIN and STDOUT.  
+
+    You can avoid this method, and load the conferencing module very simply from the main jabberd by using this service tag:
+
+    &lt;service id=&quot;conference.jabber.org&quot;&gt;
+        &lt;load&gt;&lt;groupchat&gt;/path/to/groupchat.so&lt;/groupchat&gt;&lt;/load&gt;
+    &lt;/service&gt;
+
+    put that in your main jabberd, and you are good to go.
+
+    now, about the groupchat protocol.. I mentioned earlier, while talking about irc-transport, that there are two versions of the groupchat protocol.  the &quot;old&quot; or &quot;1.0&quot; version being what was originally developed foro groupchat, and the protocol that has the most client support. and the &quot;new&quot; protocol being developed after most clients already supported the former, but being a more robust protocol, wrt nick name management. (something that was needed for irc-transport, and being on multiple groups/servers, or mutliple resources, etc).. 
+
+    for some time, there had been two versions of groupchat (and irc-transport) in CVS, one for the &quot;old&quot; gc protocol, and one for the &quot;new&quot;.  the conferencing groupchat component supports *both* of these protocols at the same time, so there is no need to worry about which version of the protocol you are using.  People can join the same groups, but talk different protocols, and it all works fine (barring any major bugs =]).
+
+
+    also, with more recent versions of the groupchat agent, I included the message history feature.. where when you log into groupchat, you see the last x number of messages that were sent to the group, this way you aren't walking in in the middle of the conversation... this can be set in the config section in jabberd for the number of messages in the history:
+
+
+    &lt;service id=&quot;conference.jabber.org&quot;&gt;
+        &lt;load&gt;&lt;groupchat&gt;/path/to/groupchat.so&lt;/groupchat&gt;&lt;/load&gt;
+        &lt;config xmlns=&quot;jabberd:gc:config&quot;&gt;
+            &lt;history&gt;20&lt;/history&gt;
+        &lt;/config&gt;
+    &lt;/service&gt;
+
+    where &quot;20&quot; is the number of messages a user will see in their hsitory.. (NOTE, future versions of groupchat will use the jabber:config:groupchat namespace, NOT the jabberd:gc:config namespace.. although I will accept both during a transition phase)... 
+
+    NOTE also, that &lt;config/&gt; doesn't have to be named config, it could be named foo or gcconfig, or anything you want, as long as the xmlns is correct.
+
+    I was experimenting with the history in this last version of groupchat, I wanted to make the history message look different than the normal messages from the group, so I made them server messages, this turned out to look dumb, and I will fix that in future versions of groupchat.
+
+
+
+Well, that should about cover all the issues I can think of.. any further questions, feel free to mail them to this group (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>)
+
+-Keith Minkler
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="063325.html">oops (was: RE: [JDEV] AIM Transport Release)
+</A></li>
+	<LI>Next message: <A HREF="063330.html">[JDEV] FreeBSD woes.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63329">[ date ]</a>
+              <a href="thread.html#63329">[ thread ]</a>
+              <a href="subject.html#63329">[ subject ]</a>
+              <a href="author.html#63329">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

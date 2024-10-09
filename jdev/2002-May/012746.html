@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Dialup and laptop users, lost packets, and faulty presence info
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Dialup%20and%20laptop%20users%2C%20lost%20packets%2C%20and%20faulty%20presence%0A%20info&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="012744.html">
+   <LINK REL="Next"  HREF="012784.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Dialup and laptop users, lost packets, and faulty presence info</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Dialup%20and%20laptop%20users%2C%20lost%20packets%2C%20and%20faulty%20presence%0A%20info&In-Reply-To="
+       TITLE="[JDEV] Dialup and laptop users, lost packets, and faulty presence info">mass at akuma.org
+       </A><BR>
+    <I>Thu May 16 10:48:01 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="012744.html">[JDEV] Dialup and laptop users, lost packets, and faulty presence info
+</A></li>
+        <LI>Next message: <A HREF="012784.html">[JDEV] Dialup and laptop users, lost packets, and faulty presence info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12746">[ date ]</a>
+              <a href="thread.html#12746">[ thread ]</a>
+              <a href="subject.html#12746">[ subject ]</a>
+              <a href="author.html#12746">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I would recommend a heartbeat which instead does what clients have done 
+for a while - sends a whitespace character in-between XML packets. You 
+would need to modify the client connection piece to do this 
+(c2s/jadc2s/jpoll/dpsm/whatever); but it would be significantly less 
+intrusive to a client than a separate component sending new XML 
+elements. Rather than having the clients reply to this message, their 
+TCP/IP stack will just ACK the new packet. Failure will result in the 
+stack of the server recognising the socket as dead, which will be 
+treated just like a (clean) disconnect is now.
+
+-David Waite
+
+Nathan Sharp wrote:
+
+&gt;<i> I've been pretty successfully running a 1.4.2 jabber server at our 
+</I>&gt;<i> offices for a short while now and love having IM internal to our 
+</I>&gt;<i> company w/o the big players.  I've got one major issue, though.  I've 
+</I>&gt;<i> been trying to find past debates over this but have failed so far, so 
+</I>&gt;<i> excuse me if this has already been discussed.  The problem comes when 
+</I>&gt;<i> a dialup or a laptop user pulls the plug on their network connection 
+</I>&gt;<i> without ever logging off of jabber.  The jabber server won't notice 
+</I>&gt;<i> until it tries to send a message to the client and gets a network 
+</I>&gt;<i> error.  Unfortunately this is unreliable as is.  I've had users that I 
+</I>&gt;<i> know are offline stay listed as online for as long as 12 hours!  To 
+</I>&gt;<i> make matters much worse, when you send a message to a person in this 
+</I>&gt;<i> state, you never get an error back telling you that your message 
+</I>&gt;<i> failed to be delivered, although usually you can tell becuase the 
+</I>&gt;<i> server will soon afterwards log the faulty connection off and the 
+</I>&gt;<i> person will dissapear from your roster.
+</I>&gt;<i>
+</I>&gt;<i> Personally I think the only possible way to deal with this is to have 
+</I>&gt;<i> a heartbeat between the client/server (I'd be willing to bet that all 
+</I>&gt;<i> the major IM systems do this, because they don't exhibit this 
+</I>&gt;<i> problem). Temas expressed some concern over scalability, but to me 
+</I>&gt;<i> this problem is worth fixing at a small cost to scalability.  (In 
+</I>&gt;<i> fact, it may help some because you will not have non-existent users 
+</I>&gt;<i> taking up resources!)
+</I>&gt;<i>
+</I>&gt;<i> Now, I'm willing to spend a small amount of time at least prototyping 
+</I>&gt;<i> a solution for testing, although given all my other projects I don't 
+</I>&gt;<i> have a lot of time.  So far, however, I've had a terribly frustrating 
+</I>&gt;<i> time trying to gather enough documentation or sample code to even 
+</I>&gt;<i> start. What I've been trying to do is build a server component w/ 
+</I>&gt;<i> jabberbeans (I'm fond of Java, but I could go with other solutions if 
+</I>&gt;<i> they are better...) that would send out a packet to all online users 
+</I>&gt;<i> once per configurable time period, and then kick off anyone it doesn't 
+</I>&gt;<i> hear a reply from before the next heartbeat.  Ideally it could listen 
+</I>&gt;<i> for messages and presence info from clients and skip a heartbeat if 
+</I>&gt;<i> other messages have been received from the client during that 
+</I>&gt;<i> heartbeat period, although I'm not clear if a component can listen 
+</I>&gt;<i> globally like that or not. 
+</I>&gt;<i> What I've got so far is a server component which runs and lists itself 
+</I>&gt;<i> in the client's browser, but I'm pretty stuck past there because I've 
+</I>&gt;<i> failed to find documentation on server components past that point (or 
+</I>&gt;<i> even example server components).  In specific:
+</I>&gt;<i> 1a) Can I register with the server and have it send me presence 
+</I>&gt;<i> information globally for everyone without having to have users 
+</I>&gt;<i> explicitly register with me?
+</I>&gt;<i>  - OR -
+</I>&gt;<i> 1b) If not I figure I can just query for all online users right when 
+</I>&gt;<i> it comes time to send out the heartbeat, which I found how to do last 
+</I>&gt;<i> night with an iq:browse to servername/admin.  However, jabberbeans 
+</I>&gt;<i> doesn't have a ExtensionBuilder for that namespace.  Is there a way w/ 
+</I>&gt;<i> jabberbeans to send custom xml or do I have to write my own 
+</I>&gt;<i> ExtensionBuilder?
+</I>&gt;<i>
+</I>&gt;<i> 2) Can I globally listen to &lt;message&gt; packets coming from users 
+</I>&gt;<i> without disturbing the normal delivery process?
+</I>&gt;<i> 3) I can always send a client version or time IQ to the client as a 
+</I>&gt;<i> dummy packet for my heartbeat, but ideally I want the smallest message 
+</I>&gt;<i> possible to which clients will respond to without any user 
+</I>&gt;<i> intervention or knowledge.  (Sounds like a prime place for a JEP if 
+</I>&gt;<i> this works out). Does anyone have ideas on a particular message type 
+</I>&gt;<i> to send?
+</I>&gt;<i>
+</I>&gt;<i> I have more questions, but I haven't researched them yet, so I'll wait. 
+</I>&gt;<i> Thanks!
+</I>&gt;<i>   Nathan
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="012744.html">[JDEV] Dialup and laptop users, lost packets, and faulty presence info
+</A></li>
+	<LI>Next message: <A HREF="012784.html">[JDEV] Dialup and laptop users, lost packets, and faulty presence info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12746">[ date ]</a>
+              <a href="thread.html#12746">[ thread ]</a>
+              <a href="subject.html#12746">[ subject ]</a>
+              <a href="author.html#12746">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

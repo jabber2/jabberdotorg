@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Q: Buddy icons?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Q%3A%20Buddy%20icons%3F&In-Reply-To=%3CB6E56C6D.2D66%25jens%40mooseyard.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="036110.html">
+   <LINK REL="Next"  HREF="036119.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Q: Buddy icons?</H1>
+    <B>Jens Alfke</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Q%3A%20Buddy%20icons%3F&In-Reply-To=%3CB6E56C6D.2D66%25jens%40mooseyard.com%3E"
+       TITLE="[JDEV] Q: Buddy icons?">jens at mooseyard.com
+       </A><BR>
+    <I>Tue Mar 27 00:00:14 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="036110.html">[JDEV] Q: Buddy icons?
+</A></li>
+        <LI>Next message: <A HREF="036119.html">[JDEV] Q: Buddy icons?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36111">[ date ]</a>
+              <a href="thread.html#36111">[ thread ]</a>
+              <a href="subject.html#36111">[ subject ]</a>
+              <a href="author.html#36111">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thomas Muldowney &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">temas at box5.net</A>&gt; wrote:
+
+&gt;<i> This seems as if it could be implemented with a iq:oob style namespace.
+</I>
+Maybe, but since a typical buddy icon will be a 32x32 pixel image, which
+will be ~2k bytes in size as a GIF/JPEG/PNG, I don't really think it's worth
+the overhead of opening up a separate oob connection for it.
+
+(Also, I'm not convinced based on what I've read that oob is ready for prime
+time. Direct client-client communication won't work through firewalls or
+NAT, which means I personally can't use it either at work or at home. It
+also implies giving out your IP address, which some people are loath to do
+for security reasons. I'm also unclear on how you manage access control: how
+do you know that the person making an HTTP connection to you is the person
+you sent the IM to?)
+
+Eliot Landrum wrote:
+
+&gt;<i> vCard supports this type of stuff.. would that be an appropriate place
+</I>&gt;<i> to put it?
+</I>
+You're right, I hadn't thought of that. I think the vCard element is called
+PHOTO. So a standard &lt;iq&gt; request with a &lt;vcard&gt; element would work to get
+this.
+
+The drawback is that this kind of assumes the picture is fixed forever;
+otherwise some kind of polling (even if only once per login) is necessary,
+since there's no notification if it ever changes. Why might it change? To
+daydream, let's say I want my client to allow my icon to change when my
+status does: my &quot;do not disturb&quot; icon might be a picture of me with an open
+copy of &quot;BSD For Dummies&quot; held in front of my face. :) Or the picture for
+the canonical online coffee maker might be an icon of a coffee pot with the
+current degree of fullness.
+
+One possibility to enable this is to send the icon [or just an indication
+that it's changed] as part of a state change, i.e. some new sub-element of
+&lt;presence&gt;. This allows the icon to change dynamically for any reason,
+without requiring watchers to poll. The sub-element could be
+&lt;photo&gt;...&lt;/photo&gt; with ~2k of raw CDATA in between, or a simple
+&lt;photo-changed/&gt; with no content.
+
+The drawback of this is that I'm guessing it requires server modifications
+to store the image, unless the server just slurps up the entire &lt;presence&gt;
+element and will relay any kind of sub-elements to watchers without
+interpreting them?
+
+--Jens
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="036110.html">[JDEV] Q: Buddy icons?
+</A></li>
+	<LI>Next message: <A HREF="036119.html">[JDEV] Q: Buddy icons?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36111">[ date ]</a>
+              <a href="thread.html#36111">[ thread ]</a>
+              <a href="subject.html#36111">[ subject ]</a>
+              <a href="author.html#36111">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

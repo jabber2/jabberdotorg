@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] SSL on FreeBSD
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20SSL%20on%20FreeBSD&In-Reply-To=Pine.OSX.4.40.0110101010060.6645-100000%40titatovenaar.sfo.covalent.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="009837.html">
+   <LINK REL="Next"  HREF="009841.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] SSL on FreeBSD</H1>
+    <B>Thomas Muldowney</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20SSL%20on%20FreeBSD&In-Reply-To=Pine.OSX.4.40.0110101010060.6645-100000%40titatovenaar.sfo.covalent.net"
+       TITLE="[JDEV] SSL on FreeBSD">temas at box5.net
+       </A><BR>
+    <I>Wed Oct 10 13:36:05 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="009837.html">[JDEV] SSL on FreeBSD
+</A></li>
+        <LI>Next message: <A HREF="009841.html">[JDEV] SSL on FreeBSD
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9838">[ date ]</a>
+              <a href="thread.html#9838">[ thread ]</a>
+              <a href="subject.html#9838">[ subject ]</a>
+              <a href="author.html#9838">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Is that against CVS or 1.4.1?
+
+--temas
+
+
+On Wed, Oct 10, 2001 at 10:11:43AM -0700, Dirk-Willem van Gulik wrote:
+&gt;<i> 
+</I>&gt;<i> To get jabber 1.4.1 to do SSL on FreeBSD I needed to do what is below. It
+</I>&gt;<i> seems that the exit code is more subtle than just ok/nok.
+</I>&gt;<i> 
+</I>&gt;<i> Dw.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> diff -c3 -r jabber-1.4.1/jabberd/mio_ssl.c
+</I>&gt;<i> jabber-1.4.1.new/jabberd/mio_ssl.c
+</I>&gt;<i> *** jabber-1.4.1/jabberd/mio_ssl.c      Thu Feb  1 12:46:49 2001
+</I>&gt;<i> --- jabber-1.4.1.new/jabberd/mio_ssl.c  Mon Oct  1 13:26:17 2001
+</I>&gt;<i> ***************
+</I>&gt;<i> *** 3,8 ****
+</I>&gt;<i> --- 3,9 ----
+</I>&gt;<i>   #ifdef HAVE_SSL
+</I>&gt;<i>   HASHTABLE ssl__ctxs;
+</I>&gt;<i> 
+</I>&gt;<i> + #include &lt;openssl/err.h&gt;
+</I>&gt;<i> 
+</I>&gt;<i>   #ifndef NO_RSA
+</I>&gt;<i>   /* This function will generate a temporary key for us */
+</I>&gt;<i> ***************
+</I>&gt;<i> *** 165,183 ****
+</I>&gt;<i>       log_debug(ZONE, &quot;SSL accepting socket with new session %x&quot;, ssl);
+</I>&gt;<i>       SSL_set_fd(ssl, fd);
+</I>&gt;<i>       SSL_set_accept_state(ssl);
+</I>&gt;<i> !     if(SSL_accept(ssl) &lt;= 0){
+</I>&gt;<i>           unsigned long e;
+</I>&gt;<i>           static char *buf;
+</I>&gt;<i> 
+</I>&gt;<i>           e = ERR_get_error();
+</I>&gt;<i>           buf = ERR_error_string(e, NULL);
+</I>&gt;<i> !         log_debug(ZONE, &quot;Error from SSL: %s&quot;, buf);
+</I>&gt;<i>           log_debug(ZONE, &quot;SSL Error in SSL_accept call&quot;);
+</I>&gt;<i>           SSL_free(ssl);
+</I>&gt;<i>           close(fd);
+</I>&gt;<i>           return -1;
+</I>&gt;<i>       }
+</I>&gt;<i> !
+</I>&gt;<i>       m-&gt;ssl = ssl;
+</I>&gt;<i> 
+</I>&gt;<i>       log_debug(ZONE, &quot;Accepted new SSL socket %d for %s&quot;, fd, m-&gt;ip);
+</I>&gt;<i> --- 166,191 ----
+</I>&gt;<i>       log_debug(ZONE, &quot;SSL accepting socket with new session %x&quot;, ssl);
+</I>&gt;<i>       SSL_set_fd(ssl, fd);
+</I>&gt;<i>       SSL_set_accept_state(ssl);
+</I>&gt;<i> ! redo:
+</I>&gt;<i> ! {    int ex = SSL_accept(ssl);
+</I>&gt;<i> !
+</I>&gt;<i> !      if (ex &lt; 0) {
+</I>&gt;<i> !       /* not right - 0 is controlled shutdown; -1 can have more meanings
+</I>&gt;<i> */
+</I>&gt;<i>           unsigned long e;
+</I>&gt;<i>           static char *buf;
+</I>&gt;<i> 
+</I>&gt;<i>           e = ERR_get_error();
+</I>&gt;<i> +       if ((e==0) || (e == SSL_ERROR_WANT_READ) || ( e ==
+</I>&gt;<i> SSL_ERROR_WANT_WRITE))
+</I>&gt;<i> +               goto redo;
+</I>&gt;<i> +
+</I>&gt;<i>           buf = ERR_error_string(e, NULL);
+</I>&gt;<i> !         log_debug(ZONE, &quot;Error %d/%d from SSL: %s&quot;, ex,e,buf);
+</I>&gt;<i>           log_debug(ZONE, &quot;SSL Error in SSL_accept call&quot;);
+</I>&gt;<i>           SSL_free(ssl);
+</I>&gt;<i>           close(fd);
+</I>&gt;<i>           return -1;
+</I>&gt;<i>       }
+</I>&gt;<i> ! }
+</I>&gt;<i>       m-&gt;ssl = ssl;
+</I>&gt;<i> 
+</I>&gt;<i>       log_debug(ZONE, &quot;Accepted new SSL socket %d for %s&quot;, fd, m-&gt;ip);
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20011010/7529cf3f/attachment.pgp">https://www.jabber.org/jdev/attachments/20011010/7529cf3f/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="009837.html">[JDEV] SSL on FreeBSD
+</A></li>
+	<LI>Next message: <A HREF="009841.html">[JDEV] SSL on FreeBSD
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9838">[ date ]</a>
+              <a href="thread.html#9838">[ thread ]</a>
+              <a href="subject.html#9838">[ subject ]</a>
+              <a href="author.html#9838">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

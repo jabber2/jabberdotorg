@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] non-unicode XML crashes jabberd
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20non-unicode%20XML%20crashes%20jabberd&In-Reply-To=%3C3D8727DC.1030302%40blueairnetworks.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="072760.html">
+   <LINK REL="Next"  HREF="072699.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] non-unicode XML crashes jabberd</H1>
+    <B>Ralph Siemsen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20non-unicode%20XML%20crashes%20jabberd&In-Reply-To=%3C3D8727DC.1030302%40blueairnetworks.com%3E"
+       TITLE="[JDEV] non-unicode XML crashes jabberd">ralphs at blueairnetworks.com
+       </A><BR>
+    <I>Tue Sep 17 08:02:20 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="072760.html">[JDEV] non-unicode XML crashes jabberd
+</A></li>
+        <LI>Next message: <A HREF="072699.html">[JDEV] Login in Invisible Mode
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72761">[ date ]</a>
+              <a href="thread.html#72761">[ thread ]</a>
+              <a href="subject.html#72761">[ subject ]</a>
+              <a href="author.html#72761">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Martin Lesser wrote:
+
+&gt;<i> Looks like. We disabled JUD on our productive Jabber-Server.  Should
+</I>&gt;<i> everyone running a productive server disable JUD?
+</I>
+I'm tempted to say &quot;yes&quot;, however the actual problem has only been 
+observed by a few people, so I guess it might be a bit too paranoid. 
+The symptoms are pretty easy to spot: jabberd stops responding, consumes 
+all the CPU, and there is a binary in the logfile where there should be 
+plain text.  If someone sees these symptoms then remove the JUD.
+
+&gt;&gt;<i>The other observation about this problem is that shortly before the
+</I>&gt;&gt;<i>server spirals into its endless loop, the log file shows that it tried
+</I>&gt;&gt;<i>to access the global.xdb file (where JUD entries get stored); however
+</I>&gt;&gt;<i>the first 8 bytes of the filename have been overwritten.
+</I>&gt;<i> 
+</I>&gt;<i> ... with a pointer (you said that on 09/09)
+</I>
+Hmm, right, i did say that.  But pointers on intel are 4 bytes (I deal 
+with too many machine types...).  There are clearly 8 bytes being 
+overwritten in the filename... I won't make any claim as to what those 
+bytes are, except to say they are _not_ the filename.
+
+Eg. It should read &quot;/var/spool/jaber/jud/global.xdb&quot; however instead I 
+see in my log file: &quot;decaching 0.$...*.ol/jabber/jud/global.xdb&quot; where 
+&quot;.&quot; represents nonprinting characters.  Those 8 bytes in hex have the 
+values: 30 1C 24 09 98 B6 2A 08.
+
+If they were pointers that would be 0x09241c30 and 0x082ab698 
+repectively.  Neither of those are valid addresses in any of my jabberd 
+processes, so I suspect they are not pointers... sorry for the earlier 
+claim as being such.
+&gt;<i> We made another observation: After jabberd and jud crashed global.xdb
+</I>&gt;<i> was rewritten totally: All entries except the one of the user who
+</I>&gt;<i> crashed it did not exist any longer :-(
+</I>
+Wow, that is a departure from mine... our xdb file remained intact, at 
+least, I didn't _notice_ that anything was lost from it.  This would 
+imply to me that there might be race condition between multiple threads 
+trying to write to the data file.  Something I hadn't really considered 
+until now.
+
+&gt;<i> Until now I only can say that the main trigger for this was a
+</I>&gt;<i> misconfigured client which had no appropriate locales so it sent
+</I>&gt;<i> xml-garbage.
+</I>
+Hmm, then we should be able to spot the garbled XML being transmitted 
+with a packet sniffer.  I regularly run tcpdump and log _everything_, 
+and I don't remember seeing anything that I'd consider invalid in the 
+packets leading up to the crash.  Would like to be proven wrong though.
+
+&gt;<i> The question also is whether it is not a waste of time to locate the
+</I>&gt;<i> problems or if it would be better to write a new (perhaps SQL-based)
+</I>&gt;<i> JUD as temas suggested?
+</I>
+Yep, maybe.  Not sure I'd go the SQL route, unless dealing with a really 
+large (distributed) jabber server farm.  For single host systems, I 
+think it would be easier to just keep everything in RAM, writing to disk 
+only when there are changes made.  It would only take a few megabytes to 
+  hold even a moderately sized user directory.  That should be pretty 
+easy to implement as well.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="072760.html">[JDEV] non-unicode XML crashes jabberd
+</A></li>
+	<LI>Next message: <A HREF="072699.html">[JDEV] Login in Invisible Mode
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72761">[ date ]</a>
+              <a href="thread.html#72761">[ thread ]</a>
+              <a href="subject.html#72761">[ subject ]</a>
+              <a href="author.html#72761">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] One week of running jabberd 1.4
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20One%20week%20of%20running%20jabberd%201.4&In-Reply-To=%3C5995182.981764152420.JavaMail.buckrogers1965%40gomailjtp05%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="064708.html">
+   <LINK REL="Next"  HREF="064713.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] One week of running jabberd 1.4</H1>
+    <B>james rogers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20One%20week%20of%20running%20jabberd%201.4&In-Reply-To=%3C5995182.981764152420.JavaMail.buckrogers1965%40gomailjtp05%3E"
+       TITLE="[JDEV] One week of running jabberd 1.4">buckrogers1965 at go.com
+       </A><BR>
+    <I>Fri Feb  9 18:15:52 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="064708.html">[JDEV] jabber : transport  : hostname pb.
+</A></li>
+        <LI>Next message: <A HREF="064713.html">[JDEV] One week of running jabberd 1.4
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64710">[ date ]</a>
+              <a href="thread.html#64710">[ thread ]</a>
+              <a href="subject.html#64710">[ subject ]</a>
+              <a href="author.html#64710">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Overall 1.4 is much more stable and easier to compile modules against than 1.2 was.  Good job and keep up the good work!
+
+I do see a few issues that I would like to let other know about.
+
+1. Why does pthsock have the port hardcoded into it?  Shouldn't it be getting this from the configuration file?
+
+grep &quot;5[0-9][0-9][0-9]&quot; pthsock/*.c
+
+&lt;listen&gt;5222&lt;/listen&gt;            &lt;!-- Port to listen on --&gt;
+m = mio_listen(j_atoi(xmlnode_get_attrib(cur, &quot;port&quot;), 5222), xmlnode_get_data(cur), pthsock_client_listen, (void*)s__i, MIO_LISTEN_XML);
+m = mio_listen(5222, NULL, pthsock_client_listen, (void*)s__i, MIO_LISTEN_XML);
+m = mio_listen(j_atoi(xmlnode_get_attrib(cur, &quot;port&quot;), 5223), xmlnode_get_data(cur), pthsock_client_listen, (void*)s__i, MIO_SSL_ACCEPT, mio_handlers_new(MIO_SSL_READ, MIO_SSL_WRITE, MIO_XML_PARSER));
+m = mio_listen(j_atoi(xmlnode_get_attrib(cur, &quot;port&quot;), 5223), xmlnode_get_data(cur), pthsock_client_listen, (void*)s__i, MIO_SSL_ACCEPT, mio_handlers_new(MIO_SSL_READ, MIO_SSL_WRITE, MIO_XML_PARSER));
+
+Even a global variable that is set from the configuration file or the command line is preferable to a hardcoded value that is fixed at compile time.
+
+Some of us like to run test systems at ports other than the default port.
+
+2. On a sun box if you watch top as you log a client in and out repeatedly you can watch the memory constantly growing and never shrinking.  This looks like a memory leak to me.  Does anyone else see this behavior on other OSes?
+
+3. The aim transport won't compile, I get several hundred lines like this:
+
+testfoo:~/current/devl/jabber-1.4RC/aim-transport-0.9.0$ make
+Making all in libfaim
+make[1]: Entering directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/libfaim'
+Making all in faim
+make[2]: Entering directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/libfaim/faim'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/libfaim/faim'
+make[2]: Entering directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/libfaim'
+make[2]: Nothing to be done for `all-am'.
+make[2]: Leaving directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/libfaim'
+make[1]: Leaving directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/libfaim'
+Making all in src
+make[1]: Entering directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/src'
+/bin/sh ../libtool --mode=link gcc  -g -O2  -o aimtrans.so -L/usr/local/lib -fPIC -shared  auth.o buddies.o init.o iq.o iq_cb.o messages.o parser.o pres.o register.o s10n.o sessions.o utils.o ../libfaim/libfaim.a 
+gcc -g -O2 -o aimtrans.so -L/usr/local/lib -fPIC -shared auth.o buddies.o init.o iq.o iq_cb.o messages.o parser.o pres.o register.o s10n.o sessions.o utils.o ../libfaim/libfaim.a
+Text relocation remains                         referenced
+    against symbol                  offset      in file
+aim_gettlv8                         0x74c       ../libfaim/libfaim.a(aim_chat.o)
+aim_gettlv8                         0x250       ../libfaim/libfaim.a(aim_chatnav.o)
+aim_gettlv8                         0x8dc       ../libfaim/libfaim.a(aim_chatnav.o)
+aim_gettlv8                         0x3b4       ../libfaim/libfaim.a(aim_chatnav.o)
+jutil_iqresult                      0x170       iq_cb.o
+jutil_iqresult                      0x148       iq_cb.o
+jutil_iqresult                      0x5c        iq_cb.o
+jutil_iqresult                      0x6c8       iq_cb.o
+jutil_iqresult                      0x1fc       iq_cb.o
+jutil_iqresult                      0x2bc       iq_cb.o
+jutil_iqresult                      0x38c       iq_cb.o
+jutil_iqresult                      0x240       register.o
+jutil_iqresult                      0x638       iq_cb.o
+jutil_iqresult                      0x4cc       iq_cb.o
+&lt;unknown&gt;                           0x34        auth.o
+&lt;unknown&gt;                           0x3c        auth.o
+&lt;unknown&gt;                           0x44        auth.o
+&lt;unknown&gt;                           0x48        auth.o
+&lt;unknown&gt;                           0x8         auth.o
+&lt;unknown&gt;                           0x68        auth.o
+...
+&lt;unknown&gt;                           0x41c       ../libfaim/libfaim.a(aim_msgcookie.o)
+&lt;unknown&gt;                           0x420       ../libfaim/libfaim.a(aim_msgcookie.o)
+&lt;unknown&gt;                           0x424       ../libfaim/libfaim.a(aim_msgcookie.o)
+&lt;unknown&gt;                           0x428       ../libfaim/libfaim.a(aim_msgcookie.o)
+&lt;unknown&gt;                           0x42c       ../libfaim/libfaim.a(aim_msgcookie.o)
+&lt;unknown&gt;                           0x430       ../libfaim/libfaim.a(aim_msgcookie.o)
+&lt;unknown&gt;                           0x434       ../libfaim/libfaim.a(aim_msgcookie.o)
+ld: fatal: relocations remain against allocatable but non-writable sections
+collect2: ld returned 1 exit status
+make[1]: *** [aimtrans.so] Error 1
+make[1]: Leaving directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/src'
+make: *** [all-recursive] Error 1
+
+Anyone seeing this on Sun?  Could I possible need to use the GNU ar, ld and ranlib utils?
+
+3. Yahoo transports has it's include paths all messed up.  I could fix it, but it seems like too much effort for everyone to have to mess around with the package, maybe one of the maintainers could take a look at it and fix the package.
+
+4. We need better logging facilities.  I need a single log that will collect all the logging from every agent and modules and I need to get a status report from every agent and module every X number of minutes to be written to the log.  This log also needs keywords in ALL CAPS for STATIS, WARNING, FATAL.   Even better would be an agent that would periodically update a file on a web server with the current status of all modules and agents and processes.
+
+5. When I run jabberd with a nohup command and then log out it now detects that it's parent PID changed to 1 and it exits too.  This is incorrect behavior and it should never do this.  Correct behavior would be to automatically become a deamon and write to its log files instead of standard out and standard error.  This isn't an application, it is a server and should run like one.
+
+6. Anyone know where I can find a good tuturial on how to use the xml library that jabber uses? I need an authentication module that I have written to read in it's own configuration file and to parse a message that I am getting back from a web server to get the password from there.  I had to write my own very breakable xml parser over a weekend and I would rather use the same thing as everyone else.
+
+7. The jsm/modules/ Makefiles has a hardcoded list of objects.  This should be generated automatically when the make starts with something like:
+SOURCE= $(wildcard *.c)
+OBJECTS= $(subst .c,.o,$SOURCE))
+This works on GNU systems, I am sure that something similar can be used on other comerical makes to do the same thing and the Makefile automatically generated for the proper system.
+
+8. How do I put my own configurations into the main config file and how do I then get the values out of the configuration file without having to use external global variables?
+
+Any feedback would be appreciated and share any problem areas that you see with the code.  Then let's fix the problems together. :)
+
+Thanks!
+
+___________________________________________________
+GO.com Mail                                    
+Get Your Free, Private E-mail at <A HREF="http://mail.go.com">http://mail.go.com</A>
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="064708.html">[JDEV] jabber : transport  : hostname pb.
+</A></li>
+	<LI>Next message: <A HREF="064713.html">[JDEV] One week of running jabberd 1.4
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64710">[ date ]</a>
+              <a href="thread.html#64710">[ thread ]</a>
+              <a href="subject.html#64710">[ subject ]</a>
+              <a href="author.html#64710">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

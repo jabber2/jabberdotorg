@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: [jadmin] jabberd 2.0-a6: c2s: error: Stream error (Expected stream start)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20%5Bjadmin%5D%20jabberd%202.0-a6%3A%20c2s%3A%20error%3A%20Stream%20error%20%28Expected%20stream%0A%20start%29&In-Reply-To=55192.10.10.10.33.1062002571.squirrel%40webmail.co.pgtc.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="017414.html">
+   <LINK REL="Next"  HREF="017419.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: [jadmin] jabberd 2.0-a6: c2s: error: Stream error (Expected stream start)</H1>
+    <B>Robert Norris</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20%5Bjadmin%5D%20jabberd%202.0-a6%3A%20c2s%3A%20error%3A%20Stream%20error%20%28Expected%20stream%0A%20start%29&In-Reply-To=55192.10.10.10.33.1062002571.squirrel%40webmail.co.pgtc.com"
+       TITLE="[JDEV] Re: [jadmin] jabberd 2.0-a6: c2s: error: Stream error (Expected stream start)">rob at cataclysm.cx
+       </A><BR>
+    <I>Wed Aug 27 17:21:03 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="017414.html">[JDEV] Jabber clients that don't take messages, possible?
+</A></li>
+        <LI>Next message: <A HREF="017419.html">[JDEV] Re: [jadmin] jabberd 2.0-a6: c2s: error: Stream error (Expected stream start)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17415">[ date ]</a>
+              <a href="thread.html#17415">[ thread ]</a>
+              <a href="subject.html#17415">[ subject ]</a>
+              <a href="author.html#17415">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> I ran ethereal and captured the client registration traffic:
+</I>&gt;<i> (gaim to jabberd2)
+</I>&gt;<i> &lt;?xml version='1.0'?&gt;&lt;stream:stream
+</I>&gt;<i> xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> xmlns='jabber:client'
+</I>&gt;<i> to='jabber.example.com'&gt;&lt;iq type='get' id='__AUTH__'&gt;&lt;query
+</I>&gt;<i> xmlns='jabber:iq:auth'&gt;&lt;username&gt;steven&lt;/username&gt;&lt;/query&gt;&lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> (jabberd2 to gaim)
+</I>&gt;<i> &lt;?xml version='1.0'?&gt;&lt;stream:stream
+</I>&gt;<i> xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> xmlns='jabber:client'
+</I>&gt;<i> from='jabber.example.com'
+</I>&gt;<i> id='750wue2t59t025316ksbwx9daw1z7zdf5ebzsesx'&gt;&lt;stream:error
+</I>&gt;<i> xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> class='format'&gt;&lt;condition
+</I>&gt;<i> xmlns='urn:ietf:params:xml:ns:xmpp-streams'&gt;&lt;xml-not-well-formed/&gt;&lt;/condition&gt;&lt;/stream:error&gt;
+</I>
+Gaim (and probably other clients) send the stream start and the IQ auth
+request at the same time (without waiting for the stream start). Because
+jabberd2 is not expecting to see packets until after the stream is
+established (which it considers to occur after it has sent back the
+stream response), it falls over.
+
+I've just ten minutes ago checked into CVS a workaround that will cause
+packets sent before the stream is established to be queued, and replayed
+after that. It's not really the right thing to do, but it will fix this
+particular issue.
+
+Additionally, I've contacted the maintainer of the Jabber stuff in Gaim,
+and he is looking over the code. If there's an easy fix, Gaim 0.68
+should work correctly.
+
+I encourage client authors who simply throw stuff at the server all at
+once to change to waiting for responses (at least before
+authentication). That will help everyone :)
+
+Rob.
+
+-- 
+Robert Norris                                       GPG: 1024D/FC18E6C2
+Email+Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rob at cataclysm.cx</A>                Web: <A HREF="http://cataclysm.cx/">http://cataclysm.cx/</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20030828/7012f833/attachment.pgp">https://www.jabber.org/jdev/attachments/20030828/7012f833/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="017414.html">[JDEV] Jabber clients that don't take messages, possible?
+</A></li>
+	<LI>Next message: <A HREF="017419.html">[JDEV] Re: [jadmin] jabberd 2.0-a6: c2s: error: Stream error (Expected stream start)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17415">[ date ]</a>
+              <a href="thread.html#17415">[ thread ]</a>
+              <a href="subject.html#17415">[ subject ]</a>
+              <a href="author.html#17415">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] XDB (external modules)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20XDB%20%28external%20modules%29&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005099.html">
+   <LINK REL="Next"  HREF="005101.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] XDB (external modules)</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20XDB%20%28external%20modules%29&In-Reply-To="
+       TITLE="[JDEV] XDB (external modules)">dwaite at jabber.com
+       </A><BR>
+    <I>Mon Dec 11 18:21:31 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005099.html">[JDEV] XDB (external modules)
+</A></li>
+        <LI>Next message: <A HREF="005101.html">[JDEV] XDB (external modules)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5100">[ date ]</a>
+              <a href="thread.html#5100">[ thread ]</a>
+              <a href="subject.html#5100">[ subject ]</a>
+              <a href="author.html#5100">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Server modules must authenticate with the server. You send a
+stream:stream header with appropriate namespace (jabber:component:accept
+in this case, I believe), then the server responds with its own with an
+'id' attribute embedded. Do a SHA1 of (id + secret) to get the handshake
+value, then send this in a &lt;handshake&gt; tag. The server will respond with
+an empty handshake tag if you authenticated correctly, and you are in.
+
+For a Java example, see JabberBean (the DNS server for jabberbeans.org
+seems to be having problems, try jabberbeans.sourceforge.net)
+org.jabber.jabberbeans.serverside.Launcher contains the logic for
+accept, connect, and exec. There is some code which uses this in the
+src/jabberbeans-tests dir as well. (HelloWorldTransport)
+
+- David Waite
+
+Colin Madere wrote:
+
+&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> was: [JDEV] FreeBSD and MIO
+</I>&gt;<i>
+</I>&gt;<i> I'm missing something.
+</I>&gt;<i>
+</I>&gt;<i> - Set up XDB tag like below
+</I>&gt;<i> - put in custom namespace
+</I>&gt;<i> - run jabberd
+</I>&gt;<i>
+</I>&gt;<i> all seems ok, &quot;myxdbservice&quot; shows up in the jabberd startup
+</I>&gt;<i>
+</I>&gt;<i> I thought that what I had to do now was write a program which connects
+</I>&gt;<i> via a socket to port 7001 and when a request gets routed to this xdb
+</I>&gt;<i> service due to the registered namespace it would send that request.
+</I>&gt;<i> The external module (Java program in this case) does a read operation
+</I>&gt;<i> on the socket and should wait until it gets data to continue.
+</I>&gt;<i>
+</I>&gt;<i> But... all I get is a timeout.  jabberd debug states it and my Java
+</I>&gt;<i> program gets a correctly formed XML &quot;TimeOut&quot; error message sent to it
+</I>&gt;<i> from jabberd.  Leaving input stream timeout to default in Java program
+</I>&gt;<i> (indefinite).
+</I>&gt;<i>
+</I>&gt;<i> Appears as though JabberD is waiting for something from the Java xdb
+</I>&gt;<i> module, but this seems backwards, what am I missing?
+</I>&gt;<i>
+</I>&gt;<i> Colin Madere
+</I>&gt;<i>
+</I>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Edward J Becker [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Sauron at mediaone.net</A>]
+</I>&gt;<i> Sent: Friday, December 08, 2000 6:18 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: RE: [JDEV] FreeBSD and MIO
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Ah, thanks! That makes much more sense and sounds fun I am going to
+</I>&gt;<i> play
+</I>&gt;<i> with that tonight.
+</I>&gt;<i>
+</I>&gt;<i> Thanks!
+</I>&gt;<i>
+</I>&gt;<i> Edward
+</I>&gt;<i>
+</I>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+</I>&gt;<i>
+</I>&gt;<i> Schuyler Heath
+</I>&gt;<i> Sent: Friday, December 08, 2000 7:28 AM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] FreeBSD and MIO
+</I>&gt;<i>
+</I>&gt;<i> Hello,
+</I>&gt;<i>
+</I>&gt;<i> On Fri, Dec 08, 2000 at 12:58:58PM -0500, Edward J Becker wrote:
+</I>&gt;<i> &gt; Does this mean that in order to handle XDB by a custom component
+</I>&gt;<i> that some
+</I>&gt;<i> &gt; code must be written natively as a .SO ?
+</I>&gt;<i>
+</I>&gt;<i> Nope.
+</I>&gt;<i>
+</I>&gt;<i> &lt;xdb id=&quot;xdbjava.localhost&quot;&gt;
+</I>&gt;<i>   &lt;ns&gt;jabber:iq:roster&lt;/ns&gt;
+</I>&gt;<i>   &lt;accept&gt;
+</I>&gt;<i>     &lt;ip/&gt;
+</I>&gt;<i>     &lt;port&gt;7001&lt;/port&gt;
+</I>&gt;<i>     &lt;secret&gt;test&lt;/secret&gt;
+</I>&gt;<i>   &lt;/accept&gt;
+</I>&gt;<i> &lt;/xdb&gt;
+</I>&gt;<i>
+</I>&gt;<i> Here's a post I made which briefly outlines the XDB interface:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/pipermail/jdev/2000-November/003946.html">http://mailman.jabber.org/pipermail/jdev/2000-November/003946.html</A>
+</I>&gt;<i>
+</I>&gt;<i> Schuyler
+</I>&gt;<i>
+</I>&gt;<i> &gt; I was hoping to have a separate (likely Java) component handle XDB
+</I>&gt;<i> and was
+</I>&gt;<i> &gt; hoping sockets were used for communication. Is this possible? Am I
+</I>&gt;<i> missing
+</I>&gt;<i> &gt; something?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Edward
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="http://mail.jabber.org/pipermail/jdev/attachments/20001211/13393ceb/attachment.htm">http://mail.jabber.org/pipermail/jdev/attachments/20001211/13393ceb/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005099.html">[JDEV] XDB (external modules)
+</A></li>
+	<LI>Next message: <A HREF="005101.html">[JDEV] XDB (external modules)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5100">[ date ]</a>
+              <a href="thread.html#5100">[ thread ]</a>
+              <a href="subject.html#5100">[ subject ]</a>
+              <a href="author.html#5100">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

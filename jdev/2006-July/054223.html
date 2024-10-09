@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Limitations of XML Namespaces use
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Limitations%20of%20XML%20Namespaces%20use&In-Reply-To=%3C44ABFDC4.8040202%40jabber.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="054213.html">
+   <LINK REL="Next"  HREF="054234.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Limitations of XML Namespaces use</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Limitations%20of%20XML%20Namespaces%20use&In-Reply-To=%3C44ABFDC4.8040202%40jabber.org%3E"
+       TITLE="[jdev] Limitations of XML Namespaces use">stpeter at jabber.org
+       </A><BR>
+    <I>Wed Jul  5 12:58:28 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="054213.html">[jdev] Re: Limitations of XML Namespaces use
+</A></li>
+        <LI>Next message: <A HREF="054234.html">[jdev] Limitations of XML Namespaces use
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54223">[ date ]</a>
+              <a href="thread.html#54223">[ thread ]</a>
+              <a href="subject.html#54223">[ subject ]</a>
+              <a href="author.html#54223">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Manuzhai wrote:
+
+&gt;<i> Now, today I found a message by Ralph Meijer on this list pointing to
+</I>&gt;<i> section 11.2.2 in RFC 3920, and I was very much surprised by this. I am
+</I>&gt;<i> talking specifically about this restriction: &quot;An implementation MUST NOT
+</I>&gt;<i> generate namespace prefixes for elements in the default namespace if the
+</I>&gt;<i> default namespace is 'jabber:client' or 'jabber:server'. An
+</I>&gt;<i> implementation SHOULD NOT generate namespace prefixes for elements
+</I>&gt;<i> qualified by content (as opposed to stream) namespaces other than
+</I>&gt;<i> 'jabber:client' and 'jabber:server'.&quot; and the one in 11.2.3.
+</I>&gt;<i> 
+</I>&gt;<i> The XML restrictions in 11.1 make a lot of sense given the structure of
+</I>&gt;<i> XMPP streams, but it seems very weird to significantly cripple the use
+</I>&gt;<i> of XML namespaces in XMPP streams with these restrictions. With the XML
+</I>&gt;<i> namespaces spec (in widespread use, I'd say), these are equivalent:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;ns0:message xmlns:ns0=&quot;jabber:client&quot; /&gt;
+</I>&gt;<i> &lt;message xmlns=&quot;jabber:client&quot; /&gt;
+</I>
+Yes, we realize those are equivalent.
+
+&gt;<i> Why was the choice made to impose this restriction on XMPP's use of XML?
+</I>
+Mostly, backwards-compatibility with &quot;XMPP 0.9&quot;, i.e., the installed
+base of Jabber software existing when we worked on the XMPP specs within
+the IETF. Why break things if there's no good reason to do so? We had a
+kind of Hippocratic oath in working on the RFCs: &quot;first, do no harm&quot;.
+
+&gt;<i> Given the importance of XML namespaces throughout the XMPP protocol, it
+</I>&gt;<i> doesn't make a whole lot of sense to me. I developed my client against
+</I>&gt;<i> Wildfire Server, and it does the right thing, but I already ran into
+</I>&gt;<i> some problems with ejabberd concerning the starttls tag (but then
+</I>&gt;<i> starttls is not in the jabber:client namespace, so the restrictions
+</I>&gt;<i> shouldn't apply to it, right?).
+</I>
+The starttls and sasl stuff is &quot;pre-stanza&quot;, i.e., a stanza is defined
+as an &lt;iq/&gt;, &lt;message/&gt;, or &lt;presence/&gt; packet.
+
+&gt;<i> Anyway, I wonder why it was done this way 
+</I>
+Joe mentioned content forwarding. If my client &quot;negotiates&quot; ns0 for the
+jabber:client namespace, then my server will probably need to strip off
+the prefix in order to send stanzas over a server-to-server link to
+another domain. That's more processing power required for a
+transformation that doesn't buy us anything (AFAICS).
+
+&gt;<i> and I am hoping that these
+</I>&gt;<i> restrictions could be relaxed in a new version of the RFC (which would
+</I>&gt;<i> not be a problem for any software using a compliant XML parser).
+</I>
+Not likely, but you are free to argue for it when we work on rfc3920bis.
+(The best place is the <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">xmppwg at jabber.org</A> list.)
+
+BTW, <A HREF="http://www.jabber.org/jeps/jep-0044.html">http://www.jabber.org/jeps/jep-0044.html</A> may be of interest if you
+decide to make the argument. :-)
+
+Peter
+
+- --
+Peter Saint-Andre
+Jabber Software Foundation
+<A HREF="http://www.jabber.org/people/stpeter.shtml">http://www.jabber.org/people/stpeter.shtml</A>
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (Darwin)
+Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org">http://enigmail.mozdev.org</A>
+
+iD8DBQFEq/3DNF1RSzyt3NURApaqAJwOmLI7n0vByuRQWvDI9YQ+wC06AgCcCHpX
+KxlFCD44uM0h9RtPsbbe9kg=
+=lslf
+-----END PGP SIGNATURE-----
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 3641 bytes
+Desc: S/MIME Cryptographic Signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20060705/4336afb0/attachment-0001.bin">https://www.jabber.org/jdev/attachments/20060705/4336afb0/attachment-0001.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="054213.html">[jdev] Re: Limitations of XML Namespaces use
+</A></li>
+	<LI>Next message: <A HREF="054234.html">[jdev] Limitations of XML Namespaces use
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54223">[ date ]</a>
+              <a href="thread.html#54223">[ thread ]</a>
+              <a href="subject.html#54223">[ subject ]</a>
+              <a href="author.html#54223">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,373 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Need help for developing a simple jabber client in php web	application
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Need%20help%20for%20developing%20a%20simple%20jabber%20client%20in%20php%20web%0A%09application&In-Reply-To=%3C09CAF7492BB188429DDFABCD8218F283145D98%40awww.armis.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085829.html">
+   <LINK REL="Next"  HREF="085813.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Need help for developing a simple jabber client in php web	application</H1>
+    <B>Srinivasan.M, ANGLER - EIT</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Need%20help%20for%20developing%20a%20simple%20jabber%20client%20in%20php%20web%0A%09application&In-Reply-To=%3C09CAF7492BB188429DDFABCD8218F283145D98%40awww.armis.com%3E"
+       TITLE="[jdev] Need help for developing a simple jabber client in php web	application">srinivasanm at angleritech.com
+       </A><BR>
+    <I>Mon Mar 17 22:31:05 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085829.html">[jdev] Jabberd 2 2.1.23 not working according to XEP 13
+</A></li>
+        <LI>Next message: <A HREF="085813.html">[jdev] IRC-to-MUC bridge vs existing IRCnet gateway
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85811">[ date ]</a>
+              <a href="thread.html#85811">[ thread ]</a>
+              <a href="subject.html#85811">[ subject ]</a>
+              <a href="author.html#85811">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dear team,
+ 
+I need a urgent requirement of creating a simple jabber client in php, i
+am using ejabberd jabber server running.
+ 
+I using the class_jabber.php and related files. Though i am new to this
+programming (socket) - could you please help me out in this regard.
+ 
+Herewith, I am sending you the code which iam using right now for your
+kind notice.
+ 
+----------------------------------------------------------
+&lt;?php
+// include the Jabber class
+require_once(&quot;class_Jabber.php&quot;);
+require_once('../settings/connect.php');
+require_once('class_queryHandler.php');
+require_once('class_ConnectionSocket.php');
+require_once('classJabberMn.php');
+ 
+$jABBER_LoginData = jabber_login_username($PHP_AUTH_USER);
+ 
+//This function is used to get name/position of the person who sends
+messages
+$jABBER_LoginData1 = jabber_login_username_byId($sendPeId);
+ 
+//message from person
+$msgFrom = &quot;test_&quot;.$jABBER_LoginData1[0].&quot;@jabberServerName.net&quot;;
+ 
+//Receiving person id
+define(&quot;JABBER_USERNAME_FROM&quot;,$jABBER_LoginData1[0]);
+define(&quot;JABBER_POSITION_FROM&quot;,$jABBER_LoginData1[1]);
+ 
+$toPeId = $_GET['toPeId'];
+$sendPeId = $_GET['sendPeId'];
+ 
+$sendToId = $_POST['toPeId'];
+//$sendById = $_POST['sendById'];
+ 
+//Set your Jabber server hostname, username, and password here
+ 
+define(&quot;JABBER_SERVER&quot;,&quot;jabberServerName.net&quot;);
+define(&quot;JABBER_USERNAME&quot;,$jABBER_LoginData[0]);
+define(&quot;JABBER_PASSWORD&quot;,&quot;scg&quot;);
+define(&quot;JABBER_USER_ID&quot;,$jABBER_LoginData[2]);
+ 
+$jabberUserData = $jABBER_LoginData[0].' online in the jabberServerName
+Account';
+ 
+//if($sendToId != '' || $sendById != '') {
+ 
+ //send message info
+ $jABBER_LoginData2 = jabber_login_username_sendToMsg($sendPeId);
+ $jABBER_Data_prsn = jabber_login_username_sendToMsg($sendById);
+ 
+ $jids = $jABBER_Data_prsn[0];
+ $messageToBeSent = $_POST['message']; 
+ $messageSendBy = $jABBER_LoginData2[0];
+ //message sent by person/position
+ $messageSendBy_person = $jABBER_LoginData[3];
+ $messageSendBy_position = $jABBER_LoginData[4];
+ 
+define(&quot;MESSAGESENDBY_PERSON&quot;,$messageSendBy_person);
+define(&quot;MESSAGESENDBY_POSITION&quot;,$messageSendBy_position);
+ 
+
+//}
+ 
+define(&quot;RUN_TIME&quot;,300); // set a maximum run time of 5 Minutes
+define(&quot;CBK_FREQ&quot;,5); // fire a callback event every 5 seconds
+ 
+?&gt;
+&lt;html&gt;
+&lt;head&gt;
+ &lt;title&gt;jabberServerName chat module&lt;/title&gt;
+ &lt;script language=&quot;JavaScript&quot; type=&quot;text/javascript&quot;
+src=&quot;/forms/lib_form/prototype.js&quot;&gt;&lt;/script&gt;
+ &lt;script language=&quot;JavaScript&quot; type=&quot;text/javascript&quot;
+src=&quot;/forms/lib_form/effects.js&quot;&gt;&lt;/script&gt; 
+ &lt;LINK rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;/forms/css/styles_ie.css&quot;&gt;
+
+&lt;/head&gt;
+&lt;?
+class OurMessenger {
+ 
+ function OurMessenger() {
+ 
+  echo &quot;Created!\n&quot;;
+  
+  // create an instance of the Jabber class
+  $this-&gt;jab = new Jabber(true);
+ 
+  // set handlers for the events we wish to be notified about
+  $this-&gt;jab-&gt;set_handler(&quot;connected&quot;,$this,&quot;handleConnected&quot;);
+  $this-&gt;jab-&gt;set_handler(&quot;authenticated&quot;,$this,&quot;handleAuthenticated&quot;);
+  $this-&gt;jab-&gt;set_handler(&quot;authfailure&quot;,$this,&quot;handleAuthFailure&quot;);
+ 
+//$this-&gt;jab-&gt;set_handler(&quot;servicesdiscovered&quot;,$this,&quot;handleServicesDisc
+overed&quot;);
+ 
+//$this-&gt;jab-&gt;set_handler(&quot;servicesupdated&quot;,$this,&quot;handleServiceInfo&quot;);
+  //$this-&gt;jab-&gt;set_handler(&quot;browseresult&quot;,$this,&quot;handleBrowseResult&quot;);
+  $this-&gt;jab-&gt;set_handler(&quot;heartbeat&quot;,$this,&quot;handleHeartbeat&quot;);
+  $this-&gt;jab-&gt;set_handler(&quot;error&quot;,$this,&quot;handleError&quot;);
+  $this-&gt;jab-&gt;set_handler(&quot;message_normal&quot;,$this,&quot;handleMessage&quot;);
+  $this-&gt;jab-&gt;set_handler(&quot;message_chat&quot;,$this,&quot;handleMessage&quot;);
+  $this-&gt;jab-&gt;set_handler(&quot;debug_log&quot;,$this,&quot;handleDebug&quot;);
+ }
+ 
+ function executingMessenger(){
+ 
+  // connect to the Jabber server
+  if (!$this-&gt;jab-&gt;connect(JABBER_SERVER)) {
+   die(&quot;Could not connect to the Jabber server!\n&quot;);
+  }
+  
+  // now, tell the Jabber class to begin its execution loop
+  $this-&gt;jab-&gt;execute(CBK_FREQ,RUN_TIME);
+  
+  // Note that we will not reach this point (and the execute() method
+will not
+  // return) until $this-&gt;jab-&gt;terminated is set to TRUE.  The execute()
+method simply
+  // loops, processing data from (and to) the Jabber server, and firing
+events
+  // (which are handled by our TestMessenger class) until we tell it to
+terminate.
+  //
+  // This event-based model will be familiar to programmers who have
+worked on
+  // desktop applications, particularly in Win32 environments.
+  
+  // disconnect from the Jabber server
+  $this-&gt;jab-&gt;disconnect();
+  
+ }
+ 
+ // called when a connection to the Jabber server is established
+ function handleConnected() {
+  //echo &quot;Connected!\n&quot;;
+  
+  // now that we're connected, tell the Jabber class to login
+  $this-&gt;jab-&gt;login(JABBER_USERNAME,JABBER_PASSWORD);
+ }
+ 
+ // called after a login to indicate the the login was successful
+ function handleAuthenticated() {
+ 
+  //echo &quot;Authenticated!\n&quot;;
+  // set this user's presence
+  global $messageToBeSent, $jids;
+ 
+
+  $today = date(&quot;Y-m-d H:i:s&quot;);                         
+   
+  if($messageToBeSent != '') {
+ 
+   echo $messageToDisplay = &quot;
+    &lt;div id='message_comments_20671_20670'&gt;
+     &lt;table border='0' cellspacing='0' cellpadding='0'  width='100%'&gt;
+      &lt;tr&gt;
+       &lt;td class='data' width='100%'&gt;
+        &lt;table width='100%' cellspacing='0' cellpadding='0'&gt;
+        &lt;tr bgcolor='#e6e6e6'&gt;
+        &lt;td class='data' width='50%'&gt;
+         &lt;strong&gt;&quot;.ucfirst(MESSAGESENDBY_PERSON).&quot;&lt;/strong&gt; |
+&lt;strong&gt;&quot;.MESSAGESENDBY_POSITION.&quot;&lt;/strong&gt;
+        &lt;/td&gt;
+        &lt;td class='data' width='50%' align='right'&gt;
+         &quot;.$today.&quot;
+        &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+        &lt;td class='data' colspan='2'&gt;
+         &quot;.$messageToBeSent.&quot;
+        &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;/table&gt;
+       &lt;/td&gt;
+      &lt;/tr&gt;
+     &lt;/table&gt;
+    &lt;/div&gt;
+    &quot;;
+ 
+   $this-&gt;jab-&gt;message($jids, 'chat', NULL, $messageToBeSent);
+   //$this-&gt;jab-&gt;terminated = true;
+   $messageToDisplay='';
+  }
+  
+  //sleep(1);
+  $this-&gt;jab-&gt;set_presence(&quot;&quot;, 'so what');  
+ }
+ 
+ // called after a login to indicate that the login was NOT successful
+ function handleAuthFailure($code,$error) {
+ 
+  echo &quot;Authentication failure: $error ($code)\n&quot;;
+ 
+  // set terminated to TRUE in the Jabber class to tell it to exit
+  $this-&gt;jab-&gt;terminated = true;
+ }
+ 
+ // called periodically by the Jabber class to allow us to do our own
+ // processing
+ function handleHeartbeat() {
+ 
+   //hardcoded !!!
+   if (onlineOfflineStatus(JABBER_USER_ID) &lt;&gt; 1) {
+   
+    //echo &quot;offline&lt;BR&gt;&quot;;
+   }
+   else {
+    //echo &quot;online&lt;BR&gt;&quot;;
+   }
+ 
+
+   $statusCheck = $this-&gt;jab-&gt;connectStatus();
+   print_r($statusCheck);
+   
+   //I am commenting this part of the code for test purpose
+   /*
+   $statusCheckExplore = explode('~',$statusCheck);
+   
+   if($statusCheckExplore[0] == 'eof' &amp;&amp; $statusCheckExplore[1] ==
+'TRUE') {
+   
+    //$this-&gt;_connection = &amp;new $connector();    
+    //$this-&gt;_connection-&gt;socket_close();
+    //sleep(1);
+    $this-&gt;jab-&gt;terminated = true;
+    $this-&gt;OurMessenger();
+    $this-&gt;executingMessenger();
+   }
+   */
+   
+   ob_flush();
+   flush();
+   
+ }
+ 
+ // called when a message is received from a remote contact
+ function handleMessage($from,$to,$body,$subject,$thread,$id,$extended)
+{
+ 
+   global $msgFrom; 
+ 
+   $today = date(&quot;Y-m-d H:i:s&quot;);                         
+  
+   //echo 'from--&gt;'.$from.$msgFrom;
+  
+   $fromMsg = explode('/', $from);
+   $toMsg = explode('/', $to);   
+ 
+
+   if($fromMsg[0] == $msgFrom) {
+   
+    echo $messageToShow = &quot;
+     &lt;div id='message_comments_20671_20670'&gt;
+      &lt;table border='0' cellspacing='0' cellpadding='0'  width='100%'&gt;
+       &lt;tr&gt;
+        &lt;td class='data' width='100%'&gt;
+         &lt;table width='100%' cellspacing='0' cellpadding='0'&gt;
+         &lt;tr bgcolor='#D7EBFF'&gt;
+         &lt;td class='data' width='50%'&gt;
+          &lt;strong&gt;&quot;.ucfirst(JABBER_USERNAME_FROM).&quot;&lt;/strong&gt; |
+&lt;strong&gt;&quot;.JABBER_POSITION_FROM.&quot;&lt;/strong&gt;
+         &lt;/td&gt;
+         &lt;td class='data' width='50%' align='right'&gt;
+          &quot;.$today.&quot;
+         &lt;/td&gt;
+         &lt;/tr&gt;
+         &lt;tr&gt;
+         &lt;td class='data' colspan='2'&gt;
+          &quot;.$body.&quot;
+         &lt;/td&gt;
+         &lt;/tr&gt;
+         &lt;/table&gt;
+        &lt;/td&gt;
+       &lt;/tr&gt;
+      &lt;/table&gt;
+     &lt;/div&gt;
+     &quot;;
+     
+    $this-&gt;last_msg_id = $id;
+    $this-&gt;toMsgPrsn = $toMsg[0];
+    $this-&gt;last_msg_from = $from;
+   }
+ }
+ 
+ // called when an error is received from the Jabber server
+ function handleError($code,$error,$xmlns,$packet) {
+  echo &quot;Error: $error ($code)&quot;.($xmlns?&quot; in $xmlns&quot;:&quot;noxmlns&quot;).&quot; from
+$from $node id &quot;.$packet['iq']['@']['id'].&quot;\n&quot;;
+ }
+ 
+ function handleDebug($msg,$level) {
+  &quot;DBG: $msg\n&quot;;
+ } 
+}
+?&gt; 
+&lt;/body&gt;
+&lt;/html&gt;
+ 
+----------------------------
+ 
+please point me out where i am doing wrong here.
+ 
+I need this asap.
+ 
+Please help me in this regards, by adjusting the existing code or please
+provide me a sample code for doing this. 
+ 
+Thanks and Regards,
+Sriman.
+ 
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20080318/a4ec2ee8/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20080318/a4ec2ee8/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085829.html">[jdev] Jabberd 2 2.1.23 not working according to XEP 13
+</A></li>
+	<LI>Next message: <A HREF="085813.html">[jdev] IRC-to-MUC bridge vs existing IRCnet gateway
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85811">[ date ]</a>
+              <a href="thread.html#85811">[ thread ]</a>
+              <a href="subject.html#85811">[ subject ]</a>
+              <a href="author.html#85811">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

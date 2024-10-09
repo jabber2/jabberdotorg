@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Heartbeat patch for dialup and laptop users and faulty	 presence info
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Heartbeat%20patch%20for%20dialup%20and%20laptop%20users%20and%20faulty%0A%09%20presence%20info&In-Reply-To=%3C1BB78539184CD211AF2B00A0C9DECFA40D2A7593%40pasexc000.westernasset.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="071443.html">
+   <LINK REL="Next"  HREF="071454.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Heartbeat patch for dialup and laptop users and faulty	 presence info</H1>
+    <B>Gallo, Felix S.</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Heartbeat%20patch%20for%20dialup%20and%20laptop%20users%20and%20faulty%0A%09%20presence%20info&In-Reply-To=%3C1BB78539184CD211AF2B00A0C9DECFA40D2A7593%40pasexc000.westernasset.com%3E"
+       TITLE="[JDEV] Heartbeat patch for dialup and laptop users and faulty	 presence info">FGallo at westernasset.com
+       </A><BR>
+    <I>Wed May 29 13:11:36 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="071443.html">[JDEV] building jabberd on MacOS X
+</A></li>
+        <LI>Next message: <A HREF="071454.html">[JDEV] Heartbeat patch for dialup and laptop users and faulty presence info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71445">[ date ]</a>
+              <a href="thread.html#71445">[ thread ]</a>
+              <a href="subject.html#71445">[ subject ]</a>
+              <a href="author.html#71445">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&lt;sarcasm type='mild'&gt;
+&lt;stream:stream 
+  to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">schumacher at jdev</A>' 
+  xmlns='jabber:client' 
+  xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;
+&lt;iq id='A0' type='get'&gt;
+  &lt;query xmlns='jabber:iq:register'/&gt;
+&lt;/iq&gt;
+&lt;iq id='A1' type='set'&gt;
+  &lt;query xmlns='jabber:iq:register'&gt;
+    &lt;username&gt;felix&lt;/username&gt;
+    &lt;password&gt;mypass&lt;/password&gt;
+    &lt;name&gt;Felix Gallo&lt;/name&gt;
+    &lt;email&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">felix-reply at jdev</A>&lt;/email&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+&lt;iq id='A2' type='get'&gt;
+  &lt;query xmlns='jabber:iq:auth'&gt;
+    &lt;username&gt;felix&lt;/username&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+&lt;iq id='A3' type='set'&gt;
+  &lt;query xmlns='jabber:iq:auth'&gt;
+    &lt;username&gt;felix&lt;/username&gt;
+    &lt;resource&gt;reply-to-jdev&lt;/resource&gt;
+    &lt;password&gt;mypass&lt;/password&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+&lt;presence/&gt;
+&lt;message to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">schumacher at jdev</A>'&gt;
+  &lt;body&gt;You're completely right -- a few bytes every few
+minutes would be intolerable for all those low bandwidth
+users.  The finely tuned bandwidth efficient jabber protocol
+would be brought, yea, to its very knees!&lt;/body&gt;
+&lt;/message&gt;
+&lt;/stream&gt;
+&lt;/sarcasm&gt;
+
+I personally like the idea of guaranteed message delivery as an
+end around this problem, although it seems clear that ping/pong or
+Ben's register-a-timeout method would work out ok.
+
+Another poster couldn't figure out how to get guaranteed message
+delivery to work, but it's actually pretty simple:
+
+1.  User sends guaranteed message, with checksum, retry count,
+and what-to-do-if-it-gets-stuck.
+2.  Server receives message, verifies that it's OK.
+3.  Server optionally passes it on to any intermediate servers,
+handshaking to make sure that the message is received before
+deleting it from local store.
+4.  If the message is received successfully by the next server
+in the chain, the delivery responsibility passes to that next
+server, and the local server deletes it.
+5.  If the message can't be passed to the intermediate server,
+the what-to-do-if-it-gets-stuck field is examined (possible
+values might include delete-with-notification, retry-for-a-certain-
+number-of-times, etc.)
+6.  Upon receipt, you're done.
+
+Note that this was guaranteed message delivery, rather than 
+return-receipt.  With return-receipt, you just have the recipient
+fire off a guaranteed message back declaring success.  Just never
+have return receipts require return receipts.. ;)
+ 
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Ben Schumacher [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ben-jdev at blahr.com</A>] 
+</I>&gt;<i> Sent: Wednesday, May 29, 2002 10:28 AM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] Heartbeat patch for dialup and laptop 
+</I>&gt;<i> users and faulty presence info
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> On Wed, 29 May 2002, Nathan Sharp wrote:
+</I>&gt;<i> &gt; While all this is good discussion, the fact remains that as jabber 
+</I>&gt;<i> &gt; currently stands, it often reports users as online for hours after 
+</I>&gt;<i> &gt; they are not online, and FAILS TO DELIVER packages or to 
+</I>&gt;<i> return an error when
+</I>&gt;<i> &gt; users are in this state.   I would make the point that one 
+</I>&gt;<i> of the main
+</I>&gt;<i> &gt; reasons I switched from ICQ to Jabber was that ICQ started loosing 
+</I>&gt;<i> &gt; messages now and then.  When I discovered that Jabber did 
+</I>&gt;<i> the same, I 
+</I>&gt;<i> &gt; was quite dissapointed, although w/ Jabber I stand a chance 
+</I>&gt;<i> of fixing 
+</I>&gt;<i> &gt; it since it is open source.
+</I>&gt;<i> 
+</I>&gt;<i>   [...snip...]
+</I>&gt;<i> 
+</I>&gt;<i> &gt; The biggest argument I've heard so far is that ping/pongs 
+</I>&gt;<i> would take 
+</I>&gt;<i> &gt; too much bandwidth.  If your end users would prefer very 
+</I>&gt;<i> slightly less 
+</I>&gt;<i> &gt; bandwidth used yet LOST MESSAGES AND FAULTY PRESENCE info, 
+</I>&gt;<i> well, you 
+</I>&gt;<i> &gt; got different users than mine.
+</I>&gt;<i> 
+</I>&gt;<i>   [...snip...]
+</I>&gt;<i> 
+</I>&gt;<i> It seems to me that you are trying to solve this issue in the 
+</I>&gt;<i> wrong way. If you want guaranteed message delivery, then the 
+</I>&gt;<i> protocol will have to be adjusted to have clients send 
+</I>&gt;<i> notification when a message is delivered (like 
+</I>&gt;<i> return-receipts in email, but hopefully more intelligent). In 
+</I>&gt;<i> fact, I would argue that guaranteed message delivery should 
+</I>&gt;<i> be the responsibility of the client rather than the server. 
+</I>&gt;<i> Modifiying the server to provide this functionality brings up 
+</I>&gt;<i> the question of &quot;what is the appropriate behavior if a 
+</I>&gt;<i> message isn't deliver?&quot; Should the server put the message in 
+</I>&gt;<i> offline storage? Bounce an error message? What happens if 
+</I>&gt;<i> offline storage isn't configured on the receiving party's server?
+</I>&gt;<i> 
+</I>&gt;<i> On the other hand, I do agree that faulty presence is an 
+</I>&gt;<i> issue. I hate messaging people and then realize that they 
+</I>&gt;<i> aren't actually online. My only goal is that we keep this 
+</I>&gt;<i> discussion focused. You will *NOT* solve lost message issues 
+</I>&gt;<i> with a ping/pong solution, however, you might be able to 
+</I>&gt;<i> provide better presence reliability.
+</I>&gt;<i> 
+</I>&gt;<i> That being said, I'm afraid that I'd have to side with Dave 
+</I>&gt;<i> Waite on this issue, I don't think ping/pong is a good 
+</I>&gt;<i> solution (or even your existing ping solution), especially 
+</I>&gt;<i> when you consider that wireless clients are likely to have 
+</I>&gt;<i> some of the most pronounced connectivity issues and highest 
+</I>&gt;<i> costs of bandwidth. A better solution should be proposed as a 
+</I>&gt;<i> protocol change, perhaps as a negotiated timeout period where 
+</I>&gt;<i> a client tells the server upon logging in that if it doesn't 
+</I>&gt;<i> send data within a given amount of time, then the server 
+</I>&gt;<i> should consider it unavailable.
+</I>&gt;<i> 
+</I>&gt;<i> My $0.02.
+</I>&gt;<i> 
+</I>&gt;<i> bs.
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+**********************************************************************
+E-mail sent through the Internet is not secure.  Western Asset therefore
+recommends that you do not send any confidential or sensitive information to
+us via electronic mail, including social security numbers, account numbers,
+or personal identification numbers.  Delivery, and or timely delivery of
+Internet mail is not guaranteed.  Western Asset therefore recommends that
+you do not send time sensitive or action-oriented messages to us via
+electronic mail.
+**********************************************************************
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20020529/ec5e031b/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20020529/ec5e031b/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="071443.html">[JDEV] building jabberd on MacOS X
+</A></li>
+	<LI>Next message: <A HREF="071454.html">[JDEV] Heartbeat patch for dialup and laptop users and faulty presence info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71445">[ date ]</a>
+              <a href="thread.html#71445">[ thread ]</a>
+              <a href="subject.html#71445">[ subject ]</a>
+              <a href="author.html#71445">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

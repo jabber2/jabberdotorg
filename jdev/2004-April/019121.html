@@ -1,0 +1,198 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] RE: [jadmin] Questions with JEP 045
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20RE%3A%20%5Bjadmin%5D%20Questions%20with%20JEP%20045&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="019120.html">
+   <LINK REL="Next"  HREF="019122.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] RE: [jadmin] Questions with JEP 045</H1>
+    <B>JD Conley</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20RE%3A%20%5Bjadmin%5D%20Questions%20with%20JEP%20045&In-Reply-To="
+       TITLE="[jdev] RE: [jadmin] Questions with JEP 045">jconley at winfessor.com
+       </A><BR>
+    <I>Mon Apr  5 19:59:28 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="019120.html">[jdev] Questions with JEP 045
+</A></li>
+        <LI>Next message: <A HREF="019122.html">[jdev] Jabber4r
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19121">[ date ]</a>
+              <a href="thread.html#19121">[ thread ]</a>
+              <a href="subject.html#19121">[ subject ]</a>
+              <a href="author.html#19121">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm CCing JDEV on this reply, as it the appropriate list to talk about
+something like this on.
+
+JEP-0045 (MUC) provides for anonymous multi user chat.  The JIDs used in
+a room are in the form &quot;[room]@[service]/[nick]&quot;.  If the room isn't
+fully anonymous (a room configuration option) the user's jid is included
+in the presence stanza as an attribute to the item tag.  Let's look at
+the first set of stanzas:
+
+Example 19. Service Sends Presence from Existing Occupants to New
+Occupant
+&lt;presence
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/firstwitch'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'&gt;
+  &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+    &lt;item affiliation='owner' role='moderator'/&gt;
+  &lt;/x&gt;
+&lt;/presence&gt;
+&lt;presence
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/secondwitch'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'&gt;
+  &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+    &lt;item affiliation='admin' role='moderator'/&gt;
+  &lt;/x&gt;
+&lt;/presence&gt;
+
+Those two stanzas are from members already in the room, sent to the
+occupant that just joined.  From the stanza from addresses you can see
+that their nick names are firstwitch and secondwitch.  Their real JIDs
+are not necessary to know in order to do multi user chat.  If the room
+has been configured as Non-Anonymous
+(<A HREF="http://www.jabber.org/jeps/jep-0045.html#enter-nonanon">http://www.jabber.org/jeps/jep-0045.html#enter-nonanon</A>), the following
+two stanzas would have been received instead:
+
+Example 19 (revised for Non-Anonymous). Service Sends Presence from
+Existing Occupants to New Occupant
+&lt;presence
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/firstwitch'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'&gt;
+  &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+    &lt;item affiliation='owner' role='moderator'
+jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">crone1 at shakespeare.lit</A>/desktop'/&gt;
+  &lt;/x&gt;
+&lt;/presence&gt;
+&lt;presence
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/secondwitch'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'&gt;
+  &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+    &lt;item affiliation='admin' role='moderator'
+jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">wiccarocks at shakespeare.lit</A>/laptop'/&gt;
+  &lt;/x&gt;
+&lt;/presence&gt;
+
+The same goes for your next example.  The from address contains the
+anonymous JID of your user as he is addressed in the chat room
+(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/thirdwitch).  Your nick name is
+thirdwitch, which you specified as the &quot;to&quot; address in your presence
+stanza to join the room.
+
+
+JD Conley
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: rthummal [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rthummal at csnet.cs.odu.edu</A>] 
+</I>&gt;<i> Sent: Monday, April 05, 2004 5:14 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+</I>&gt;<i> Subject: [jadmin] Questions with JEP 045
+</I>&gt;<i> 
+</I>&gt;<i> Hi,
+</I>&gt;<i> I got a question about JEP 045(Described in 
+</I>&gt;<i> <A HREF="http://www.jabber.org/jeps/jep-0045.html#enter">http://www.jabber.org/jeps/jep-0045.html#enter</A>)
+</I>&gt;<i> I am providing the contents of this JEP where I am really confused.
+</I>&gt;<i> Example 18. Jabber User Seeks to Enter a Room (Multi-User Chat)
+</I>&gt;<i> &lt;presence
+</I>&gt;<i>     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+</I>&gt;<i>     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/thirdwitch'&gt;
+</I>&gt;<i>   &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'/">http://jabber.org/protocol/muc'/</A>&gt;
+</I>&gt;<i> &lt;/presence&gt;
+</I>&gt;<i> Once Jabber user enters a room(in this case 
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/thirdwitch),
+</I>&gt;<i> server sends others(in this room) presence to this new user.
+</I>&gt;<i> Example 19. Service Sends Presence from Existing Occupants to 
+</I>&gt;<i> New Occupant
+</I>&gt;<i> &lt;presence
+</I>&gt;<i>     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/firstwitch'
+</I>&gt;<i>     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'&gt;
+</I>&gt;<i>   &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+</I>&gt;<i>     &lt;item affiliation='owner' role='moderator'/&gt;
+</I>&gt;<i>   &lt;/x&gt;
+</I>&gt;<i> &lt;/presence&gt;
+</I>&gt;<i> &lt;presence
+</I>&gt;<i>     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/secondwitch'
+</I>&gt;<i>     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'&gt;
+</I>&gt;<i>   &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+</I>&gt;<i>     &lt;item affiliation='admin' role='moderator'/&gt;
+</I>&gt;<i>   &lt;/x&gt;
+</I>&gt;<i> &lt;/presence&gt;
+</I>&gt;<i> 
+</I>&gt;<i> These are the stanzas provided by the JEP 045 specification 
+</I>&gt;<i> document. Once the client receives
+</I>&gt;<i> these messages how does it know about the rest of the members 
+</I>&gt;<i> in that room. No where their
+</I>&gt;<i> nickname or jid is specified in the presence stanza.
+</I>&gt;<i> Example 20. Service Sends New Occupant's Presence to All Occupants
+</I>&gt;<i> &lt;presence
+</I>&gt;<i>     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/thirdwitch'
+</I>&gt;<i>     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">crone1 at shakespeare.lit</A>/desktop'&gt;
+</I>&gt;<i>   &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+</I>&gt;<i>     &lt;item affiliation='member' role='participant'/&gt;
+</I>&gt;<i>   &lt;/x&gt;
+</I>&gt;<i> &lt;/presence&gt;
+</I>&gt;<i> &lt;presence
+</I>&gt;<i>     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/thirdwitch'
+</I>&gt;<i>     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">wiccarocks at shakespeare.lit</A>/laptop'&gt;
+</I>&gt;<i>   &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+</I>&gt;<i>     &lt;item affiliation='member' role='participant'/&gt;
+</I>&gt;<i>   &lt;/x&gt;
+</I>&gt;<i> &lt;/presence&gt;
+</I>&gt;<i> &lt;presence
+</I>&gt;<i>     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/thirdwitch'
+</I>&gt;<i>     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'&gt;
+</I>&gt;<i>   &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+</I>&gt;<i>     &lt;item affiliation='member' role='participant'/&gt;
+</I>&gt;<i>   &lt;/x&gt;
+</I>&gt;<i> &lt;/presence&gt;
+</I>&gt;<i> 
+</I>&gt;<i> Here even the case is the same as all the other clients 
+</I>&gt;<i> receive the presence of 
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda. How does client at 
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">crone1 at shakespeare.lit</A>/desktop and 
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">wiccarocks at shakespeare.lit</A>/laptop know about presence of 
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda, as this 
+</I>&gt;<i> jid is not mentioned anywhere.
+</I>&gt;<i> Any help on this would be great.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks
+</I>&gt;<i> Raghu
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jadmin mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+</I>&gt;<i> <A HREF="https://jabberstudio.org/mailman/listinfo/jadmin">https://jabberstudio.org/mailman/listinfo/jadmin</A>
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="019120.html">[jdev] Questions with JEP 045
+</A></li>
+	<LI>Next message: <A HREF="019122.html">[jdev] Jabber4r
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19121">[ date ]</a>
+              <a href="thread.html#19121">[ thread ]</a>
+              <a href="subject.html#19121">[ subject ]</a>
+              <a href="author.html#19121">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

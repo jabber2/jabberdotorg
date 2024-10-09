@@ -1,0 +1,58 @@
+how does this work if you can't even be sure that the first server
+received the message from the client?
+
+
+for example, what if the client's ethernet cable was unplugged... the
+client sends the message, the socket buffers the write, the client
+quits,... did the message get delivered?
+
+
+        sent = send(socketfd, bytes, len, 0);
+
+
+doesn't return -1 if the remote side hasn't "closed", if it's just the
+cable unplugged, you don't know whether the bits got there or not.
+
+
+am i nuts?
+
+
+
+
+On Wednesday, May 29, 2002, at 11:11  AM, Gallo, Felix S. wrote:
+
+<excerpt><smaller>Another poster couldn't figure out how to get
+guaranteed message
+
+delivery to work, but it's actually pretty simple:</smaller>
+
+
+<smaller>1.  User sends guaranteed message, with checksum, retry count,
+
+and what-to-do-if-it-gets-stuck.
+
+2.  Server receives message, verifies that it's OK.
+
+3.  Server optionally passes it on to any intermediate servers,
+
+handshaking to make sure that the message is received before
+
+deleting it from local store.
+
+4.  If the message is received successfully by the next server
+
+in the chain, the delivery responsibility passes to that next
+
+server, and the local server deletes it.
+
+5.  If the message can't be passed to the intermediate server,
+
+the what-to-do-if-it-gets-stuck field is examined (possible
+
+values might include delete-with-notification, retry-for-a-certain-
+
+number-of-times, etc.)
+
+6.  Upon receipt, you're done.</smaller>
+
+</excerpt>

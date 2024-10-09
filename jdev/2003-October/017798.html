@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Perl Net::Jabber roster handling (perl client authorizingsubscription)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Perl%20Net%3A%3AJabber%20roster%20handling%20%28perl%20client%20authorizingsubscription%29&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="017797.html">
+   <LINK REL="Next"  HREF="017800.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Perl Net::Jabber roster handling (perl client authorizingsubscription)</H1>
+    <B>Moore, Michael</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Perl%20Net%3A%3AJabber%20roster%20handling%20%28perl%20client%20authorizingsubscription%29&In-Reply-To="
+       TITLE="[JDEV] Perl Net::Jabber roster handling (perl client authorizingsubscription)">MMoore at osc.uscg.mil
+       </A><BR>
+    <I>Tue Oct  7 11:53:20 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="017797.html">[JDEV] Perl Net::Jabber roster handling (perl client authorizingsubscription)
+</A></li>
+        <LI>Next message: <A HREF="017800.html">[JDEV] re: customerize look and feel
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17798">[ date ]</a>
+              <a href="thread.html#17798">[ thread ]</a>
+              <a href="subject.html#17798">[ subject ]</a>
+              <a href="author.html#17798">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Yep. That was it.
+
+Set the &quot;subscribe&quot; callback to the sub below.
+
+It sends the confirmation back (the type=&gt;&quot;subscribed&quot; call is the
+confirmation) and then the &quot;subscribe&quot; request to subscribe to the
+requester)
+
+Got it working appropriately using the perl client and an Exodus client on
+the other end to test.
+
+Easist way to understand it:
+Send &quot;subscribe&quot; to request subscription.
+Send &quot;subscribed&quot; to authorize subscription.
+
+sub presenceSubscribeCB
+{
+ my($sid,$pres) = @_;
+ print &quot;subscribe [$$] Client $userAcct recieved &quot; . $pres-&gt;GetStatus() . &quot;
+from &quot; . $pres-&gt;GetFrom() . &quot;\n&quot;;;
+ $jcon-&gt;Subscription(type=&gt;&quot;subscribed&quot;,
+                     to=&gt;$pres-&gt;GetFrom());
+ $jcon-&gt;Subscription(type=&gt;&quot;subscribe&quot;,
+                     to=&gt;$pres-&gt;GetFrom());
+}
+
+Thanks for the pointer Matt!
+
+-----Original Message-----
+From: Moore, Michael [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">MMoore at osc.uscg.mil</A>]
+Sent: Tuesday, October 07, 2003 12:22 PM
+To: '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'
+Subject: RE: [JDEV] Perl Net::Jabber roster handling (perl client
+authorizingsubscription)
+
+
+
+::<i>blink::
+</I>
+Let me guess. The subscribe and subscribed callbacks are what I'm looking
+for? I was in Net::Jabber::Protocol but I was looking in roster and
+subscription stuff for handling subscription requests, not the presence.
+I'll give it a shot. Thanks!
+
+-Mike
+
+-----Original Message-----
+From: Matt Mankins [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mankins at media.mit.edu</A>]
+Sent: Tuesday, October 07, 2003 12:18 PM
+To: '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'
+Subject: Re: [JDEV] Perl Net::Jabber roster handling (perl client
+authorizingsubscription)
+
+
+&gt;<i> haven't seen anything that looks clearly like a method to authorize (or
+</I>even
+&gt;<i> recognize subscription requests). I'm sure I could get something to work
+</I>the
+&gt;<i> hard way, but there has to be some callback  somewhere for it, since there
+</I>&gt;<i> is for everything else. Am I nuts? Am I blind? Probably both. :)
+</I>
+Try:
+
+   $c-&gt;SetPresenceCallBacks(
+                             'available' =&gt; \&amp;presence_available,
+                             'unavailable' =&gt; \&amp;presence_unavailable,
+                             'subscribe' =&gt; \&amp;presence_subscribe,
+                             'unsubscribe' =&gt; \&amp;presence_unsubscribe,
+                             'subscribed' =&gt; \&amp;presence_subscribed,
+                             'unsubscribed' =&gt; \&amp;presence_unsubscribed,
+                            );
+
+You might also find it useful to have a lower level message/iq callback.  
+Sometimes they get in each other's way.
+
+Most of the meat for Net::Jabber is in the Net::Jabber::Protocol perldoc, 
+so that's probably why you thought you were blind reading Net::Jabber 
+docs. :)
+
+Hope that helps.
+
+Matt Mankins
+
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="017797.html">[JDEV] Perl Net::Jabber roster handling (perl client authorizingsubscription)
+</A></li>
+	<LI>Next message: <A HREF="017800.html">[JDEV] re: customerize look and feel
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17798">[ date ]</a>
+              <a href="thread.html#17798">[ thread ]</a>
+              <a href="subject.html#17798">[ subject ]</a>
+              <a href="author.html#17798">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Zerok Authentication
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Zerok%20Authentication&In-Reply-To=%3C5.1.0.14.2.20010809115150.0905b3f0%40mail.echomine.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="038426.html">
+   <LINK REL="Next"  HREF="038282.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Zerok Authentication</H1>
+    <B>Chris Chen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Zerok%20Authentication&In-Reply-To=%3C5.1.0.14.2.20010809115150.0905b3f0%40mail.echomine.com%3E"
+       TITLE="[JDEV] Zerok Authentication">ckchris at idream.net
+       </A><BR>
+    <I>Thu Aug  9 13:54:17 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="038426.html">[JDEV] Browsing users
+</A></li>
+        <LI>Next message: <A HREF="038282.html">[JDEV] Zerok Authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38279">[ date ]</a>
+              <a href="thread.html#38279">[ thread ]</a>
+              <a href="subject.html#38279">[ subject ]</a>
+              <a href="author.html#38279">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Did anyone write a client that is using zerok authentication?? I have tried 
+to do it in Java, but somehow it's just not working... Here's my code for 
+creating zerok.. can anyone tell me if I am implementing the algorithm 
+correctly?
+
+         //cache digest so no need to go through calculation again
+         if (hash != null) return hash;
+         //instantiate a SHA1 hash
+         try {
+             MessageDigest md = MessageDigest.getInstance(&quot;SHA&quot;);
+             //hash password first
+             md.update(context.getPassword().getBytes());
+             byte[] hashA = md.digest();
+           //now hash hashA + zerokToken
+             md.reset();
+             md.update(hashA);
+             md.update(zerokToken.getBytes());
+           byte[] hash0 = md.digest();
+             byte[] hashSeq = new byte[hash0.length];
+             System.arraycopy(hash0, 0, hashSeq, 0, hash0.length);
+             //now loop the number of times specified by (zerokToken - 1)
+             for (int i = 0;i &lt; (zerokSeq - 1);i++) {
+                     md.reset();
+                 //just start hashing
+                         hashSeq = md.digest(hashSeq);
+             }
+             //convert to hex representation
+             hash = HexDec.convertBytesToHexString(hashSeq);
+         } catch (NoSuchAlgorithmException ex) {
+             //no algorithm, just return null
+             return &quot;&quot;;
+         }
+         return hash;
+
+
+Thanks,
+Chris
+
+
+PGP at <A HREF="ldap://certserver.pgp.com/">ldap://certserver.pgp.com/</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="038426.html">[JDEV] Browsing users
+</A></li>
+	<LI>Next message: <A HREF="038282.html">[JDEV] Zerok Authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38279">[ date ]</a>
+              <a href="thread.html#38279">[ thread ]</a>
+              <a href="subject.html#38279">[ subject ]</a>
+              <a href="author.html#38279">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

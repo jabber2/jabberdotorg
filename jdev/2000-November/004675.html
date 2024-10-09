@@ -1,0 +1,219 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] memory handling problem in jabber 1.2
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20memory%20handling%20problem%20in%20jabber%201.2&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004674.html">
+   <LINK REL="Next"  HREF="004678.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] memory handling problem in jabber 1.2</H1>
+    <B>David Le Corfec</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20memory%20handling%20problem%20in%20jabber%201.2&In-Reply-To="
+       TITLE="[JDEV] memory handling problem in jabber 1.2">david.le-corfec at idealx.com
+       </A><BR>
+    <I>Wed Nov 15 10:24:18 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004674.html">[JDEV] Re: webmin module
+</A></li>
+        <LI>Next message: <A HREF="004678.html">[JDEV] Continued Improvement of Security Concerns
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4675">[ date ]</a>
+              <a href="thread.html#4675">[ thread ]</a>
+              <a href="subject.html#4675">[ subject ]</a>
+              <a href="author.html#4675">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+While developping an xdb_sql module, I encountered a bug in jabberd.
+
+It is triggered when sending a message to an offline user,
+and having a &quot;non-standard&quot; xdb behaviour:
+
+* Lengthy processing :
+  to simulate, eg. in xdb_file_phandler(), add
+  (yes, in xdb_file, without running xdb_sql :)
+
+      if (!strcmp(p-&gt;id-&gt;resource, NS_FILTER))
+	pth_sleep(6);
+  (it could happpen under heavy load)
+
+* Immediate return without result delivery :
+  return a r_PASS without doing any deliver() (and no other xdb instance
+  to process the request).
+  (in case 2 instances of xdb_whatever have to process requests
+   to differents namespaces, one instance will pass on requests
+   for the other)
+
+The destination of the offline message can or cannot be on the same
+server, but on different servers several messages may be necessary
+to visualize the use of freed memory.
+
+What happens ?
+In short, the udata structure of the target user gets destroyed, but
+there
+are subsequent uses of it. As it may then contain random garbage, it
+leads
+quickly to segfault.
+
+In the following example, I send a message to an offline user
+(totolehero11),
+with an xdb returning r_PASS on NS_FILTER request (using xdb_file and
+sleeping produces the same end effect, with a different log)
+
+The trace begins when I send the message.
+
+%%%
+
+// the udata structure for toto11 is created (0x81acd10)
+js_user : newu=0x81acd10 pool=0x81ad680
+js_deliver_local : udata=0x81acd10 s=(nil)
+mod_filter_handler : mapi1 = 0x8116078, s=(nil), udata=0x81acd10
+mod_filter_handler : udata 0x81acd10
+ user=0x81ad6a0[totolehero11]
+ id=0x81ad6b0[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">totolehero11 at strassen.ird.idealx.com</A>]
+ si=0x808f068
+ sessions=(nil)
+ scount=0
+ ref=0
+ p_cache=(nil)
+ p=0x81ad680
+ next=(nil)
+
+// in mod_filter_get() ...
+xdb_get(xc=0x808f0c0,
+        host=0x81ad70d(strassen.ird.idealx.com),
+        owner_jid=0x81ad6b0(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">totolehero11 at strassen.ird.idealx.com</A>),
+        jid_pool=0x81ad680,
+        ns=0x40174940(jabber:iq:filter))
+
+xdb_deliver(inst=0x808ed10 xc=0x8115f74)
+xdb_deliver(2) : owner_jid=0x81ad6b0
+                 jid_pool=0x81ad680
+                 xc_ns=0x40174940(jabber:iq:filter)
+                 xc_host=0x81ad70d(strassen.ird.idealx.com)
+xdb_deliver(3) : x=(&lt;xdb type='get'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">totolehero11 at strassen.ird.idealx.com</A>/jabber:iq:filter'
+from='strassen.ird.idealx.com' id='10'/&gt;)
+
+dpacket_new(x=0x81aaf78(&lt;xdb type='get'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">totolehero11 at strassen.ird.idealx.com</A>/jabber:iq:filter'
+from='strassen.ird.idealx.com' id='10'/&gt;))
+deliver(inst=0x808ed10 dpk=0x81ab710, dflag=-1)
+deliver_get_next_hostid(cur=0x80c1818,
+host=0x81ab735(strassen.ird.idealx.com))
+deliver_get_next_hostid(cur=0x80c1818, host=(nil)((null)))
+deliver_hostid(cur=0x81ab710, host=(nil)((null)), dpk=0x81ab710, res=1)
+deliver_get_next_hostid(cur=0x80c17b0, host=(nil)((null)))
+deliver_instance(inst=0x80c16e0 dpk=0x81ab710)
+xdb_results(inst=0x80c16e0 dpk=0x81ab710 xc=0x80c18f0)
+xdb_sql_phandler got req &lt;xdb type='get'
+                             
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">totolehero11 at strassen.ird.idealx.com</A>/jabber:iq:filter'
+                              from='strassen.ird.idealx.com' id='10'/&gt;
+
+// return r_PASS
+
+deliver_fail(dpk=0x81ab710, err=0x8052d41(Server Configuration Error))
+dpacket_new(x=0x81ac450(&lt;log type='warn'
+from='strassen.ird.idealx.com'&gt;dropping an xdb request for
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">totolehero11 at strassen.ird.idealx.com</A>/jabber:iq:filter&lt;/log&gt;))
+deliver() // snip
+20001115T11:52:13: [warn] (strassen.ird.idealx.com): dropping an xdb
+request for <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">totolehero11 at strassen.ird.idealx.com</A>/jabber:iq:filter
+
+xdb_get : waiting (xc=0x808f0c0, newx=0x8115f74, owner=0x81ad6b0)
+
+// a couple of seconds later ...
+
+!!! _js_users_del : udata 0x81acd10
+ user=0x81ad6a0[totolehero11]
+ id=0x81ad6b0[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">totolehero11 at strassen.ird.idealx.com</A>]
+ si=0x808f068
+ sessions=(nil)
+ scount=0
+ ref=0
+ p_cache=(nil)
+ p=0x81ad680
+ next=(nil)
+FREEING pool 0x81ad680
+
+// a couple of seconds later ...
+
+xdb_thump(xc=0x80f0d38)
+xdb_thump(xc=0x80dfd60)
+xdb_thump(xc=0x80cd3b8)
+xdb_thump(xc=0x80c18f0)
+xdb_thump(xc=0x808f0c0)
+xdb_thump : cur=0x8115f74 ns=jabber:iq:filter
+
+// a couple (5) of seconds later ...
+
+xdb_thump(xc=0x80f0d38)
+xdb_thump(xc=0x80dfd60)
+xdb_thump(xc=0x80cd3b8)
+xdb_thump(xc=0x80c18f0)
+xdb_thump(xc=0x808f0c0)
+xdb_thump : cur=0x8115f74 ns=jabber:iq:filter
+xdb_thump : resending 0x8115f74
+xdb_deliver(inst=0x808ed10 xc=0x8115f74)
+xdb_deliver(2) : xc_owner_jid=0x81ad6b0
+                 jid_pool=0x81ad680
+                 xc_ns=0x40174940(jabber:iq:filter)
+                 xc_host=0x81ad70d(strassen.ird.idealx.com)
+
+%%%
+
+The xdbcache (jabberd/io/base_load.c) still contains a jid which
+used the pool of the freed udata, and when execution finally
+returns to mod_filter_handler() (after blocking on mod_filter_get()),
+m-&gt;user contains garbage.
+
+Now what ?
+
+I don't know what's the real problem, as I'm not intimate
+enough with jabberd internals.
+Is the udata freed too early ? In this case, the fix should be to
+have udata-&gt;ref &gt;0 or udata-&gt;sessions != NULL.
+
+Freeing the udata should remove references to it in the xdbcache,
+and in the mapi struct (when xdb_get returns to mod_filter ...),
+but it isn't possible.
+
+My bet is that the udata shouldn't be freed until the offline message
+is delivered, but I'm not sure. Help me please !
+
+-- 
+David Le Corfec
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004674.html">[JDEV] Re: webmin module
+</A></li>
+	<LI>Next message: <A HREF="004678.html">[JDEV] Continued Improvement of Security Concerns
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4675">[ date ]</a>
+              <a href="thread.html#4675">[ thread ]</a>
+              <a href="subject.html#4675">[ subject ]</a>
+              <a href="author.html#4675">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

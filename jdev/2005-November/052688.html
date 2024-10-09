@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] IQ handling. Was: Directed presence + presence probe result
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20IQ%20handling.%20Was%3A%20Directed%20presence%20%2B%20presence%20probe%20result&In-Reply-To=%3CD54E19F1-55E2-41D6-AFEB-6DCA53BD4855%40nc.rr.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="052687.html">
+   <LINK REL="Next"  HREF="052689.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] IQ handling. Was: Directed presence + presence probe result</H1>
+    <B>Daniel Henninger</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20IQ%20handling.%20Was%3A%20Directed%20presence%20%2B%20presence%20probe%20result&In-Reply-To=%3CD54E19F1-55E2-41D6-AFEB-6DCA53BD4855%40nc.rr.com%3E"
+       TITLE="[jdev] IQ handling. Was: Directed presence + presence probe result">jadestorm at nc.rr.com
+       </A><BR>
+    <I>Wed Nov 23 07:43:35 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="052687.html">[jdev] IQ handling. Was: Directed presence + presence probe result
+</A></li>
+        <LI>Next message: <A HREF="052689.html">[jdev] IQ handling. Was: Directed presence + presence probe result
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#52688">[ date ]</a>
+              <a href="thread.html#52688">[ thread ]</a>
+              <a href="subject.html#52688">[ subject ]</a>
+              <a href="author.html#52688">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I would almost say that if any part of a bulk operation fails, the  
+entire bulk operation fails (maybe rolling back the parts that did  
+not work) and you get a single error indicating as such,  I mean,  
+what if you did a theoretical bulk operation that required the order  
+presented:
+(keep in mind this is a made up scenario)
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at example.com</A>/balcony' type='set' id='roster_4'&gt;
+   &lt;query xmlns='jabber:iq:roster'&gt;
+     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">abc at example.com</A>' subscription='remove'/&gt;
+     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">def at example.com</A>' subscription='remove'/&gt;
+     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ghi at example.com</A>' subscription='rename'  
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">abc at example.com</A>'/&gt;
+   &lt;/query&gt;
+&lt;/iq&gt;
+
+At that point, you would be depending on those first two to happen  
+for the third to work correctly.  If the first fails (or any of them)  
+fail, the entire bulk operation should probably fail and, ideally, be  
+rolled back by the target.  (I'm not saying that that's easy...  I'm  
+just saying that would be ideal)
+
+(note: this is almost a proposal as to how I think it ought to  
+work  ;D )
+
+Daniel
+
+On Nov 23, 2005, at 7:58 AM, Vinod Panicker wrote:
+
+&gt;<i> On 11/23/05, Alexey Nezhdanov &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">snake at penza-gsm.ru</A>&gt; wrote:
+</I>&gt;&gt;<i> &#1042; &#1089;&#1086;&#1086;&#1073;&#1097;&#1077;&#1085;&#1080;&#1080; &#1086;&#1090; &#1057;&#1088;&#1077;&#1076;&#1072; 23 &#1053;&#1086;&#1103;&#1073;&#1088;&#1100; 2005 14:59  
+</I>&gt;&gt;<i> Vinod Panicker &#1085;&#1072;&#1087;&#1080;&#1089;&#1072;&#1083;(a):
+</I>&gt;&gt;&gt;<i> On 11/23/05, Ralph Meijer &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber.org at ralphm.ik.nu</A>&gt; wrote:
+</I>&gt;&gt;&gt;&gt;&gt;<i> PS: Any thoughts on the multiple iq items error handling anyone?
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> What do you mean? An iq may only have 1 child element.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Considering this stanza -
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Sorry!  The stanza should have been like this -
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>  &lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at example.com</A>/balcony' type='set' id='roster_4'&gt;
+</I>&gt;&gt;&gt;<i>    &lt;query xmlns='jabber:iq:roster'&gt;
+</I>&gt;&gt;&gt;<i>      &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">abc at example.com</A>' subscription='remove'/&gt;
+</I>&gt;&gt;&gt;<i>      &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">def at example.com</A>' subscription='remove'/&gt;
+</I>&gt;&gt;&gt;<i>      &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ghi at example.com</A>' subscription='remove'/&gt;
+</I>&gt;&gt;&gt;<i>    &lt;/query&gt;
+</I>&gt;&gt;&gt;<i>  &lt;/iq&gt;
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> What if there are errors for any of the items?
+</I>&gt;&gt;<i> Why not do it like this?
+</I>&gt;&gt;<i>   &lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at example.com</A>/balcony' type='set' id='roster_4'&gt;
+</I>&gt;&gt;<i>     &lt;query xmlns='jabber:iq:roster'&gt;
+</I>&gt;&gt;<i>       &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">abc at example.com</A>' subscription='remove'/&gt;
+</I>&gt;&gt;<i>     &lt;/query&gt;
+</I>&gt;&gt;<i>   &lt;/iq&gt;
+</I>&gt;&gt;<i>   &lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at example.com</A>/balcony' type='set' id='roster_5'&gt;
+</I>&gt;&gt;<i>     &lt;query xmlns='jabber:iq:roster'&gt;
+</I>&gt;&gt;<i>       &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">def at example.com</A>' subscription='remove'/&gt;
+</I>&gt;&gt;<i>     &lt;/query&gt;
+</I>&gt;&gt;<i>   &lt;/iq&gt;
+</I>&gt;&gt;<i>   &lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">juliet at example.com</A>/balcony' type='set' id='roster_6'&gt;
+</I>&gt;&gt;<i>     &lt;query xmlns='jabber:iq:roster'&gt;
+</I>&gt;&gt;<i>       &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ghi at example.com</A>' subscription='remove'/&gt;
+</I>&gt;&gt;<i>     &lt;/query&gt;
+</I>&gt;&gt;<i>   &lt;/iq&gt;
+</I>&gt;&gt;<i> Anyways user will very rarely delete several contacts at once...  
+</I>&gt;&gt;<i> What is the
+</I>&gt;&gt;<i> benefit from doing it in your way?
+</I>&gt;<i>
+</I>&gt;<i> I figured since its not expressly forbidden, then why not?
+</I>&gt;<i>
+</I>&gt;<i> Maybe bulk automated operations?  Who knows?
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i> Vinod.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="052687.html">[jdev] IQ handling. Was: Directed presence + presence probe result
+</A></li>
+	<LI>Next message: <A HREF="052689.html">[jdev] IQ handling. Was: Directed presence + presence probe result
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#52688">[ date ]</a>
+              <a href="thread.html#52688">[ thread ]</a>
+              <a href="subject.html#52688">[ subject ]</a>
+              <a href="author.html#52688">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

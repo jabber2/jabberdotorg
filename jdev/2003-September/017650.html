@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabberd 1.4.2 segfaulting on xdb_sql, linux, oracle
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20jabberd%201.4.2%20segfaulting%20on%20xdb_sql%2C%20linux%2C%20oracle&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="017649.html">
+   <LINK REL="Next"  HREF="017698.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabberd 1.4.2 segfaulting on xdb_sql, linux, oracle</H1>
+    <B>Smith, Jason</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20jabberd%201.4.2%20segfaulting%20on%20xdb_sql%2C%20linux%2C%20oracle&In-Reply-To="
+       TITLE="[JDEV] jabberd 1.4.2 segfaulting on xdb_sql, linux, oracle">JSmith at osc.uscg.mil
+       </A><BR>
+    <I>Thu Sep 18 11:26:18 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="017649.html">[JDEV] Password Problems
+</A></li>
+        <LI>Next message: <A HREF="017698.html">[JDEV] Re: jabberd 1.4.2 segfaulting on xdb_sql, linux, oracle
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17650">[ date ]</a>
+              <a href="thread.html#17650">[ thread ]</a>
+              <a href="subject.html#17650">[ subject ]</a>
+              <a href="author.html#17650">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+The jabberd process gives me a segmentation fault when run with xdb_sql and
+Oracle.  I'm able to run jabberd fine under an identical setup with xdb_sql
+and mysql.  I'm running jabberd 1.4.2, the latest CVS version of xdb_sql,
+and oracle client version 9.2.0.3.0 on Debian linux with libc version 2.3.2.
+
+If I run the daemon without the debug switch the daemon will segault
+immediately after I try to connect to the server.  Here's a backtrace:
+
+(gdb) r
+Starting program: /home/jsmith/jabber/jabber-1.4.2/jabberd/jabberd
+[New Thread 16384 (LWP 5372)]
+xdboracle_backend_new: initialized
+xdboracle_backend_new: initialized
+xdboracle_connect: Logged to Oracle, db=jabber, user=jabberuser, pass=pass
+xdboracle_connect: Logged to Oracle, db=jabber, user=jabberuser, pass=pass
+oracle_query: select SYSDATE from DUAL type 1
+oracle_query: select SYSDATE from DUAL type 1
+xdboracle_is_connected: connected
+xdboracle_is_connected: connected
+xdboracle_free_result: done
+xdboracle_free_result: done
+20030918T08:11:19: [notice] (-internal): initializing server
+
+Program received signal SIGSEGV, Segmentation fault.
+[Switching to Thread 16384 (LWP 5372)]
+0x40bd9426 in __pthread_internal_tsd_get () from /lib/libpthread.so.0
+(gdb) bt
+#0  0x40bd9426 in __pthread_internal_tsd_get () from /lib/libpthread.so.0
+#1  0x400a0de8 in malloc () from /lib/libc.so.6
+#2  0x400a51cc in strdup () from /lib/libc.so.6
+#3  0x0805a5e7 in jlimit_check (r=0x81ce660, key=0x4014e52c &quot;localhost&quot;,
+points=1)
+    at rate.c:82
+#4  0x08050c4b in _mio_accept (m=0x81ce5c0) at mio.c:400
+#5  0x080519da in _mio_main (arg=0x0) at mio.c:704
+#6  0x0807d4af in pth_spawn_trampoline ()
+#7  0x40077014 in makecontext () from /lib/libc.so.6
+
+
+And when I try to run with debugging information, it will segfault when the
+daemon starts up, when it tries to write the debugging output to the
+console:
+
+(gdb) r -D
+[ snip ... ]
+20030918T08:06:26: [notice] (-internal): initializing server
+Thu Sep 18 10:06:26 2003  jabberd.c:255 main load check of 1.00 with 3 total
+threads
+
+Program received signal SIGSEGV, Segmentation fault.
+[Switching to Thread 16384 (LWP 5065)]
+0x4005832e in __ctype_b_loc () from /lib/libc.so.6
+(gdb) bt
+#0  0x4005832e in __ctype_b_loc () from /lib/libc.so.6
+#1  0x0805b708 in format_converter (odp=0x8113ca8, fmt=0x808326d &quot;s:%d&quot;,
+    ap=0x8113cf4 &quot; \027\b\bl\002&quot;) at snprintf.c:579
+#2  0x0805c097 in strx_printv (ccp=0x8113cdc, buf=0x808d580 &quot;jabberd.c:256&quot;,
+len=62,
+    format=0x808326c &quot;%s:%d&quot;, ap=0x8113cf4 &quot; \027\b\bl\002&quot;) at
+snprintf.c:904
+#3  0x0805c0e9 in ap_snprintf (buf=0x808d580 &quot;jabberd.c:256&quot;, len=63,
+    format=0x808326c &quot;%s:%d&quot;) at snprintf.c:918
+#4  0x0805cd03 in zonestr (file=0x8081720 &quot;mio.c&quot;, line=620) at str.c:343
+#5  0x08051545 in _mio_main (arg=0x0) at mio.c:620
+#6  0x0807d4af in pth_spawn_trampoline ()
+#7  0x40077014 in makecontext () from /lib/libc.so.6
+
+
+In both cases, it segfaults when trying to make a libc call.  Also, in the
+first case I noticed the server is making a libpthread call.  Should the
+jabber daemon be using both libpthread and pth?
+
+Does anyone have any suggestions as to what the problem could be or could be
+able to offer any tips on debugging?
+
+Thanks,
+Jason
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="017649.html">[JDEV] Password Problems
+</A></li>
+	<LI>Next message: <A HREF="017698.html">[JDEV] Re: jabberd 1.4.2 segfaulting on xdb_sql, linux, oracle
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17650">[ date ]</a>
+              <a href="thread.html#17650">[ thread ]</a>
+              <a href="subject.html#17650">[ subject ]</a>
+              <a href="author.html#17650">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

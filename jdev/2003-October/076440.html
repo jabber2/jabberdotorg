@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: jabberd 1.4.3 release candidate--Windows/CYGWIN Patches
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20jabberd%201.4.3%20release%20candidate--Windows/CYGWIN%20Patches&In-Reply-To=%3Cbmiha2%24con%241%40sea.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="076437.html">
+   <LINK REL="Next"  HREF="076441.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: jabberd 1.4.3 release candidate--Windows/CYGWIN Patches</H1>
+    <B>Frank Seesink</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20jabberd%201.4.3%20release%20candidate--Windows/CYGWIN%20Patches&In-Reply-To=%3Cbmiha2%24con%241%40sea.gmane.org%3E"
+       TITLE="[JDEV] Re: jabberd 1.4.3 release candidate--Windows/CYGWIN Patches">frank at mail.wvnet.edu
+       </A><BR>
+    <I>Tue Oct 14 23:09:35 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="076437.html">[jadmin] Re: [JDEV] Re: jabberd 1.4.3 release candidate
+</A></li>
+        <LI>Next message: <A HREF="076441.html">[JDEV] Re: jabberd 1.4.3 release candidate--Windows/CYGWIN Patches (no success with minires yet)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76440">[ date ]</a>
+              <a href="thread.html#76440">[ thread ]</a>
+              <a href="subject.html#76440">[ subject ]</a>
+              <a href="author.html#76440">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Peter Saint-Andre wrote:
+&gt;<i> On behalf of the jabberd 1.4 team, I'd like to announce a release
+</I>&gt;<i> candidate for jabberd 1.4.3. It is expected that this will be the
+</I>&gt;<i> terminal release for the jabberd 1.4 codebase. In order to test this
+</I>&gt;<i> release, please check out the tagged code from the 'jabberd14' module 
+</I>&gt;<i> on JabberStudio by typing the following command:
+</I>&gt;<i> 
+</I>&gt;<i>    cvs co -r JABBERD_1_4_3 jabberd14
+</I>&gt;<i> 
+</I>&gt;<i> For the next week, the jabberd 1.4 team will accept code patches that
+</I>&gt;<i> fix known bugs in the code (NO NEW FEATURES!). Please send any patches
+</I>&gt;<i> to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> before the end of the day on Wednesday, October 15.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks.
+</I>
+Peter,
+
+	Attached please find one jabberd143cygwinpatches.tar.gz file containing 
+the necessary patches for cleanly building Jabberd 1.4.3 under Cygwin. 
+Not 100% comfortable sending patches, so I'm sending entire files (but 
+just the ones that were changed).  If this is not acceptable, please let 
+me know.
+
+Until now, my way of building Jabberd involved untarring the jabberd 
+file, then untarring this file on top.
+
+Please note that the ONLY changes to the files contained herein are
+
+1.  a slight modification of the Cygwin portion of the 'configure'
+     script (has no bearing on any other platform)
+2.  a simplification of ./cygwin/setup.sh
+3.  Basically some conditionals added to various Makefiles of the form
+
+	...
+	ifeq ($(__CYGWIN__),1)
+		#do something specific to Cygwin
+	else
+		#do the usual
+	endif
+	...
+
+     which all rely on the __CYGWIN__ variable being set in
+     'platform-settings'.  NOT A SINGLE LINE OF SOURCE CODE WAS CHANGED.
+
+As such, these changes should have absolutely no bearing on compiling 
+under any other platform.  However, they greatly simplify/clean up the 
+build process under Cygwin (making it much more like its *nix brethren), 
+and make it possible to compile with SSL support, among other things.
+
+This same technique allowed me to compile JUD, MU-Conference, and 
+xdb_sql, and though I haven't been able to compile xdb_ldap, that is 
+only because I do not have OpenLDAP built under Cygwin...no Cygwin 
+package exists currently.  But I am confident it will build as well for 
+anyone who under Cygwin can build OpenLDAP from source.  I am including 
+those Makefiles as well.
+
+I will leave it to the Jabberd team to decide whether the module 
+Makefiles should be distributed with Jabberd 1.4.3, possibly in ./cygwin 
+in the form 'Makefile.&lt;module&gt;' (e.g., Makefile.jud) for those who would 
+like to add those modules.  I plan to submit these same changes to the 
+authors of JUD, MU-Conference, xdb_ldap, and xdb_sql as well, in case 
+they would like to add them to their respective projects.
+
+Please note that if these changes are accepted, quite a few files can be 
+deleted from the ./cygwin/ directory in the distribution file. 
+Specifically, the only files required are
+
+	./cygwin/dllinit.c
+	./cygwin/setup.sh
+	./cygwin/dnsrv/*    &lt;--still needed unfortunately
+
+All the other files (./cygwin/Makefile.*, ./cygwin/*.def, 
+./cygwin/dllfixup.c &lt;--can't even find this one used anywhere!!) can 
+safely be deleted.
+
+Below is a breakdown of the files contained in the attached file, with 
+explanations of any new files:
+
+|<i>   configure
+</I>|<i>   generateSSLkey          &lt;--script to generate key.pem for SSL
+</I>|<i>   Makefile
+</I>|<i>
+</I>+---cygwin
+|<i>   |   install-as-service  &lt;--script to install jabberd as NT service
+</I>|<i>   |   jabber.xml.example  &lt;--sample config to show JUD, MU-C, etc.
+</I>|<i>   |   README              &lt;--docs on building jabberd under Cygwin
+</I>|<i>   |   remove-as-service   &lt;--script to remove jabberd as NT service
+</I>|<i>   |   setup.sh
+</I>|<i>   |
+</I>|<i>   \---dnsrv
+</I>|<i>           Makefile
+</I>|<i>
+</I>+---dialback
+|<i>       Makefile
+</I>|<i>
+</I>+---jabberd
+|<i>       Makefile
+</I>|<i>
+</I>+---jsm
+|<i>       Makefile
+</I>|<i>
+</I>+---jud
+|<i>       Makefile
+</I>|<i>
+</I>+---mu-conference
+|<i>   \---src
+</I>|<i>           Makefile
+</I>|<i>
+</I>+---pthsock
+|<i>       Makefile
+</I>|<i>
+</I>+---xdb_file
+|<i>       Makefile
+</I>|<i>
+</I>+---xdb_ldap
+|<i>   \---src
+</I>|<i>           Makefile
+</I>|<i>
+</I>\---xdb_sql
+         Makefile
+
+Hopefully this information will be of some use.  Please let me know if 
+there is anything else you need regarding this.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: jabberd143cygwinpatches.tar.gz
+Type: application/x-tar
+Size: 22148 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20031015/38688590/attachment-0002.tar">https://www.jabber.org/jdev/attachments/20031015/38688590/attachment-0002.tar</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="076437.html">[jadmin] Re: [JDEV] Re: jabberd 1.4.3 release candidate
+</A></li>
+	<LI>Next message: <A HREF="076441.html">[JDEV] Re: jabberd 1.4.3 release candidate--Windows/CYGWIN Patches (no success with minires yet)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76440">[ date ]</a>
+              <a href="thread.html#76440">[ thread ]</a>
+              <a href="subject.html#76440">[ subject ]</a>
+              <a href="author.html#76440">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

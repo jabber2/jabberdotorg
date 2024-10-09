@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Re: Re: Parsing XMPP/Jabber protocol
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Re%3A%20Re%3A%20Parsing%20XMPP/Jabber%20protocol&In-Reply-To=%3C11D121AB355B69448D3A9F2132D2A3AA4203B5%40niobe.BlueHands.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="050124.html">
+   <LINK REL="Next"  HREF="050106.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Re: Re: Parsing XMPP/Jabber protocol</H1>
+    <B>Heiner Wolf</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Re%3A%20Re%3A%20Parsing%20XMPP/Jabber%20protocol&In-Reply-To=%3C11D121AB355B69448D3A9F2132D2A3AA4203B5%40niobe.BlueHands.de%3E"
+       TITLE="[jdev] Re: Re: Re: Parsing XMPP/Jabber protocol">wolf at bluehands.de
+       </A><BR>
+    <I>Mon Jan  3 07:13:54 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="050124.html">[jdev] Re: Doubts about JEP-065SOCKS5Bytestreams protocol
+</A></li>
+        <LI>Next message: <A HREF="050106.html">[jdev] Re: Re: Re: Parsing XMPP/Jabber protocol
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50102">[ date ]</a>
+              <a href="thread.html#50102">[ thread ]</a>
+              <a href="subject.html#50102">[ subject ]</a>
+              <a href="author.html#50102">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+&gt;<i>        String s1 = &quot;&lt;?xml version=\&quot;1.0\&quot;?&gt;&lt;str&quot;;   
+</I>&gt;<i>        String s2 = &quot;eam&gt;&lt;element&gt;qwe&lt;/element&gt;&lt;/stream&gt;&quot;;           
+</I>
+I wonder who would ever be interested in getting notification of a
+partial &lt;stream&gt; tag. This is a weird case and I suppose applications
+have no problem waiting for the &quot;eam&gt;&quot;. 
+
+The interesting case is to get notifications of the level 1 sub tags of
+the document. In Jabber terminology these are the stanzas &lt;message/&gt;,
+&lt;presence/&gt;, and &lt;iq/&gt;. You will definitely get endElement() for
+&lt;element/&gt;, as you would expect from SAX. And this is all you need.
+
+&gt;<i>but
+</I>&gt;<i>
+</I>&gt;<i> to get endDocument() stream.close() is necessary 
+</I>
+While implementing a Jabber client, endDocument() is just not relevant.
+If you ever get endDocument() then close the connection from your side.
+If you do not get it, then everyhing is fine. endDocument() is nothing
+to worry about. 
+
+What worries me much more is that all developers use SAX parsers and
+anyone has to re-create the XML structure from those
+startElement/stopElement sequences. I wonder why there is no better API
+than the Simple API for XML. I guess everyone who implemented the
+protocol, had to re-create the XML fragments from
+startElement/stopElement sequences. For streaming XML SAX is not enough.
+Developers would need a bit more, a mixture of DOM and SAX. A kind of
+&quot;Fragment API for XML&quot; that stream-parses XML like SAX, but returns
+fragments as DOM like data structures. 
+
+Instead of the startElement() and stopElement() the application should
+have a callback OnElement(XMLNode node) that delivers full nodes
+including children. For Jabber OnElement does something like:
+
+  if (node.depth() == 1)
+    // handle stanza
+  else
+    // let any level except depth == 1 pass untouched    
+
+hw
+--
+Dr. Klaus H. Wolf
+bluehands GmbH &amp; Co.mmunication KG
+<A HREF="http://www.bluehands.de/people/hw">http://www.bluehands.de/people/hw</A>
++49 (0721) 16108 75
+--
+Jabber enabled Virtual Presence on the Web: <A HREF="http://www.lluna.de/">http://www.lluna.de/</A>
+Open Source Future History: <A HREF="http://www.galactic-developments.com/">http://www.galactic-developments.com/</A>
+
+
+
+
+
+
+&gt;<i>-----Original Message-----
+</I>&gt;<i>From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>]On Behalf
+</I>&gt;<i>Of Maxym Gorodetskyy
+</I>&gt;<i>Sent: Sunday, January 02, 2005 9:40 PM
+</I>&gt;<i>To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>Subject: [jdev] Re: Re: Re: Parsing XMPP/Jabber protocol
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>Cathayan wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> if i don't misunderstand it, java xerces2's SAX parser can deal with
+</I>&gt;&gt;<i> delayed inputstream very well, i just tried it and get the jabber
+</I>&gt;&gt;<i> server's returned id correctly, no tricks needed again.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> see it:
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> <A HREF="http://xml.apache.org/xerces2-j/samples-socket.html#DelayedInput">http://xml.apache.org/xerces2-j/samples-socket.html#DelayedInput</A>
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;<i>
+</I>&gt;<i>Yes, yes, yes, you did not!
+</I>&gt;<i>
+</I>&gt;<i>        Socket clientConnection = new Socket();
+</I>&gt;<i>        clientConnection.connect(new 
+</I>&gt;<i>InetSocketAddress(&quot;127.0.0.1&quot;, 2000)); 
+</I>&gt;<i>        OutputStream stream = clientConnection.getOutputStream();
+</I>&gt;<i>        String s1 = &quot;&lt;?xml version=\&quot;1.0\&quot;?&gt;&lt;str&quot;;   
+</I>&gt;<i>        String s2 = &quot;eam&gt;&lt;element&gt;qwe&lt;/element&gt;&lt;/stream&gt;&quot;;           
+</I>&gt;<i>        stream.write(s1.getBytes());
+</I>&gt;<i>        stream.flush();
+</I>&gt;<i>        Thread.sleep(1000);
+</I>&gt;<i>        stream.write(s2.getBytes());          
+</I>&gt;<i>        stream.flush();
+</I>&gt;<i>
+</I>&gt;<i> I am getting correctly 
+</I>&gt;<i> startDocument()
+</I>&gt;<i> startElement() for stream
+</I>&gt;<i> startElement() for element
+</I>&gt;<i> endElement() for element
+</I>&gt;<i> endElement() for stream
+</I>&gt;<i>
+</I>&gt;<i>but
+</I>&gt;<i>
+</I>&gt;<i> to get endDocument() stream.close() is necessary 
+</I>&gt;<i>
+</I>&gt;<i>I am not sure what standard java 1.4 SAX parser will do. 
+</I>&gt;<i>     
+</I>&gt;<i>
+</I>&gt;<i>-- 
+</I>&gt;<i>Best regards
+</I>&gt;<i>Maxym Gorodetskyy
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="050124.html">[jdev] Re: Doubts about JEP-065SOCKS5Bytestreams protocol
+</A></li>
+	<LI>Next message: <A HREF="050106.html">[jdev] Re: Re: Re: Parsing XMPP/Jabber protocol
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50102">[ date ]</a>
+              <a href="thread.html#50102">[ thread ]</a>
+              <a href="subject.html#50102">[ subject ]</a>
+              <a href="author.html#50102">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Module API
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Module%20API&In-Reply-To=%3C20000518104214.A6203%40orientation.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="061700.html">
+   <LINK REL="Next"  HREF="061703.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Module API</H1>
+    <B>Kurt D. Starsinic</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Module%20API&In-Reply-To=%3C20000518104214.A6203%40orientation.com%3E"
+       TITLE="[JDEV] Module API">kstar at orientation.com
+       </A><BR>
+    <I>Thu May 18 09:42:14 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="061700.html">[JDEV] Module API
+</A></li>
+        <LI>Next message: <A HREF="061703.html">[JDEV] Module API
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61701">[ date ]</a>
+              <a href="thread.html#61701">[ thread ]</a>
+              <a href="subject.html#61701">[ subject ]</a>
+              <a href="author.html#61701">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, May 17, 2000 at 09:07:28AM -0700, Donn Cave wrote:
+&gt;<i> Quoth Will Morton &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">will.morton at cwcom.net</A>&gt;:
+</I>&gt;<i> | Donn Cave wrote:
+</I>&gt;<i> |&gt; I was thinking the storage access model here is the very simplest
+</I>&gt;<i> |&gt; possible.  Each item is retrieved by exactly one user name.  The data
+</I>&gt;<i> |&gt; is just bytes, it's up to the service to sort out the XML.  Only the
+</I>&gt;<i> |&gt; service daemons need access to the data.  Is it a bigger job than this?
+</I>&gt;<i> |&gt; Is LDAP attractive because it's an existing network storage solution,
+</I>&gt;<i> |&gt; or for features like fast wild-card attribute lookup and hierarchical
+</I>&gt;<i> |&gt; structure?
+</I>&gt;<i> | 
+</I>&gt;<i> | 	LDAP directories (or rather Directories in general) are attractive
+</I>&gt;<i> | mainly because in a large, multi-services platform (web, mail, ftp,
+</I>&gt;<i> | chat) they provide an easy-to-administer and highly scalable way to
+</I>&gt;<i> | store all your user information, which is also very easy to write Apps
+</I>&gt;<i> | for. They can also be browsed by an admin in a logical fashion, which is
+</I>&gt;<i> | a big bonus when you have O(1m users) on your system, everything has
+</I>&gt;<i> | gone tits-up and you're trying to find the problem.
+</I>&gt;<i> | 	I'm not sure what you mean by 'network storage solution'. Do you mean a
+</I>&gt;<i> | place to dump all your files, such as a NetApp? Or do you mean a
+</I>&gt;<i> | repository for user info such as a Database?
+</I>&gt;<i> 
+</I>&gt;<i> I just mean /usr/local/var/jspool on the net.  Jabber-transport 1.0
+</I>&gt;<i> gets presence and subscription information, offline messages etc.
+</I>&gt;<i> from a local disk file, like ----------
+</I>&gt;<i>     file = open('/usr/local/var/jspool/%s.xml' % user)
+</I>&gt;<i>     data = file.read()
+</I>&gt;<i>     file.close()
+</I>&gt;<i>     state = parse_xml(data)
+</I>&gt;<i> 
+</I>&gt;<i> and a network version doesn't need to be much more complex --------
+</I>&gt;<i>     net.write('get %s\r\n' % user)
+</I>&gt;<i>     data = net.read()
+</I>&gt;<i>     state = parse_xml(data)
+</I>&gt;<i>     verify_user_state(state, user)    # check for ``user not found''
+</I>&gt;<i> 
+</I>&gt;<i> This addresses the specific problem, that the disk file is local to
+</I>&gt;<i> one host when you might need several hosts to support the service,
+</I>&gt;<i> and it can solve that problem better than NFS-mounting the file.
+</I>
+    How about coda or intermezzo?  I think that the NFS-mounting idea
+is terrific, except for that fact that NFS implementations have performance
+and security issues (coda and intermezzo wouldn't eliminate the security
+issues, but the mounting could then happen over an expensive transport
+like IPSec or SSL without degrading performance).
+
+&gt;<i> The protocol can be bone-head simple, I'd think.  I could write an
+</I>&gt;<i> application in 15 minutes (in C, 2 minutes in Python), no need for
+</I>&gt;<i> BER encoding or any of the other fun stuff that requires external
+</I>&gt;<i> library support for LDAP applications.  The hair is on the service
+</I>&gt;<i> end, where for a first cut I'd probably go with a jspool-like
+</I>&gt;<i> filesystem approach (but with an artificial directory hierarchy, to
+</I>&gt;<i> avoid mammoth directory rewrites.)
+</I>&gt;<i> 
+</I>&gt;<i> My point is not to push one approach, though.  I'm just asking,
+</I>&gt;<i> is there an application here for LDAP because of its technical
+</I>&gt;<i> merits, am I missing something about the problem?
+</I>
+    LDAP has no technical merits (or demerits) in this context.  It's not
+an implementation design, it's an interface design!  As an interface it's
+probably not well suited to Jabber, because it's hierarchical, which jabber
+namespace is not.
+
+    Peace,
+* Kurt Starsinic (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kstar at orientation.com</A>) ---------- Senior Network Engineer *
+|<i>              `Order, vast and generative, arises naturally.'              |
+</I>|<i>               -- Stuart Kauffman, _At Home in the Universe_               |
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="061700.html">[JDEV] Module API
+</A></li>
+	<LI>Next message: <A HREF="061703.html">[JDEV] Module API
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61701">[ date ]</a>
+              <a href="thread.html#61701">[ thread ]</a>
+              <a href="subject.html#61701">[ subject ]</a>
+              <a href="author.html#61701">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

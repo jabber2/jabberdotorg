@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Announcing Gradient / Scaling between federated servers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Announcing%20Gradient%20/%20Scaling%20between%20federated%20servers&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="019785.html">
+   <LINK REL="Next"  HREF="019788.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Announcing Gradient / Scaling between federated servers</H1>
+    <B>Ian Sollars</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Announcing%20Gradient%20/%20Scaling%20between%20federated%20servers&In-Reply-To="
+       TITLE="[jdev] Announcing Gradient / Scaling between federated servers">ian.sollars at gmx.net
+       </A><BR>
+    <I>Wed Jul 14 06:10:10 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="019785.html">[jdev] porting wcs to jabberd2
+</A></li>
+        <LI>Next message: <A HREF="019788.html">[jdev] Announcing Gradient / Scaling between federated servers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19787">[ date ]</a>
+              <a href="thread.html#19787">[ thread ]</a>
+              <a href="subject.html#19787">[ subject ]</a>
+              <a href="author.html#19787">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi everyone,
+
+I know there is some interest in moving SVG over XMPP for the purposes
+of whiteboarding. I've just gone live with some code that does
+something similar, that may be interesting to anyone looking at this.
+The URL:
+
+<A HREF="http://ex-337.net/gradient/">http://ex-337.net/gradient/</A>
+
+The code is built on the Smack API, in conjunction with Apache Batik,
+Mozilla Rhino and the Jaxen XPath library.
+
+In brief, SVG documents are loaded via XMPP (which gives rise to a
+scaling problem, which I have a question about below), and once
+loaded, the SVG document has access to a scripting environment that
+can send and receive XMPP stanzas.
+
+The document effectively can send messages and make RPC (IQ) calls to
+the JID it was loaded from, and any other JIDs it has been subscribed
+to. The server JID can also make RPC calls against the document, and
+send message &amp; presence stanzas to several documents at once. This is
+all explained under &quot;Targeting data and RPC&quot; under the documentation.
+
+As well as sending data that will be processed by client-side
+JavaScript functions (if declared), the server JID can also send or
+broadcast modifications to be made to client-side documents. Put
+simply, one of the extensions allows a server JID to remotely apply
+element-level modification operations equivalent to the four main DOM
+methods - appendChild, insertBefore, replaceChild and removeChild - at
+points within the document that are specified by XPath expressions.
+This is explained in detail under &quot;Docment updating&quot;.
+
+This is a brief description of how the client and server interact.
+There's more detail on the website for anyone who's interested, and
+I''d be happy to listen to any comments or feedback.
+
+As cool as this is, this is a little issue with scaling.
+
+To be specific, there is a problem with the document request
+architecture: the 'client' and 'server' are both equal in the eyes of
+jabber.org, i.e. they are both normal client JIDs. This is going to
+break down if 10,000 other 'client' JIDs all send GET IQs to (e.g.)
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">demo at example.org</A>/gradient. There is an inherent scaling problem in
+routing lots of stanzas through one TCP stream.
+
+I don't yet have a concrete solution to this, but my first reaction
+was to move the 'server' JID to within the XMPP server - i.e. the
+sever would have a JID of more similar to a MUC room, such as
+&quot;demo.example.org/gradient&quot;. My thinking was to federate an
+'application' XMPP server that would host these JIDS with an
+'authentication' XMPP server to which users sign on, manage rosters
+etc.
+
+For example, suppose I set up ian.net with Jabberd2. Users can sign
+on, chat with other users, etc. When Bob has an app that he wants to
+make available to the general public, he federates bob.net with
+ian.net, and thereafter (assuming I understand what federation is) GET
+IQs sent from users on ian.net to a JID such as &quot;app.jabber.bob.net&quot;
+are routed via the federation between the two servers on port 5269.
+
+My question is, how do federating servers scale to handle large
+amounts of traffic? Would the architecture scale any better than if he
+had simply connected as <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">app at jabber.ian.net</A>?
+
+I get the feeling I may be looking at this the wrong way. I'm
+interested in listening to anyone who knows more about XMPP and has
+ideas about how to approach this.
+
+Regards,
+
+ Ian
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="019785.html">[jdev] porting wcs to jabberd2
+</A></li>
+	<LI>Next message: <A HREF="019788.html">[jdev] Announcing Gradient / Scaling between federated servers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19787">[ date ]</a>
+              <a href="thread.html#19787">[ thread ]</a>
+              <a href="subject.html#19787">[ subject ]</a>
+              <a href="author.html#19787">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

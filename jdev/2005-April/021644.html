@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Changing delivery presence
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Changing%20delivery%20presence&In-Reply-To=BAY106-F7F27C82468DE50D4F7DF7B1330%40phx.gbl">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="021642.html">
+   <LINK REL="Next"  HREF="021651.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Changing delivery presence</H1>
+    <B>Tijl Houtbeckers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Changing%20delivery%20presence&In-Reply-To=BAY106-F7F27C82468DE50D4F7DF7B1330%40phx.gbl"
+       TITLE="[jdev] Changing delivery presence">thoutbeckers at splendo.com
+       </A><BR>
+    <I>Mon Apr 11 23:51:16 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="021642.html">[jdev] Changing delivery presence
+</A></li>
+        <LI>Next message: <A HREF="021651.html">[jdev] Changing delivery presence
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#21644">[ date ]</a>
+              <a href="thread.html#21644">[ thread ]</a>
+              <a href="subject.html#21644">[ subject ]</a>
+              <a href="author.html#21644">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tue, 12 Apr 2005 05:57:45 +0200, Leonardo Galicia Jim&#233;nez  
+&lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">valkyreii at hotmail.com</A>&gt; wrote:
+
+&gt;<i> Now suppose this scenario, i am in my building's company and my  
+</I>&gt;<i> geolocation information is changing frecuently, i use a PDA and my  
+</I>&gt;<i> jabber client know where i am and publish this information to my  
+</I>&gt;<i> co-workers, all my co-workers have authorization to see my geolocation  
+</I>&gt;<i> information. However i want that some co-workers know only if i am in  
+</I>&gt;<i> the building or not, because is all information they need. When i am in  
+</I>&gt;<i> the cafeteria or the bathroom i don't like to disclose this information  
+</I>&gt;<i> to anyone, my geolocation is only available to some co-workers from  
+</I>&gt;<i> monday to friday from 9:00 am to 1:00 pm and finally i want that some  
+</I>&gt;<i> co-workers can susbcribe to my geolocation information for 24 hrs only  
+</I>&gt;<i> after that they don't receive more that information.
+</I>&gt;<i>
+</I>&gt;<i> This issues are adressed by IETF Geopriv workgroup, and they create a  
+</I>&gt;<i> set of rules in xml format and they published it in a draft that manage  
+</I>&gt;<i> above requirements. This rules determine how the geolocation information  
+</I>&gt;<i> reach to each subscriber.
+</I>&gt;<i>
+</I>&gt;<i> My question is, there is a way that i can do this or somenthing similar  
+</I>&gt;<i> without affect the code jabber server?. There is a way for publishing  
+</I>&gt;<i> information, process it with some entity and after that disclose it?
+</I>&gt;<i>
+</I>&gt;<i> I really will appreciate any suggestion.
+</I>
+You should do this with a modified PubSub server. Take a look at Section  
+&quot;8.1.2 Create a New Node&quot; of JEP-0060. In particular look at the  
+&lt;configure/&gt; node. In section &quot;8.2.1 Configure a Node&quot; it is explained how  
+you can use it. It probably doesn't quite suit you just yet.
+
+However, then look up just a bit in section 8.2. It states:  
+&quot;Implementations SHOULD use the Data Forms protocol to allow the node  
+owner to accomplish the configuration&quot;. A long while ago by now, it took  
+me a long discussion with some of the people involved in making this JEP  
+to change that into the SHOULD it is today from the MUST it used to be.  
+I'm glad to see a real use case for what I was thinking of at the time. I  
+still think MAY is better than SHOULD, but it should work now too.
+
+What this means is that now, you can use ANY XML format to configure your  
+node. In this case, GeoPriv XML. As you can see, modifying a PubSub can be  
+done in a protocol compliant way, by making a Geopriv JEP. You can also  
+make it work for everyone by running just one modified pubsub server.
+
+You should write a JEP or something else to document the usage of Geopriv.  
+A client can then &quot;disco&quot; the PubSub server to see if it supports GeoPriv.  
+If it does It can then create a pubsub node with a &lt;configure/&gt; node with  
+Geopriv data in it. Make sure to write good security consideration for  
+implementation in it of course.
+
+Since you might want to send &quot;normal&quot; configuration data as well (eg  
+access control) I think JEP-0060 should better show that it's possible to  
+have two or more &lt;configure/&gt; nodes during creation. Also, to be sure I'd  
+take a look at the schema of the JEP to see if it is properly in line with  
+what the JEP allows as I've described.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="021642.html">[jdev] Changing delivery presence
+</A></li>
+	<LI>Next message: <A HREF="021651.html">[jdev] Changing delivery presence
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#21644">[ date ]</a>
+              <a href="thread.html#21644">[ thread ]</a>
+              <a href="subject.html#21644">[ subject ]</a>
+              <a href="author.html#21644">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

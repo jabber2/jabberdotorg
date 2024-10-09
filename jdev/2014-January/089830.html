@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] [Security]   Spoofing of iq ids and misbehaving servers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%5BSecurity%5D%20%20%20Spoofing%20of%20iq%20ids%20and%20misbehaving%20servers&In-Reply-To=%3C52EA7BBD.5020309%40ahsoftware.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089829.html">
+   <LINK REL="Next"  HREF="089831.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] [Security]   Spoofing of iq ids and misbehaving servers</H1>
+    <B>Alexander Holler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%5BSecurity%5D%20%20%20Spoofing%20of%20iq%20ids%20and%20misbehaving%20servers&In-Reply-To=%3C52EA7BBD.5020309%40ahsoftware.de%3E"
+       TITLE="[jdev] [Security]   Spoofing of iq ids and misbehaving servers">holler at ahsoftware.de
+       </A><BR>
+    <I>Thu Jan 30 16:20:13 UTC 2014</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089829.html">[jdev] [Security] Spoofing of iq ids and misbehaving servers
+</A></li>
+        <LI>Next message: <A HREF="089831.html">[jdev] Spoofing of iq ids and misbehaving servers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89830">[ date ]</a>
+              <a href="thread.html#89830">[ thread ]</a>
+              <a href="subject.html#89830">[ subject ]</a>
+              <a href="author.html#89830">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Am 30.01.2014 16:58, schrieb Thijs Alkemade:
+&gt;<i>
+</I>&gt;<i> On 30 jan. 2014, at 16:36, Alexander Holler &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">holler at ahsoftware.de</A>&gt; wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> Am 30.01.2014 13:49, schrieb Thijs Alkemade:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Then we have Facebook. All replies to iqs without 'to' have
+</I>&gt;&gt;&gt;<i> from='chat.facebook.com':
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> C: &lt;iq type='get' id='purple3a6232a6'&gt;&lt;ping xmlns='urn:xmpp:ping'/&gt;&lt;/iq&gt;
+</I>&gt;&gt;&gt;<i> S: &lt;iq from='chat.facebook.com' id='purple3a6232a6' type='result'/&gt;
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> jabber.org itself shows a similar problem:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> C: &lt;iq type='set' id='purplec5ae5254'&gt;
+</I>&gt;&gt;&gt;<i>        &lt;session xmlns='urn:ietf:params:xml:ns:xmpp-session'/&gt;
+</I>&gt;&gt;&gt;<i>     &lt;/iq&gt;
+</I>&gt;&gt;&gt;<i> S: &lt;iq from='jabber.org' type='result' id='purplec5ae5254'/&gt;
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> I would say that is correct (and I do the same in my server). No 'to' means the target ('to') is the server.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Unfortunately, CVE-2013-6483 still isn't public, so I wonder what the problem is when a non-existing 'to' will be replaced by a 'to' with the servers jid (usually just the domain). If I read the Pidgin Security Advisory correctly, some servers do forward iq-replies which do contain a 'from' of the server, which is the real problem. So those failing servers do seem to miss a check for the validity of the 'from'.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> But replying to an iq without a 'to' with an iq with a 'from' of the server is imho correct.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Regards,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Alexander Holler
+</I>&gt;<i>
+</I>&gt;<i> No, that&#8217;s wrong. <A HREF="http://xmpp.org/rfcs/rfc6120.html#rules-noto-IQ:">http://xmpp.org/rfcs/rfc6120.html#rules-noto-IQ:</A>
+</I>&gt;<i>
+</I>&gt;<i> &quot;If the server receives an IQ stanza with no 'to' attribute, it MUST process
+</I>&gt;<i> the stanza on behalf of the account from which received the stanza, ... by
+</I>&gt;<i> returning an appropriate IQ stanza of type &quot;result&quot; or &quot;error&quot;, responding as
+</I>&gt;<i> if the server were the bare JID of the sending entity.&quot;
+</I>
+Unfortunately that 'bare JID' is missed in rfc 3920 (10.1) and I can't 
+remember why I've implemented it here such, that a missing 'to' will be 
+replaced by a 'to' with the servers JID. Maybe because of clients which 
+didn't worked otherwise, maybe because I didn't interpret 'MUST either 
+process the stanza on behalf of sending entity' such that 'to' should 
+include the node, maybe because of something else.
+
+But to conclude, I find it confusing that a stanza
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>'&gt;...&lt;/iq&gt;
+
+should be the same as a stanza
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>'&gt;...&lt;/iq&gt;
+
+Regards,
+
+Alexander Holler
+
+
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089829.html">[jdev] [Security] Spoofing of iq ids and misbehaving servers
+</A></li>
+	<LI>Next message: <A HREF="089831.html">[jdev] Spoofing of iq ids and misbehaving servers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89830">[ date ]</a>
+              <a href="thread.html#89830">[ thread ]</a>
+              <a href="subject.html#89830">[ subject ]</a>
+              <a href="author.html#89830">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

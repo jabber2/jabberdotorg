@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] [MUC] in-room sessions and Non-Anonymous
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%5BMUC%5D%20in-room%20sessions%20and%20Non-Anonymous&In-Reply-To=%3CCAKHUCzxRJA0L_sQkPnTuhWcY%3DkQKDVCkLVT-gn7J3SuZgs%2B7xw%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089491.html">
+   <LINK REL="Next"  HREF="089493.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] [MUC] in-room sessions and Non-Anonymous</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%5BMUC%5D%20in-room%20sessions%20and%20Non-Anonymous&In-Reply-To=%3CCAKHUCzxRJA0L_sQkPnTuhWcY%3DkQKDVCkLVT-gn7J3SuZgs%2B7xw%40mail.gmail.com%3E"
+       TITLE="[jdev] [MUC] in-room sessions and Non-Anonymous">dave at cridland.net
+       </A><BR>
+    <I>Tue Jun 11 16:54:12 UTC 2013</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089491.html">[jdev] [MUC] in-room sessions and Non-Anonymous
+</A></li>
+        <LI>Next message: <A HREF="089493.html">[jdev] [MUC] in-room sessions and Non-Anonymous
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89492">[ date ]</a>
+              <a href="thread.html#89492">[ thread ]</a>
+              <a href="subject.html#89492">[ subject ]</a>
+              <a href="author.html#89492">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tue, Jun 11, 2013 at 5:38 PM, Bartosz Ma&#322;kowski &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bmalkowski at tigase.pl</A>&gt;wrote:
+
+&gt;<i> Hi
+</I>&gt;<i>
+</I>&gt;<i> I have a problem.
+</I>&gt;<i> Our MUC Component supports entering to room from many resources (the same
+</I>&gt;<i> bareJID) with the same nickname.
+</I>&gt;<i> I don't know what should be sent in attribute jid of element &lt;item/&gt; when
+</I>&gt;<i> room is Non-Anonymous:
+</I>&gt;<i> &lt;presence
+</I>&gt;<i>     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">coven at chat.shakespeare.lit</A>/thirdwitch'
+</I>&gt;<i>     id='17232D15-134F-43C8-9A29-61C20A64B236'
+</I>&gt;<i>     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">crone1 at shakespeare.lit</A>/desktop'&gt;
+</I>&gt;<i>   &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user">http://jabber.org/protocol/muc#user</A>'&gt;
+</I>&gt;<i>     &lt;item affiliation='none'
+</I>&gt;<i>           jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+</I>&gt;<i>           role='participant'/&gt;
+</I>&gt;<i>   &lt;/x&gt;
+</I>&gt;<i> &lt;/presence&gt;
+</I>&gt;<i>
+</I>&gt;<i> Let me explain:
+</I>&gt;<i>
+</I>&gt;<i> To room joins:
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at b</A>/1 and <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at b</A>/2 with nickname XXX.
+</I>&gt;<i>
+</I>&gt;<i> 1. New occupant joins to room, then MUC must send to him presence of
+</I>&gt;<i> occupant &quot;XXX&quot;.
+</I>&gt;<i> Which fullJID should be in attribute jid? Or maybe bareJID?
+</I>&gt;<i> Or maybe two &lt;item/&gt; with both fulljids?
+</I>&gt;<i> Or maybe two presences from XXX (with one &lt;item/&gt; element)?
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+Anything you like as long as it conforms.
+
+I think M-Link picks one fairly arbitrarily, and Prosody might well do the
+same. Bare jid seems sensible too, and indeed in general rather than just
+for the nick-share case.
+
+
+&gt;<i> 2. <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at b</A>/1 change his presence. What MUC should send to all occupants:
+</I>&gt;<i> bareJID, fullJID of <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at b</A>/1, two &lt;items/&gt;?
+</I>&gt;<i>
+</I>
+Same as above. I *think* that M-Link just sends individual presence changes
+through, so if nick-shares are alternating, the jid will also change.
+
+The more interesting question is what to do with private messages, or -
+worse - pass-through &lt;iq/&gt; stanzas.
+
+Isn't life fun when you take a step or two beyond the standards? :-)
+
+FWIW, this all gets even more fun if you're nick-sharing based on role,
+rather than merely bare jid. So, for example, if you have a &quot;MedEvac&quot;
+nickname, which can be used by any jid which has an approved (non-XMPP)
+MedEvac role. You may well want the real jid exposed, still, but it's not
+at all clear how.
+
+What this exposes is that when MUC was designed, it conflated two
+orthogonal things - addressing and naming. This was itself fine, when there
+was a 1:1 relationship - but the moment you break that, that causes some
+interesting fractures.
+
+Obviously we don't actually want to break compatibility either - otherwise
+the solution is rather simple - but what we might want to do is think about
+the really hard cases (like the MedEvac one I invented above) and figure
+out what *should* happen there. One thing that would be sensible is if
+clients could indicate that they understood nick-sharing, and have
+additional information exposed to them.
+
+I should really write this up properly...
+
+But in the meantime, just do anything that works as long as it's
+indistinguishable to clients from the single-fulljid-per-nick case.
+
+Dave.
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20130611/d57e1bad/attachment.html">https://www.jabber.org/jdev/attachments/20130611/d57e1bad/attachment.html</A>&gt;
+</PRE>
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089491.html">[jdev] [MUC] in-room sessions and Non-Anonymous
+</A></li>
+	<LI>Next message: <A HREF="089493.html">[jdev] [MUC] in-room sessions and Non-Anonymous
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89492">[ date ]</a>
+              <a href="thread.html#89492">[ thread ]</a>
+              <a href="subject.html#89492">[ subject ]</a>
+              <a href="author.html#89492">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

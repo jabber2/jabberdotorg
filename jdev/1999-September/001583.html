@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Bug? Or not bug?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Bug%3F%20Or%20not%20bug%3F&In-Reply-To=37E782C4.190EA915%40ti.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="001582.html">
+   <LINK REL="Next"  HREF="001594.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Bug? Or not bug?</H1>
+    <B>Thomas Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Bug%3F%20Or%20not%20bug%3F&In-Reply-To=37E782C4.190EA915%40ti.com"
+       TITLE="[JDEV] Bug? Or not bug?">tcharron at ductape.net
+       </A><BR>
+    <I>Tue Sep 21 09:49:42 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="001582.html">[JDEV] Bug? Or not bug?
+</A></li>
+        <LI>Next message: <A HREF="001594.html">[JDEV] Bug? Or not bug?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1583">[ date ]</a>
+              <a href="thread.html#1583">[ thread ]</a>
+              <a href="subject.html#1583">[ subject ]</a>
+              <a href="author.html#1583">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Quoting Ryan Eatmon &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">reatmon at ti.com</A>&gt;:
+
+&gt;<i> [Mon Sep 20 07:15:00 1999] mod_basic
+</I>&gt;<i> &quot;spool_file_failure=/apps/unsupported/jabber/var/reatmon.offline.xml&quot;
+</I>&gt;<i> [Tue Sep 21 07:57:02 1999] mod_basic
+</I>&gt;<i> &quot;spool_file_failure=/apps/unsupported/jabber/var/reatmon.offline.xml&quot;
+</I>&gt;<i> [Tue Sep 21 07:57:06 1999] accept &quot;Too many open files&quot;
+</I>&gt;<i> [Tue Sep 21 07:57:06 1999] main &quot;Exiting Jabber Transport&quot;
+</I>&gt;<i> The file reatmon.offline.xml exists and has a message in it, I assume
+</I>&gt;<i> waiting to be delivered.  What does this mean?  Is it a bug?  If you
+</I>&gt;<i> need more information just ask, I'm not sure what all you need to know
+</I>&gt;<i> to look into this.
+</I>
+  This is becouse of a bug caused by the way we called open to open the files.  
+chmod the files +rw for the user the transport is running as, and you'll be all 
+set.  It's been fixed, but in the new code, not the old..  I can post the fix 
+later today for .06.  It's a simple 2 line change.
+
+  I'm not sure why &quot;Too many open files&quot; happened.  Well, I KNOW why it 
+happened, but the OS is what returned an error when Jabbertransport tried to 
+call an accept on an incoming connection.  jabbertransport simply detected the 
+error, and printed out the strerror for the error reported by the call.. ;-P  
+See this snippet:
+
+          new = accept(c_count-&gt;id, (struct sockaddr *) &amp;sa, &amp;size);
+          h_err(new, &quot;accept&quot;); 
+
+  Now, h_err is a very simple function..
+
+void h_err(int check, char *err)
+{
+  if (check &lt; 0)
+  {
+    syslog(SYSLOG_ERROR, err, strerror(errno));
+    raise(SIGTERM);
+  }
+}
+
+
+Thomas Charron
+&lt;&lt; Wanted: One decent sig &gt;&gt;
+&lt;&lt; Preferably litle used  &gt;&gt;
+&lt;&lt; and stored in garage.  ?&gt;&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="001582.html">[JDEV] Bug? Or not bug?
+</A></li>
+	<LI>Next message: <A HREF="001594.html">[JDEV] Bug? Or not bug?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1583">[ date ]</a>
+              <a href="thread.html#1583">[ thread ]</a>
+              <a href="subject.html#1583">[ subject ]</a>
+              <a href="author.html#1583">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

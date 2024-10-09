@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] How to handle multiple clients
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20How%20to%20handle%20multiple%20clients&In-Reply-To=%3CPine.OSF.4.02.9901102155340.6322-100000%40worf.netins.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058665.html">
+   <LINK REL="Next"  HREF="058669.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] How to handle multiple clients</H1>
+    <B>Jeremie Miller</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20How%20to%20handle%20multiple%20clients&In-Reply-To=%3CPine.OSF.4.02.9901102155340.6322-100000%40worf.netins.net%3E"
+       TITLE="[JDEV] How to handle multiple clients">jeremie at netins.net
+       </A><BR>
+    <I>Sun Jan 10 22:56:46 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058665.html">[JDEV] How to handle multiple clients
+</A></li>
+        <LI>Next message: <A HREF="058669.html">[JDEV] How to handle multiple clients
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58666">[ date ]</a>
+              <a href="thread.html#58666">[ thread ]</a>
+              <a href="subject.html#58666">[ subject ]</a>
+              <a href="author.html#58666">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> I have seen the discussion about multiple clients and how message are
+</I>&gt;<i> handled when they are sent to someone that is connected from multiple
+</I>&gt;<i> places. How about something similar to IMAP? Basically, if I am connected
+</I>&gt;<i> from 3 different clients, and I recieve a message, all three clients are
+</I>&gt;<i> notified about it. At that point, the message could either be sent
+</I>&gt;<i> entirely to each of the clients, what I think is better, it could simply
+</I>&gt;<i> be left on the server waiting to be retrieved by any of the clients. Once
+</I>&gt;<i> it is read on any of the clients(or maybe once it is specifically deleted)
+</I>&gt;<i> it would be erased off the server or all the clients would be told it was
+</I>&gt;<i> read. Obviously there are details in this scheme that need to be worked
+</I>&gt;<i> out, but I don't see a problem with it? Am I missing something obvious(or 
+</I>&gt;<i> not so obvious)? 
+</I>
+There's a few ways around this w/o creating some sort of fetching/waiting
+setup.  As it is, the majority of the messages being passwd around are
+going to be only a few hundred characters, just lines of chat.  
+
+It would be pretty easy to just let the server copy an incoming message to
+each of the users session if each of those sessions had an equal or
+nonexistant priority.  It's also easy to allow a user to set &quot;Away&quot;
+status(or have a client automatically set it after idle time) so that it
+doesn't recieve messages.
+
+I guess I just see this as something that the clients can have control
+over, and if it does become a problem when it starts getting heavy use,
+it's not too difficult to correct.
+
+ &gt; 
+&gt;<i> One more thing, I know there is talk about some kind of SMTP interface.
+</I>&gt;<i> What exactly is the idea behind this? What should it acclomplish? The
+</I>&gt;<i> ability to send an email to an address and have it delivered to the
+</I>&gt;<i> person's jabber client? If someone could please explain this it would be
+</I>&gt;<i> great. I may even try to get something working. 
+</I>
+Yes, there are a few great things that could happen here.  It would be
+nice to be able to link Jabber and SMTP, as transparently as possible. But
+these are tender grounds since email is quite a bit more than Jabber and
+mixing the two could cause some problems(MIME, attached files, etc).
+
+First, it would be great for the server to be able to send messages on via
+SMTP if there was no other way of direct delivery, so that you could enter
+any Jabber or email address(since they are identically formatted
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at host</A>) and it could be delivered normally either way.
+
+Of course, if you can send an email via Jabber, you have to be able to
+recieve it.  Here is a quick rundown on how I would see it all working:
+
+ - User enters <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">friend at host.com</A>
+ - Jabber transport can't deliver it since the friend isn't a Jabber user
+ - Jabber transport optionally automatically reformats the address to the
+   sendmail forwarding style: friend%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">host.com at EMAIL</A>
+ - The SMTP/EMAIL transport receives it and sends it via email
+ - The return address is <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at jabberserver.com</A>
+ - The SMTP transport can either listen directly for incoming email at
+   jabberserver.com, or accept email forwarded from sendmail on that host
+ - Incoming email is delivered to the Jabber transport on that host with a
+   from address formatted like earlier: emailuser%<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">emailserver.com at EMAIL</A>
+
+Hows that sound?  Please feel free to step up and start playing/coding
+this SMTP transport :)
+
+Jer
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058665.html">[JDEV] How to handle multiple clients
+</A></li>
+	<LI>Next message: <A HREF="058669.html">[JDEV] How to handle multiple clients
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58666">[ date ]</a>
+              <a href="thread.html#58666">[ thread ]</a>
+              <a href="subject.html#58666">[ subject ]</a>
+              <a href="author.html#58666">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

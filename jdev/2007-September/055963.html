@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Stream Initiation: extension
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Stream%20Initiation%3A%20extension&In-Reply-To=%3C46FE4BEB.1040500%40privat.utfors.se%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="055955.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Stream Initiation: extension</H1>
+    <B>Mats Bengtsson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Stream%20Initiation%3A%20extension&In-Reply-To=%3C46FE4BEB.1040500%40privat.utfors.se%3E"
+       TITLE="[jdev] Stream Initiation: extension">matben at privat.utfors.se
+       </A><BR>
+    <I>Sat Sep 29 07:58:19 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="055955.html">[jdev] Stream Initiation: extension
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55963">[ date ]</a>
+              <a href="thread.html#55963">[ thread ]</a>
+              <a href="subject.html#55963">[ subject ]</a>
+              <a href="author.html#55963">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Norman:
+&gt;<i> I'd rather see:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;message to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mari at mus.se</A>/work' type='chat'&gt;
+</I>&gt;<i>   &lt;thread&gt;ee2944c6&lt;/thread&gt;
+</I>&gt;<i>   &lt;x xmlns='<A HREF="http://jabber.org/protocol/svgwb'">http://jabber.org/protocol/svgwb'</A>&gt;
+</I>&gt;<i>      &lt;image x='32.0' y='32.0'
+</I>&gt;<i>           xlink:href='xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mats at home.se</A>/coci?sipub=pub0123'
+</I>&gt;<i>           id='158229644' width='128' height='128'&gt;
+</I>&gt;<i>      &lt;/image&gt;
+</I>&gt;<i>   &lt;/x&gt;
+</I>&gt;<i>   &lt;sipub xmlns='<A HREF="http://jabber.org/protocol/si-pub'">http://jabber.org/protocol/si-pub'</A>
+</I>&gt;<i>       id='publish-0123'
+</I>&gt;<i>       mime-type='image/png'
+</I>&gt;<i>       profile='<A HREF="http://jabber.org/protocol/si/profile/file-transfer'">http://jabber.org/protocol/si/profile/file-transfer'</A>&gt;
+</I>&gt;<i>     &lt;file xmlns='<A HREF="http://jabber.org/protocol/si/profile/file-transfer'">http://jabber.org/protocol/si/profile/file-transfer'</A>
+</I>&gt;<i>           name='blender.png'
+</I>&gt;<i>           size='12582'
+</I>&gt;<i>           date='2004-01-28T10:07Z'&gt;
+</I>&gt;<i>       &lt;desc&gt;All Shakespearean characters must sign and return this NDA
+</I>&gt;<i> ASAP&lt;/desc&gt;
+</I>&gt;<i>     &lt;/file&gt;
+</I>&gt;<i>   &lt;/sipub&gt;
+</I>&gt;<i> &lt;/message&gt;
+</I>
+This seems OK. Then there can be two ways to include a &quot;passive&quot; reference to a file using si:
+1) using an URI as in xlink:href='xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mats at home.se</A>/coci?sipub=pub0123'
+2) using a child sipub element as described in the XEP
+
+&gt;<i> 
+</I>&gt;<i> and then the start/starting/si as defined in the si-pub xep.
+</I>
+A was studying
+XEP-0137: Publishing Stream Initiation Requests 
+a bit more careful and it comes pretty close to what I want. 
+Perhaps the XMPP URI could be added here or in another document as well.
+
+&gt;<i> 
+</I>&gt;<i> Is there a particular reason to use sipub instead of start/starting?
+</I>
+The conventional way is to use the same tag name as the last part of the xmlns.
+They already have used this for the offer so perhaps it could be an idea to have start/starting tags.
+In any case a single tag should be necessary for this since it is clear from the context iq-set vs. iq-result
+what the action is. Compare the query tag.
+
+&gt;<i> 
+</I>&gt;<i> (Except for tying the sipub id to the si sid, which if you want to do, then
+</I>&gt;<i> let's rather see if we can change the xep to ask for that, instead of
+</I>&gt;<i> creating brand new elements.  You should be able to track them via your iq's
+</I>&gt;<i> id anyways).
+</I>&gt;<i> 
+</I>
+Not sure I get you here.
+In my previous post I had:
+&lt;iq type='result' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mari at mus.se</A>/work' id='3210'&gt;
+  &lt;sipub xmlns='<A HREF="http://jabber.org/protocol/sipub'">http://jabber.org/protocol/sipub'</A> 
+         id='pub0123' 
+         sid='3c803c10-6983032b'/&gt;
+&lt;/iq&gt; 
+
+where the last id attribute is superfluous. It can instead read:
+&lt;iq type='result' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mari at mus.se</A>/work' id='3210'&gt;
+  &lt;sipub xmlns='<A HREF="http://jabber.org/protocol/sipub'">http://jabber.org/protocol/sipub'</A> 
+         sid='3c803c10-6983032b'/&gt;
+&lt;/iq&gt; 
+
+And the question of the sipub tag I leave open for the moment.
+
+/Mats
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="055955.html">[jdev] Stream Initiation: extension
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55963">[ date ]</a>
+              <a href="thread.html#55963">[ thread ]</a>
+              <a href="subject.html#55963">[ subject ]</a>
+              <a href="author.html#55963">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

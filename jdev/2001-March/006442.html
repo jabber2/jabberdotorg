@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [patch client.c]
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20%5Bpatch%20client.c%5D&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006441.html">
+   <LINK REL="Next"  HREF="006443.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [patch client.c]</H1>
+    <B>Rodolphe Duge de Bernonville</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20%5Bpatch%20client.c%5D&In-Reply-To="
+       TITLE="[JDEV] [patch client.c]">rod at idealx.com
+       </A><BR>
+    <I>Mon Mar  5 07:53:26 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006441.html">[JDEV] Jabber DevZone News - flea
+</A></li>
+        <LI>Next message: <A HREF="006443.html">[JDEV] Sun/Solaris
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6442">[ date ]</a>
+              <a href="thread.html#6442">[ thread ]</a>
+              <a href="subject.html#6442">[ subject ]</a>
+              <a href="author.html#6442">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Under heavy load (high connection/disconnection), 
+User authentification may take a few seconds, 
+if the user is disconnected while he is waiting for
+the creation of his session, he will be removed
+from the hashlist of the clients but as his state is 
+not state_AUTHD, he will receive the ack of session
+creation but his session will never receive a typed-error
+route.
+
+After that, pthsock_client will try to write the ack 
+for authentification, so before writin, you must
+verify that the user is still here (because mio struct has
+been freed .. ooops :).
+
+
+
+
+@@ -97,13 +97,25 @@
+     if(p-&gt;id-&gt;user != NULL)
+         fd = atoi(p-&gt;id-&gt;user); 
+     
+-    if(p-&gt;type != p_ROUTE || fd == 0 || (cdcur = ghash_get(s__i-&gt;users,
+xmlnode_get_attrib(p-&gt;x, &quot;to&quot;))) == NULL)
++    if(p-&gt;type != p_ROUTE || fd == 0)
+     { /* we only want &lt;route/&gt; packets or ones with a valid connection
+*/
+         log_warn(p-&gt;host, &quot;pthsock_client bouncing invalid %s packet
+from %s&quot;, xmlnode_get_name(p-&gt;x), xmlnode_get_attrib(p-&gt;x,&quot;from&quot;));
+         deliver_fail(p, &quot;invalid client packet&quot;);
+         return r_DONE;
+     }
+ 
++
++    if ((cdcur = ghash_get(s__i-&gt;users, xmlnode_get_attrib(p-&gt;x,
+&quot;to&quot;))) == NULL){
++	if (!j_strcmp(xmlnode_get_attrib(p-&gt;x, &quot;type&quot;),  &quot;session&quot;)){
++		jutil_tofrom(p-&gt;x);
++		xmlnode_put_attrib(p-&gt;x, &quot;type&quot;, &quot;error&quot;);
++		deliver(dpacket_new(p-&gt;x), s__i-&gt;i);
++        } 
++	else
++	    xmlnode_free(p-&gt;x);
++        return r_DONE;
++    }
++
+     if (fd != cdcur-&gt;m-&gt;fd || cdcur-&gt;m-&gt;state != state_ACTIVE)
+         m = NULL;
+     else if (j_strcmp(p-&gt;id-&gt;resource,cdcur-&gt;res) != 0)
+@@ -177,7 +189,7 @@
+     }
+ 
+ 
+-    if(xmlnode_get_firstchild(p-&gt;x) == NULL)
++    if(xmlnode_get_firstchild(p-&gt;x) == NULL ||  ghash_get(s__i-&gt;users,
+xmlnode_get_attrib(p-&gt;x, &quot;to&quot;)) == NULL)
+     {
+         xmlnode_free(p-&gt;x);
+     }
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006441.html">[JDEV] Jabber DevZone News - flea
+</A></li>
+	<LI>Next message: <A HREF="006443.html">[JDEV] Sun/Solaris
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6442">[ date ]</a>
+              <a href="thread.html#6442">[ thread ]</a>
+              <a href="subject.html#6442">[ subject ]</a>
+              <a href="author.html#6442">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

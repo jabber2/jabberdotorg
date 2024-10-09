@@ -1,0 +1,480 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Patch for classic msn-t to support service discovery
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Patch%20for%20classic%20msn-t%20to%20support%20service%20discovery&In-Reply-To=%3C20031205124130.GA1963%40hermes.muc.charente.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="076951.html">
+   <LINK REL="Next"  HREF="076953.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Patch for classic msn-t to support service discovery</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Patch%20for%20classic%20msn-t%20to%20support%20service%20discovery&In-Reply-To=%3C20031205124130.GA1963%40hermes.muc.charente.de%3E"
+       TITLE="[JDEV] Patch for classic msn-t to support service discovery">m at tthias.net
+       </A><BR>
+    <I>Fri Dec  5 06:41:32 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="076951.html">[JDEV] Patch for aim-t to support service discovery
+</A></li>
+        <LI>Next message: <A HREF="076953.html">[JDEV] Patch for service discovery support in JIT
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76952">[ date ]</a>
+              <a href="thread.html#76952">[ thread ]</a>
+              <a href="subject.html#76952">[ subject ]</a>
+              <a href="author.html#76952">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi!
+
+I wrote the attached patch for msn-transport to enable the transport to
+reply on disco requests.
+
+
+Tot kijk
+    Matthias
+
+-- 
+Fon: +49-(0)70 0770 07770       <A HREF="http://matthias.wimmer.name/">http://matthias.wimmer.name/</A>
+HAM: DB1MW                      xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mawis at charente.de</A>
+-------------- next part --------------
+diff -Naur msn-transport/include/msntrans.h msn-transport-disco/include/msntrans.h
+--- msn-transport/include/msntrans.h	2003-11-24 13:02:24.000000000 +0100
++++ msn-transport-disco/include/msntrans.h	2003-12-05 13:35:22.000000000 +0100
+@@ -37,6 +37,10 @@
+ #define PACKET_DEBUG
+ */
+ 
++/* namespaces for service discovery */
++#define NS_DISCO_ITEMS &quot;<A HREF="http://jabber.org/protocol/disco#items&quot;">http://jabber.org/protocol/disco#items&quot;</A>
++#define NS_DISCO_INFO &quot;<A HREF="http://jabber.org/protocol/disco#info&quot;">http://jabber.org/protocol/disco#info&quot;</A>
++
+ /* MSN Transport instance */
+ typedef struct mti_struct
+ {
+diff -Naur msn-transport/src/conf_room.c msn-transport-disco/src/conf_room.c
+--- msn-transport/src/conf_room.c	2003-10-22 09:24:53.000000000 +0200
++++ msn-transport-disco/src/conf_room.c	2003-12-05 13:35:25.000000000 +0100
+@@ -147,6 +147,21 @@
+     xmlnode_put_attrib(x,&quot;name&quot;,spools(xmlnode_pool(q),r-&gt;name,&quot; (&quot;,buf,&quot;)&quot;,xmlnode_pool(q)));
+ }
+ 
++void mt_con_disco_server_walk(xht h, const char *key, void *val, void *arg)
++{
++    sbroom r = (sbroom) val;
++    xmlnode q = (xmlnode) arg;
++    xmlnode item;
++    char buf[3];
++
++    item = xmlnode_insert_tag(q, &quot;item&quot;);
++    xmlnode_put_attrib(item, &quot;jid&quot;, jid_full(r-&gt;rid));
++
++    /* the number of users in this room */
++    snprintf(buf, 3, &quot;%d&quot;, r-&gt;count+1);
++    xmlnode_put_attrib(item, &quot;name&quot;, spools(xmlnode_pool(q), r-&gt;name, &quot; (&quot;,buf, &quot;)&quot;, xmlnode_pool(q)));
++}
++
+ void mt_con_browse_server(session s, jpacket jp)
+ {
+     if (jpacket_subtype(jp) == JPACKET__GET)
+@@ -167,6 +182,49 @@
+     mt_deliver(s-&gt;ti,jp-&gt;x);
+ }
+ 
++void mt_con_disco_items_server(session s, jpacket jp)
++{
++    xmlnode q;
++
++    if (jpacket_subtype(jp) != JPACKET__GET)
++    {
++	jutil_error(jp-&gt;x,TERROR_BAD);
++	mt_deliver(s-&gt;ti, jp-&gt;x);
++	return;
++    }
++
++    jutil_iqresult(jp-&gt;x);
++    q = xmlnode_insert_tag(jp-&gt;x, &quot;query&quot;);
++    xmlnode_put_attrib(q, &quot;xmlns&quot;, NS_DISCO_ITEMS);
++
++    xhash_walk(s-&gt;rooms,&amp;mt_con_disco_server_walk,(void *) q);
++
++    mt_deliver(s-&gt;ti, jp-&gt;x);
++}
++
++void mt_con_disco_info_server(session s, jpacket jp)
++{
++    xmlnode q, info;
++
++    if (jpacket_subtype(jp) != JPACKET__GET)
++    {
++	jutil_error(jp-&gt;x, TERROR_BAD);
++	mt_deliver(s-&gt;ti, jp-&gt;x);
++	return;
++    }
++
++    jutil_iqresult(jp-&gt;x);
++    q = xmlnode_insert_tag(jp-&gt;x, &quot;query&quot;);
++    xmlnode_put_attrib(q, &quot;xmlns&quot;, NS_DISCO_INFO);
++
++    info = xmlnode_insert_tag(q, &quot;identity&quot;);
++    xmlnode_put_attrib(info, &quot;category&quot;, &quot;conference&quot;);
++    xmlnode_put_attrib(info, &quot;type&quot;, &quot;text&quot;);
++    xmlnode_put_attrib(info, &quot;name&quot;,&quot;MSN Conference&quot;);
++
++    mt_deliver(s-&gt;ti, jp-&gt;x);
++}
++
+ void mt_con_browse_user(sbroom r, jpacket jp)
+ {
+     sbr_user user;
+@@ -189,6 +247,45 @@
+         jutil_error(jp-&gt;x,TERROR_NOTFOUND);
+ }
+ 
++void mt_con_disco_items_user(sbroom r, jpacket jp)
++{
++    sbr_user user;
++    xmlnode q;
++
++    user = (sbr_user) xhash_get(r-&gt;users_lid, jp-&gt;to-&gt;resource);
++    if (user == NULL)
++    {
++	jutil_error(jp-&gt;x,TERROR_BAD);
++	return;
++    }
++
++    jutil_iqresult(jp-&gt;x);
++    q = xmlnode_insert_tag(jp-&gt;x, &quot;query&quot;);
++    xmlnode_put_attrib(q, &quot;xmlns&quot;, NS_DISCO_ITEMS);
++}
++
++void mt_con_disco_info_user(sbroom r, jpacket jp)
++{
++    sbr_user user;
++    xmlnode q, info;
++
++    user = (sbr_user) xhash_get(r-&gt;users_lid, jp-&gt;to-&gt;resource);
++    if (user == NULL)
++    {
++	jutil_error(jp-&gt;x,TERROR_BAD);
++	return;
++    }
++
++    jutil_iqresult(jp-&gt;x);
++    q = xmlnode_insert_tag(jp-&gt;x, &quot;query&quot;);
++    xmlnode_put_attrib(q, &quot;xmlns&quot;, NS_DISCO_INFO);
++
++    info = xmlnode_insert_tag(q, &quot;identity&quot;);
++    xmlnode_put_attrib(info, &quot;category&quot;, &quot;client&quot;);
++    xmlnode_put_attrib(info, &quot;type&quot;, &quot;pc&quot;);
++    xmlnode_put_attrib(info, &quot;name&quot;, user-&gt;nick);
++}
++
+ void mt_con_browse_room_walk(xht h, const char *key, void *val, void *arg)
+ {
+     sbr_user user = (sbr_user) val;
+@@ -199,6 +296,16 @@
+     xmlnode_put_attrib(x,&quot;name&quot;,user-&gt;nick);
+ }
+ 
++void mt_con_disco_room_walk(xht h, const char *key, void *val, void *arg)
++{
++    sbr_user user = (sbr_user) val;
++    xmlnode q = (xmlnode) arg;
++    xmlnode x = xmlnode_insert_tag(q, &quot;item&quot;);
++
++    xmlnode_put_attrib(x, &quot;jid&quot;, jid_full(user-&gt;lid));
++    xmlnode_put_attrib(x, &quot;name&quot;, user-&gt;nick);
++}
++
+ void mt_con_browse_room(sbroom r, jpacket jp)
+ {
+     xmlnode q, x;
+@@ -216,6 +323,34 @@
+     xmlnode_put_attrib(x,&quot;name&quot;,r-&gt;nick);
+ }
+ 
++void mt_con_disco_items_room(sbroom r, jpacket jp)
++{
++    xmlnode q;
++
++    jutil_iqresult(jp-&gt;x);
++    q = xmlnode_insert_tag(jp-&gt;x, &quot;query&quot;);
++    xmlnode_put_attrib(q, &quot;xmlns&quot;, NS_DISCO_ITEMS);
++
++    xhash_walk(r-&gt;users_mid, &amp;mt_con_disco_room_walk, (void *)q);
++}
++
++void mt_con_disco_info_room(sbroom r, jpacket jp)
++{
++    xmlnode q, info;
++
++    jutil_iqresult(jp-&gt;x);
++    q = xmlnode_insert_tag(jp-&gt;x, &quot;query&quot;);
++    xmlnode_put_attrib(q, &quot;xmlns&quot;, NS_DISCO_INFO);
++
++    info = xmlnode_insert_tag(q, &quot;identity&quot;);
++    xmlnode_put_attrib(info, &quot;category&quot;, &quot;conference&quot;);
++    xmlnode_put_attrib(info, &quot;type&quot;, &quot;text&quot;);
++    xmlnode_put_attrib(info, &quot;name&quot;, jp-&gt;to-&gt;user);
++
++    info = xmlnode_insert_tag(q, &quot;feature&quot;);
++    xmlnode_put_attrib(info, &quot;var&quot;, NS_CONFERENCE);
++}
++
+ void mt_con_browse(session s, jpacket jp)
+ {
+     if (jpacket_subtype(jp) == JPACKET__GET)
+@@ -237,6 +372,44 @@
+     mt_deliver(s-&gt;ti,jp-&gt;x);
+ }
+ 
++void mt_con_disco_items(session s, jpacket jp)
++{
++    if (jpacket_subtype(jp) != JPACKET__GET)
++	jutil_error(jp-&gt;x, TERROR_NOTALLOWED);
++    else
++    {
++	sbroom r = (sbroom) xhash_get(s-&gt;rooms, jp-&gt;to-&gt;user);
++	if (r != NULL)
++	    if (jp-&gt;to-&gt;resource == NULL)
++		mt_con_disco_items_room(r, jp);
++	    else
++		mt_con_disco_items_user(r, jp);
++	else
++	    jutil_error(jp-&gt;x, TERROR_NOTFOUND);
++    }
++
++    mt_deliver(s-&gt;ti, jp-&gt;x);
++}
++
++void mt_con_disco_info(session s, jpacket jp)
++{
++    if (jpacket_subtype(jp) != JPACKET__GET)
++	jutil_error(jp-&gt;x, TERROR_NOTALLOWED);
++    else
++    {
++	sbroom r = (sbroom) xhash_get(s-&gt;rooms, jp-&gt;to-&gt;user);
++	if (r != NULL)
++	    if (jp-&gt;to-&gt;resource == NULL)
++		mt_con_disco_info_room(r, jp);
++	    else
++		mt_con_disco_info_user(r, jp);
++	else
++	    jutil_error(jp-&gt;x, TERROR_NOTFOUND);
++    }
++
++    mt_deliver(s-&gt;ti, jp-&gt;x);
++}
++
+ void mt_con_get(session s, jpacket jp)
+ {
+     sbroom r;
+@@ -351,6 +524,10 @@
+             mt_con_iq_conference(s,jp);
+         else if (j_strcmp(xmlns,NS_BROWSE) == 0)
+             mt_con_browse(s,jp);
++	else if (j_strcmp(xmlns,NS_DISCO_ITEMS) == 0)
++	    mt_con_disco_items(s,jp);
++	else if (j_strcmp(xmlns,NS_DISCO_INFO) == 0)
++	    mt_con_disco_info(s,jp);
+         else
+             xmlnode_free(jp-&gt;x);
+     }
+@@ -358,6 +535,10 @@
+     {
+         if (j_strcmp(xmlns,NS_BROWSE) == 0)
+             mt_con_browse_server(s,jp);
++	else if (j_strcmp(xmlns, NS_DISCO_ITEMS) == 0)
++	    mt_con_disco_items_server(s, jp);
++	else if (j_strcmp(xmlns, NS_DISCO_INFO) == 0)
++	    mt_con_disco_info_server(s, jp);
+         else
+             mt_iq_server(s-&gt;ti,jp);
+     }
+diff -Naur msn-transport/src/iq.c msn-transport-disco/src/iq.c
+--- msn-transport/src/iq.c	2002-04-24 01:56:58.000000000 +0200
++++ msn-transport-disco/src/iq.c	2003-12-05 13:35:25.000000000 +0100
+@@ -198,6 +198,77 @@
+     mt_deliver(ti,jp-&gt;x);
+ }
+ 
++void mt_iq_disco_items_server(mti ti, jpacket jp)
++{
++    xmlnode q;
++
++    if (jpacket_subtype(jp) != JPACKET__GET)
++    {
++	jutil_error(jp-&gt;x,TERROR_NOTALLOWED);
++	mt_deliver(ti, jp-&gt;x);
++	return;
++    }
++
++    jutil_iqresult(jp-&gt;x);
++    q = xmlnode_insert_tag(jp-&gt;x, &quot;query&quot;);
++    xmlnode_put_attrib(q, &quot;xmlns&quot;, NS_DISCO_ITEMS);
++
++    if (ti-&gt;con)
++    {
++	xmlnode item = xmlnode_insert_tag(q,&quot;item&quot;);
++	xmlnode_put_attrib(item, &quot;name&quot;, &quot;MSN Conference&quot;);
++	xmlnode_put_attrib(item, &quot;jid&quot;, ti-&gt;con_id);
++    }
++
++    mt_deliver(ti,jp-&gt;x);
++}
++
++void mt_iq_disco_info_server(mti ti, jpacket jp)
++{
++    xmlnode q, info;
++
++    if (jpacket_subtype(jp) != JPACKET__GET)
++    {
++	jutil_error(jp-&gt;x,TERROR_NOTALLOWED);
++	mt_deliver(ti, jp-&gt;x);
++	return;
++    }
++
++    jutil_iqresult(jp-&gt;x);
++    q = xmlnode_insert_tag(jp-&gt;x, &quot;query&quot;);
++    xmlnode_put_attrib(q, &quot;xmlns&quot;, NS_DISCO_INFO);
++    info = xmlnode_insert_tag(q, &quot;identity&quot;);
++    xmlnode_put_attrib(info, &quot;category&quot;, &quot;gateway&quot;);
++    xmlnode_put_attrib(info, &quot;type&quot;, &quot;msn&quot;);
++    xmlnode_put_attrib(info, &quot;name&quot;,xmlnode_get_tag_data(ti-&gt;vcard,&quot;FN&quot;));
++
++    info = xmlnode_insert_tag(q, &quot;feature&quot;);
++    xmlnode_put_attrib(info, &quot;var&quot;, NS_REGISTER);
++
++    info = xmlnode_insert_tag(q, &quot;feature&quot;);
++    xmlnode_put_attrib(info, &quot;var&quot;, NS_VERSION);
++
++    info = xmlnode_insert_tag(q, &quot;feature&quot;);
++    xmlnode_put_attrib(info, &quot;var&quot;, NS_TIME);
++
++    info = xmlnode_insert_tag(q, &quot;feature&quot;);
++    xmlnode_put_attrib(info, &quot;var&quot;, NS_LAST);
++
++    info = xmlnode_insert_tag(q, &quot;feature&quot;);
++    xmlnode_put_attrib(info, &quot;var&quot;, NS_GATEWAY);
++
++    info = xmlnode_insert_tag(q, &quot;feature&quot;);
++    xmlnode_put_attrib(info, &quot;var&quot;, NS_VCARD);
++
++    if (ti-&gt;admin != NULL &amp;&amp; xmlnode_get_tag(ti-&gt;admin,spools(jp-&gt;p,&quot;read=&quot;,jid_full(jid_user(jp-&gt;from)),jp-&gt;p)) != NULL)
++    {
++	info = xmlnode_insert_tag(q, &quot;feature&quot;);
++	xmlnode_put_attrib(info, &quot;var&quot;, NS_ADMIN);
++    }
++
++    mt_deliver(ti,jp-&gt;x);
++}
++
+ void mt_iq_vcard_user(session s, jpacket jp)
+ {
+     xmlnode q;
+@@ -242,6 +313,49 @@
+     mt_deliver(s-&gt;ti,jp-&gt;x);
+ }
+ 
++void mt_iq_disco_items_user(session s, jpacket jp)
++{
++    xmlnode q;
++    char *m;
++
++    if (jpacket_subtype(jp) != JPACKET__GET || (m = mt_jid2mid(jp-&gt;p, jp-&gt;to)) == NULL)
++	jutil_error(jp-&gt;x, TERROR_BAD);
++
++    jutil_iqresult(jp-&gt;x);
++    q = xmlnode_insert_tag(jp-&gt;x, &quot;query&quot;);
++    xmlnode_put_attrib(q, &quot;xmlns&quot;, NS_DISCO_ITEMS);
++
++    mt_deliver(s-&gt;ti, jp-&gt;x);
++}
++
++void mt_iq_disco_info_user(session s, jpacket jp)
++{
++    xmlnode q, info;
++    muser u;
++    char *m = NULL;
++
++    if (jpacket_subtype(jp) != JPACKET__GET || (m = mt_jid2mid(jp-&gt;p, jp-&gt;to)) == NULL)
++	jutil_error(jp-&gt;x, TERROR_BAD);
++
++    jutil_iqresult(jp-&gt;x);
++    q = xmlnode_insert_tag(jp-&gt;x, &quot;query&quot;);
++    xmlnode_put_attrib(q, &quot;xmlns&quot;, NS_DISCO_INFO);
++
++    info = xmlnode_insert_tag(q, &quot;identity&quot;);
++    xmlnode_put_attrib(info, &quot;category&quot;, &quot;client&quot;);
++    xmlnode_put_attrib(info, &quot;type&quot;, &quot;pc&quot;);
++    u = (muser) xhash_get(s-&gt;users,m);
++    xmlnode_put_attrib(info,&quot;name&quot;,u != NULL ? mt_decode(jp-&gt;p,u-&gt;handle) : m);
++
++    info = xmlnode_insert_tag(q, &quot;feature&quot;);
++    xmlnode_put_attrib(info, &quot;var&quot;, NS_VERSION);
++
++    info = xmlnode_insert_tag(q, &quot;feature&quot;);
++    xmlnode_put_attrib(info, &quot;var&quot;, NS_VCARD);
++
++    mt_deliver(s-&gt;ti, jp-&gt;x);
++}
++
+ typedef void (*iq_server_cb)(mti ti, jpacket jp);
+ 
+ void mt_iq_server(mti ti, jpacket jp)
+@@ -272,6 +386,8 @@
+     xhash_put(h,NS_ADMIN,&amp;mt_iq_admin);
+     xhash_put(h,NS_VCARD,&amp;mt_iq_vcard_server);
+     xhash_put(h,NS_BROWSE,&amp;mt_iq_browse_server);
++    xhash_put(h,NS_DISCO_ITEMS,&amp;mt_iq_disco_items_server);
++    xhash_put(h,NS_DISCO_INFO,&amp;mt_iq_disco_info_server);
+ }
+ 
+ void mt_iq(session s, jpacket jp)
+@@ -294,6 +410,10 @@
+             mt_iq_browse_user(s,jp);
+         else if (j_strcmp(xmlns,NS_VERSION) == 0)
+             mt_iq_version(s-&gt;ti,jp);
++	else if (j_strcmp(xmlns,NS_DISCO_ITEMS) == 0)
++	    mt_iq_disco_items_user(s,jp);
++	else if (j_strcmp(xmlns,NS_DISCO_INFO) == 0)
++	    mt_iq_disco_info_user(s,jp);
+         else
+         {
+             jutil_error(jp-&gt;x,TERROR_NOTALLOWED);
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: Digital signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20031205/2363d4be/attachment-0002.pgp">https://www.jabber.org/jdev/attachments/20031205/2363d4be/attachment-0002.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="076951.html">[JDEV] Patch for aim-t to support service discovery
+</A></li>
+	<LI>Next message: <A HREF="076953.html">[JDEV] Patch for service discovery support in JIT
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76952">[ date ]</a>
+              <a href="thread.html#76952">[ thread ]</a>
+              <a href="subject.html#76952">[ subject ]</a>
+              <a href="author.html#76952">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

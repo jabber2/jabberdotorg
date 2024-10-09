@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Using german umlauts and other special characters in	jabber client
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Using%20german%20umlauts%20and%20other%20special%20characters%20in%0A%09jabber%20client&In-Reply-To=%3C20041015092223.GB14689%40hermes.muc.charente.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="049635.html">
+   <LINK REL="Next"  HREF="049639.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Using german umlauts and other special characters in	jabber client</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Using%20german%20umlauts%20and%20other%20special%20characters%20in%0A%09jabber%20client&In-Reply-To=%3C20041015092223.GB14689%40hermes.muc.charente.de%3E"
+       TITLE="[jdev] Using german umlauts and other special characters in	jabber client">m at tthias.net
+       </A><BR>
+    <I>Fri Oct 15 04:22:23 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="049635.html">[jdev] Using german umlauts and other special characters in jabber	client
+</A></li>
+        <LI>Next message: <A HREF="049639.html">[jdev] Using german umlauts and other special characters in	jabber client
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#49637">[ date ]</a>
+              <a href="thread.html#49637">[ thread ]</a>
+              <a href="subject.html#49637">[ subject ]</a>
+              <a href="author.html#49637">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Jana!
+
+Jana von dem Berge schrieb am 2004-10-15 10:58:44:
+&gt;<i> I'm running jabberd 1.4.3 and I have Problems with german umlauts. 
+</I>&gt;<i> When I send a message with a Client to the server with e.g. an '&#252;' I see the '&#252;' in the debugging outputs of the server.
+</I>&gt;<i> But when I read from the socket with 
+</I>&gt;<i> 
+</I>&gt;<i> recv(j-&gt;fd, buf, sizeof(buf)-1, 0); (language c)
+</I>&gt;<i> 
+</I>&gt;<i> the umlaut is know an '&#195;&#188;' and other special characters like '&#224;' act the same way.
+</I>&gt;<i> 
+</I>&gt;<i> Do you think I have to configurate my jabebr-server or do I replace all these characters in my Client-C-Programm with the
+</I>&gt;<i> right characters?
+</I>
+This are not strange characters ;) It's just that XMPP/Jabber does not
+use the Latin-1/ISO-8859-1 charset you are used to use (and probably
+using in your applications) but the UTF-8 encoding of Unicode. Therefore
+XMPP is able to carry &quot;all&quot; characters not only a limited subset of
+(less than) 256 characters you have in Latin-1.
+
+If you want to stick on using Latin-1 as your local charset (*),
+take care, that you convert the characters from your local charset to
+UTF-8 before transmitting and to convert them from UTF-8 back to your
+local charset after receiving.
+
+If you declare another encoding than UTF-8 in the xml declaration using
+the encoding attribute, the jabberd 1.4.x implementation and many others
+will detect that you are using an other charset and will convert the
+incoming data to UTF-8 ... but as you noticed on the outgoing stream
+jabberd does always use the UTF-8 encoding.
+That jabberd accepts other encodings than UTF-8 is a feature available
+in the XML parser used by jabberd (and other servers), but you should
+not rely on this, as it is not neccessary by the XMPP standard to accept
+other encodings than UTF-8.
+
+If you are working on a unix plattform, you can use the function iconv()
+(man 3 iconv) to convert between different charsets. I don't know, if
+this function exists on (native) windows as well.
+
+
+Tot kijk
+    Matthias
+
+
+(*) you might also consider changing to using unicode in your
+application by using the wchar_t character type instead of the char one.
+
+-- 
+Fon: +49-(0)70 0770 07770       <A HREF="http://web.amessage.info">http://web.amessage.info</A>
+HAM: DB1MW                      xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mawis at amessage.info</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: Digital signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20041015/a2add49c/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20041015/a2add49c/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="049635.html">[jdev] Using german umlauts and other special characters in jabber	client
+</A></li>
+	<LI>Next message: <A HREF="049639.html">[jdev] Using german umlauts and other special characters in	jabber client
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#49637">[ date ]</a>
+              <a href="thread.html#49637">[ thread ]</a>
+              <a href="subject.html#49637">[ subject ]</a>
+              <a href="author.html#49637">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

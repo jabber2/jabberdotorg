@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Roster caching
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Roster%20caching&In-Reply-To=%3C7472.1146816079.282878%40peirce.dave.cridland.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="053859.html">
+   <LINK REL="Next"  HREF="053854.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Roster caching</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Roster%20caching&In-Reply-To=%3C7472.1146816079.282878%40peirce.dave.cridland.net%3E"
+       TITLE="[jdev] Re: Roster caching">dave at cridland.net
+       </A><BR>
+    <I>Fri May  5 03:01:18 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="053859.html">[jdev] Re: Roster caching
+</A></li>
+        <LI>Next message: <A HREF="053854.html">[jdev] missing files on jabberstudio?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53863">[ date ]</a>
+              <a href="thread.html#53863">[ thread ]</a>
+              <a href="subject.html#53863">[ subject ]</a>
+              <a href="author.html#53863">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Fri May  5 07:38:36 2006, Remko Troncon wrote:
+&gt;<i> On Thu, May 04, 2006 at 03:33:03PM -0600, Peter Saint-Andre wrote:
+</I>&gt;<i> &gt; objections to it. I'm not sure how much demand there really is 
+</I>&gt;<i> for this
+</I>&gt;<i> &gt; feature, but server and client developers could experiment and 
+</I>&gt;<i> see if it
+</I>&gt;<i> &gt; makes life much better for all concerned. :-)
+</I>&gt;<i> 
+</I>&gt;<i> Well, i must confess that each time i log in with my 'main' jabber
+</I>&gt;<i> account and MSN account with XML logging on, i always shiver about
+</I>&gt;<i> the size of my contactlist(s) being sent. When logging in over a
+</I>&gt;<i> cell phone connection, i lose a lot of initial traffic (11k 
+</I>&gt;<i> uncompressed)
+</I>&gt;<i> just retrieving my roster. This is why i created a special account 
+</I>&gt;<i> with
+</I>&gt;<i> my most important contact, to use in bandwidth-challenged 
+</I>&gt;<i> situations.
+</I>&gt;<i> I realize stream compression would help me a lot, but such an 
+</I>&gt;<i> optimization
+</I>&gt;<i> sounds like a good way to avoid traffic altogether.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>Well, I'm the the happy position of having stream compression on my 
+email, and I can tell you for certain that the protocol optimizations 
+there help considerably more than the compression - although 
+generally, for email usage, I'm seeing 60%-80% reduction in data 
+transfer even after those protocol optimizations.
+
+
+&gt;<i> I like the direction of Dave's proposal. However, at first i read 
+</I>&gt;<i> it as 'keeping one number for the total roster', kind of like how 
+</I>&gt;<i> subversion manages
+</I>&gt;<i> repositories. This makes adding, deleting, ... and such easy, and 
+</I>&gt;<i> doesn't
+</I>&gt;<i> require the other operations (like obtaining a list of deletions,
+</I>&gt;<i> obtaining a list of entries). However, this requires more (smart) 
+</I>&gt;<i> storage i guess. The one number per entry works, but it makes 
+</I>&gt;<i> deletions pretty tricky to implement and track, both server and 
+</I>&gt;<i> client side, and sounds like you can get into a mess pretty fast.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>If it helps, I've implemented both side (client and server) of that 
+mechanism for ACAP. ACAP has per entry ACLs, so it's significantly 
+more complex to implement the deletion tracking, hence for any ACL 
+change, I throw the deletion tracking data (tuples of modtime and 
+entry name) away entirely, and force the client into using the 
+fallback. This is cheating, but it's a fairly rare case in practise 
+anyway. I also don't persist the data, so if the ACAP server crashes 
+it's lost.
+
+The deletion tracking isn't that hard (hardest thing to remember is 
+to scan the deletion tracking list when you create an entry, to 
+ensure you're not going to report it as both changed and deleted). 
+Nor is the modtime stuff (as it's called in ACAP - moseq is from 
+IMAP, and is in reality somewhat more complex), that's a pretty 
+trivial job, in fact.
+
+On the client side, dealing efficiently with the deletions is hard, 
+but if you want, you can use simpler fallbacks than I do, like, if 
+the deletion tracking fails, you just refresh the entire roster. I'm 
+just a little obsessive about saving octets on the wire. Note that 
+it's easier if you're dealing with data that has update notifications 
+anyway, since you wire the deletion tracking (and the modified-since 
+search results) into the update handling.
+
+So basically, the upshot is that I'd dispute that implementation of 
+this is particularly difficult - I'd stop short of trivial, at least 
+for clients, but when you start being clever about bandwidth, your 
+client does have to be a little smarter to take full advantage.
+
+Dave.
+-- 
+           You see things; and you say &quot;Why?&quot;
+   But I dream things that never were; and I say &quot;Why not?&quot;
+    - George Bernard Shaw
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="053859.html">[jdev] Re: Roster caching
+</A></li>
+	<LI>Next message: <A HREF="053854.html">[jdev] missing files on jabberstudio?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53863">[ date ]</a>
+              <a href="thread.html#53863">[ thread ]</a>
+              <a href="subject.html#53863">[ subject ]</a>
+              <a href="author.html#53863">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

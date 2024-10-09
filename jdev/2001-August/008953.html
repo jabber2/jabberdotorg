@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] mod_auth_crypt
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20mod_auth_crypt&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="009100.html">
+   <LINK REL="Next"  HREF="008959.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] mod_auth_crypt</H1>
+    <B>Fabien Ninoles</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20mod_auth_crypt&In-Reply-To="
+       TITLE="[JDEV] mod_auth_crypt">fabien at Nightbird.Dynamic.TZoNE.ORG
+       </A><BR>
+    <I>Sun Aug  5 21:20:00 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="009100.html">[JDEV] transport example
+</A></li>
+        <LI>Next message: <A HREF="008959.html">[JDEV] mod_auth_crypt
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8953">[ date ]</a>
+              <a href="thread.html#8953">[ thread ]</a>
+              <a href="subject.html#8953">[ subject ]</a>
+              <a href="author.html#8953">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I just finish an implementation of a mod_auth_crypt that save the
+password in a crypted form (using crypt) just like a standard (not md5)
+password file.  Currently, it works.  But here is the drawback:
+
+1- The password must be send in clear text.  Yep, since it's a one way
+authorization, the client can't know the salt with which I encrypt the
+password.  So I need it in clear text, so this make not-ssl connection
+insecure (but a clear connection is already insecure).
+
+2- digest no more works if you remove the mod_auth_plain.  Since the
+client send a digest password to the server, the server has to know the
+clear text password.
+
+
+The file is available at this url:
+<A HREF="http://www.tzone.org/~fabien/jabber/mod_auth_crypt.c">http://www.tzone.org/~fabien/jabber/mod_auth_crypt.c</A>
+
+The file goes in jsm/modules of jabber2 cvs src and the following change
+is also required:
+
+- Add the file to the right object list into jsm/Makefile and
+  jsm/modules/Makefile.
+ 
+- Add a #define NS_AUTH_CRYPT &quot;jabber:iq:auth:crypt&quot; into the
+  jabberd/lib/lib.h.
+
+Old account can be converts by adding a 
+
+&lt;crypt xmlns=&quot;jabber:iq:auth:crypt&quot; xdbns=&quot;jabber:iq:auth:crypt&quot;&gt;CRYPTPASS&lt;/crypt&gt;
+
+where CRYPTPASS is the string obtain by passing a salt (&quot;NC&quot; is good for
+and the clear text password to this command:
+
+perl -e 'print &amp;crypt(&quot;password&quot;,&quot;NC&quot;),&quot;\n&quot;;'
+
+(Sorry, don't know enough perl to make a complete conversion script
+without too much time... I'm pretty sure a perl expert will do it easily
+however ;)
+
+So, now, I will look to register and authenticate directly against the
+/etc/passwd file of the server.  Must be easier than LDAP ;)
+
+Good bye,
+Fabien,
+very sorry for his bad english :-/
+
+--
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">fabien at tzone.org</A>                 <A HREF="http://www.tzone.org/~fabien">http://www.tzone.org/~fabien</A>
+GPG KeyID: C15D FE9E BB35 F596 127F  BF7D 8F1F DFC9 BCE0 9436
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="009100.html">[JDEV] transport example
+</A></li>
+	<LI>Next message: <A HREF="008959.html">[JDEV] mod_auth_crypt
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8953">[ date ]</a>
+              <a href="thread.html#8953">[ thread ]</a>
+              <a href="subject.html#8953">[ subject ]</a>
+              <a href="author.html#8953">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

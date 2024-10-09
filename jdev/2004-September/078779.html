@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] RE: [Standards-JIG] Call for	Experience:JEP-0078(Non-SASLAuthentication)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20RE%3A%20%5BStandards-JIG%5D%20Call%20for%0A%09Experience%3AJEP-0078%28Non-SASLAuthentication%29&In-Reply-To=%3C11D121AB355B69448D3A9F2132D2A3AA4201A3%40niobe.BlueHands.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="078777.html">
+   <LINK REL="Next"  HREF="078780.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] RE: [Standards-JIG] Call for	Experience:JEP-0078(Non-SASLAuthentication)</H1>
+    <B>Heiner Wolf</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20RE%3A%20%5BStandards-JIG%5D%20Call%20for%0A%09Experience%3AJEP-0078%28Non-SASLAuthentication%29&In-Reply-To=%3C11D121AB355B69448D3A9F2132D2A3AA4201A3%40niobe.BlueHands.de%3E"
+       TITLE="[jdev] RE: [Standards-JIG] Call for	Experience:JEP-0078(Non-SASLAuthentication)">wolf at bluehands.de
+       </A><BR>
+    <I>Mon Sep 27 02:52:47 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="078777.html">[jdev] New Project
+</A></li>
+        <LI>Next message: <A HREF="078780.html">[jdev] RE: [Standards-JIG] Call for	Experience:JEP-0078(Non-SASLAuthentication)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#78779">[ date ]</a>
+              <a href="thread.html#78779">[ thread ]</a>
+              <a href="subject.html#78779">[ subject ]</a>
+              <a href="author.html#78779">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello
+
+Some client have a &quot;register automatically if the username does not
+exist&quot; feature. How is the client supposed to learn that a username 
+does not exist? 
+
+JEP-0078 &quot;3.1 User Authenticates with Server&quot; says:
+If there is no such username, the server SHOULD NOT return an error, but
+instead SHOULD return the normal authentication fields (this helps to
+prevent unknown users from discovering which usernames are in use). 
+
+Ejabberd does this according to JEP-0078, but jabberd 1.4.3 returns an
+error, if the user name does not exist. Am I right that jabberd is not 
+JEP-0078 compliant? Is there any way to be JEP-0078 compliant AND 
+to support &quot;register automatically if the username does not exist&quot;?
+
+jabberd 1.4.3:
+-------------
+
+C-&gt;S: &lt;iq id='7d8f0612d5ce' type='get'&gt;
+        &lt;query xmlns='jabber:iq:auth'&gt;
+          &lt;username&gt;wolfspelzx&lt;/username&gt;
+        &lt;/query&gt;
+      &lt;/iq&gt;
+
+S-&gt;C: &lt;iq id='7d8f0612d5ce' type='error'&gt;
+        &lt;query xmlns='jabber:iq:auth'&gt;
+          &lt;username&gt;wolfspelzx&lt;/username&gt;
+        &lt;/query&gt;
+        &lt;error code='401'&gt;Unauthorized&lt;/error&gt;
+      &lt;/iq&gt;
+
+ejabberd:
+---------
+
+C-&gt;S: &lt;iq id='fa596e59e336' type='get'&gt;
+        &lt;query xmlns='jabber:iq:auth'&gt;
+          &lt;username&gt;wolfspelzx&lt;/username&gt;
+        &lt;/query&gt;
+      &lt;/iq&gt;
+
+S-&gt;C: &lt;iq type='result' id='fa596e59e336'&gt;
+        &lt;query xmlns='jabber:iq:auth'&gt;
+          &lt;username&gt;wolfspelzx&lt;/username&gt;&lt;password/&gt;&lt;digest/&gt;&lt;resource/&gt;
+        &lt;/query&gt;
+      &lt;/iq&gt;
+
+C-&gt;S: &lt;iq id='f52219ef8e9c' type='set'&gt;
+        &lt;query xmlns='jabber:iq:auth'&gt;
+          &lt;username&gt;wolfspelzx&lt;/username&gt;
+          &lt;digest&gt;a9f39631c300ee32ebcdc8225aac972381c5401d&lt;/digest&gt;
+          &lt;resource&gt;67e7535a2fd0&lt;/resource&gt;
+        &lt;/query&gt;
+      &lt;/iq&gt;
+
+S-&gt;C: &lt;iq type='error' id='f52219ef8e9c'&gt;
+        &lt;query xmlns='jabber:iq:auth'&gt;
+          &lt;username&gt;wolfspelzx&lt;/username&gt;
+          &lt;digest&gt;a9f39631c300ee32ebcdc8225aac972381c5401d&lt;/digest&gt;
+          &lt;resource&gt;67e7535a2fd0&lt;/resource&gt;
+        &lt;/query&gt;
+        &lt;error code='403' type='auth'&gt;
+          &lt;forbidden xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/&gt;
+        &lt;/error&gt;
+      &lt;/iq&gt;
+
+Regards
+hw
+--
+Dr. Klaus H. Wolf
+bluehands GmbH &amp; Co.mmunication KG
+<A HREF="http://www.bluehands.de/people/hw">http://www.bluehands.de/people/hw</A>
++49 (0721) 16108 75
+--
+Jabber enabled Virtual Presence on the Web: <A HREF="http://www.lluna.de/">http://www.lluna.de/</A>
+Open Source Future History: <A HREF="http://www.galactic-developments.com/">http://www.galactic-developments.com/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="078777.html">[jdev] New Project
+</A></li>
+	<LI>Next message: <A HREF="078780.html">[jdev] RE: [Standards-JIG] Call for	Experience:JEP-0078(Non-SASLAuthentication)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#78779">[ date ]</a>
+              <a href="thread.html#78779">[ thread ]</a>
+              <a href="subject.html#78779">[ subject ]</a>
+              <a href="author.html#78779">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

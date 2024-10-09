@@ -1,0 +1,802 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [help] server dying/crashing after login... long log (sorry)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5Bhelp%5D%20server%20dying/crashing%20after%20login...%20long%20log%20%28sorry%29&In-Reply-To=%3C200105041347.GAA21553%40snipe.mail.pas.earthlink.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="036819.html">
+   <LINK REL="Next"  HREF="036848.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [help] server dying/crashing after login... long log (sorry)</H1>
+    <B>Stephane Lunati</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5Bhelp%5D%20server%20dying/crashing%20after%20login...%20long%20log%20%28sorry%29&In-Reply-To=%3C200105041347.GAA21553%40snipe.mail.pas.earthlink.net%3E"
+       TITLE="[JDEV] [help] server dying/crashing after login... long log (sorry)">slunati at earthlink.net
+       </A><BR>
+    <I>Fri May  4 08:47:15 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="036819.html">[JDEV] Help wanted on JabberCOM and BC++ Builder
+</A></li>
+        <LI>Next message: <A HREF="036848.html">[JDEV] [help] server dying/crashing after login... long log	(sorry)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36815">[ date ]</a>
+              <a href="thread.html#36815">[ thread ]</a>
+              <a href="subject.html#36815">[ subject ]</a>
+              <a href="author.html#36815">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi
+
+I just finish porting Jabber 1.4.1 on a new unix system (compiled in 
+single). The server start OK and wait for incoming connection. Everytime 
+a client initiate a login or try to register a new user, then the server 
+is dying/crashing.
+
+In order to understand what's happening I compiled the PTH lib with 
+debug turned on, and I added some extra log in jabber's source 
+especially in the mio.c file (when it raise SIGUSR2 and when it's 
+waiting for this signal).
+After looking the code and trying to understand why it's dying I still 
+did not figure out the reason. The server is able to send back data to 
+the client (so write on the socket) since I received correctly the 
+initial &lt;?xml vresion=&quot;1.0&quot;&gt;&lt;stream ...
+Any help will be appreciate. Here is the log I got (sorry it's long... I 
+removed some thread context switch that does not add extra useful info) :
+..
+Thu May  3 11:52:48 2001  mio.c:1120 io_select to listen on 5222 [(null)]
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;main&quot;
+547:pth_lib.c:0453: return 0x0 with errno 22(&quot;Invalid argument&quot;)
+Thu May  3 11:52:48 2001  mio.c:1144 io_select starting to listen on 
+5222 [(null)]
+Thu May  3 11:52:48 2001  deliver.c:277 Registering elogger with 
+instance elogger
+Thu May  3 11:52:48 2001  deliver.c:277 Registering * with instance 
+elogger
+Thu May  3 11:52:48 2001  deliver.c:383 Registering logtype * with 
+instance elogger
+Thu May  3 11:52:48 2001  base_format.c:112 base_format configuring 
+instance elogger
+Thu May  3 11:52:48 2001  base_file.c:80 base_file configuring instance 
+elogger
+Thu May  3 11:52:48 2001  base_stderr.c:64 base_stderr configuring 
+instnace elogger
+Thu May  3 11:52:48 2001  deliver.c:277 Registering rlogger with 
+instance rlogger
+Thu May  3 11:52:48 2001  deliver.c:277 Registering * with instance 
+rlogger
+Thu May  3 11:52:48 2001  deliver.c:383 Registering logtype record with 
+instance rlogger
+Thu May  3 11:52:48 2001  base_format.c:112 base_format configuring 
+instance rlogger
+Thu May  3 11:52:48 2001  base_file.c:80 base_file configuring instance 
+rlogger
+Thu May  3 11:52:48 2001  deliver.c:277 Registering dnsrv with instance 
+dnsrv
+Thu May  3 11:52:48 2001  deliver.c:277 Registering * with instance dnsrv
+Thu May  3 11:52:48 2001  deliver.c:235 @-internal processing &lt;xdb 
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' from='dnsrv' ns='jabber:config:dnsrv' 
+id='0'/&gt;
+Thu May  3 11:52:48 2001  deliver.c:651 delivering to instance 'dnsrv'
+Thu May  3 11:52:48 2001  xdb.c:41 xdb_results checking xdb packet &lt;xdb 
+type='result' to='dnsrv' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' 
+ns='jabber:config:dnsrv' id='0'&gt;&lt;dnsrv xmlns='jabber:config:dnsrv'&gt;
+&lt;resend service='_jabber._tcp'&gt;s2s&lt;/resend&gt; &lt;resend&gt;s2s&lt;/resend&gt;
+&lt;/dnsrv&gt;&lt;/xdb&gt;
+Thu May  3 11:52:48 2001  dnsrv.c:536 dnsrv debug: &lt;dnsrv 
+xmlns='jabber:config:dnsrv'&gt;
+&lt;resend service='_jabber._tcp'&gt;s2s&lt;/resend&gt; &lt;resend&gt;s2s&lt;/resend&gt;
+&lt;/dnsrv&gt;
+
+547:pth_lib.c:0192: pth_spawn: enter
+547:pth_mctx.c:0247: pth_mctx_set: enter
+547:pth_mctx.c:0391: pth_mctx_set_trampoline: return to caller
+547:pth_mctx.c:0395: pth_mctx_set_trampoline: reentered from caller
+547:pth_mctx.c:0433: pth_mctx_set_trampoline_jumpin: switch back to 
+caller
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_mctx.c:0363: pth_mctx_set: leave
+547:pth_lib.c:0280: pth_spawn: leave
+547:pth_lib.c:0414: pth_join: joining thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_event.c:0388: pth_wait: enter from thread &quot;main&quot;
+547:pth_event.c:0394: pth_wait: waiting on event 0x1a5e40
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;main&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x17eb30 
+(&quot;main&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread &quot;main&quot; ran 0.147137
+547:pth_sched.c:0338: pth_scheduler: moving thread &quot;main&quot; to waiting 
+queue
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in polling mode
+547:pth_sched.c:0560: pth_sched_eventmanager: [non-I/O] event occurred 
+for thread &quot;unknown&quot;
+547:pth_sched.c:0760: pth_sched_eventmanager: thread &quot;unknown&quot; moved 
+from waiting to ready queue
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0189: pth_scheduler: new thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; moved to top of ready queue
+547:pth_sched.c:0206: pth_scheduler: thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; selected (prio=0, qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x1a5a90 
+(&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_mctx.c:0440: pth_mctx_set_trampoline_jumpin: reentered from 
+scheduler
+548:pth_lib.c:0116: return 0x0 with errno 1(&quot;Operation not permitted&quot;)
+Thu May  3 11:52:48 2001  dnsrv.c:132 DNSRV CHILD: starting
+547:pth_lib.c:0369: pth_exit: marking thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; as dead
+547:pth_lib.c:0393: pth_exit: switching from thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x1a5a90 
+(&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; ran 0.009513
+547:pth_sched.c:0325: pth_scheduler: marking thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; as dead
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in polling mode
+547:pth_sched.c:0560: pth_sched_eventmanager: [non-I/O] event occurred 
+for thread &quot;main&quot;
+547:pth_sched.c:0760: pth_sched_eventmanager: thread &quot;main&quot; moved from 
+waiting to ready queue
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread &quot;unknown&quot; selected (prio=0, 
+qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x181000 
+(&quot;unknown&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_lib.c:0467: pth_yield: got back control from scheduler
+547:pth_lib.c:0469: pth_yield: leave to thread &quot;unknown&quot;
+547:pth_event.c:0417: pth_wait: occurred event 0x1836f0
+547:pth_event.c:0417: pth_wait: occurred event 0x185120
+547:pth_event.c:0422: pth_wait: leave to thread &quot;unknown&quot;
+547:pth_high.c:0261: return 0xffffffff with errno 4(&quot;Interrupted system 
+call&quot;)
+Thu May  3 11:52:48 2001  mio.c:599 pth_select_ev end waiting 
+(receiving) !!
+Thu May  3 11:52:48 2001  mio.c:627 socket 5 has restore karma -100 -=&gt; 
+10
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;unknown&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+[...CRUNCH...]
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_mctx.c:0363: pth_mctx_set: leave
+547:pth_lib.c:0280: pth_spawn: leave
+Thu May  3 11:52:48 2001  deliver.c:277 Registering s2s with instance s2s
+Thu May  3 11:52:48 2001  dialback.c:265 dialback loading
+Thu May  3 11:52:48 2001  deliver.c:235 @-internal processing &lt;xdb 
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' from='s2s' ns='jabber:config:dialback' 
+id='0'/&gt;
+Thu May  3 11:52:48 2001  deliver.c:651 delivering to instance 's2s'
+Thu May  3 11:52:48 2001  xdb.c:41 xdb_results checking xdb packet &lt;xdb 
+type='result' to='s2s' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' 
+ns='jabber:config:dialback' id='0'&gt;&lt;dialback 
+xmlns='jabber:config:dialback'&gt;
+&lt;legacy/&gt;
+&lt;ip port='5269'/&gt;
+&lt;karma&gt;
+&lt;init&gt;50&lt;/init&gt;
+&lt;max&gt;50&lt;/max&gt;
+&lt;inc&gt;4&lt;/inc&gt;
+&lt;dec&gt;1&lt;/dec&gt;
+&lt;penalty&gt;-5&lt;/penalty&gt;
+&lt;restore&gt;50&lt;/restore&gt;
+&lt;/karma&gt;
+&lt;/dialback&gt;&lt;/xdb&gt;
+Thu May  3 11:52:48 2001  mio.c:1120 io_select to listen on 5269 [(null)]
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;main&quot;
+547:pth_lib.c:0462: pth_yield: give up control to scheduler in favour of 
+thread &quot;unknown&quot;
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x17eb30 
+(&quot;main&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread &quot;main&quot; ran 0.013371
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in polling mode
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0189: pth_scheduler: new thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; moved to top of ready queue
+547:pth_sched.c:0206: pth_scheduler: thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; selected (prio=0, qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x1a5a90 
+(&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_mctx.c:0440: pth_mctx_set_trampoline_jumpin: reentered from 
+scheduler
+547:pth_high.c:0555: pth_write_ev: enter from thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+Thu May  3 11:52:48 2001  dnsrv.c:147 DNSRV CHILD: Read from buffer: 
+&lt;stream&gt;
+547:pth_high.c:0628: pth_write_ev: leave to thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_high.c:0490: pth_read_ev: enter from thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_high.c:0532: pth_read_ev: leave to thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_high.c:0490: pth_read_ev: enter from thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_event.c:0388: pth_wait: enter from thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_event.c:0394: pth_wait: waiting on event 0x219880
+547:pth_lib.c:0443: pth_yield: enter from thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x1a5a90 
+(&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; ran 0.005230
+547:pth_sched.c:0338: pth_scheduler: moving thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; to waiting queue
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in polling mode
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread &quot;unknown&quot; selected (prio=0, 
+qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x181000 
+(&quot;unknown&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_lib.c:0467: pth_yield: got back control from scheduler
+547:pth_lib.c:0469: pth_yield: leave to thread &quot;unknown&quot;
+Thu May  3 11:52:48 2001  mio.c:596 pth_select_ev waiting !!
+547:pth_high.c:0159: pth_select_ev: called from thread &quot;unknown&quot;
+547:pth_event.c:0388: pth_wait: enter from thread &quot;unknown&quot;
+547:pth_event.c:0394: pth_wait: waiting on event 0x1836f0
+547:pth_event.c:0394: pth_wait: waiting on event 0x185120
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;unknown&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x181000 
+(&quot;unknown&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread &quot;unknown&quot; ran 0.003308
+547:pth_sched.c:0338: pth_scheduler: moving thread &quot;unknown&quot; to waiting 
+queue
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in polling mode
+547:pth_sched.c:0708: pth_sched_eventmanager: [signal] event occurred 
+for thread &quot;unknown&quot;
+547:pth_sched.c:0760: pth_sched_eventmanager: thread &quot;unknown&quot; moved 
+from waiting to ready queue
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread &quot;main&quot; selected (prio=0, 
+qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x17eb30 
+(&quot;main&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_lib.c:0467: pth_yield: got back control from scheduler
+547:pth_lib.c:0469: pth_yield: leave to thread &quot;main&quot;
+Thu May  3 11:52:48 2001  mio.c:1144 io_select starting to listen on 
+5269 [(null)]
+547:pth_msg.c:0136: return 0x0 with errno 22(&quot;Invalid argument&quot;)
+547:pth_event.c:0388: pth_wait: enter from thread &quot;main&quot;
+547:pth_event.c:0394: pth_wait: waiting on event 0x1a69a0
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;main&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+[...CRUNCH...]
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x181000 
+(&quot;unknown&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread &quot;unknown&quot; ran 0.000338
+547:pth_sched.c:0338: pth_scheduler: moving thread &quot;unknown&quot; to waiting 
+queue
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in waiting mode
+547:pth_sched.c:0633: pth_sched_eventmanager: [timeout] event occurred 
+for thread &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_sched.c:0760: pth_sched_eventmanager: thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; moved from waiting to ready queue
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; selected (prio=0, qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x17eee0 
+(&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_lib.c:0467: pth_yield: got back control from scheduler
+547:pth_lib.c:0469: pth_yield: leave to thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_event.c:0417: pth_wait: occurred event 0x18a4c0
+547:pth_event.c:0422: pth_wait: leave to thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_event.c:0388: pth_wait: enter from thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_event.c:0394: pth_wait: waiting on event 0x18a4c0
+547:pth_lib.c:0443: pth_yield: enter from thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x17eee0 
+(&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; ran 0.002490
+547:pth_sched.c:0338: pth_scheduler: moving thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; to waiting queue
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in waiting mode
+547:pth_sched.c:0633: pth_sched_eventmanager: [timeout] event occurred 
+for thread &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_sched.c:0760: pth_sched_eventmanager: thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; moved from waiting to ready queue
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; selected (prio=0, qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x17eee0 
+(&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_lib.c:0467: pth_yield: got back control from scheduler
+547:pth_lib.c:0469: pth_yield: leave to thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_event.c:0417: pth_wait: occurred event 0x18a4c0
+547:pth_event.c:0422: pth_wait: leave to thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_event.c:0388: pth_wait: enter from thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_event.c:0394: pth_wait: waiting on event 0x18a4c0
+547:pth_lib.c:0443: pth_yield: enter from thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x17eee0 
+(&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; ran 0.003113
+547:pth_sched.c:0338: pth_scheduler: moving thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; to waiting queue
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in waiting mode
+547:pth_sched.c:0697: pth_sched_eventmanager: [I/O] event occurred for 
+thread &quot;unknown&quot;
+547:pth_sched.c:0760: pth_sched_eventmanager: thread &quot;unknown&quot; moved 
+from waiting to ready queue
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread &quot;unknown&quot; selected (prio=0, 
+qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x181000 
+(&quot;unknown&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+[...CRUNCH...]
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_lib.c:0467: pth_yield: got back control from scheduler
+547:pth_lib.c:0469: pth_yield: leave to thread &quot;unknown&quot;
+Thu May  3 11:52:51 2001  mio.c:368 _mio_accept calling accept on fd #5
+547:pth_high.c:0436: pth_accept_ev: enter from thread &quot;unknown&quot;
+547:pth_high.c:0470: pth_accept_ev: leave to thread &quot;unknown&quot;
+Thu May  3 11:52:51 2001  mio.c:395 new socket accepted (fd: 11, ip: 
+192.168.168.50, port: 49293)
+547:pth_lib.c:0299: return 0x0 with errno 22(&quot;Invalid argument&quot;)
+Thu May  3 11:52:51 2001  mio.c:596 pth_select_ev waiting !!
+547:pth_high.c:0159: pth_select_ev: called from thread &quot;unknown&quot;
+547:pth_event.c:0388: pth_wait: enter from thread &quot;unknown&quot;
+547:pth_event.c:0394: pth_wait: waiting on event 0x1836f0
+547:pth_event.c:0394: pth_wait: waiting on event 0x185120
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;unknown&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x181000 
+(&quot;unknown&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread &quot;unknown&quot; ran 0.005843
+547:pth_sched.c:0338: pth_scheduler: moving thread &quot;unknown&quot; to waiting 
+queue
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in waiting mode
+547:pth_sched.c:0633: pth_sched_eventmanager: [timeout] event occurred 
+for thread &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_sched.c:0760: pth_sched_eventmanager: thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; moved from waiting to ready queue
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; selected (prio=0, qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x17eee0 
+(&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_lib.c:0467: pth_yield: got back control from scheduler
+547:pth_lib.c:0469: pth_yield: leave to thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_event.c:0417: pth_wait: occurred event 0x18a4c0
+547:pth_event.c:0422: pth_wait: leave to thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_event.c:0388: pth_wait: enter from thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_event.c:0394: pth_wait: waiting on event 0x18a4c0
+547:pth_lib.c:0443: pth_yield: enter from thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x17eee0 
+(&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; ran 0.003442
+547:pth_sched.c:0338: pth_scheduler: moving thread 
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">main.child at 988915968</A>=0x17eb30&quot; to waiting queue
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in waiting mode
+547:pth_sched.c:0697: pth_sched_eventmanager: [I/O] event occurred for 
+thread &quot;unknown&quot;
+547:pth_sched.c:0760: pth_sched_eventmanager: thread &quot;unknown&quot; moved 
+from waiting to ready queue
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread &quot;unknown&quot; selected (prio=0, 
+qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x181000 
+(&quot;unknown&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_lib.c:0467: pth_yield: got back control from scheduler
+547:pth_lib.c:0469: pth_yield: leave to thread &quot;unknown&quot;
+547:pth_event.c:0417: pth_wait: occurred event 0x1836f0
+547:pth_event.c:0417: pth_wait: occurred event 0x185120
+547:pth_event.c:0422: pth_wait: leave to thread &quot;unknown&quot;
+Thu May  3 11:52:52 2001  mio.c:599 pth_select_ev end waiting 
+(receiving) !!
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;unknown&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x181000 
+(&quot;unknown&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread &quot;unknown&quot; ran 0.002912
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in polling mode
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread &quot;unknown&quot; selected (prio=0, 
+qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x181000 
+(&quot;unknown&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_lib.c:0467: pth_yield: got back control from scheduler
+547:pth_lib.c:0469: pth_yield: leave to thread &quot;unknown&quot;
+547:pth_high.c:0490: pth_read_ev: enter from thread &quot;unknown&quot;
+547:pth_high.c:0532: pth_read_ev: leave to thread &quot;unknown&quot;
+Thu May  3 11:52:52 2001  mio.c:701 MIO read from socket 11: &lt;?xml 
+version=&quot;1.0&quot;?&gt;&lt;stream:stream to=&quot;coolserver&quot; 
+xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> xmlns=&quot;jabber:client&quot;&gt;
+
+Thu May  3 11:52:52 2001  client.c:243 pthsock_client_read called with: 
+m:1A6A40 flag:2 arg:1A6B50
+Thu May  3 11:52:52 2001  client.c:276 root received for 11
+Thu May  3 11:52:52 2001  mio.c:911 mio_write called on x: 0 buffer:
+Thu May  3 11:52:52 2001  mio.c:976 pth_raise SIGUSR2 !!
+547:pth_lib.c:0299: return 0x0 with errno 22(&quot;Invalid argument&quot;)
+Thu May  3 11:52:52 2001  mio.c:268 write_dump writing data: &lt;?xml 
+version='1.0'?&gt;&lt;stream:stream 
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='3AF1A904' 
+xmlns='jabber:client' from='coolserver'&gt;
+547:pth_high.c:0555: pth_write_ev: enter from thread &quot;unknown&quot;
+547:pth_high.c:0628: pth_write_ev: leave to thread &quot;unknown&quot;
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;unknown&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+[...CRUNCH...]
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_lib.c:0467: pth_yield: got back control from scheduler
+547:pth_lib.c:0469: pth_yield: leave to thread &quot;unknown&quot;
+Thu May  3 11:52:52 2001  mio.c:596 pth_select_ev waiting !!
+547:pth_high.c:0159: pth_select_ev: called from thread &quot;unknown&quot;
+Thu May  3 11:52:52 2001  mio.c:599 pth_select_ev end waiting 
+(receiving) !!
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;unknown&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x181000 
+(&quot;unknown&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread &quot;unknown&quot; ran 0.000356
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in polling mode
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread &quot;unknown&quot; selected (prio=0, 
+qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x181000 
+(&quot;unknown&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_lib.c:0467: pth_yield: got back control from scheduler
+547:pth_lib.c:0469: pth_yield: leave to thread &quot;unknown&quot;
+547:pth_high.c:0490: pth_read_ev: enter from thread &quot;unknown&quot;
+547:pth_high.c:0532: pth_read_ev: leave to thread &quot;unknown&quot;
+Thu May  3 11:52:52 2001  mio.c:701 MIO read from socket 11:
+&lt;iq id=&quot;011&quot; type=&quot;set&quot;&gt;
+&lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+         &lt;username&gt;slunati&lt;/username&gt;
+         &lt;password&gt;password&lt;/password&gt;
+         &lt;resource&gt;test&lt;/resource&gt;
+&lt;/query&gt;
+&lt;/iq&gt;
+
+Thu May  3 11:52:52 2001  client.c:243 pthsock_client_read called with: 
+m:1A6A40 flag:3 arg:1A6B50
+Thu May  3 11:52:52 2001  deliver.c:460 DELIVER 4:coolserver &lt;route 
+type='auth' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>/test' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">11 at c2s</A>/1A6A40'&gt;&lt;iq 
+id='011' type='set'&gt;
+&lt;query xmlns='jabber:iq:auth'&gt;
+         &lt;username&gt;slunati&lt;/username&gt;
+         &lt;password&gt;password&lt;/password&gt;
+         &lt;resource&gt;test&lt;/resource&gt;
+&lt;/query&gt;
+&lt;/iq&gt;&lt;/route&gt;
+Thu May  3 11:52:52 2001  deliver.c:651 delivering to instance 'sessions'
+Thu May  3 11:52:52 2001  deliver.c:83 (1951D0)incoming packet &lt;route 
+type='auth' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>/test' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">11 at c2s</A>/1A6A40'&gt;&lt;iq 
+id='011' type='set'&gt;
+&lt;query xmlns='jabber:iq:auth'&gt;
+         &lt;username&gt;slunati&lt;/username&gt;
+         &lt;password&gt;password&lt;/password&gt;
+         &lt;resource&gt;test&lt;/resource&gt;
+&lt;/query&gt;
+&lt;/iq&gt;&lt;/route&gt;
+Thu May  3 11:52:52 2001  util.c:92 config query maxusers
+Thu May  3 11:52:52 2001  deliver.c:89 creating user hash 24A000 for 
+coolserver
+Thu May  3 11:52:52 2001  deliver.c:91 checking 24A000
+Thu May  3 11:52:52 2001  util.c:92 config query auth
+547:pth_lib.c:0192: pth_spawn: enter
+547:pth_mctx.c:0247: pth_mctx_set: enter
+547:pth_mctx.c:0391: pth_mctx_set_trampoline: return to caller
+547:pth_mctx.c:0395: pth_mctx_set_trampoline: reentered from caller
+547:pth_mctx.c:0433: pth_mctx_set_trampoline_jumpin: switch back to 
+caller
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_mctx.c:0363: pth_mctx_set: leave
+547:pth_lib.c:0280: pth_spawn: leave
+547:pth_lib.c:0192: pth_spawn: enter
+547:pth_mctx.c:0247: pth_mctx_set: enter
+547:pth_mctx.c:0391: pth_mctx_set_trampoline: return to caller
+547:pth_mctx.c:0395: pth_mctx_set_trampoline: reentered from caller
+547:pth_mctx.c:0433: pth_mctx_set_trampoline_jumpin: switch back to 
+caller
+==== THREAD CONTEXT SWITCH ===========================================
+[... CRUNCH : 8 repetitions of apparently the same log as above...]
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_mctx.c:0363: pth_mctx_set: leave
+547:pth_lib.c:0280: pth_spawn: leave
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;unknown&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x181000 
+(&quot;unknown&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread &quot;unknown&quot; ran 0.064945
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in polling mode
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0189: pth_scheduler: new thread &quot;unknown&quot; moved to top 
+of ready queue
+547:pth_sched.c:0189: pth_scheduler: new thread &quot;unknown&quot; moved to top 
+of ready queue
+547:pth_sched.c:0189: pth_scheduler: new thread &quot;unknown&quot; moved to top 
+of ready queue
+547:pth_sched.c:0189: pth_scheduler: new thread &quot;unknown&quot; moved to top 
+of ready queue
+547:pth_sched.c:0189: pth_scheduler: new thread &quot;unknown&quot; moved to top 
+of ready queue
+547:pth_sched.c:0189: pth_scheduler: new thread &quot;unknown&quot; moved to top 
+of ready queue
+547:pth_sched.c:0189: pth_scheduler: new thread &quot;unknown&quot; moved to top 
+of ready queue
+547:pth_sched.c:0189: pth_scheduler: new thread &quot;unknown&quot; moved to top 
+of ready queue
+547:pth_sched.c:0189: pth_scheduler: new thread &quot;unknown&quot; moved to top 
+of ready queue
+547:pth_sched.c:0189: pth_scheduler: new thread &quot;unknown&quot; moved to top 
+of ready queue
+547:pth_sched.c:0206: pth_scheduler: thread &quot;unknown&quot; selected (prio=5, 
+qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x21ca40 
+(&quot;unknown&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_mctx.c:0440: pth_mctx_set_trampoline_jumpin: reentered from 
+scheduler
+Thu May  3 11:52:52 2001  mtq 21CA40 starting
+Thu May  3 11:52:52 2001  mtq 21CA40 leaving to pth
+547:pth_event.c:0388: pth_wait: enter from thread &quot;unknown&quot;
+547:pth_event.c:0394: pth_wait: waiting on event 0x21b4a0
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;unknown&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x21ca40 
+(&quot;unknown&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread &quot;unknown&quot; ran 0.003278
+547:pth_sched.c:0338: pth_scheduler: moving thread &quot;unknown&quot; to waiting 
+queue
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in polling mode
+547:pth_sched.c:0560: pth_sched_eventmanager: [non-I/O] event occurred 
+for thread &quot;unknown&quot;
+547:pth_sched.c:0760: pth_sched_eventmanager: thread &quot;unknown&quot; moved 
+from waiting to ready queue
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread &quot;unknown&quot; selected (prio=5, 
+qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x21ce60 
+(&quot;unknown&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_mctx.c:0440: pth_mctx_set_trampoline_jumpin: reentered from 
+scheduler
+Thu May  3 11:52:52 2001  mtq 21CE60 starting
+Thu May  3 11:52:52 2001  mtq 21CE60 leaving to pth
+547:pth_event.c:0388: pth_wait: enter from thread &quot;unknown&quot;
+547:pth_event.c:0394: pth_wait: waiting on event 0x21b4d0
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;unknown&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x21ce60 
+(&quot;unknown&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread &quot;unknown&quot; ran 0.003280
+547:pth_sched.c:0338: pth_scheduler: moving thread &quot;unknown&quot; to waiting 
+queue
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in polling mode
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread &quot;unknown&quot; selected (prio=5, 
+qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x21d280 
+(&quot;unknown&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_mctx.c:0440: pth_mctx_set_trampoline_jumpin: reentered from 
+scheduler
+Thu May  3 11:52:52 2001  mtq 21D280 starting
+Thu May  3 11:52:52 2001  mtq 21D280 leaving to pth
+547:pth_event.c:0388: pth_wait: enter from thread &quot;unknown&quot;
+547:pth_event.c:0394: pth_wait: waiting on event 0x21f430
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;unknown&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x21d280 
+(&quot;unknown&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread &quot;unknown&quot; ran 0.000379
+547:pth_sched.c:0338: pth_scheduler: moving thread &quot;unknown&quot; to waiting 
+queue
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in polling mode
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread &quot;unknown&quot; selected (prio=5, 
+qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x21d6a0 
+(&quot;unknown&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_mctx.c:0440: pth_mctx_set_trampoline_jumpin: reentered from 
+scheduler
+Thu May  3 11:52:52 2001  mtq 21D6A0 starting
+Thu May  3 11:52:52 2001  mtq 21D6A0 leaving to pth
+547:pth_event.c:0388: pth_wait: enter from thread &quot;unknown&quot;
+547:pth_event.c:0394: pth_wait: waiting on event 0x21f460
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;unknown&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+[...CRUNCH...]
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_lib.c:0467: pth_yield: got back control from scheduler
+547:pth_lib.c:0469: pth_yield: leave to thread &quot;unknown&quot;
+547:pth_event.c:0417: pth_wait: occurred event 0x21b4a0
+547:pth_event.c:0422: pth_wait: leave to thread &quot;unknown&quot;
+Thu May  3 11:52:52 2001  mtq 21CA40 entering from pth
+Thu May  3 11:52:52 2001  mtq 21CA40 one call 21B068
+Thu May  3 11:52:52 2001  authreg.c:52 auth request
+Thu May  3 11:52:52 2001  users.c:137 js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>,24A000)
+Thu May  3 11:52:52 2001  users.c:144 js_user not current
+Thu May  3 11:52:52 2001  deliver.c:460 DELIVER 2:coolserver &lt;xdb 
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>' from='sessions' ns='jabber:iq:auth' 
+id='1'/&gt;
+Thu May  3 11:52:52 2001  deliver.c:651 delivering to instance 'xdb'
+Thu May  3 11:52:52 2001  xdb_file.c:161 handling xdb request &lt;xdb 
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>' from='sessions' ns='jabber:iq:auth' 
+id='1'/&gt;
+Thu May  3 11:52:52 2001  xdb_file.c:98 loading 
+spool/coolserver/slunati.xml
+Thu May  3 11:52:52 2001  xdb_file.c:118 caching 
+spool/coolserver/slunati.xml
+Thu May  3 11:52:52 2001  deliver.c:460 DELIVER 1:sessions &lt;xdb 
+type='result' to='sessions' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>' 
+ns='jabber:iq:auth' id='1'&gt;&lt;password 
+xmlns='jabber:iq:auth'&gt;password&lt;/password&gt;&lt;/xdb&gt;
+Thu May  3 11:52:52 2001  deliver.c:651 delivering to instance 'sessions'
+Thu May  3 11:52:52 2001  xdb.c:41 xdb_results checking xdb packet &lt;xdb 
+type='result' to='sessions' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>' 
+ns='jabber:iq:auth' id='1'&gt;&lt;password 
+xmlns='jabber:iq:auth'&gt;password&lt;/password&gt;&lt;/xdb&gt;
+Thu May  3 11:52:52 2001  users.c:162 js_user debug 21F540 21F540
+Thu May  3 11:52:52 2001  modules.c:124 mapi_call 5
+Thu May  3 11:52:52 2001  modules.c:147 MAPI 19A450
+Thu May  3 11:52:52 2001  mod_auth_plain checking
+Thu May  3 11:52:52 2001  deliver.c:460 DELIVER 2:coolserver &lt;xdb 
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>' from='sessions' ns='jabber:iq:auth' 
+id='2'/&gt;
+Thu May  3 11:52:52 2001  deliver.c:651 delivering to instance 'xdb'
+Thu May  3 11:52:52 2001  xdb_file.c:161 handling xdb request &lt;xdb 
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>' from='sessions' ns='jabber:iq:auth' 
+id='2'/&gt;
+Thu May  3 11:52:52 2001  xdb_file.c:98 loading 
+spool/coolserver/slunati.xml
+Thu May  3 11:52:52 2001  deliver.c:460 DELIVER 1:sessions &lt;xdb 
+type='result' to='sessions' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>' 
+ns='jabber:iq:auth' id='2'&gt;&lt;password 
+xmlns='jabber:iq:auth'&gt;password&lt;/password&gt;&lt;/xdb&gt;
+Thu May  3 11:52:52 2001  deliver.c:651 delivering to instance 'sessions'
+Thu May  3 11:52:52 2001  xdb.c:41 xdb_results checking xdb packet &lt;xdb 
+type='result' to='sessions' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>' 
+ns='jabber:iq:auth' id='2'&gt;&lt;password 
+xmlns='jabber:iq:auth'&gt;password&lt;/password&gt;&lt;/xdb&gt;
+Thu May  3 11:52:52 2001  mod_auth_plain comparing password password
+Thu May  3 11:52:52 2001  deliver.c:460 DELIVER 4:c2s &lt;route 
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>/test' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">11 at c2s</A>/1A6A40' type='auth'&gt;&lt;iq 
+id='011' type='result'/&gt;&lt;/route&gt;
+Thu May  3 11:52:52 2001  deliver.c:651 delivering to instance 'c2s'
+Thu May  3 11:52:52 2001  client.c:148 C2S: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>/test has 
+an active session, delivering packet
+Thu May  3 11:52:52 2001  client.c:164 auth for user successful
+Thu May  3 11:52:52 2001  client.c:167 C2S requesting Session Start for 
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>/test
+Thu May  3 11:52:52 2001  deliver.c:460 DELIVER 4:coolserver &lt;route 
+type='session' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>/test' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">11 at c2s</A>/1A6A40'/&gt;
+Thu May  3 11:52:52 2001  deliver.c:651 delivering to instance 'sessions'
+Thu May  3 11:52:52 2001  deliver.c:83 (1951D0)incoming packet &lt;route 
+type='session' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>/test' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">11 at c2s</A>/1A6A40'/&gt;
+Thu May  3 11:52:52 2001  users.c:137 js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>,24A000)
+Thu May  3 11:52:52 2001  sessions.c:79 session_create 
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>/test
+Thu May  3 11:52:52 2001  mtq.c:78 MTQ(new)
+Thu May  3 11:52:52 2001  deliver.c:460 DELIVER 4:c2s &lt;route 
+type='session' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">11 at c2s</A>/1A6A40' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>/21FA40'/&gt;
+Thu May  3 11:52:52 2001  deliver.c:651 delivering to instance 'c2s'
+Thu May  3 11:52:52 2001  client.c:148 C2S: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>/21FA40 
+has an active session, delivering packet
+Thu May  3 11:52:52 2001  log.c:175 &lt;log type='record' 
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>'&gt;login ok 192.168.168.50 test&lt;/log&gt;
+Thu May  3 11:52:52 2001  deliver.c:460 DELIVER 3:coolserver &lt;log 
+type='record' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">slunati at coolserver</A>'&gt;login ok 192.168.168.50 
+test&lt;/log&gt;
+Thu May  3 11:52:52 2001  deliver.c:651 delivering to instance 'rlogger'
+Thu May  3 11:52:52 2001  client.c:202 Writing packet to MIO: &lt;iq 
+id='011' type='result'/&gt;
+Thu May  3 11:52:52 2001  mio.c:911 mio_write called on x: 219DB0 
+buffer: (null)
+Thu May  3 11:52:52 2001  mio.c:976 pth_raise SIGUSR2 !!
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;unknown&quot;
+547:pth_lib.c:0462: pth_yield: give up control to scheduler in favour of 
+thread &quot;unknown&quot;
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x21ca40 
+(&quot;unknown&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread &quot;unknown&quot; ran 0.060302
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in polling mode
+547:pth_sched.c:0560: pth_sched_eventmanager: [non-I/O] event occurred 
+for thread &quot;unknown&quot;
+547:pth_sched.c:0760: pth_sched_eventmanager: thread &quot;unknown&quot; moved 
+from waiting to ready queue
+547:pth_sched.c:0769: pth_sched_eventmanager: leaving
+547:pth_sched.c:0206: pth_scheduler: thread &quot;unknown&quot; selected (prio=0, 
+qprio=0)
+547:pth_sched.c:0231: pth_scheduler: switching to thread 0x181000 
+(&quot;unknown&quot;)
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_lib.c:0467: pth_yield: got back control from scheduler
+547:pth_lib.c:0469: pth_yield: leave to thread &quot;unknown&quot;
+547:pth_lib.c:0443: pth_yield: enter from thread &quot;unknown&quot;
+547:pth_lib.c:0465: pth_yield: give up control to scheduler
+==== THREAD CONTEXT SWITCH ===========================================
+547:pth_sched.c:0247: pth_scheduler: cameback from thread 0x181000 
+(&quot;unknown&quot;)
+547:pth_sched.c:0256: pth_scheduler: thread &quot;unknown&quot; ran 0.000288
+547:pth_sched.c:0399: pth_sched_eventmanager: enter in polling mode
+Thu May  3 11:52:52 2001  dnsrv.c:143 dnsrv: Read error on coprocess(1): 
+1 Operation not permitted
+Thu May  3 11:52:52 2001  dnsrv.c:157 DNSRV CHILD: out of loop.. exiting 
+normal
+
+Thanks for any helps !
+
+Stephane
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="036819.html">[JDEV] Help wanted on JabberCOM and BC++ Builder
+</A></li>
+	<LI>Next message: <A HREF="036848.html">[JDEV] [help] server dying/crashing after login... long log	(sorry)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36815">[ date ]</a>
+              <a href="thread.html#36815">[ thread ]</a>
+              <a href="subject.html#36815">[ subject ]</a>
+              <a href="author.html#36815">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

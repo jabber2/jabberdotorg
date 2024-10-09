@@ -1,0 +1,453 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] JabberCOM c++ sample
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JabberCOM%20c%2B%2B%20sample&In-Reply-To=%3C200105240024.TAA08832%40lor.jeremie.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="037285.html">
+   <LINK REL="Next"  HREF="037296.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] JabberCOM c++ sample</H1>
+    <B>Dai Jin</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JabberCOM%20c%2B%2B%20sample&In-Reply-To=%3C200105240024.TAA08832%40lor.jeremie.com%3E"
+       TITLE="[JDEV] JabberCOM c++ sample">dai_jin at email.com.cn
+       </A><BR>
+    <I>Wed May 23 19:23:36 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="037285.html">[JDEV] Multiple logins
+</A></li>
+        <LI>Next message: <A HREF="037296.html">[JDEV] JabberCOM c++ sample
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37287">[ date ]</a>
+              <a href="thread.html#37287">[ thread ]</a>
+              <a href="subject.html#37287">[ subject ]</a>
+              <a href="author.html#37287">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello, Robert Temple,
+
+    I have imitated your jabbin project. When i inherit from a CDocument
+class, it run. But when i inherit from a CDialog class, it can't run.
+Can u give me some help?
+
+Best Regard,
+Jim
+
+
+// JabberDlg.cpp : implementation file
+//
+
+#include &quot;stdafx.h&quot;
+#include &quot;Jabber.h&quot;
+#include &quot;JabberDlg.h&quot;
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+#define MIN_TRACK_WIDTH				120
+#define MIN_TRACK_LENGTH			180
+
+/////////////////////////////////////////////////////////////////////////////
+// CAboutDlg dialog used for App About
+
+class CAboutDlg : public CDialog
+{
+public:
+	CAboutDlg();
+
+// Dialog Data
+	//{{AFX_DATA(CAboutDlg)
+	enum { IDD = IDD_ABOUTBOX };
+	//}}AFX_DATA
+
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(CAboutDlg)
+	protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	//}}AFX_VIRTUAL
+
+// Implementation
+protected:
+	//{{AFX_MSG(CAboutDlg)
+	//}}AFX_MSG
+	DECLARE_MESSAGE_MAP()
+};
+
+CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
+{
+	//{{AFX_DATA_INIT(CAboutDlg)
+	//}}AFX_DATA_INIT
+}
+
+void CAboutDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CAboutDlg)
+	//}}AFX_DATA_MAP
+}
+
+BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+	//{{AFX_MSG_MAP(CAboutDlg)
+		// No message handlers
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CJabberDlg dialog
+
+CJabberDlg::CJabberDlg(CWnd* pParent /*=NULL*/)
+	: CDialog(CJabberDlg::IDD, pParent)
+{
+	//{{AFX_DATA_INIT(CJabberDlg)
+		// NOTE: the ClassWizard will add member initialization here
+	//}}AFX_DATA_INIT
+	// Note that LoadIcon does not require a subsequent DestroyIcon in Win32
+	m_hIcon = AfxGetApp()-&gt;LoadIcon(IDR_MAINFRAME);
+
+	HRESULT hr = CoInitialize(NULL);
+	ASSERT(SUCCEEDED(hr));
+
+	hr = spJabberSession.CreateInstance(__uuidof(JabberSession));
+	ASSERT(SUCCEEDED(hr));
+
+	// &#36830;&#25509;Jabber&#26381;&#21153;&#22120;
+	ConnectSink();
+}
+
+void CJabberDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CJabberDlg)
+		// NOTE: the ClassWizard will add DDX and DDV calls here
+	//}}AFX_DATA_MAP
+}
+
+BEGIN_DISPATCH_MAP(CJabberDlg, CDialog)
+	//{{AFX_DISPATCH_MAP(CJabberDlg)
+	DISP_FUNCTION(CJabberDlg, &quot;OnConnect&quot;,               OnConnect,               VT_EMPTY, VTS_NONE)
+	DISP_FUNCTION(CJabberDlg, &quot;OnDisconnect&quot;,            OnDisconnect,            VT_EMPTY, VTS_NONE)
+	DISP_FUNCTION(CJabberDlg, &quot;OnAuthError&quot;,             OnAuthError,             VT_EMPTY, VTS_BSTR)
+	DISP_FUNCTION(CJabberDlg, &quot;OnCommError&quot;,             OnCommError,             VT_EMPTY, VTS_BSTR)
+	DISP_FUNCTION(CJabberDlg, &quot;OnQueryError&quot;,            OnQueryError,            VT_EMPTY, VTS_BSTR VTS_BSTR VTS_DISPATCH)
+	DISP_FUNCTION(CJabberDlg, &quot;OnRosterStart&quot;,           OnRosterStart,           VT_EMPTY, VTS_NONE)
+	DISP_FUNCTION(CJabberDlg, &quot;OnRosterItem&quot;,            OnRosterItem,            VT_EMPTY, VTS_DISPATCH)
+	DISP_FUNCTION(CJabberDlg, &quot;OnRosterEnd&quot;,             OnRosterEnd,             VT_EMPTY, VTS_NONE)
+	DISP_FUNCTION(CJabberDlg, &quot;OnMessage&quot;,               OnMessage,               VT_EMPTY, VTS_DISPATCH VTS_DISPATCH)
+	DISP_FUNCTION(CJabberDlg, &quot;OnPresence&quot;,              OnPresence,              VT_EMPTY, VTS_BSTR VTS_BOOL VTS_BSTR VTS_BOOL VTS_DISPATCH)
+	DISP_FUNCTION(CJabberDlg, &quot;OnSubscriptionRequest&quot;,   OnSubscriptionRequest,   VT_EMPTY, VTS_BSTR VTS_BSTR VTS_BSTR)
+	DISP_FUNCTION(CJabberDlg, &quot;OnSubscriptionApproved&quot;,  OnSubscriptionApproved,  VT_EMPTY, VTS_BSTR VTS_BSTR)
+	DISP_FUNCTION(CJabberDlg, &quot;OnSubscriptionDenied&quot;,    OnSubscriptionDenied,    VT_EMPTY, VTS_BSTR VTS_BSTR)
+	DISP_FUNCTION(CJabberDlg, &quot;OnXML&quot;,                   OnXML,                   VT_EMPTY, VTS_I4 VTS_BSTR)
+	DISP_FUNCTION(CJabberDlg, &quot;OnJabberIQ&quot;,              OnJabberIQ,              VT_EMPTY, VTS_BSTR VTS_DISPATCH)
+	DISP_FUNCTION(CJabberDlg, &quot;OnUnhandledQuery&quot;,        OnUnhandledQuery,        VT_EMPTY, VTS_BSTR VTS_DISPATCH)
+	DISP_FUNCTION(CJabberDlg, &quot;OnAgentsStart&quot;,           OnAgentsStart,           VT_EMPTY, VTS_NONE)
+	DISP_FUNCTION(CJabberDlg, &quot;OnAgentItem&quot;,             OnAgentItem,             VT_EMPTY, VTS_DISPATCH VTS_BSTR)
+	DISP_FUNCTION(CJabberDlg, &quot;OnAgentsEnd&quot;,             OnAgentsEnd,             VT_EMPTY, VTS_NONE)
+	DISP_FUNCTION(CJabberDlg, &quot;OnXMLTag&quot;,                OnXMLTag,                VT_EMPTY, VTS_DISPATCH)
+	DISP_FUNCTION(CJabberDlg, &quot;OnVersionGet&quot;,            OnVersionGet,            VT_EMPTY, VTS_BSTR VTS_DISPATCH)
+	DISP_FUNCTION(CJabberDlg, &quot;OnTimeGet&quot;,               OnTimeGet,               VT_EMPTY, VTS_BSTR VTS_DISPATCH)
+	DISP_FUNCTION(CJabberDlg, &quot;OnGetOOB&quot;,                OnGetOOB,                VT_EMPTY, VTS_BSTR VTS_BSTR VTS_BSTR VTS_DISPATCH)
+	//}}AFX_DISPATCH_MAP
+END_DISPATCH_MAP()
+
+BEGIN_INTERFACE_MAP(CJabberDlg, CDialog)
+	INTERFACE_PART(CJabberDlg, __uuidof(IJabberSessionEvents), Dispatch)
+END_INTERFACE_MAP()
+
+BEGIN_MESSAGE_MAP(CJabberDlg, CDialog)
+	//{{AFX_MSG_MAP(CJabberDlg)
+	ON_WM_SYSCOMMAND()
+	ON_WM_PAINT()
+	ON_WM_QUERYDRAGICON()
+	ON_WM_GETMINMAXINFO()
+	ON_WM_CLOSE()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CJabberDlg message handlers
+
+BOOL CJabberDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+
+	// Add &quot;About...&quot; menu item to system menu.
+
+	// IDM_ABOUTBOX must be in the system command range.
+	ASSERT((IDM_ABOUTBOX &amp; 0xFFF0) == IDM_ABOUTBOX);
+	ASSERT(IDM_ABOUTBOX &lt; 0xF000);
+
+	CMenu* pSysMenu = GetSystemMenu(FALSE);
+	if (pSysMenu != NULL)
+	{
+		CString strAboutMenu;
+		strAboutMenu.LoadString(IDS_ABOUTBOX);
+		if (!strAboutMenu.IsEmpty())
+		{
+			pSysMenu-&gt;AppendMenu(MF_SEPARATOR);
+			pSysMenu-&gt;AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
+		}
+	}
+
+	// Set the icon for this dialog.  The framework does this automatically
+	//  when the application's main window is not a dialog
+	SetIcon(m_hIcon, TRUE);			// Set big icon
+	SetIcon(m_hIcon, FALSE);		// Set small icon
+	
+	// TODO: Add extra initialization here
+	m_sJabberID = m_sUsername + '@' + m_sServer;
+
+	Connect();
+
+	return TRUE;  // return TRUE  unless you set the focus to a control
+}
+
+void CJabberDlg::OnSysCommand(UINT nID, LPARAM lParam)
+{
+	if ((nID &amp; 0xFFF0) == IDM_ABOUTBOX)
+	{
+		CAboutDlg dlgAbout;
+		dlgAbout.DoModal();
+	}
+	else
+	{
+		CDialog::OnSysCommand(nID, lParam);
+	}
+}
+
+// If you add a minimize button to your dialog, you will need the code below
+//  to draw the icon.  For MFC applications using the document/view model,
+//  this is automatically done for you by the framework.
+
+void CJabberDlg::OnPaint() 
+{
+	if (IsIconic())
+	{
+		CPaintDC dc(this); // device context for painting
+
+		SendMessage(WM_ICONERASEBKGND, (WPARAM) dc.GetSafeHdc(), 0);
+
+		// Center icon in client rectangle
+		int cxIcon = GetSystemMetrics(SM_CXICON);
+		int cyIcon = GetSystemMetrics(SM_CYICON);
+		CRect rect;
+		GetClientRect(&amp;rect);
+		int x = (rect.Width() - cxIcon + 1) / 2;
+		int y = (rect.Height() - cyIcon + 1) / 2;
+
+		// Draw the icon
+		dc.DrawIcon(x, y, m_hIcon);
+	}
+	else
+	{
+		CDialog::OnPaint();
+	}
+}
+
+// The system calls this to obtain the cursor to display while the user drags
+//  the minimized window.
+HCURSOR CJabberDlg::OnQueryDragIcon()
+{
+	return (HCURSOR) m_hIcon;
+}
+
+void CJabberDlg::OnGetMinMaxInfo(MINMAXINFO FAR* lpMMI) 
+{
+	// TODO: Add your message handler code here and/or call default
+	lpMMI-&gt;ptMinTrackSize.x = MIN_TRACK_WIDTH;
+	lpMMI-&gt;ptMinTrackSize.y = MIN_TRACK_LENGTH;
+	
+	CDialog::OnGetMinMaxInfo(lpMMI);
+}
+
+BOOL CJabberDlg::PreTranslateMessage(MSG* pMsg) 
+{
+	// TODO: Add your specialized code here and/or call the base class
+	if ((pMsg-&gt;message == WM_KEYDOWN) &amp;&amp; 
+		(pMsg-&gt;wParam == VK_RETURN || pMsg-&gt;wParam == VK_ESCAPE))
+	{
+		return TRUE;
+	}
+	
+	return CDialog::PreTranslateMessage(pMsg);
+}
+
+void CJabberDlg::ConnectSink()
+{
+	// &#24471;&#21040;JabberSession&#32452;&#20214;&#30340;IDispatch&#25509;&#21475;&#25351;&#38024;
+	IUnknown* pUnkSink = GetIDispatch(FALSE);
+	// &#19982;&#20107;&#20214;&#25509;&#21463;&#22120;&#24314;&#31435;&#36830;&#25509;
+	BOOL bSucceed = AfxConnectionAdvise(spJabberSession, 
+										__uuidof(IJabberSessionEvents), 
+										pUnkSink, FALSE, &amp;m_dwCookie);
+	ASSERT(bSucceed);
+}
+
+void CJabberDlg::DisConnectSink()
+{
+	// &#24471;&#21040;JabberSession&#32452;&#20214;&#30340;IDispatch&#25509;&#21475;&#25351;&#38024;
+	IUnknown* pUnkSink = GetIDispatch(FALSE);
+	// &#19982;&#20107;&#20214;&#25509;&#21463;&#22120;&#24314;&#31435;&#36830;&#25509;
+	BOOL bSucceed = AfxConnectionUnadvise(spJabberSession,
+										  __uuidof(IJabberSessionEvents),
+										  pUnkSink, FALSE, m_dwCookie);
+	ASSERT(bSucceed);
+}
+
+void CJabberDlg::OnConnect()
+{
+	MessageBox(&quot;OK&quot;);
+}
+
+void CJabberDlg::OnDisconnect()
+{
+}
+
+void CJabberDlg::OnAuthError(LPSTR pTxt)
+{
+}
+
+void CJabberDlg::OnCommError(LPSTR PTxt)
+{
+}
+
+void CJabberDlg::OnQueryError(LPSTR PTxt, LPSTR fromjid, IXMLTagPtr tag)
+{
+}
+
+void CJabberDlg::OnRosterStart()
+{
+}
+
+void CJabberDlg::OnRosterItem(IJabberRosterItemPtr item)
+{
+}
+
+void CJabberDlg::OnRosterEnd()
+{
+}
+
+void CJabberDlg::OnMessage(IJabberMsgPtr msg, IXMLTagPtr tag)
+{
+}
+
+void CJabberDlg::OnPresence(LPSTR presJID, BOOL available, LPSTR status, BOOL inRoster, IXMLTagPtr tag)
+{
+}
+
+void CJabberDlg::OnSubscriptionRequest(LPSTR fromJID, LPSTR subType, LPSTR status)
+{
+}
+
+void CJabberDlg::OnSubscriptionApproved(LPSTR fromJID, LPSTR status)
+{
+}
+
+void CJabberDlg::OnSubscriptionDenied(LPSTR fromJID, LPSTR status)
+{
+}
+
+void CJabberDlg::OnXML(long direction, LPSTR txt)
+{
+}
+
+void CJabberDlg::OnJabberIQ(LPSTR nameSpace, IJabberIQPtr iq)
+{
+}
+
+void CJabberDlg::OnUnhandledQuery(LPSTR nameSpace, IXMLTagPtr tag)
+{
+}
+
+void CJabberDlg::OnAgentsStart()
+{
+}
+
+void CJabberDlg::OnAgentItem(IJabberAgentItemPtr agent, LPSTR iqID)
+{
+}
+
+void CJabberDlg::OnAgentsEnd()
+{
+}
+
+void CJabberDlg::OnXMLTag(IXMLTagPtr Tag)
+{
+}
+
+void CJabberDlg::OnVersionGet(LPSTR fromJID, IXMLTagPtr Tag)
+{
+}
+
+void CJabberDlg::OnTimeGet(LPSTR fromJID, IXMLTagPtr Tag)
+{
+}
+
+void CJabberDlg::OnGetOOB(LPSTR fromJID, LPSTR URL, LPSTR Desc, IXMLTagPtr Tag)
+{
+}
+
+void CJabberDlg::OnClose() 
+{
+	// TODO: Add your message handler code here and/or call default
+	DisConnectSink();
+	DisConnect();
+
+	CoUninitialize();
+
+	CDialog::OnClose();
+}
+
+void CJabberDlg::Connect()
+{
+	spJabberSession-&gt;PutPassword((LPCSTR)m_sUsername);
+	spJabberSession-&gt;PutPassword((LPCSTR)m_sPassword);
+	spJabberSession-&gt;PutServer((LPCSTR)m_sServer);
+	spJabberSession-&gt;PutPort(5222);
+	spJabberSession-&gt;DoConnect(VARIANT_FALSE, jatDigest);
+}
+
+void CJabberDlg::DisConnect()
+{
+	spJabberSession-&gt;PutAvailable(VARIANT_FALSE);
+	spJabberSession-&gt;DoDisconnect(VARIANT_FALSE);
+}
+
+
+
+            Dai Jin
+            <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dai_jin at email.com.cn</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="037285.html">[JDEV] Multiple logins
+</A></li>
+	<LI>Next message: <A HREF="037296.html">[JDEV] JabberCOM c++ sample
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37287">[ date ]</a>
+              <a href="thread.html#37287">[ thread ]</a>
+              <a href="subject.html#37287">[ subject ]</a>
+              <a href="author.html#37287">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

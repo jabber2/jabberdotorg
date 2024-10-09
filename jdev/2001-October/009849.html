@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] 0K Authentication
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%200K%20Authentication&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="009848.html">
+   <LINK REL="Next"  HREF="009850.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] 0K Authentication</H1>
+    <B>Chris Chen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%200K%20Authentication&In-Reply-To="
+       TITLE="[JDEV] 0K Authentication">ckchris at idream.net
+       </A><BR>
+    <I>Wed Oct 10 21:18:12 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="009848.html">[JDEV] XML::Stream - Can't call method &quot;flush&quot; on an undefined value
+</A></li>
+        <LI>Next message: <A HREF="009850.html">[JDEV] 0K Authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9849">[ date ]</a>
+              <a href="thread.html#9849">[ thread ]</a>
+              <a href="subject.html#9849">[ subject ]</a>
+              <a href="author.html#9849">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi...
+
+I just released a new version of Muse Jabber API.  Hopefully some of you 
+are willing to try and test it for me.. This new release boasts support for 
+XML-RPC and JabberRPC, jabber:iq:time, jabber:iq:version, jabber:iq:last, 
+jabber:x:delay, jabber:x:roster, jabber:x:event, and jabber:x:expire.
+
+<A HREF="http://www.echomine.org/projects/muse/">http://www.echomine.org/projects/muse/</A>
+
+Aside from my shameless plug for my API, I do have an issue regarding the 
+0K authentication implementation.
+
+I've been trying to implement 0k authentication in Java and I have no yet 
+gotten it to work.. I followed the docs to the dot (and even strayed away 
+from it just to be adventurous and lucky), but the Hash that I'm generating 
+still doesn't correspond to the Hash that should be sent to the server.
+
+I'm rather confused... Not only that, the 0k authentication draft document 
+doesn't specify exactly what the payload looks like to set/reset the 0k 
+authentication.
+
+Here's a snippet of my algorithm code that generates the the hash.. any 
+help is appreciated..
+
+     protected String getZeroKnowledgePassword(JabberContext context, 
+String zerokToken, int zerokSeq) {
+         //cache hash so no need to go through calculation again
+         if (hash != null) return hash;
+         //instantiate a SHA1 hash
+         try {
+             MessageDigest md = MessageDigest.getInstance(&quot;SHA&quot;);
+             //hash password first
+             md.update(context.getPassword().getBytes());
+             byte[] hashA = md.digest();
+             //now hash hashA + zerokToken
+             md.reset();
+             md.update(HexDec.convertBytesToHexString(hashA).toLowerCase().getBytes());
+             md.update(zerokToken.getBytes());
+             byte[] hash0 = md.digest();
+             byte[] hashSeq = new byte[hash0.length];
+             System.arraycopy(hash0, 0, hashSeq, 0, hash0.length);
+             for (int i = 0; i &lt; (zerokSeq - 1); i++) {
+                 md.reset();
+                 //just start hashing
+                 hashSeq = md.digest(hashSeq);
+             }
+             //convert to hex representation
+             hash = HexDec.convertBytesToHexString(hashSeq);
+         } catch (NoSuchAlgorithmException ex) {
+             return &quot;&quot;;
+         }
+         return hash;
+     }
+
+
+Thanks,
+Chris
+
+PGP at <A HREF="ldap://certserver.pgp.com/">ldap://certserver.pgp.com/</A>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20011010/0a57126f/attachment.htm">https://www.jabber.org/jdev/attachments/20011010/0a57126f/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="009848.html">[JDEV] XML::Stream - Can't call method &quot;flush&quot; on an undefined value
+</A></li>
+	<LI>Next message: <A HREF="009850.html">[JDEV] 0K Authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9849">[ date ]</a>
+              <a href="thread.html#9849">[ thread ]</a>
+              <a href="subject.html#9849">[ subject ]</a>
+              <a href="author.html#9849">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

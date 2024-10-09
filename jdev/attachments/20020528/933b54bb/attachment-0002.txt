@@ -1,0 +1,143 @@
+*** ../../../tmp/jabber-1.4.2/jsm/modules/mod_groups.c	Fri Feb  8 02:39:28 2002
+--- mod_groups.c	Thu May  9 17:22:33 2002
+***************
+*** 572,593 ****
+      pool p = jp->p;
+      grouptab gt;
+      xmlnode info, user;
+      jid uid;
+!     char *gid, *gn, *un;
+  
+      log_debug(ZONE,"Setting");
+  
+      gid = strchr(jp->to->resource,'/');
+!     if (gid == NULL || ++gid == NULL);
+      {
+          js_bounce(m->si,jp->x,TERROR_NOTACCEPTABLE);
+          return;
+      }
+  
+      user = xmlnode_get_tag(jp->iq,"user");
+      uid = jid_new(p,xmlnode_get_attrib(user,"jid"));
+      un = xmlnode_get_attrib(user,"name");
+  
+      if (uid == NULL || un == NULL)
+      {
+          js_bounce(m->si,jp->x,TERROR_NOTACCEPTABLE);
+--- 572,596 ----
+      pool p = jp->p;
+      grouptab gt;
+      xmlnode info, user;
+      jid uid;
+!     char *gid, *gn, *un, *host, *action;
+!     int add;
+  
+      log_debug(ZONE,"Setting");
+  
+      gid = strchr(jp->to->resource,'/');
+!     if (gid == NULL || ++gid == NULL)
+      {
+          js_bounce(m->si,jp->x,TERROR_NOTACCEPTABLE);
+          return;
+      }
+  
+      user = xmlnode_get_tag(jp->iq,"user");
+      uid = jid_new(p,xmlnode_get_attrib(user,"jid"));
+      un = xmlnode_get_attrib(user,"name");
++     action = xmlnode_get_attrib(user, "action");
++     add = ( ( action == NULL ) || j_strcmp(action, "remove") );
+  
+      if (uid == NULL || un == NULL)
+      {
+          js_bounce(m->si,jp->x,TERROR_NOTACCEPTABLE);
+***************
+*** 595,620 ****
+          return;
+      }
+  
+      info = mod_groups_get_info(mi,p,jp->to->server,gid);
+!     if (info == NULL ||  xmlnode_get_tag(info,spools(p,"edit/user=",jp->from->user,p)) == NULL)
+      {
+          js_bounce(m->si,jp->x,TERROR_NOTALLOWED);
+          return;
+      }
+      gn = xmlnode_get_tag_data(info,"name");
+  
+      if (mod_groups_xdb_add(mi,p,uid,un,gid,gn,1))
+      {
+          js_bounce(m->si,jp->x,TERROR_UNAVAIL);
+          xmlnode_free(info);
+          return;
+      }
+  
+      gt = GROUP_GET(mi,gid);
+  
+      /* push the new user to the other members */
+!     mod_groups_update_rosters(gt,uid,un,gn,1);
+  
+      /* XXX how can we push the roster to the new user and send their presence?  lookup their session? */
+  
+      xmlnode_free(info);
+--- 598,638 ----
+          return;
+      }
+  
+      info = mod_groups_get_info(mi,p,jp->to->server,gid);
+!     if (info == NULL ||  xmlnode_get_tag(info,spools(p,"edit/user=",jid_full(jp->from),p)) == NULL)
+      {
+          js_bounce(m->si,jp->x,TERROR_NOTALLOWED);
+          return;
+      }
+      gn = xmlnode_get_tag_data(info,"name");
+  
++     log_debug("mod_groups","Yada");
++     if ( add )
++     {
+  	if (mod_groups_xdb_add(mi,p,uid,un,gid,gn,1))
+  	{
+  		js_bounce(m->si,jp->x,TERROR_UNAVAIL);
+  		xmlnode_free(info);
+  		return;
+  	}
++     }
++     else
++     {
++         log_debug("mod_groups", "Removing");
++         host = jp->from->server;
++ 	if (mod_groups_xdb_remove(mi,p,uid,host,gid))
++ 	{
++ 		js_bounce(m->si,jp->x,TERROR_UNAVAIL);
++ 		xmlnode_free(info);
++ 		return;
++ 	}
++     }
+  
+      gt = GROUP_GET(mi,gid);
+  
+      /* push the new user to the other members */
+!     mod_groups_update_rosters(gt,uid,un,gn,add);
+  
+      /* XXX how can we push the roster to the new user and send their presence?  lookup their session? */
+  
+      xmlnode_free(info);
+***************
+*** 940,948 ****
+          js_bounce(m->si,jp->x,TERROR_NOTFOUND);
+          return M_HANDLED;
+      }
+  
+!     if (xmlnode_get_tag(info,spools(jp->p,"write/user=",jp->from->user,jp->p)) != NULL)
+          mod_groups_message_online(mi,jp->x,gid);
+      else
+          js_bounce(m->si,jp->x,TERROR_NOTALLOWED);
+  
+--- 958,966 ----
+          js_bounce(m->si,jp->x,TERROR_NOTFOUND);
+          return M_HANDLED;
+      }
+  
+!     if (xmlnode_get_tag(info,spools(jp->p,"write/user=",jid_full(jp->from),jp->p)) != NULL)
+          mod_groups_message_online(mi,jp->x,gid);
+      else
+          js_bounce(m->si,jp->x,TERROR_NOTALLOWED);
+  

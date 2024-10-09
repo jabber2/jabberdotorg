@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] TCP Packet Construction
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20TCP%20Packet%20Construction&In-Reply-To=%3C11D121AB355B69448D3A9F2132D2A3AA4202A9%40niobe.BlueHands.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="049779.html">
+   <LINK REL="Next"  HREF="049783.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] TCP Packet Construction</H1>
+    <B>Heiner Wolf</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20TCP%20Packet%20Construction&In-Reply-To=%3C11D121AB355B69448D3A9F2132D2A3AA4202A9%40niobe.BlueHands.de%3E"
+       TITLE="[jdev] TCP Packet Construction">wolf at bluehands.de
+       </A><BR>
+    <I>Fri Nov  5 00:19:43 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="049779.html">[jdev] TCP Packet Construction
+</A></li>
+        <LI>Next message: <A HREF="049783.html">[jdev] TCP Packet Construction
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#49782">[ date ]</a>
+              <a href="thread.html#49782">[ thread ]</a>
+              <a href="subject.html#49782">[ subject ]</a>
+              <a href="author.html#49782">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+&gt;<i>I interested to know if there are any good resources, documents, or 
+</I>&gt;<i>source code I could look at to see how to properly receive 
+</I>&gt;<i>packets from a jabber server like jabberd (which I am using) via TCP and 
+</I>&gt;<i>then how to receive and reconstruct the entire packet.
+</I>
+When you deal with TCP as in the case of Jabber, then you must not think in terms of 'packets'. Both parties will receive a stream of bytes. While they send chunks of data on the connection, there is no guarantee that the receiver gets the data in the original chunks. The only guarantees that TCP gives are 1. that the data will arrive or you get an error 2. the byte order will be retained. Again: the receiver might get the data in totally different 'packets'. 
+
+&gt;<i>I'm using Visual Studio .net and WINSOCK to do connection and 
+</I>&gt;<i>receiving. Right now I have a working client that receive packets that 
+</I>&gt;<i>are 8129 bytes, but these packets might not contain the full message. 
+</I>&gt;<i>This problem gets worse with more traffic.
+</I>
+What you must do is: forward every piece of data to the protocol parser. In this case it is an XML parser. The XML parser must be able to parse 'incomplete' XML and tell you about the structure before the main wrapper tag is closed. People call it a SAX parser as opposed to DOM parsers. You need a SAX parser. You feed it with every byte that comes from the connection. There is virtually nothing between the read() system call where you get data from the connection and the parse() where you forward the data to the parser. The parser will consume the bytes. The parser will tell you when a first order tag is finished. That would be something like a &lt;message/&gt; or &lt;presence/&gt; inside a &lt;stream:stream&gt;. If this happens then you can analyze the first order tag. That's then called a stanza in Jabber terms. In XML terms it is just the first order sub tag of the XML wrapper tag.
+
+&gt;<i>What is the best way to construct entire jabber server packets into 
+</I>&gt;<i>comlete packets/message. For example, the server might send a user's 
+</I>&gt;<i>message in xml, and because of web traffic the complete message might 
+</I>&gt;<i>not arrive in teh received 8192 bytes...
+</I>
+I reiterate, because this is important: this is TCP. There are no messages. Your network API will give you multiple bytes at once. This looks like a message. You don't care. You handle all data to the XML parser. The parser will tell you when stanzas are complete. You are probably testing in your lab. Over the wide internet you might even get smaller pieces of data at once (like 500 bytes). Stanzas might be split badly. There might be even the last '&gt;' missing. Don't look at the data directly. Let the XML parser look. It will tell you when a stanza is complete. 
+
+&gt;<i>Other than this problem, my custom jabber client for this game, 
+</I>&gt;<i>gopetslive.com is going pretty well.
+</I>&gt;<i>
+</I>&gt;<i>Any help or code sample or pointers would be much appreciated.
+</I>
+hw
+--
+Dr. Klaus H. Wolf
+bluehands GmbH &amp; Co.mmunication KG
+<A HREF="http://www.bluehands.de/people/hw">http://www.bluehands.de/people/hw</A>
++49 (0721) 16108 75
+--
+Jabber enabled Virtual Presence on the Web: <A HREF="http://www.lluna.de/">http://www.lluna.de/</A>
+Open Source Future History: <A HREF="http://www.galactic-developments.com/">http://www.galactic-developments.com/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="049779.html">[jdev] TCP Packet Construction
+</A></li>
+	<LI>Next message: <A HREF="049783.html">[jdev] TCP Packet Construction
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#49782">[ date ]</a>
+              <a href="thread.html#49782">[ thread ]</a>
+              <a href="subject.html#49782">[ subject ]</a>
+              <a href="author.html#49782">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabberd 1.4.3 RC running under Cygwin (mio.c diff)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%201.4.3%20RC%20running%20under%20Cygwin%20%28mio.c%20diff%29&In-Reply-To=%3Cboundj%241gf%241%40sea.gmane.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="047386.html">
+   <LINK REL="Next"  HREF="047369.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabberd 1.4.3 RC running under Cygwin (mio.c diff)</H1>
+    <B>Frank Seesink</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%201.4.3%20RC%20running%20under%20Cygwin%20%28mio.c%20diff%29&In-Reply-To=%3Cboundj%241gf%241%40sea.gmane.org%3E"
+       TITLE="[JDEV] jabberd 1.4.3 RC running under Cygwin (mio.c diff)">frank at mail.wvnet.edu
+       </A><BR>
+    <I>Wed Nov 12 19:40:01 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="047386.html">[JDEV] Re: jabberd 1.4.3 release candidate again
+</A></li>
+        <LI>Next message: <A HREF="047369.html">[JDEV] Memory leaks in mu-conference
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47389">[ date ]</a>
+              <a href="thread.html#47389">[ thread ]</a>
+              <a href="subject.html#47389">[ subject ]</a>
+              <a href="author.html#47389">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Frank Seesink wrote:
+
+&gt;<i> More info regarding the segfault caused by using -D under Cygwin:
+</I>...
+
+Well, in short, I found it!  Attached here please find the relevant
+patch to ./jabberd/mio.c (basically one line of code to increase the Pth
+thread stack size, wrapped in a #ifdef __CYGWIN__...that's IT!), along
+with the full version of the file in case the patch is a goof.  With
+this one change, Jabberd 1.4.3CVS now builds under Cygwin as it does
+elsewhere, and works the same I believe, INCLUDING running in proper
+debug mode!
+
+Can't speak for anyone else, but just being able to tackle this problem,
+let alone see it through to a solution and having the ability to
+semi-grasp in what limited way I can what's going on is pretty darn
+exciting.  Haven't done this in forever, let alone at this depth, and it
+juices me! :-)
+
+It's a bit late now, but tomorrow I'll write up in detail what all I
+went through, just in case there are any new coders out there who wish
+to keep Cygwin in mind when they're coding.  Honestly, it's quite robust
+now, but there are just a few potential gotchas along the way...things
+like no ability to change stack size via ulimit (but you can use an i386
+PE-specific ld switch --stack and/or --heap to set the reserve size for
+each in your app).
+
+And the glitch in this case was actually a stack overflow issue WITHIN
+GNU Pth, but likely due to the thread stack size not being large enough.
+   I basically set a conditional so that under Cygwin the
+PTH_ATTR_STACKSIZE was set to 128KB instead of the default 64KB, just
+before calling pth_spawn() to generate a thread.  That's all it took.
+
+It's possible this can be ratcheted down to 96KB (basically something &lt;
+128KB), but for now this should do.  Note I have not stress-tested this,
+but if someone has a simple script/tool--that's easy to use--to beat
+against a Jabber server, I'll be more than glad to give it a whack and
+see what it can take.
+
+Anyway, off to bed.
+
+
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: jabberd143CVSdebug.diff
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20031112/5bab137a/attachment-0001.txt">https://www.jabber.org/jdev/attachments/20031112/5bab137a/attachment-0001.txt</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="047386.html">[JDEV] Re: jabberd 1.4.3 release candidate again
+</A></li>
+	<LI>Next message: <A HREF="047369.html">[JDEV] Memory leaks in mu-conference
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47389">[ date ]</a>
+              <a href="thread.html#47389">[ thread ]</a>
+              <a href="subject.html#47389">[ subject ]</a>
+              <a href="author.html#47389">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

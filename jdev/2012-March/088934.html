@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] (Newbie question) Can Jabber act as a gateway for HTTPS-based WebDAV?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%28Newbie%20question%29%20Can%20Jabber%20act%20as%20a%20gateway%20for%0A%20HTTPS-based%20WebDAV%3F&In-Reply-To=%3CCALm9TZ9sa2xd7qpX-f_wHjy%3DqEXhqKGqkf32abFao-doyv%3Dygg%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088933.html">
+   <LINK REL="Next"  HREF="088935.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] (Newbie question) Can Jabber act as a gateway for HTTPS-based WebDAV?</H1>
+    <B>Waqas Hussain</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20%28Newbie%20question%29%20Can%20Jabber%20act%20as%20a%20gateway%20for%0A%20HTTPS-based%20WebDAV%3F&In-Reply-To=%3CCALm9TZ9sa2xd7qpX-f_wHjy%3DqEXhqKGqkf32abFao-doyv%3Dygg%40mail.gmail.com%3E"
+       TITLE="[jdev] (Newbie question) Can Jabber act as a gateway for HTTPS-based WebDAV?">waqas20 at gmail.com
+       </A><BR>
+    <I>Wed Mar 28 08:30:37 UTC 2012</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088933.html">[jdev] (Newbie question) Can Jabber act as a gateway for	HTTPS-based WebDAV?
+</A></li>
+        <LI>Next message: <A HREF="088935.html">[jdev] (Newbie question) Can Jabber act as a gateway for HTTPS-based WebDAV?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88934">[ date ]</a>
+              <a href="thread.html#88934">[ thread ]</a>
+              <a href="subject.html#88934">[ subject ]</a>
+              <a href="author.html#88934">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, Mar 28, 2012 at 9:33 AM, Ajay Garg &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ajaygargnsit at gmail.com</A>&gt; wrote:
+&gt;<i> Hi all.
+</I>&gt;<i>
+</I>&gt;<i> I have already posted the following query at &quot;JAdmin&quot; mailing list; but I am
+</I>&gt;<i> not sure as to which mailing list is the appropriate one.
+</I>&gt;<i>
+</I>&gt;<i> Anyhow, since my query refers to a very conceptual doubt, I am posting this
+</I>&gt;<i> here as well, to avoid any delay. I am sorry if I sound too desperate, but
+</I>&gt;<i> the answer to the following query is indispensable; only then can I decide
+</I>&gt;<i> on the go/no-go for the design.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> #######################################################################################################
+</I>&gt;<i> There are two users Bob and Alice. Each of Bob and Alice have setup a WebDAV
+</I>&gt;<i> server on their local machines over SSL, and listen on port 443. In a normal
+</I>&gt;<i> environment, Bob is able to access Alice's share by typing &quot;<A HREF="https://&lt;Alice">https://&lt;Alice</A>'s
+</I>&gt;<i> IP Address&gt;/webdav&quot;. Alice is able to the same.
+</I>&gt;<i>
+</I>&gt;<i> Next, both Alice and Bob log onto a Jabber server set up by their common
+</I>&gt;<i> friend Tom; and the only way they can communicate is via Jabber. They still
+</I>&gt;<i> want to make their shares available to each other; and wish for the simplest
+</I>&gt;<i> way to do it - via their browser. So, can Tom configure his Jabber server in
+</I>&gt;<i> a manner, so as to allow Bob and Alice to access each other's WebDAV shares'
+</I>&gt;<i> via their respective browsers?
+</I>&gt;<i> #######################################################################################################
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Looking forward to a reply.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Thanks and Regards,
+</I>&gt;<i> Ajay
+</I>
+So your problem basically boils down to a reverse HTTP(S) proxy,
+tunneling over XMPP. You are probably considering XMPP to avoid
+worrying about IP addresses and firewalls, and trying to expose local
+services to contacts.
+
+Possible? Sure. But note, at a minimum you'll need a custom client,
+and a custom server (or server plugin), since nothing supports your
+use-case out of the box.
+
+Here's how I might do this:
+
+I'm assuming Tom's server is public (not behind a firewall, can accept
+connections). I'm assuming Alice's server is behind a NAT/firewall, so
+can't accept direct connections. I'm also assuming you want large file
+transfer support.
+
+Alice is running a local httpd. Alice's client will open a TCP stream
+to Tom's server, and a TCP stream to the local httpd, and then will
+act as a dumb proxy between these connections. This is fairly simple.
+You can probably use some existing HTTP proxy codebase. The client
+initiates the connections when it receives a signal over XMPP from the
+server. There can be multiple connections at the same time.
+
+On the server end, it's a bit more complicated. Take an existing HTTP
+proxy codebase. Then you need to modify its connection opening logic
+to signal the appropriate client via the XMPP server, which opens a
+reverse connection to the server proxy. Then that connection can be
+used for proxying as normal.
+
+Here's how it would flow:
+
+1. Bob requests <A HREF="http://tom.com/webdav/alice/">http://tom.com/webdav/alice/</A> using his web browser
+2. Tom's server signals Alice's client
+3. Alice's client connects to Tom's server and local server
+4. Tom's server forwards request to Alice's server via Alice's client
+5. Bob gets response from Alice's server via the two proxies
+
+Why use XMPP for this? For signalling, authentication, persistent
+connections, and other various features XMPP has standardized.
+
+Why not transfer data over XMPP itself? That would be much simpler,
+but large file transfers would be highly inefficient, so we open
+separate connections for the HTTP tunneling.
+
+--
+Waqas Hussain
+</PRE>
+
+
+
+
+
+
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088933.html">[jdev] (Newbie question) Can Jabber act as a gateway for	HTTPS-based WebDAV?
+</A></li>
+	<LI>Next message: <A HREF="088935.html">[jdev] (Newbie question) Can Jabber act as a gateway for HTTPS-based WebDAV?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88934">[ date ]</a>
+              <a href="thread.html#88934">[ thread ]</a>
+              <a href="subject.html#88934">[ subject ]</a>
+              <a href="author.html#88934">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

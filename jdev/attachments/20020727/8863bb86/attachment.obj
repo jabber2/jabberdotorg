@@ -1,0 +1,61 @@
+--- MsgDisplay.~pas	2002-07-27 16:42:40.000000000 +0900
++++ MsgDisplay.pas	2002-07-27 16:36:54.000000000 +0900
+@@ -510,9 +510,15 @@
+             else
+                 color := ColorToHTML(TColor(MainSession.Prefs.getInt('color_other')));
+ 
+-            html := '<div style="' + bg + font + '">' +
+-                    time + '<span style="color: ' + color + ';">&lt;' +
+-                    Msg.Nick + '&gt;</span> ' + txt + '</div>';
++            if Msg.Nick <> '' then
++                html := '<div style="' + bg + font + '">' +
++                        time + '<span style="color: ' + color + ';">&lt;' +
++                        Msg.Nick + '&gt;</span> ' + txt + '</div>'
++            else
++                html := '<div style="' + bg + font + '">' +
++                        time + '<span style="color: green;">' +
++                        txt + '</span></div>';
++
+             end;
+         end;
+     Result := html;
+--- Room.~pas	2002-07-27 16:42:30.000000000 +0900
++++ Room.pas	2002-07-27 16:27:28.000000000 +0900
+@@ -252,6 +251,11 @@
+ 
+     if (Msg.Body <> '') then begin
+         DisplayMsg(Msg, MsgList);
++
++        // log if we want..
++        if ((not Msg.IsMe) and MainSession.Prefs.getBool('log')) then
++            LogMessage(Msg);
++
+         if (GetActiveWindow = Self.Handle) and (pnlInput.Visible) then
+             MsgOut.SetFocus();
+         end;
+@@ -300,6 +304,11 @@
+     msg.nick := MyNick;
+     msg.isMe := true;
+     MainSession.SendTag(msg.Tag);
++
++    // log the msg
++    if (MainSession.Prefs.getBool('log')) then
++        LogMessage(Msg);
++
+     inherited;
+ end;
+ 
+@@ -701,6 +710,13 @@
+                                  sRoomSubjChange + subj,
+                                  subj);
+     MainSession.SendTag(msg.Tag);
++
++    // log if we want..
++    if (MainSession.Prefs.getBool('log')) then begin
++        msg.isMe := true;
++        LogMessage(msg);
++        end;
++
+     msg.Free;
+ end;
+ 

@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Net::XMPP2 0.01 Released
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Net%3A%3AXMPP2%200.01%20Released&In-Reply-To=%3C20070705200109.GA24246%40elmex%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="055745.html">
+   <LINK REL="Next"  HREF="055747.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Net::XMPP2 0.01 Released</H1>
+    <B>Robin Redeker</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Net%3A%3AXMPP2%200.01%20Released&In-Reply-To=%3C20070705200109.GA24246%40elmex%3E"
+       TITLE="[jdev] Net::XMPP2 0.01 Released">elmex at x-paste.de
+       </A><BR>
+    <I>Thu Jul  5 15:01:09 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="055745.html">[jdev] Invitation to connect on LinkedIn
+</A></li>
+        <LI>Next message: <A HREF="055747.html">[jdev] Net::Jabber and ssl
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55746">[ date ]</a>
+              <a href="thread.html#55746">[ thread ]</a>
+              <a href="subject.html#55746">[ subject ]</a>
+              <a href="author.html#55746">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi!
+
+I've released the first version of Net::XMPP2 a Perl module for XMPP.
+
+   <A HREF="http://search.cpan.org/dist/Net-XMPP2/">http://search.cpan.org/dist/Net-XMPP2/</A>
+
+It offers a non-blocking API and multiple levels of abstraction
+from a simple XML stream up to a multi-account client class.
+
+For non-blocking it uses AnyEvent, a framework for multiple event loops
+like Event, Gtk2 or Tk.
+
+I wrote Net::XMPP2 as there was no XMPP module for Perl which allowed out
+of the box non-blocking usage with AnyEvent and also because I didn't really
+like the API of Net::XMPP (just a personal matter of taste).
+
+Here is a simple example that connects to the account '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">net_xmpp2 at jabber.org</A>'
+and sends a message to me '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">elmex at jabber.org</A>', and prints all incoming messages:
+
+   #!/opt/perl/bin/perl
+   use strict;
+   use utf8;
+   use Event;
+   use AnyEvent;
+   use Net::XMPP2::Client;
+
+   my $j = AnyEvent-&gt;condvar;
+   my $cl = Net::XMPP2::Client-&gt;new;
+   $cl-&gt;add_account ('<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">net_xmpp2 at jabber.org</A>', 'test');
+   $cl-&gt;reg_cb (
+      connected =&gt; sub {
+         $cl-&gt;send_message (
+            &quot;Hi! I'm too stupid to adjust examples!&quot; =&gt; '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">elmex at jabber.org</A>'
+         );
+         0
+      },
+      message =&gt; sub {
+         my ($cl, $acc, $msg) = @_;
+         print &quot;message from: &quot; . $msg-&gt;from . &quot;: &quot; . $msg-&gt;any_body . &quot;\n&quot;;
+         1
+      }
+   );
+
+   $cl-&gt;start;
+   $j-&gt;wait;
+
+
+There are still some _missing_ features in Net::XMPP2 such as:
+
+   - in-band-registration isn't yet fully implemented and doesn't work yet
+   - iq-auth isn't implemented but will come, even thought that it's deprecated
+   - lots of XEPs that are quite nice to have
+     (eg. Entity capabilities, ...)
+   - MUC
+   (for more look in the TODO file that comes with Net::XMPP2 Version 0.01 :-)
+
+The version 0.01 also doesn't come with many examples, which is one of the main
+things I'm going to fix until next release, along with in-band-registration and
+iq-auth.
+
+&quot;Regular&quot; usage should already be mostly stable as I'm already using it in my
+own personal (yet unreleased) chat client (which I use daily) and already found
+many bugs.
+
+If anyone is interested in using this module: feel free to contact me via mail,
+Jabber or IRC and ask questions and report bugs (patches are welcome to ease my
+workload a bit :)
+
+
+Greetings,
+   Robin
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="055745.html">[jdev] Invitation to connect on LinkedIn
+</A></li>
+	<LI>Next message: <A HREF="055747.html">[jdev] Net::Jabber and ssl
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55746">[ date ]</a>
+              <a href="thread.html#55746">[ thread ]</a>
+              <a href="subject.html#55746">[ subject ]</a>
+              <a href="author.html#55746">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

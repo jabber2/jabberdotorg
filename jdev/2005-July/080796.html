@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Idavoll 2
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Idavoll%202&In-Reply-To=%3C20050707072617.GA80389%40ik.nu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="080794.html">
+   <LINK REL="Next"  HREF="080797.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Idavoll 2</H1>
+    <B>Ralph Meijer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Idavoll%202&In-Reply-To=%3C20050707072617.GA80389%40ik.nu%3E"
+       TITLE="[jdev] Re: Idavoll 2">jabber.org at ralphm.ik.nu
+       </A><BR>
+    <I>Thu Jul  7 02:26:17 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="080794.html">[jdev] Re: Idavoll 2
+</A></li>
+        <LI>Next message: <A HREF="080797.html">[jdev] Re: Idavoll 2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80796">[ date ]</a>
+              <a href="thread.html#80796">[ thread ]</a>
+              <a href="subject.html#80796">[ subject ]</a>
+              <a href="author.html#80796">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, Jul 06, 2005 at 11:03:19PM -0400, Herman Li wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> I'm using the latest version of Idavoll2 and have a question about 
+</I>&gt;<i> meta-data. Is there a way to add or modify the meta-data? Currently when 
+</I>&gt;<i> I use disco#info on the node, it returns 3 pieces of data (leaf node, 
+</I>&gt;<i> persistent, deliver payload). Can I change these values and add 
+</I>&gt;<i> meta-data of my own?
+</I>
+Caution, longish explanation. Let me tell a bit about the architecture
+of Idavoll.
+
+The grand idea is that Idavoll is architected with three distinct types
+of components: one that handles the protocol stuff, a protocol-agnostic
+backend and a storage facility. An application can make its own
+selection from the implementations of each of these types of components
+to do its thing. 
+
+If you look at the code, you see that there is one protocol
+implementation (in pubsub.py) for doing pubsub over Jabber using
+JEP-0060. However, the code is set up in such a way that you could hook
+up more than one protocol to a backend. You can think about adding a web
+interface for managing nodes and subscriptions, getting publish events
+via XMLRPC or sending notifications via e-mail. Protocol implementations
+are always an 'Adaptor' from the backend interface to the used protocol.
+
+So far, there is one implementation of the backend interface (defined in
+backend.py). You can find it in generic_backend.py. The backend embodies
+the business logic of the system. The idea here is that you can either
+write your own backend (that implements the interface) or derive from
+the generic backend to modify a few small business rules.
+
+Then finally, there is the storage facility. There are currently two
+implementations of the storage interface. One that uses pgsql and a
+memory based one. The former persists its information in the database,
+the latter looses everything when you shutdown the application.
+
+To get back to your question. It depends on where the information is
+comming from. The meta-data of a node usually consists of configurable
+information and other information. For example you could store the
+creation date of a node, and return that in the meta-data for that node.
+But this piece of information is typically not configurable. If the
+information you want to convey is stored with the node information (e.g.
+in the pgsql database), then you need to adjust the storage facility. If
+you can derive this information from the unmodified storage facility,
+you can just alter the backend.
+
+I hope this makes some sense, and if you more questions, do let me know.
+Eventually this information will probably be put in a tutorial kind of
+document.
+
+-- 
+Groetjes,
+
+ralphm
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="080794.html">[jdev] Re: Idavoll 2
+</A></li>
+	<LI>Next message: <A HREF="080797.html">[jdev] Re: Idavoll 2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80796">[ date ]</a>
+              <a href="thread.html#80796">[ thread ]</a>
+              <a href="subject.html#80796">[ subject ]</a>
+              <a href="author.html#80796">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,488 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: web presence (Brijesh Singh)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20web%20presence%20%28Brijesh%20Singh%29&In-Reply-To=%3C58FE8766C9D3FE4E8AF6B6B75A74AF8F053C7C29%40BGEEXC02.asiapacific.cpqcorp.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="053535.html">
+   <LINK REL="Next"  HREF="053544.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: web presence (Brijesh Singh)</H1>
+    <B>Singh, Brijesh (GDIC)</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20web%20presence%20%28Brijesh%20Singh%29&In-Reply-To=%3C58FE8766C9D3FE4E8AF6B6B75A74AF8F053C7C29%40BGEEXC02.asiapacific.cpqcorp.net%3E"
+       TITLE="[jdev] Re: web presence (Brijesh Singh)">brijesh.singh at hp.com
+       </A><BR>
+    <I>Mon Mar 13 23:41:27 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="053535.html">[jdev] Resource binding limit(ation)
+</A></li>
+        <LI>Next message: <A HREF="053544.html">[jdev] MySpace Messenger
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53543">[ date ]</a>
+              <a href="thread.html#53543">[ thread ]</a>
+              <a href="subject.html#53543">[ subject ]</a>
+              <a href="author.html#53543">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I think ur approach is good... May be little deviation will help to
+resolve presence freshness issue...
+
+a- Subscribe presence(bcc) in new external web presence component.
+b- Create a map of jid =&gt; presence in process memory so that access is
+faster while accessing or showing it to web component.
+c- Update the same presence to DB also to backup the presence
+information.
+
+This approach will always show latest presence of users...
+
+Case 1 :-  If jabberd server goes down then new web presence component
+will also loose it connectivity and will go for graceful shutdown(update
+DB)... Nothing to worry because all users are offline now. This time web
+application should show all the users offline. When jabberd again
+restarts, then it will get a new set of presence info. Follow the step
+&quot;a-c &quot;.
+
+Case 2 :- If only external presence web component goes down then bcc
+module will not send all the users presence again, it will only send the
+changed presence but you need old presence information also. Here you
+need the help of DB to extract all previous presence data from DB. 
+
+d- Read the data from DB 
+e- Get the new presence information, which will be send by bcc module.
+
+Case 3:- If any users got deleted then you are not going to get the
+presence information from jabberd... 
+
+To solve case -2 problem(U will read all the user info in case component
+goes down, which may read deleted user as well), Write a DB trigger for
+jabber database, i.e. if any user get deleted from DB then delete it
+from ur new presence table also. 
+
+Hope it will give more thoughts to u....
+
+Best regards
+
+Brijesh Singh
+  
+
+&gt;<i>We have previously developed such a component for an internal project
+</I>using the component approach and a database - we used presence bcc to
+&gt;<i>get all presence updates.
+</I>
+&gt;<i>Somethings to keep in mind around freshness of presence information.
+</I>&gt;<i>When the jabber server restarts - all your existing information in the
+</I>DB is stale. You may want to detect this and purge the presence store.
+Similar &gt;cases arise when there is loss of connectivity between the
+component cases. User accounts may get deleted on the IM server and you
+may need &gt;to synchronize that on your database also.
+
+&gt;<i>Over time, I have found that  such a presence server capability is best
+</I>built &quot;directly&quot; into the IM server with tight integration with the
+presence 
+&gt;<i>processing and subscriber management modules. This way you benefit from
+</I>privacy policies that are available in the same place.
+
+&gt;<i>YMMV. 
+</I>
+
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf
+Of <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-request at jabber.org</A>
+Sent: Tuesday, March 14, 2006 1:15 AM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: jdev Digest, Vol 26, Issue 25
+
+Send jdev mailing list submissions to
+	<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+
+To subscribe or unsubscribe via the World Wide Web, visit
+	<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+or, via email, send a message with subject or body 'help' to
+	<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-request at jabber.org</A>
+
+You can reach the person managing the list at
+	<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-owner at jabber.org</A>
+
+When replying, please edit your Subject line so it is more specific than
+&quot;Re: Contents of jdev digest...&quot;
+
+
+Today's Topics:
+
+   1. Re: web presence (Peter Saint-Andre)
+   2. Re: web presence (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ennova2005-jabber at yahoo.com</A>)
+   3. Re: Resource binding limit(ation) (Peter Saint-Andre)
+   4. Re: web presence (Hal Rottenberg)
+
+
+----------------------------------------------------------------------
+
+Message: 1
+Date: Mon, 13 Mar 2006 11:02:28 -0700
+From: Peter Saint-Andre &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at jabber.org</A>&gt;
+Subject: Re: [jdev] web presence
+To: Jabber software development list &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Message-ID: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">4415B3B4.1040800 at jabber.org</A>&gt;
+Content-Type: text/plain; charset=&quot;iso-8859-1&quot;
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
++1, that seems like a sensible approach.
+
+/psa
+
+Peter Millard wrote:
+&gt;<i> This is exactly how I would implement this as well.
+</I>&gt;<i> 
+</I>&gt;<i> 1) Have an external component that uses iq:register protocol with 
+</I>&gt;<i> x-data for picking themes, etc. This component subscribes to the 
+</I>&gt;<i> user's presence during registration (just like a transport does). Now 
+</I>&gt;<i> the component has the users presence.
+</I>&gt;<i> 
+</I>&gt;<i> 2) External component pushes presence info into a database (mysql,
+</I>psql, etc).
+&gt;<i> 
+</I>&gt;<i> 3) Write a quick PHP applet or something which returns an image based 
+</I>&gt;<i> on the JID.
+</I>&gt;<i> 
+</I>&gt;<i> We could easily deploy something like this on jabber.org provided the 
+</I>&gt;<i> DB is psql, and the component is not in Java or Perl (for scalability 
+</I>&gt;<i> issues). Seems like this would be super easy to write using the 
+</I>&gt;<i> Twisted Python jabber component stuff.
+</I>&gt;<i> 
+</I>&gt;<i> This approach would also work with any server implementation since the
+</I>
+&gt;<i> component is subscribing to the user's presence.
+</I>&gt;<i> 
+</I>&gt;<i> pgm.
+</I>&gt;<i> 
+</I>&gt;<i> On 3/9/06, Richard Dobson &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">richard at dobson-i.net</A>&gt; wrote:
+</I>&gt;&gt;&gt;<i> It would be good if we had standardized methods for embedding 
+</I>&gt;&gt;&gt;<i> presence information in web pages. For example, I'd like to be able 
+</I>&gt;&gt;&gt;<i> to point to the following image file and have it show my presence:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> &lt;img src='<A HREF="http://www.jabber.org/users/stpeter.png'/">http://www.jabber.org/users/stpeter.png'/</A>&gt;
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Granted there are challenges here:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> 1. Needs to be opt-in (no presence leaking)
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i> Have it as a contact on the users roster which represents the 
+</I>&gt;&gt;<i> presence service, if that contact can see the users presence the user
+</I>is opting in.
+&gt;&gt;&gt;<i> 2. User needs a way to choose icon set (if there's a choice)
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i> x:data forms seems like a perfect fit here
+</I>&gt;&gt;&gt;<i> 3. Jabber server and web server need to share information
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i> Easiest way for this would be for them both to share a database of 
+</I>&gt;&gt;<i> presence information with a jabber component keeping it up to date.
+</I>&gt;&gt;&gt;<i> 4. Would not be dynamic (that would require an xmpp: URI)
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> At the jabber.org domain, #3 is a bit of a pain (the web server and 
+</I>&gt;&gt;&gt;<i> jabber server are on different machines), but the challenge seems to
+</I>
+&gt;&gt;&gt;<i> be surmountable.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Other IM systems have this and it's one of those cool features that 
+</I>&gt;&gt;&gt;<i> end users really like. So what's holding us back? What's needed to 
+</I>&gt;&gt;&gt;<i> make this happen?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i> Nothings holding us back this has been available for quite some time 
+</I>&gt;&gt;<i> in various forms on jabber.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Richard
+</I>-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (Darwin)
+Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org">http://enigmail.mozdev.org</A>
+
+iD8DBQFEFbO0NF1RSzyt3NURAlbwAJ9rhSwaD893Ilo0PBqhg3oxgMWhjwCfR1de
+J3rxkGox7XZ69OjJw4DANcc=
+=4/tt
+-----END PGP SIGNATURE-----
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 3641 bytes
+Desc: S/MIME Cryptographic Signature
+Url :
+<A HREF="https://www.jabber.org/jdev/attachments/20060313/43e57c25/smim">https://www.jabber.org/jdev/attachments/20060313/43e57c25/smim</A>
+e-0001.bin
+
+------------------------------
+
+Message: 2
+Date: Mon, 13 Mar 2006 10:15:10 -0800 (PST)
+From: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ennova2005-jabber at yahoo.com</A>&gt;
+Subject: Re: [jdev] web presence
+To: Jabber software development list &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Message-ID: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">20060313181510.43728.qmail at web30413.mail.mud.yahoo.com</A>&gt;
+Content-Type: text/plain; charset=&quot;iso-8859-1&quot;
+
+We have previously developed such a component for an internal project
+using the component approach and a database - we used presence bcc to
+get all presence updates.
+
+Somethings to keep in mind around freshness of presence information.
+When the jabber server restarts - all your existing information in the
+DB is stale. You may want to detect this and purge the presence store.
+Similar cases arise when there is loss of connectivity between the
+component cases. User accounts may get deleted on the IM server and you
+may need to synchronize that on your database also.
+
+Over time, I have found that  such a presence server capability is best
+built &quot;directly&quot; into the IM server with tight integration with the
+presence processing and subscriber management modules. This way you
+benefit from privacy policies that are available in the same place.
+
+YMMV.
+
+
+Peter Saint-Andre &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at jabber.org</A>&gt; wrote: -----BEGIN PGP SIGNED
+MESSAGE-----
+Hash: SHA1
+
++1, that seems like a sensible approach.
+
+/psa
+
+Peter Millard wrote:
+&gt;<i> This is exactly how I would implement this as well.
+</I>&gt;<i> 
+</I>&gt;<i> 1) Have an external component that uses iq:register protocol with 
+</I>&gt;<i> x-data for picking themes, etc. This component subscribes to the 
+</I>&gt;<i> user's presence during registration (just like a transport does). Now 
+</I>&gt;<i> the component has the users presence.
+</I>&gt;<i> 
+</I>&gt;<i> 2) External component pushes presence info into a database (mysql,
+</I>psql, etc).
+&gt;<i> 
+</I>&gt;<i> 3) Write a quick PHP applet or something which returns an image based 
+</I>&gt;<i> on the JID.
+</I>&gt;<i> 
+</I>&gt;<i> We could easily deploy something like this on jabber.org provided the 
+</I>&gt;<i> DB is psql, and the component is not in Java or Perl (for scalability 
+</I>&gt;<i> issues). Seems like this would be super easy to write using the 
+</I>&gt;<i> Twisted Python jabber component stuff.
+</I>&gt;<i> 
+</I>&gt;<i> This approach would also work with any server implementation since the
+</I>
+&gt;<i> component is subscribing to the user's presence.
+</I>&gt;<i> 
+</I>&gt;<i> pgm.
+</I>&gt;<i> 
+</I>&gt;<i> On 3/9/06, Richard Dobson  wrote:
+</I>&gt;&gt;&gt;<i> It would be good if we had standardized methods for embedding 
+</I>&gt;&gt;&gt;<i> presence information in web pages. For example, I'd like to be able 
+</I>&gt;&gt;&gt;<i> to point to the following image file and have it show my presence:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Granted there are challenges here:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> 1. Needs to be opt-in (no presence leaking)
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i> Have it as a contact on the users roster which represents the 
+</I>&gt;&gt;<i> presence service, if that contact can see the users presence the user
+</I>is opting in.
+&gt;&gt;&gt;<i> 2. User needs a way to choose icon set (if there's a choice)
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i> x:data forms seems like a perfect fit here
+</I>&gt;&gt;&gt;<i> 3. Jabber server and web server need to share information
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i> Easiest way for this would be for them both to share a database of 
+</I>&gt;&gt;<i> presence information with a jabber component keeping it up to date.
+</I>&gt;&gt;&gt;<i> 4. Would not be dynamic (that would require an xmpp: URI)
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> At the jabber.org domain, #3 is a bit of a pain (the web server and 
+</I>&gt;&gt;&gt;<i> jabber server are on different machines), but the challenge seems to
+</I>
+&gt;&gt;&gt;<i> be surmountable.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> Other IM systems have this and it's one of those cool features that 
+</I>&gt;&gt;&gt;<i> end users really like. So what's holding us back? What's needed to 
+</I>&gt;&gt;&gt;<i> make this happen?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i> Nothings holding us back this has been available for quite some time 
+</I>&gt;&gt;<i> in various forms on jabber.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Richard
+</I>-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (Darwin)
+Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org">http://enigmail.mozdev.org</A>
+
+iD8DBQFEFbO0NF1RSzyt3NURAlbwAJ9rhSwaD893Ilo0PBqhg3oxgMWhjwCfR1de
+J3rxkGox7XZ69OjJw4DANcc=
+=4/tt
+-----END PGP SIGNATURE-----
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL:
+<A HREF="https://www.jabber.org/jdev/attachments/20060313/794cd523/atta">https://www.jabber.org/jdev/attachments/20060313/794cd523/atta</A>
+chment-0001.html
+
+------------------------------
+
+Message: 3
+Date: Mon, 13 Mar 2006 11:48:03 -0700
+From: Peter Saint-Andre &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at jabber.org</A>&gt;
+Subject: Re: [jdev] Resource binding limit(ation)
+To: Jabber software development list &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Message-ID: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">4415BE63.9030907 at jabber.org</A>&gt;
+Content-Type: text/plain; charset=&quot;iso-8859-1&quot;
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Vinod Panicker wrote:
+&gt;<i> On 11/24/05, Vinod Panicker &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">vinod.p at gmail.com</A>&gt; wrote:
+</I>&gt;&gt;<i> On 11/24/05, Norman Rasmussen &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>&gt; wrote:
+</I>&gt;&gt;&gt;<i> I think you can by forcing binding to an existing resource, but I'm 
+</I>&gt;&gt;&gt;<i> not sure it allows you to force an old resource off and bind a new 
+</I>&gt;&gt;&gt;<i> one.
+</I>&gt;&gt;<i> Wont work since even binding to an existing resource would mean that 
+</I>&gt;&gt;<i> I'm adding one more connected resource (albeit of a same name).  What
+</I>
+&gt;&gt;<i> I'm asking is - shouldn't this be treated in the same way we treat 
+</I>&gt;&gt;<i> server provisioning for allowing/disallowing two resources of the 
+</I>&gt;&gt;<i> same name to be available?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i> On 11/24/05, Vinod Panicker &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">vinod.p at gmail.com</A>&gt; wrote:
+</I>&gt;&gt;&gt;&gt;<i> According to RFC 3920 -
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>    o  The client is not allowed to bind a resource to the stream
+</I>(e.g.,
+&gt;&gt;&gt;&gt;<i>       because the node or user has reached a limit on the number of
+</I>&gt;&gt;&gt;&gt;<i>       connected resources allowed).
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i> Wont it make sense if there is some provision to automatically 
+</I>&gt;&gt;&gt;&gt;<i> logoff the user from a previous resource (based on server 
+</I>&gt;&gt;&gt;&gt;<i> provisioning) if he's trying to login from a new resource?
+</I>&gt;<i> 
+</I>&gt;<i> No closure on this so I'm assuming that we are not allowing any more 
+</I>&gt;<i> resources to login once the limit has reached, though it would be 
+</I>&gt;<i> great to have something that allows the server to logoff an existing 
+</I>&gt;<i> resource to make way for the new one.
+</I>
+Sure, an implementation could do that if it wants. Nothing in the spec
+forbids it and you can implement it if you think it's a cool feature.
+
+Peter
+
+- --
+Peter Saint-Andre
+Jabber Software Foundation
+<A HREF="http://www.jabber.org/people/stpeter.shtml">http://www.jabber.org/people/stpeter.shtml</A>
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (Darwin)
+Comment: Using GnuPG with Mozilla - <A HREF="http://enigmail.mozdev.org">http://enigmail.mozdev.org</A>
+
+iD8DBQFEFb5jNF1RSzyt3NURAo6NAKDVcmmaKqEZ5dH+tVCbRUVeglw3CgCdEl86
+g7w7wU8LvfAtZHtl9aJzrmI=
+=yox4
+-----END PGP SIGNATURE-----
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 3641 bytes
+Desc: S/MIME Cryptographic Signature
+Url :
+<A HREF="https://www.jabber.org/jdev/attachments/20060313/168d3073/smim">https://www.jabber.org/jdev/attachments/20060313/168d3073/smim</A>
+e-0001.bin
+
+------------------------------
+
+Message: 4
+Date: Mon, 13 Mar 2006 14:44:45 -0500
+From: &quot;Hal Rottenberg&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">halr9000 at gmail.com</A>&gt;
+Subject: Re: [jdev] web presence
+To: &quot;Jabber software development list&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Message-ID:
+	&lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">b13a36870603131144ie17595ducdbb48db96a0f98d at mail.gmail.com</A>&gt;
+Content-Type: text/plain; charset=ISO-8859-1
+
+On 3/13/06, Peter Saint-Andre &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at jabber.org</A>&gt; wrote:
+&gt;<i> +1, that seems like a sensible approach.
+</I>&gt;<i>
+</I>&gt;<i> /psa
+</I>&gt;<i>
+</I>&gt;<i> Peter Millard wrote:
+</I>&gt;<i> &gt; This is exactly how I would implement this as well.
+</I>
+So let me summarize the current conversation:
+
+- There are several implementations of web presence today
+- There are 4 well-known methods
+- You can do it with Perl, PHP and other languages right now (code
+exists)
+
+- I found FH's component code here:
+<A HREF="http://jabberstudio.org/projects/webstatus/project/view.php">http://jabberstudio.org/projects/webstatus/project/view.php</A>
+- Edgar's website with code was stated earlier in this conversation.
+- There may be a couple of closed-source or commercial implementations
+out there.
+- Jive has a plugin available for their server
+
+Do we need an informational JEP to cover best practicies?  Or maybe just
+a wiki page on wiki.jabber.org with links to resources?  Are there other
+actions that people can take to help make this a de-facto feature of
+Jabber, just like chatrooms and JUD?  As PSA said initially,
+
+&quot;It would be good if we had standardized methods for embedding presence
+information in web pages&quot;
+
+Is there anything going on in any other code repos, mailing lists or
+forums, something we can hope to use with jabber.org?
+
+--
+Psi webmaster (<A HREF="http://psi-im.org">http://psi-im.org</A>)
+im:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hal at jabber.rocks.cc</A>
+<A HREF="http://halr9000.com">http://halr9000.com</A>
+
+
+------------------------------
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+
+
+End of jdev Digest, Vol 26, Issue 25
+************************************
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="053535.html">[jdev] Resource binding limit(ation)
+</A></li>
+	<LI>Next message: <A HREF="053544.html">[jdev] MySpace Messenger
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53543">[ date ]</a>
+              <a href="thread.html#53543">[ thread ]</a>
+              <a href="subject.html#53543">[ subject ]</a>
+              <a href="author.html#53543">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

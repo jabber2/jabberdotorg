@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] XDB Component in Java
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20XDB%20Component%20in%20Java&In-Reply-To=%3C3A59824D.71CDEFB2%40idealx.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034763.html">
+   <LINK REL="Next"  HREF="034762.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] XDB Component in Java</H1>
+    <B>David Barth</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20XDB%20Component%20in%20Java&In-Reply-To=%3C3A59824D.71CDEFB2%40idealx.com%3E"
+       TITLE="[JDEV] XDB Component in Java">dbarth at idealx.com
+       </A><BR>
+    <I>Mon Jan  8 03:03:09 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034763.html">[JDEV] XDB Component in Java
+</A></li>
+        <LI>Next message: <A HREF="034762.html">[JDEV] conferencing 1.2 sort-of running, but 502 remote server errors still present
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34780">[ date ]</a>
+              <a href="thread.html#34780">[ thread ]</a>
+              <a href="subject.html#34780">[ subject ]</a>
+              <a href="author.html#34780">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>This setup works more or less for me :
+
+First xdb.xml, turns a SQL base into a Jabber/XML base :
+
+&lt;jabber&gt;
+  &lt;service id=&quot;xdbgw&quot;&gt;
+    &lt;host/&gt;
+    &lt;accept&gt;
+      &lt;port&gt;5270&lt;/port&gt;
+      &lt;secret&gt;secret&lt;/secret&gt;
+      &lt;ip/&gt;
+      &lt;/accept&gt;
+  &lt;/service&gt;
+ 
+  &lt;log id='xdblog'&gt;
+    &lt;host&gt;xdblog.localhost&lt;/host&gt;
+    &lt;format&gt;%d: [%t] (%h): %s&lt;/format&gt;
+    &lt;file&gt;/tmp/xdb-error.log&lt;/file&gt;
+    &lt;stderr/&gt;
+  &lt;/log&gt;
+ 
+  &lt;xdb id=&quot;xdb_handler&quot;&gt;
+    &lt;host&gt;mydomain.org&lt;/host&gt;
+   
+&lt;load&gt;&lt;xdb_sql&gt;/usr/local/lib/jabber/xdb_sql.so&lt;/xdb_sql&gt;&lt;/load&gt;                                          
+    &lt;!-- xdb_sql config follows --&gt;
+  &lt;/xdb&gt;
+&lt;/jabber&gt;
+
+Then, you connect you session manager (jsm.xml) with this XDB gateway :
+
+&lt;jabber&gt;
+  &lt;service id=&quot;sessions&quot;&gt;
+    &lt;host&gt;&lt;jabberd:cmdline flag=&quot;h&quot;&gt;localhost&lt;/jabberd:cmdline&gt;&lt;/host&gt;
+    &lt;host&gt;mydomain.org&lt;/host&gt;
+    &lt;jsm xmlns=&quot;jabber:config:jsm&quot;&gt;
+      &lt;log&gt;
+        &lt;file&gt;/var/log/jabber-session.log&lt;/file&gt;
+        &lt;type&gt;session&lt;/type&gt;
+      &lt;/log&gt;
+    &lt;/jsm&gt;
+     &lt;load main=&quot;jsm&quot;&gt;
+      &lt;!-- trimmed down session manager --&gt;
+      &lt;jsm&gt;/usr/local/lib/jabber/jsm.so&lt;/jsm&gt;
+      &lt;mod_roster&gt;/usr/local/lib/jabber/jsm.so&lt;/mod_roster&gt;
+      &lt;mod_filter&gt;/usr/local/lib/jabber/jsm.so&lt;/mod_filter&gt;
+      &lt;mod_presence&gt;/usr/local/lib/jabber/jsm.so&lt;/mod_presence&gt;
+      &lt;mod_auth_plain&gt;/usr/local/lib/jabber/jsm.so&lt;/mod_auth_plain&gt;
+      &lt;mod_log&gt;/usr/local/lib/jabber/jsm.so&lt;/mod_log&gt;
+    &lt;/load&gt;
+   &lt;/service&gt;
+
+  &lt;!-- all XDB packets should go through the pipe --&gt; 
+  &lt;xdb id=&quot;xdbgw&quot;&gt;
+    &lt;host/&gt;
+      &lt;connect&gt;
+        &lt;port&gt;5270&lt;/port&gt;
+        &lt;secret&gt;secret&lt;/secret&gt;
+        &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+      &lt;/connect&gt;
+  &lt;/xdb&gt;
+
+  &lt;!-- add c2s client socket manager --&gt;
+
+&lt;/jabber&gt;
+
+
+Then, you should be able to, at least, authenticate.
+$ telnet localhost 5222
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+&lt;stream:stream to='domaing.org' xmlns='jabber:client'
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;
+&lt;?xml version='1.0'?&gt;&lt;stream:stream
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='3A5982B8'
+xmlns='jabber:client' from='domain.org'&gt;
+&lt;iq id='6' type='set'&gt;&lt;query
+xmlns='jabber:iq:auth'&gt;&lt;username&gt;test&lt;/username&gt;&lt;resource&gt;test&lt;/resource&gt;&lt;password&gt;test&lt;/password&gt;&lt;/query&gt;&lt;/iq&gt;
+&lt;iq id='6' type='result'/&gt;
+&lt;presence/&gt;
+&lt;iq type='get' id='5'&gt;&lt;query xmlns='jabber:iq:roster'&gt;&lt;/query&gt;&lt;/iq&gt;
+Connection closed by foreign host. 
+
+At this point jabberd cores in random places... Sometimes just in
+offline message delivery, sometimes in mod_roster_out_iq without a
+reason (pointers seem to be ok).
+
+Tell me if it works for you, and perhaps we'll be able to find the bug
+triggerd after that ;-)
+
+--
+dbarth
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034763.html">[JDEV] XDB Component in Java
+</A></li>
+	<LI>Next message: <A HREF="034762.html">[JDEV] conferencing 1.2 sort-of running, but 502 remote server errors still present
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34780">[ date ]</a>
+              <a href="thread.html#34780">[ thread ]</a>
+              <a href="subject.html#34780">[ subject ]</a>
+              <a href="author.html#34780">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

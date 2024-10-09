@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] JabberLib proposal
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JabberLib%20proposal&In-Reply-To=%3C005201bedaa8%2426805ca0%241e04a8c0%40q%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="030194.html">
+   <LINK REL="Next"  HREF="030203.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] JabberLib proposal</H1>
+    <B>Dave Smith</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JabberLib%20proposal&In-Reply-To=%3C005201bedaa8%2426805ca0%241e04a8c0%40q%3E"
+       TITLE="[JDEV] JabberLib proposal">dsmith at ai.uwf.edu
+       </A><BR>
+    <I>Fri Jul 30 11:25:22 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="030194.html">[JDEV] Hmm, a late thought
+</A></li>
+        <LI>Next message: <A HREF="030203.html">[JDEV] encoding
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#30201">[ date ]</a>
+              <a href="thread.html#30201">[ thread ]</a>
+              <a href="subject.html#30201">[ subject ]</a>
+              <a href="author.html#30201">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I don't know who might be interested, but here's where I'm at on my rewrite
+attempt of the JabberLib...
+
+My goal with this re-write attempt is to create a simple, easy to use API
+for reading/writing Jabber XML streams that will support multiple language
+bindings and platforms. I'm trying to take an approach similiar to the GTK+
+toolkit. It'd be neat to see a JabberLib that could have C, C++, Perl, etc
+bindings. Ideally, using the JabberLib would require little or no knowledge
+of the XML parser interface. Furthermore, by using the pth threading
+library, it should be trivial to write Jabber servers that can deal with
+multiple connections.
+
+To accomplish this,  I've isolated two core ADTs (abstract-data types):
+    1.) JStream (a.k.a JabberStream)
+    2.) JElement (a.k.a JabberElement)
+
+JStream is an ADT wrapped around a file descriptor that can read/write any
+file of XML data and parse/de-parse the XML into a logical, hierarchial
+representation in memory (JElement). It supports the following operations:
+    1.) jstream_read: reads from the associated file descriptor and only
+returns when a complete jelement has been built
+    2.) jstream_write: write to the associated file descriptor a jelment
+structure. Handle decomposition of the jelement into a XML stream
+Both the read and write operations are blocking (using pth). This allows one
+to create a multi-client capable server by simply assigning each client
+connection a jstream in a pth thread. No more confusing select statements,
+and it's pretty cross-platform since it's based on pth... :)
+
+JElement is an ADT which represents a parsed Jabber XML stream. It's roughly
+equivalent to w3c's spec for the XML DOM (with a few minor alterations). In
+a sense, this ADT is a conglomeration of the xpt,jpair, and xptpool
+structures currently in the lib directory.  The obvious question, of course,
+is why not use the existing (xpt, jpair, etc) structures?  To begin with,
+there is a fair amount of overlap between the different structures (in terms
+of organization). Attributes can have siblings in the same way that tags
+can. An attribute name/value pair is nearly equivalent to a tag's name/CDATA
+pair. Furthermore, I don't *believe* (Jer, please correct me if I'm wrong)
+that the xpt structure properly handles multiple CDATA sections within a tag
+(see the example at the end of this email).  Finally, by specifying a
+dedicated ADT (namely, JStream) that handles the generation of a DOM
+representation of Jabber XML data, there is no reason to have two data
+structures (xpt and xptpool) to individually represent a document and the
+elements within a document -- especially when the document and the elements
+which compose it share a nearly identical internal structure. I'll probably
+need to clarify these reasons at a later point (especially as my brain is
+nearing a fried point for this week). :) The bottom line is that I believe
+that one, consistent data structure is much simpler to deal with than 3 data
+structures. :) To those who feel inclined to disagree I respectfully point
+out that this is patterned after the w3c DOM design, so if it's good enough
+for them it's good enough for me. :)
+
+More later.
+
+D.
+
+
+-------------CDATA parsing example-------------
+Consider the following:
+
+&lt;message&gt;Hello world in a &lt;bold&gt;new&lt;/bold&gt; way!&lt;/message&gt;
+
+This should parse out to:
+
+TAG(name=message, children = [
+    CDATA(value=&quot;Hello world in a&quot;),
+    TAG(name=bold ...),
+    CDATA(value=&quot;way!&quot;)
+    ]
+)
+
+*not*:
+
+TAG(name=message, children = [
+    CDATA(value=&quot;Hello world in a way!&quot;)
+    TAG(name=bold...)
+    ]
+)
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="030194.html">[JDEV] Hmm, a late thought
+</A></li>
+	<LI>Next message: <A HREF="030203.html">[JDEV] encoding
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#30201">[ date ]</a>
+              <a href="thread.html#30201">[ thread ]</a>
+              <a href="subject.html#30201">[ subject ]</a>
+              <a href="author.html#30201">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

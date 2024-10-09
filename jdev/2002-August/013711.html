@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Requesting a roster
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Requesting%20a%20roster&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="013724.html">
+   <LINK REL="Next"  HREF="013716.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Requesting a roster</H1>
+    <B>Jean-Louis Seguineau /EXC/TEC</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Requesting%20a%20roster&In-Reply-To="
+       TITLE="[JDEV] Requesting a roster">jean-louis.seguineau at antepo.com
+       </A><BR>
+    <I>Thu Aug  1 13:31:20 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="013724.html">[JDEV] http proxy support
+</A></li>
+        <LI>Next message: <A HREF="013716.html">[JDEV] Requesting a roster
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13711">[ date ]</a>
+              <a href="thread.html#13711">[ thread ]</a>
+              <a href="subject.html#13711">[ subject ]</a>
+              <a href="author.html#13711">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Emma,
+
+The original Jabberbean 0.9 communication handling is to say a little shaky
+:<i>)
+</I>In fact if anything happen in the communication layer, it does not funnel
+back the exception to the upper layer beans, and in addition the sender or
+the reader java thread doesn't go away. This is why you are still in the
+&quot;connected&quot; mode because the deconnection event has not propagated.
+
+We faced that issue and we have modified these classes to provide a proper
+multithread behaviour. The JabberBeans source package that I sent you
+contains those modified classes and can just be used as a drop down
+replacement.
+
+As to why the these thread get disconnected, the original 0.9 still hold a
+few XML bugs that would cause the parser to throw an exception (you know the
+kind of mistake that happen when you copy a method into another class and
+you change the opening tag but not the closing tag :) Again, I would suggest
+you use the provided source to rebuild the library, as we went over all
+those packet to check them.
+
+Jean-Louis
+
+----- Original Message -----
+&gt;<i>
+</I>&gt;<i> Message: 11
+</I>&gt;<i> From: &quot;Emma Willis&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">emma.willis at ntlworld.com</A>&gt;
+</I>&gt;<i> To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> Subject: Re: [JDEV] Requesting a roster
+</I>&gt;<i> Date: Wed, 31 Jul 2002 21:39:21 +0100
+</I>&gt;<i> Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i> I am definitely authenticated and when I print out the packet that has
+</I>&gt;<i> failed, I also print out the connectionstatus... it says it is connected.
+</I>&gt;<i>
+</I>&gt;<i> Over the past few days I have found that there are some bits of code
+</I>which,
+&gt;<i> if they are included, cause a failed packet to occur, even if they are not
+</I>&gt;<i> actually reached during execution.... I have identified these lines of
+</I>code
+&gt;<i> by commenting out a whole series and systematically testing the program by
+</I>&gt;<i> uncommenting one line at a time.... this is how I have narrowed down the
+</I>&gt;<i> fault to the rosterRefresh()... I thought I would retry it by creating an
+</I>&gt;<i> individually tailored IQ packet but it seems to be the packet content, not
+</I>&gt;<i> the way of creating it that is causing the problem here.
+</I>&gt;<i>
+</I>&gt;<i> I also find that after one packet has failed, no more will go through.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> --__--__--
+</I>&gt;<i>
+</I>&gt;<i> Message: 12
+</I>&gt;<i> Date: Wed, 31 Jul 2002 21:00:45 +0000
+</I>&gt;<i> From: Matthias Wimmer &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">m at tthias.net</A>&gt;
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] Requesting a roster
+</I>&gt;<i> Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i> Hi Emma!
+</I>&gt;<i>
+</I>&gt;<i> Emma Willis wrote:
+</I>&gt;<i>
+</I>&gt;<i> &gt;I am definitely authenticated and when I print out the packet that has
+</I>&gt;<i> &gt;failed, I also print out the connectionstatus... it says it is connected.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> As I wrote you some days ago ... don't trust the connection status of
+</I>&gt;<i> JabberBeans. Check with a networing tool or in the logfile ot the jabber
+</I>&gt;<i> server if you are really connected.
+</I>&gt;<i> E.g. you loose the connection if a NullPointerException is thrown in a
+</I>&gt;<i> method that handles incoming packets. (E.g. because you expect an
+</I>&gt;<i> attribute that isn't in the packet. It's a good idea to catch all
+</I>&gt;<i> exceptions that you generate in your packet handling functions in the
+</I>&gt;<i> method that is invoked for an incoming packet.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Tot kijk
+</I>&gt;<i>    Matthias
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Fon: +49-700 77007770 <A HREF="http://matthias-wimmer.de/">http://matthias-wimmer.de/</A>
+</I>&gt;<i> Fax: +49-89 312 88654 <A HREF="jabber://mawis@charente.de">jabber://mawis@charente.de</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="013724.html">[JDEV] http proxy support
+</A></li>
+	<LI>Next message: <A HREF="013716.html">[JDEV] Requesting a roster
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13711">[ date ]</a>
+              <a href="thread.html#13711">[ thread ]</a>
+              <a href="subject.html#13711">[ subject ]</a>
+              <a href="author.html#13711">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

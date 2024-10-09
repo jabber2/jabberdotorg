@@ -1,0 +1,122 @@
+// JabberKit.idl : IDL source for jabberkt.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (jabberkt.tlb) and marshalling code.
+
+import "oaidl.idl";
+
+typedef enum
+{
+	JK_PT_PROXY_NONE,
+	JK_PT_PROXY_SOCKS4,
+	JK_PT_PROXY_SOCKS5
+} ProxyType;
+
+typedef enum 
+{
+	JK_CS_DISCONNECTED,
+	JK_CS_CONNECTING,
+	JK_CS_SIGNING_IN,
+	JK_CS_SIGNED_IN
+} ConnectionState;
+
+typedef enum
+{
+	JK_SF_USERNAME_PASSWORD,
+	JK_SF_INVALID_USERNAME,
+	JK_SF_CONNECTION_TO_SERVER,
+	JK_SF_SERVER_TIMEOUT,
+	JK_SF_INTERNAL_ERROR,
+	JK_SF_USERNAME_UNAVAILABLE,
+	JK_SF_SERVER_UNKNOWN
+} SignInFailure;
+
+typedef enum
+{
+	JK_SO_NORMAL,
+	JK_SO_DISCONNECT,
+	JK_SO_OTHER_SIGNIN,
+	JK_SO_SERVER_FORCED,
+	JK_SO_SERVER_TIMEOUT,
+	JK_SO_SERVER_ERROR,
+	JK_SO_INTERNAL_ERROR
+} SignOutReason;
+
+typedef enum
+{
+	JK_IQ_SUCCESS,
+	JK_IQ_ERROR,
+	JK_IQ_TIMEOUT
+} IQResult;
+
+[
+	uuid(1D25CFED-6275-11D4-9104-0008C7A20803),
+	version(1.0),
+	helpstring("JabberKit, a Jabber Communications Library")
+]
+library JabberKit
+{
+	importlib("stdole32.tlb");
+	importlib("msxml3.dll");
+
+	interface IJabberPacket;
+	interface IJabberIQ;
+	interface IJabberPresence;
+
+	[
+		object,
+		uuid(1D25CFFF-6275-11D4-9104-0008C7A20803),
+		dual,
+		nonextensible,
+		pointer_default(unique),
+		helpstring("Main interface of a JabberConnection")
+	]
+	interface IJabberConnection : IDispatch
+	{
+		[id(1), propget] HRESULT jid([out, retval]BSTR* pVal);
+		[id(2), propget] HRESULT username([out, retval]BSTR* pVal);
+		[id(3), propget] HRESULT domain([out, retval]BSTR* pVal);
+		[id(4), propget] HRESULT resource([out, retval]BSTR* pVal);
+		[id(5), propget] HRESULT host([out, retval]BSTR* pVal);
+		[id(6), propget] HRESULT port([out, retval]short* pVal);
+		[id(7), propget] HRESULT document([out, retval]IXMLDOMDocument** ppVal);
+		[id(8)]			 HRESULT GetConnectionState([out, retval]ConnectionState* pVal);
+		[id(9)]			 HRESULT SetProxyInfo([in]ProxyType type, [in]BSTR host, [in]short port, [in]BSTR user, [in]BSTR pass, [in]VARIANT_BOOL resolveHosts);
+		[id(10)]		 HRESULT SignIn([in]BSTR name, [in]BSTR domain, [in]BSTR rsrc, [in]BSTR password, [in]BSTR host, [in]short port, [in]VARIANT_BOOL create);
+		[id(11)]		 HRESULT SignIn2([in]BSTR jid, [in]BSTR password, [in]BSTR host, [in]short port, [in]VARIANT_BOOL create);
+		[id(12)]		 HRESULT SignOut();
+		[id(13)]		 HRESULT SendElement([in]IXMLDOMElement* pMessage);
+		[id(14)]		 HRESULT SendElementIQ([in]IXMLDOMElement* pMessage, UINT uTimeOutSec, [out, retval]UINT *pVal);
+		[id(15)]		 HRESULT SendRaw([in]BSTR sBuffer);
+		[id(16)]		 HRESULT SignInComponent([in]BSTR jid, [in]BSTR secret, [in]BSTR host, [in]short port);
+		[id(17)]		 HRESULT Reconnect();	
+	};
+
+	[
+		uuid(1D25D001-6275-11D4-9104-0008C7A20803),
+		helpstring("Events that a JabberConnection fires")
+	]
+	dispinterface _IJabberConnectionEvents
+	{
+		properties:
+		methods:
+		[id(1)]	void OnSignInSuccess(IXMLDOMElement* pVal);
+		[id(2)] void OnSignInFailure(SignInFailure reason, IXMLDOMElement* pVal);
+		[id(3)] void OnSignOut(SignOutReason reason);
+		[id(4)] void OnElement(IXMLDOMElement* pVal);
+		[id(5)] void OnElementIQ(IQResult result, UINT Id, IXMLDOMElement* pVal);
+		[id(6)] void OnConnectionStateChange(ConnectionState eVal);
+	};
+
+	[
+		uuid(1D25D000-6275-11D4-9104-0008C7A20803),
+		helpstring("Class for communicating with Jabber servers.")
+	]
+	coclass JabberConnection
+	{
+		[default] interface IJabberConnection;
+		[default, source] dispinterface _IJabberConnectionEvents;
+	};
+};
+

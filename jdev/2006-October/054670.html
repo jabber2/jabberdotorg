@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Service Discovery (XEP-0030) and large item sets
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Service%20Discovery%20%28XEP-0030%29%20and%20large%20item%20sets&In-Reply-To=%3C5cfc0a8e0610110629o537a89e1v8cbc1786ff762e47%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="054669.html">
+   <LINK REL="Next"  HREF="054671.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Service Discovery (XEP-0030) and large item sets</H1>
+    <B>Tobias Markmann</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Service%20Discovery%20%28XEP-0030%29%20and%20large%20item%20sets&In-Reply-To=%3C5cfc0a8e0610110629o537a89e1v8cbc1786ff762e47%40mail.gmail.com%3E"
+       TITLE="[jdev] Service Discovery (XEP-0030) and large item sets">tmarkmann at googlemail.com
+       </A><BR>
+    <I>Wed Oct 11 08:29:03 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="054669.html">[jdev] HTTP connection manager
+</A></li>
+        <LI>Next message: <A HREF="054671.html">[jdev] Service Discovery (XEP-0030) and large item sets
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54670">[ date ]</a>
+              <a href="thread.html#54670">[ thread ]</a>
+              <a href="subject.html#54670">[ subject ]</a>
+              <a href="author.html#54670">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+Given the following query stanza:
+
+&lt;iq id='75'
+&gt;<i>     to='conference.jabber.org'
+</I>&gt;<i>     type='get'
+</I>&gt;<i>     xml:lang='de-DE'&gt;
+</I>&gt;<i>   &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#items'/">http://jabber.org/protocol/disco#items'/</A>&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>
+
+The server responds to this stanza with a large stanza, with hundreds of
+items. If XMPP gets more common MUCs will have a lot more rooms. So why
+don't split large stanzas in smaller chunks. Like in the following example:
+
+&lt;iq from='conference.jabber.org'
+&gt;<i>     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tobiasfar at jabber.org</A>/home'
+</I>&gt;<i>     id='75'
+</I>&gt;<i>     type='result'
+</I>&gt;<i>     part='1'
+</I>&gt;<i>     part-count='2'&gt;
+</I>&gt;<i>   &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#items'">http://jabber.org/protocol/disco#items'</A>&gt;
+</I>&gt;<i>     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">comitedesabios at conference.jabber.org</A>'
+</I>&gt;<i>     name='comitedesabios (0)'/&gt;
+</I>&gt;<i>     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">asilo at conference.jabber.org</A>'
+</I>&gt;<i>     name='asilo (0)'/&gt;
+</I>&gt;<i>     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">blondie at conference.jabber.org</A>'
+</I>&gt;<i>     name='blondie (1)'/&gt;
+</I>&gt;<i>     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">esperanto at conference.jabber.org</A>'
+</I>&gt;<i>     name='Babilu esperante (4)'/&gt;
+</I>&gt;<i>     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hawaii at conference.jabber.org</A>'
+</I>&gt;<i>     name='Hawaii (0)'/&gt;
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i> &lt;iq from='conference.jabber.org'
+</I>&gt;<i>     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tobiasfar at jabber.org</A>/home'
+</I>&gt;<i>     id='75'
+</I>&gt;<i>     type='result'
+</I>&gt;<i>     part='2'
+</I>&gt;<i>     part-count='2'&gt;
+</I>&gt;<i>   &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#items'">http://jabber.org/protocol/disco#items'</A>&gt;
+</I>&gt;<i>     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kanava at conference.jabber.org</A>'
+</I>&gt;<i>     name='kanava (0)'/&gt;
+</I>&gt;<i>     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">profit at conference.jabber.org</A>'
+</I>&gt;<i>     name='Profit (3)'/&gt;
+</I>&gt;<i>     &lt;item jid='!<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">use at conference.jabber.org</A>'
+</I>&gt;<i>     name='!use (0)'/&gt;
+</I>&gt;<i>     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">directnet at conference.jabber.org</A>'
+</I>&gt;<i>     name='Directnet (1)'/&gt;
+</I>&gt;<i>     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stevegt-ctl at conference.jabber.org</A>'
+</I>&gt;<i>     name='stevegt-ctl (1)'/&gt;
+</I>&gt;<i>     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">asplinux at conference.jabber.org</A>'
+</I>&gt;<i>     name='asplinux'/&gt;
+</I>&gt;<i>     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">international at conference.jabber.org</A>'
+</I>&gt;<i>     name='international (0)'/&gt;
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>
+
+
+This will result in some advantages like:
+
+   - smaller XML stanza sizes -&gt; easier to handle for servers
+   - better responsiveness because you can still retrieve presences or
+   other messages while receiving a large stanza
+
+If someone knows a better way to do something like this, please tell me
+about it.
+
+regards
+Tobias
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20061011/5ea01b42/attachment-0001.htm">https://www.jabber.org/jdev/attachments/20061011/5ea01b42/attachment-0001.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="054669.html">[jdev] HTTP connection manager
+</A></li>
+	<LI>Next message: <A HREF="054671.html">[jdev] Service Discovery (XEP-0030) and large item sets
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54670">[ date ]</a>
+              <a href="thread.html#54670">[ thread ]</a>
+              <a href="subject.html#54670">[ subject ]</a>
+              <a href="author.html#54670">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

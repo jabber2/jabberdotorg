@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] nonblocking RPCCall() in Net::Jabber, can it work?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20nonblocking%20RPCCall%28%29%20in%20Net%3A%3AJabber%2C%20can%20it%20work%3F&In-Reply-To=%3C40563A5C.3060209%40jabber.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="077564.html">
+   <LINK REL="Next"  HREF="077565.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] nonblocking RPCCall() in Net::Jabber, can it work?</H1>
+    <B>Ryan Eatmon</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20nonblocking%20RPCCall%28%29%20in%20Net%3A%3AJabber%2C%20can%20it%20work%3F&In-Reply-To=%3C40563A5C.3060209%40jabber.org%3E"
+       TITLE="[jdev] nonblocking RPCCall() in Net::Jabber, can it work?">reatmon at jabber.org
+       </A><BR>
+    <I>Mon Mar 15 17:21:00 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="077564.html">[jdev] nonblocking RPCCall() in Net::Jabber, can it work? 
+</A></li>
+        <LI>Next message: <A HREF="077565.html">[jdev] voice chat
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77572">[ date ]</a>
+              <a href="thread.html#77572">[ thread ]</a>
+              <a href="subject.html#77572">[ subject ]</a>
+              <a href="author.html#77572">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+
+Scott Bolte wrote:
+&gt;<i> 	Thanks for the information Ryan.
+</I>&gt;<i> 
+</I>&gt;<i> 	I am using RPCCall with mode =&gt; 'nonblock'. It has to be
+</I>&gt;<i> 	non-blocking since the remote 'user' may be offline when I
+</I>&gt;<i> 	make the call.
+</I>&gt;<i> 
+</I>&gt;<i> 	Like I said, I'm new to jabber, but it looks like SendWithID
+</I>&gt;<i> 	does register the ID and packet table.
+</I>
+Ok... I had a brain fart. =)
+
+Yes.  SendWithID (nonblock) does call RegisterID.  The mode I was 
+thinking of is passthru, that just adds the id and returns it.
+
+ &gt;       The code path from
+&gt;<i> 	RPCCall will include the following line:
+</I>&gt;<i> 
+</I>&gt;<i> 		$self-&gt;RegisterID($object-&gt;GetTag(),$id);
+</I>&gt;<i> 
+</I>&gt;<i> 	I haven't tested it, but I'll speculate RPCCall should
+</I>&gt;<i> 	return [$iq-&gt;GetTag(), $id] instead of ($id). That would
+</I>&gt;<i> 	allow CheckID to be used minutes/hours/days later. The
+</I>&gt;<i> 	other solution is to drop the reference to CheckID from
+</I>&gt;<i> 	the Modes section of the Net::Jabber::Protocol man page
+</I>&gt;<i> 	and point people to XPath for both nonblock and passthru.
+</I>
+No...  you're right.  It might be better to return both things.  For now 
+though, you can just call CheckID with (&quot;iq&quot;,$id).
+
+
+&gt;<i> 	I'll add XPath callbacks to my list of things to learn.
+</I>&gt;<i> 
+</I>&gt;<i> 	In any case, I think I see trouble ahead. The generated id
+</I>&gt;<i> 	does not seem unique over time. Therefore replies that comes
+</I>&gt;<i> 	to a client's successor, even a successor that shares the
+</I>&gt;<i> 	same JID, may be ambiguous. Is that correct?
+</I>
+Unique over time?  I'm not sure I understand.  It is unique over time if 
+you stay connected.  But if you disconnect and reconnect then yes, the 
+id counter is reset to 0.
+
+What exactly are you trying to write that requires such a lengthy 
+processing time?  RPC is meant to be be instantanious response, not 
+hours/days/weeks/etc...
+
+
+&gt;<i> 	Btw, it was the persistence of messages that I did not
+</I>&gt;<i> 	realize jabber had until last week. (I know, it's an obvious
+</I>&gt;<i> 	requirement in light of offline messaging, but I know more
+</I>&gt;<i> 	now.) Persistence is the reason I'm switching over to Jabber.
+</I>&gt;<i> 	But I now realize there is a critical question I need to
+</I>&gt;<i> 	ask...  will a session manager (e.g. jabberd 2) store both
+</I>&gt;<i> 	IQ and Messages packets or just Messages?
+</I>
+&lt;iq/&gt;s are not stored offline.  Only &lt;message/&gt;s.
+
+&gt;<i> 		Scott
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Ryan Eatmon wrote:
+</I>&gt;<i> 
+</I>&gt;&gt;<i>First, are you using the new mode=&gt;'nonblock' argument to the RPCCall 
+</I>&gt;&gt;<i>function?  This causes RPCCall (and several other functions) to return 
+</I>&gt;&gt;<i>the id that the packet was sent with.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>In this case it just calls SendWithID which does NOT register the id and 
+</I>&gt;&gt;<i>packet tag in the id table.  So CheckID() will not return anything 
+</I>&gt;&gt;<i>because it was never registered.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>The idea behind this method of operations is that you would register an 
+</I>&gt;&gt;<i>XPath callback on that id that would call a function of your devising 
+</I>&gt;&gt;<i>to handle just the return packet call.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>$client-&gt;SetXPathCallBacks(&quot;/iq[\@id='$id']&quot;=&gt;&amp;yourFunction);
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>yourFunction would then call RPCParse to get back a data structure for 
+</I>&gt;&gt;<i>the return value.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>This *should* be as close to nonblocking as we can get.  Your code will 
+</I>&gt;&gt;<i>return to the Process() loop and let you do whatever while waiting for 
+</I>&gt;&gt;<i>the return.  Since you know what was going on at the time the RPC call 
+</I>&gt;&gt;<i>was sent, you can tie that state information in a hash with the id 
+</I>&gt;&gt;<i>returned from RPCCall as the key.  Then you can look up the state 
+</I>&gt;&gt;<i>information in yourFunction.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>One caveat.  If this is a long running program.  Make sure you 
+</I>&gt;&gt;<i>unregister the XPath callback in your function since the id will never 
+</I>&gt;&gt;<i>be recycled.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>$client-&gt;SetXPathCallBacks(&quot;/iq[\@id='$id']&quot;=&gt;undef);
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Hope this helps.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Scott Bolte wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>	As far as I can tell, it is not possible to use CheckID() to
+</I>&gt;&gt;&gt;<i>	retrieve the answer to a non-blocking RPCCall() call.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>	CheckID() requires an object tag and an id. Unfortunately,
+</I>&gt;&gt;&gt;<i>	RPCCall() returns just an id. The iq object it creates goes out
+</I>&gt;&gt;&gt;<i>	of scope, taking the tag with it, when RPCCall() returns.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>	I've only been using Jabber for two days so I suspect I'm
+</I>&gt;&gt;&gt;<i>	missing something. Is there any way to do non-blocking RPC and
+</I>&gt;&gt;&gt;<i>	later retrieve the answer packet?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>		Scott
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>	P.S. I am using version 1.29 of Net::Jabber.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>-- 
+</I>&gt;&gt;<i>Ryan Eatmon
+</I>&gt;&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">reatmon at jabber.org</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>_______________________________________________
+</I>&gt;&gt;<i>jdev mailing list
+</I>&gt;&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i><A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>
+-- 
+Ryan Eatmon
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">reatmon at jabber.org</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="077564.html">[jdev] nonblocking RPCCall() in Net::Jabber, can it work? 
+</A></li>
+	<LI>Next message: <A HREF="077565.html">[jdev] voice chat
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77572">[ date ]</a>
+              <a href="thread.html#77572">[ thread ]</a>
+              <a href="subject.html#77572">[ subject ]</a>
+              <a href="author.html#77572">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

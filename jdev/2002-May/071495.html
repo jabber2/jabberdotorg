@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] sip to jabber component
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20sip%20to%20jabber%20component&In-Reply-To=%3C20020531095318.F931-100000%40hiro.blahr.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="071492.html">
+   <LINK REL="Next"  HREF="071493.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] sip to jabber component</H1>
+    <B>Ben Schumacher</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20sip%20to%20jabber%20component&In-Reply-To=%3C20020531095318.F931-100000%40hiro.blahr.com%3E"
+       TITLE="[JDEV] sip to jabber component">ben-jdev at blahr.com
+       </A><BR>
+    <I>Fri May 31 10:59:34 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="071492.html">[JDEV] sip to jabber component
+</A></li>
+        <LI>Next message: <A HREF="071493.html">[JDEV] Java Jabber Client with file transfer possibilty???
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71495">[ date ]</a>
+              <a href="thread.html#71495">[ thread ]</a>
+              <a href="subject.html#71495">[ subject ]</a>
+              <a href="author.html#71495">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The solution to your problem seems to be fairly simple. Before you
+establish the sesssion with the Jabber server, you are routing to
+'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1000 at 10.192.72.61</A>/sip', which is correct. However, after you've
+established the session, you're routing to the address associated with
+your session, but for some reason you've tagged on 'sip.' to the beginning
+of the hostname. (see below)
+
+&gt;<i> sip --&gt; jabber
+</I>&gt;<i> &lt;route to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1000 at sip.10.192.72.61</A>/8142028'
+</I>&gt;<i> from='sip.10.192.72.61'&gt;&lt;presence&gt;&lt;status&gt;available&lt;/status&gt;&lt;/presence&gt;&lt;/route&gt;
+</I>&gt;<i>
+</I>&gt;<i> jabber --&gt; sip
+</I>&gt;<i> &lt;route to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1000 at sip.10.192.72.61</A>/8142028'
+</I>&gt;<i> from='sip.10.192.72.61'&gt;&lt;presence&gt;&lt;status&gt;available&lt;/status&gt;&lt;/presence&gt;&lt;/route&gt;
+</I>
+What you should be doing is routing to the address returned to you when
+you established the session. So, instead of routing to
+'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1000 at sip.10.192.72.61</A>/8142028', you should be routing to
+'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1000 at 10.192.72.61</A>/8142028'. The behavior you are currently seeing is
+absolutely correct, since you are effectively sending a packet out to the
+Jabber server which is supposed to be getting routed back to your
+component.
+
+Hope this helps,
+
+bs.
+
+On Fri, 31 May 2002, Schweizer Laurent wrote:
+&gt;<i> hello,
+</I>&gt;<i>
+</I>&gt;<i> yes i have more information:
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> sip --&gt; jabber
+</I>&gt;<i> stream:stream xmlns='jabber:component:accept'
+</I>&gt;<i> xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> to='10.192.72.61'&gt;
+</I>&gt;<i>
+</I>&gt;<i> jabber --&gt; sip
+</I>&gt;<i> &lt;?xml version='1.0'?&gt;&lt;stream:stream
+</I>&gt;<i> xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='3CF71986'
+</I>&gt;<i> xmlns='jabber:component:accept' from='sip.10.192.72.61'&gt;
+</I>&gt;<i>
+</I>&gt;<i> sip --&gt; jabber
+</I>&gt;<i> &lt;handshake&gt;42ef5af7591965126f7577284f01f31ab363eb35&lt;/handshake&gt;
+</I>&gt;<i>
+</I>&gt;<i> jabber --&gt; sip
+</I>&gt;<i> &lt;handshake/&gt;
+</I>&gt;<i>
+</I>&gt;<i> sip --&gt; jabber
+</I>&gt;<i> &lt;route type='auth' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1000 at 10.192.72.61</A>/sip' from='sip.10.192.72.61'&gt;&lt;iq
+</I>&gt;<i> type='set' id='REGISTER1022826922647'&gt;&lt;query xmlns='jabber:iq:auth'&gt;
+</I>&gt;<i> &lt;username&gt;1000&lt;/username&gt;&lt;password&gt;080596&lt;/password&gt;&lt;resource&gt;sip&lt;/resource&gt;&lt;/query&gt;&lt;/iq&gt;&lt;/route&gt;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> jabber --&gt; sip
+</I>&gt;<i> &lt;route from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1000 at 10.192.72.61</A>/sip' to='sip.10.192.72.61' type='auth'&gt;&lt;iq
+</I>&gt;<i> type='result' id='REGISTER1022826922647'/&gt;&lt;/route&gt;
+</I>&gt;<i>
+</I>&gt;<i> sip --&gt; jabber
+</I>&gt;<i> &lt;route type='session' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1000 at 10.192.72.61</A>/sip' from='sip.10.192.72.61'/&gt;
+</I>&gt;<i>
+</I>&gt;<i> jabber --&gt; sip
+</I>&gt;<i> &lt;route type='session' to='sip.10.192.72.61'
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1000 at 10.192.72.61</A>/8142028'/&gt;
+</I>&gt;<i>
+</I>&gt;<i> sip --&gt; jabber
+</I>&gt;<i> &lt;route to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1000 at sip.10.192.72.61</A>/8142028'
+</I>&gt;<i> from='sip.10.192.72.61'&gt;&lt;presence&gt;&lt;status&gt;available&lt;/status&gt;&lt;/presence&gt;&lt;/route&gt;
+</I>&gt;<i>
+</I>&gt;<i> jabber --&gt; sip
+</I>&gt;<i> &lt;route to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">1000 at sip.10.192.72.61</A>/8142028'
+</I>&gt;<i> from='sip.10.192.72.61'&gt;&lt;presence&gt;&lt;status&gt;available&lt;/status&gt;&lt;/presence&gt;&lt;/route&gt;
+</I>&gt;<i>
+</I>
+  [...snip -- let's shorten this message...]
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="071492.html">[JDEV] sip to jabber component
+</A></li>
+	<LI>Next message: <A HREF="071493.html">[JDEV] Java Jabber Client with file transfer possibilty???
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71495">[ date ]</a>
+              <a href="thread.html#71495">[ thread ]</a>
+              <a href="subject.html#71495">[ subject ]</a>
+              <a href="author.html#71495">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] File transfers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20File%20transfers&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="013083.html">
+   <LINK REL="Next"  HREF="013086.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] File transfers</H1>
+    <B>Tijl Houtbeckers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20File%20transfers&In-Reply-To="
+       TITLE="[JDEV] File transfers">tijl at druppel.nl
+       </A><BR>
+    <I>Sat Jun  8 09:03:06 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="013083.html">[JDEV] Implementation of JEP-0025 (Jabber HTTP Polling)
+</A></li>
+        <LI>Next message: <A HREF="013086.html">[JDEV] File transfers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13085">[ date ]</a>
+              <a href="thread.html#13085">[ thread ]</a>
+              <a href="subject.html#13085">[ subject ]</a>
+              <a href="author.html#13085">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>---------- Original Message ----------
+
+&gt;<i>On Saturday 08 June 2002 02:22, Tijl Houtbeckers wrote:
+</I>&gt;&gt;<i> Or clients that want to implement features that require the
+</I>&gt;&gt;<i> transfer of small files (like icons or sounds) without wanting to
+</I>&gt;&gt;<i> implement HTTP or HTTP server (after all one goal of Jabber is to
+</I>&gt;&gt;<i> keep things simple for the client!).
+</I>&gt;<i>
+</I>&gt;<i>On the one hand, I'm agreeing that implementing HTTP can become 
+</I>&gt;<i>complicated, but on the other hand, for simple file transfers one 
+</I>&gt;<i>probably doesn't need all those highly sophisticated features of the 
+</I>&gt;<i>HTTP protocol - even HTTP/1.0 should suffice. Almost every 
+</I>&gt;<i>programming language provides libraries for simple HTTP GET, the 
+</I>&gt;<i>complicated part is HTTP POST with file uploads using MIME. I don't 
+</I>&gt;<i>know HTTP PUT, but it should be much easier to implement.
+</I>
+I'm not that familiar with HTTP either, but the main reason for choosing it would be 
+that that's what most people use today in their clients and the availability for libraries 
+for it. During the signaling fase a client could specify that it only support HTTP GET, 
+but that means it would loose the ability to transfer files if it is behind a firewall. Maybe 
+we shouldn't specify HTTP as the way to transfer files at all (also concerning what 
+you point out below, about how far we should go in telling people how to implement 
+their clients).
+
+&gt;&gt;<i> This ofcourse still leaves the need for better p2p signaling. Best
+</I>&gt;&gt;<i> would be ofcourse to combine both of them, letting both clients
+</I>&gt;&gt;<i> indicate wich options they have and then choosing the best one
+</I>&gt;&gt;<i> together. Maybe some discussion on how this signalling can be done
+</I>&gt;&gt;<i> best is a good idea rather then argueing about wether inband is
+</I>&gt;&gt;<i> good or bad..
+</I>&gt;<i>
+</I>&gt;<i>I fully agree. The question is not, *if* one should use the server 
+</I>&gt;<i>for file transfers or not, but *in what situations* it is best to use 
+</I>&gt;<i>inband data, depending on the capabilities/attributes of the clients 
+</I>&gt;<i>(and the server) and the actual load(s).
+</I>&gt;<i>Example 1: After a chat, I'd like to transfer a file to my friend, 
+</I>&gt;<i>using DSL. He has only a 56K modem, has started three downloads and 
+</I>&gt;<i>the network of his ISP is already on its knees. But the load on the 
+</I>&gt;<i>jabber server is low and I wouldn't have any problems to transfer the 
+</I>&gt;<i>file to the server. So I (or my client) uses the server. This 
+</I>&gt;<i>solution is user-friendly, because I can go offline directly after 
+</I>&gt;<i>transmission and my friend can first download the other three files 
+</I>&gt;<i>and later decide to download mine. It is ISP-friendly, because I 
+</I>&gt;<i>don't cause much traffic for my own ISP and if my friend is 
+</I>&gt;<i>responsible enough to download the file somewhat later, it's better 
+</I>&gt;<i>for his own ISP as well.
+</I>
+This would be sort of like the jabber.com situation, simply uploading a file somewhere 
+and then having someone else download it. But if this is, as someone pointed about 
+this would make us the &quot;hotmail&quot; of filetransfering. In this case the file is probably not 
+even send inband (since it doesn't directly reach the other user), wich means you 
+have to open second connection after all, etc. etc.
+
+&gt;<i>Example 2: We're only chatting, my friend doesn't download anything 
+</I>&gt;<i>else. The load on the Jabber server is high, almost nothing gets 
+</I>&gt;<i>through. It is possible for my friend to establish a direct 
+</I>&gt;<i>connection to my client's HTTP server and download the file. In this 
+</I>&gt;<i>case, wouldn't that be the better solution?
+</I>
+It would be better.. during the signaling fase the clients would discover that you are 
+not behind a firewall and decide to do it that way. If they discover you are behind a 
+firewal they would have to decided to let you upload it. If this is not possible either they 
+could decide on doing the tranfer inband (with a big warning: &quot;this is only for small 
+files, it will slow your connection if the file is too big, etc.), or havig you transfer it to 
+some other server, and having your friend download it (like you describe above).
+
+&gt;<i>What I don't like about all that is:
+</I>&gt;<i>a) Although we want to implement an IM client, we're thinking about 
+</I>&gt;<i>problems and asking questions how to implement the most efficient 
+</I>&gt;<i>file sharing peer-to-peer application.
+</I>
+Well, I'm not just thinking about implementing an IM client, I'm thinking of the best way 
+to transfer binary data from JID to the other, I really think this (espc. inband data) has 
+more usefull applications then just filetransfering in IM applications.
+
+&gt;<i>b) The rules to be applied after the signaling you're talking about 
+</I>&gt;<i>could become complicated. How far should we go? Determine them 
+</I>&gt;<i>manually, once and for all, based on rather theoretical assumptions? 
+</I>&gt;<i>Work on them based on empirical data gained from real networks? 
+</I>&gt;<i>Invent a highly sophisticated algorithm based on statistics/machine 
+</I>&gt;<i>learning which is able to adapt to changes in the network and to 
+</I>&gt;<i>predict future network load, leading to better decisions? Wouldn't 
+</I>&gt;<i>*that* go even far beyond HTTP, making things for clients highly 
+</I>&gt;<i>complicated instead of keeping it simple?
+</I>
+Whatever action you're going to undertake if you want to keep it simple just 
+predetermine what action you're going to undertake For example: sending filetranfers 
+should always be p2p not inband.
+Or these small midi files I want to send along with my messages should always be 
+inband, not p2p. (Good example of where inband has huge advantages over 
+p2p-HTTP.. you don't want to wait till all these connections get established etc.)
+
+We should provide a way for clients to let them be aware of each others capabilities 
+for transfering binary data, including their &quot;firewall situation&quot;. There is already a JEP for 
+feature negotiation wich I think we should use for this. I do think we should provide a 
+standard for filetransfer (it be HTTP or something else) to increase competability, but 
+that we should not make it mandatory: just recommend clients to implement it. After 
+all there is more then just filetransfer outthere, what would prevent me from sending 
+you the adress to a shoutcast stream, or initiating a videoconferencing stream etc. 
+etc. 
+
+&gt;<i>I think the problem here is that with any data (let's say three 
+</I>&gt;<i>times) bigger than the average message a user would normally send to 
+</I>&gt;<i>another user (by using a keyboard), we're more or less leaving the 
+</I>&gt;<i>realm of instant messaging. Though applications can *use* the Jabber 
+</I>&gt;<i>protocol for their own instant messaging needs (p2p, a2p, a2a), also 
+</I>&gt;<i>leaving the area of pure GUI IM clients, nevertheless the Jabber 
+</I>&gt;<i>protocol is (and should remain, IMO) an open protocol for instant 
+</I>&gt;<i>messaging. Everything else is file sharing and those protocols are 
+</I>&gt;<i>fundamentally different from IM.
+</I>
+Agreed... inband data should always remain small. As someone pointed out here 
+though, an imagine of what you typed could be smaller then what you actually typed in 
+some cases :) I don't agree really agree with you yet on *how* small though, since 
+there is already data being transfered inside messages more then 3 times bigger, but 
+I'll assume that that was just an example.
+Jabber is more then just IM, and if it wants to be able to be used for non-IM purposes 
+(like in DotGNU) it should be able to handle messages quite large. Lot's of people 
+working on Jabber don't think it is or should be just an open protocol for instant 
+messaging...
+
+&gt;<i>So either combine IM and file sharing in one app, but use different 
+</I>&gt;<i>protocols underneath - or invoke a thirdparty app based on the URL 
+</I>&gt;<i>the client got out-of-band, like browsers can invoke telnet when 
+</I>&gt;<i>getting URLs like <A HREF="telnet://213.123.466.237">telnet://213.123.466.237</A> ...
+</I>
+I will need inband tranfering of binary data (small images for example) for some of my 
+applications, since I don't have the option of using a different protocol or a thirdparty 
+app. And yes one of my applications is an IM application. I think it's important to have 
+this capability and to have decent feature negotation for it, as well as p2p tranfers. 
+(simply sending a URI will not solve the firewall problems)
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="013083.html">[JDEV] Implementation of JEP-0025 (Jabber HTTP Polling)
+</A></li>
+	<LI>Next message: <A HREF="013086.html">[JDEV] File transfers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13085">[ date ]</a>
+              <a href="thread.html#13085">[ thread ]</a>
+              <a href="subject.html#13085">[ subject ]</a>
+              <a href="author.html#13085">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

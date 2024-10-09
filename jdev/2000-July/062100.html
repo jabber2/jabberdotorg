@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] digest and ldap and authentication
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20digest%20and%20ldap%20and%20authentication&In-Reply-To=%3CmT/13Igwk-0008X8T%40mail.airmail.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="062129.html">
+   <LINK REL="Next"  HREF="062103.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] digest and ldap and authentication</H1>
+    <B>mark at mjwilcox.com</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20digest%20and%20ldap%20and%20authentication&In-Reply-To=%3CmT/13Igwk-0008X8T%40mail.airmail.net%3E"
+       TITLE="[JDEV] digest and ldap and authentication">mark at mjwilcox.com
+       </A><BR>
+    <I>Sat Jul 29 19:28:00 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="062129.html">[JDEV] Calling all client developers! (survey)
+</A></li>
+        <LI>Next message: <A HREF="062103.html">[JDEV] digest and ldap and authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62100">[ date ]</a>
+              <a href="thread.html#62100">[ thread ]</a>
+              <a href="subject.html#62100">[ subject ]</a>
+              <a href="author.html#62100">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+sheath and I have been talking about the LDAP-Jabber integration 
+project.
+
+What I failed to realize was that authentication happens in 
+mod_auth* (e.g. mod_auth, mod_auth_sha1). I thought it all 
+happened in xdb.
+
+What sheath failed to realize was that most LDAP servers don't 
+store passwords in plaintext.
+
+There's nobody to blame on this because this is still foreign 
+territory :). 
+
+This isn't a problem when we're dealing with plaintext Jabber 
+authentication (we can use the method described in the current 
+design document). 
+
+It is a problem for Jabber's digest mode. 
+
+The way Jabber's digest mode works is :
+client sends SHA-1 digested password 
+server gets plaintext password from database (via an xdb module) 
+server creates its own SHA-1 digest using the same mechanism 
+as the client (by concating the SID and password together first and 
+then creating the digest). 
+
+This can't work with LDAP because most LDAP servers store their 
+passwords pre-encrypted via DES, SHA-1 or some other 
+mechanism.
+
+What sheath and I have thought for now (but we're very open to 
+suggestions) is that we could create a new objectclass and 
+attribute for Jabber to be added to the LDAP server for sites that 
+wished to use Jabber's digest mode. We could ship the schema 
+with the code &amp; user's could add the Jabber schema to their 
+server's schema before setting up xdbldap. 
+
+This new schema would be;
+objectclass: jabberuserobject
+attribute:jabberpassword
+
+Then when an user wanted to activate Jabber, they would send 
+their password to the server during registration. The necessary 
+objectclass would be added to the user's account &amp; their plaintext 
+password would be stored to the server. We would have to 
+authenticate them to the LDAP server first, unless it was a new 
+LDAP entry because you wouldn't want someone else to get a 
+jabber account using an userid that wasn't them (e.g. bob smith 
+activatng his jabber account on Mark Wilcox's LDAP entry). 
+
+The downside is that now the user's LDAP password is now stored 
+in the directory in plaintext. As an LDAP server administrator I 
+wouldn't want that (more importantly, my boss wouldn't let me do it 
+anyway).
+
+Optionally we could ask the user to send 2 passwords during 
+registration, 1 is their LDAP password to authenticate to the server 
+and the 2nd their jabber password (which we could make sure is 
+different), but that's not good either, becuase most people want 
+LDAP authentication so that they don't have multiple passwords.
+
+The other option is to not enable jabber digest authentication and if 
+people want to secure passwords, then use SSL. 
+
+sheath and I are going to concentrate on getting the plaintext 
+authentication to work first and worry about the digest password 
+later.
+
+looking for options...
+Mark
+
+Mark Wilcox
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mark at mjwilcox.com</A>
+Got LDAP?
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="062129.html">[JDEV] Calling all client developers! (survey)
+</A></li>
+	<LI>Next message: <A HREF="062103.html">[JDEV] digest and ldap and authentication
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62100">[ date ]</a>
+              <a href="thread.html#62100">[ thread ]</a>
+              <a href="subject.html#62100">[ subject ]</a>
+              <a href="author.html#62100">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

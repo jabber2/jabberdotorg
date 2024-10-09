@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Collaboration on BOSH servlet?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Collaboration%20on%20BOSH%20servlet%3F&In-Reply-To=%3C1200045889.7744.56.camel%40sz2.hiogi%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="056202.html">
+   <LINK REL="Next"  HREF="056203.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Collaboration on BOSH servlet?</H1>
+    <B>Stefan Strigler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Collaboration%20on%20BOSH%20servlet%3F&In-Reply-To=%3C1200045889.7744.56.camel%40sz2.hiogi%3E"
+       TITLE="[jdev] Collaboration on BOSH servlet?">steve at zeank.in-berlin.de
+       </A><BR>
+    <I>Fri Jan 11 04:04:49 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="056202.html">[jdev] Collaboration on BOSH servlet?
+</A></li>
+        <LI>Next message: <A HREF="056203.html">[jdev] FOSDEM/DEVCON
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#56204">[ date ]</a>
+              <a href="thread.html#56204">[ thread ]</a>
+              <a href="subject.html#56204">[ subject ]</a>
+              <a href="author.html#56204">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+Am Donnerstag, den 10.01.2008, 08:57 +1100 schrieb Greg Wilkins:
+
+&gt;<i> It's a pity that JabberHTTPBind is GPL, as I do most of my work under
+</I>&gt;<i> apache-2.0 and there are some issues mixing and matching.   So eventually
+</I>&gt;<i> it would be good to have an apache 2 licensed version of the same thing.
+</I>
+There's no problem with re-licensing it under some other opensource
+license.
+
+&gt;<i> The key thing to change with your servlet is the sess.sock.wait();
+</I>&gt;<i> waiting in servlets is expensive as it holds a thread, buffers and other
+</I>&gt;<i> resources.   The idea is to replace the wait with suspend/resume semantics.
+</I>&gt;<i> 
+</I>&gt;<i> We have suspend/resume in Jetty now and there is a proposal to include
+</I>&gt;<i> it in Servlet 3.0.  Actually, it is probably worthwhile waiting a month
+</I>&gt;<i> so JSR-315 has time to make some progress in deciding if suspend/resume
+</I>&gt;<i> will be support... then you can move towards the future standard.
+</I>
+Any chance to make use of it while keeping compatible to other
+implementations like tomcat?
+
+&gt;<i> My other concern with scalability is the use of a DocumentBuilder that
+</I>&gt;<i> will create lots of Dom objects on each and every request that will need
+</I>&gt;<i> to be garbage collected.  Specially as it looks like it may parse the
+</I>&gt;<i> message bodies as well, even though they are simply forwarded on.
+</I>
+Well, they aren't. (I guess you're talking about the payload.) 
+Unfortunately there's some issue with jabber servers that aren't fully
+namespace aware. As the payload within BOSH typically has to be
+classified as 'jabber:client' JabberHTTPBind currently removes the xmlns
+attributes when forwarding those packets as the stream they are being
+inserted to is classified as 'jabber:client'. 
+Problems arise if you're sending packets to jabber components expect
+packets of namespace 'jabber:component:accept'. Now a jabber server that
+is not namespace aware would forward packets with namespace
+'jabber:client' to the component if JabberHTTPBind wouldn't remove the
+xmlns attribute.
+
+Next thing is that parsing the stuff makes sure, that no invalid xml is
+being forwarded. But maybe one could just skip that too?
+
+
+Cheers, Steve
+
+PS: If you need access to JHB's SVN repo contact me offlist to get the
+required credentials.
+PPS: There's also a trac site for JHB but I had to take it offline
+because of massive spamming (...). If you think it could be useful I
+could try to reactivate it again.
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="056202.html">[jdev] Collaboration on BOSH servlet?
+</A></li>
+	<LI>Next message: <A HREF="056203.html">[jdev] FOSDEM/DEVCON
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#56204">[ date ]</a>
+              <a href="thread.html#56204">[ thread ]</a>
+              <a href="subject.html#56204">[ subject ]</a>
+              <a href="author.html#56204">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

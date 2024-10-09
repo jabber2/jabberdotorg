@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Firewall jumping
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Firewall%20jumping&In-Reply-To=%3C005201bf641c%249dfdc8a0%241a09c881%40zub%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="061138.html">
+   <LINK REL="Next"  HREF="061156.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Firewall jumping</H1>
+    <B>sean gilman</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Firewall%20jumping&In-Reply-To=%3C005201bf641c%249dfdc8a0%241a09c881%40zub%3E"
+       TITLE="[JDEV] Firewall jumping">sgilman at spnc-us.com
+       </A><BR>
+    <I>Fri Jan 21 08:34:26 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="061138.html">[JDEV] Firewall jumping
+</A></li>
+        <LI>Next message: <A HREF="061156.html">[JDEV] Firewall jumping
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61147">[ date ]</a>
+              <a href="thread.html#61147">[ thread ]</a>
+              <a href="subject.html#61147">[ subject ]</a>
+              <a href="author.html#61147">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>It's not that simple.
+Depending on the type of http proxy server different things will happen.
+The http1.1 spec says that you can pipeline requests.
+Therefore you can create a http1.1 session (socket) and send multiple
+requests down the pipe. (This sounds good.)
+However, some http proxy servers will split each of the pipelined requests
+into a new http1.0 request.
+As a result the server sees N http1.0 requests instead of a stream of
+http1.1 requests.
+
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+</I>&gt;<i> Jay, Dylan
+</I>&gt;<i> Sent: Thursday, January 20, 2000 5:37 PM
+</I>&gt;<i> To: 'Thomas Charron'; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Cc: Greater NH Linux User Group
+</I>&gt;<i> Subject: RE: [JDEV] Firewall jumping
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; From: Thomas Charron [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tcharron at ductape.net</A>]
+</I>&gt;<i> &gt; Sent: Friday, January 21, 2000 5:38 AM
+</I>&gt;<i> &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; Cc: Greater NH Linux User Group
+</I>&gt;<i> &gt; Subject: Re: [JDEV] Firewall jumping
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i> &lt;stuff deleted&gt;
+</I>&gt;<i>
+</I>&gt;<i> &gt; outgoing XML data that it needs to send,
+</I>&gt;<i> &gt; and the server would then pass all data back thru the HTTP
+</I>&gt;<i> &gt; connection that it
+</I>&gt;<i> &gt; has in it's buffer for the client.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;   The server would be configured to require a client
+</I>&gt;<i> &gt; connection ever X seconds,
+</I>&gt;<i> &gt; X being a configurable parameter
+</I>&gt;<i>
+</I>&gt;<i> This all sounds great, but why not just let the http session stay
+</I>&gt;<i> connected.
+</I>&gt;<i> I believe nothing in the protocol prevents continuing
+</I>&gt;<i> communication in both
+</I>&gt;<i> directions. Let the connection stay until it gets cut (as some
+</I>&gt;<i> proxies maybe
+</I>&gt;<i> inclined to do) and then do the reconnected within X seconds routine.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &gt; dependant on the server.  If a client had not reconnected
+</I>&gt;<i> &gt; within X timeframe,
+</I>&gt;<i> &gt; the user would be marked offline, all
+</I>&gt;<i> &gt; pooled output stored offline, and the sessionID expired.
+</I>&gt;<i> &gt; When the client
+</I>&gt;<i> &gt; reconnects AFTER the timeout, either a message
+</I>&gt;<i> &gt; stating the connection has expired, with an immediate
+</I>&gt;<i> &gt; disconnection, or a
+</I>&gt;<i> &gt; reauthentication process of some sort could
+</I>&gt;<i> &gt; take place to reactivate the sessionID.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;   An example of the HTTP conversation is below:
+</I>&gt;<i> &gt; ************************************
+</I>&gt;<i> &gt; * INITIAL CONNECTION CONVERSATION: *
+</I>&gt;<i> &gt; ************************************
+</I>&gt;<i> &gt; --------------------------------------------------
+</I>&gt;<i> &gt; Client:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; GET /auth HTTP/1.0
+</I>&gt;<i> &gt; -------------------------
+</I>&gt;<i> &gt; Server:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; HTTP/1.0 200 OK
+</I>&gt;<i> &gt; Date: Wednesday, 02-Feb-95 23:04:12 GMT
+</I>&gt;<i> &gt; Server: Jabber/1.0-dev
+</I>&gt;<i> &gt; Last-modified: Monday, 31-Jan-2000 23:33:16 GMT
+</I>&gt;<i> &gt; Content-type: text/XML
+</I>&gt;<i> &gt; Content-length: 2345
+</I>&gt;<i> &gt;      * a blank line *
+</I>&gt;<i> &gt; sessionID=hgGFG798ghj65HUgf
+</I>&gt;<i> &gt; --------------------------------------------------
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ****************************************
+</I>&gt;<i> &gt; * SUBSEQUENT CONNECTION CONVERSATIONS: *
+</I>&gt;<i> &gt; ****************************************
+</I>&gt;<i> &gt; --------------------------------------------------
+</I>&gt;<i> &gt; Client:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; POST /converse HTTP/1.0
+</I>&gt;<i> &gt; User-Agent:  libwww/2.14
+</I>&gt;<i> &gt; From:  <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Stars at WDVL.com</A>
+</I>&gt;<i> &gt; Content-type: application/x-www-form-urlencoded
+</I>&gt;<i> &gt; Content-length: 150
+</I>&gt;<i> &gt;      * a blank line *
+</I>&gt;<i> &gt; sessionID=hgGFG798ghj65HUgf
+</I>&gt;<i> &gt; &amp;XML=&lt;message ID=&quot;789367124&quot;/&gt;
+</I>&gt;<i> &gt; -----------------------
+</I>&gt;<i> &gt; Server:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; HTTP/1.0 200 OK
+</I>&gt;<i> &gt; Date: Wednesday, 02-Feb-95 23:04:12 GMT
+</I>&gt;<i> &gt; Server: Jabber/1.0-dev
+</I>&gt;<i> &gt; Last-modified: Monday, 31-Jan-2000 23:33:16 GMT
+</I>&gt;<i> &gt; Content-type: text/XML
+</I>&gt;<i> &gt; Content-length: 2345
+</I>&gt;<i> &gt;      * a blank line *
+</I>&gt;<i> &gt; &lt;something type=&quot;some xml packets for the client&quot;/&gt;
+</I>&gt;<i> &gt; --------------------------------------------------
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;   What's everyone think about this framework?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ---
+</I>&gt;<i> &gt; Thomas Charron
+</I>&gt;<i> &gt; &lt;&lt; Wanted: One decent sig &gt;&gt;
+</I>&gt;<i> &gt; &lt;&lt; Preferably litle used  &gt;&gt;
+</I>&gt;<i> &gt; &lt;&lt; and stored in garage.  ?&gt;&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="061138.html">[JDEV] Firewall jumping
+</A></li>
+	<LI>Next message: <A HREF="061156.html">[JDEV] Firewall jumping
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61147">[ date ]</a>
+              <a href="thread.html#61147">[ thread ]</a>
+              <a href="subject.html#61147">[ subject ]</a>
+              <a href="author.html#61147">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

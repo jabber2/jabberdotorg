@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] just wondering...
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20just%20wondering...&In-Reply-To=%3C20FFC8E3FA68D411A65600805F65613E7F6207%40EXCHANGE%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039888.html">
+   <LINK REL="Next"  HREF="039895.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] just wondering...</H1>
+    <B>Matthew Miller</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20just%20wondering...&In-Reply-To=%3C20FFC8E3FA68D411A65600805F65613E7F6207%40EXCHANGE%3E"
+       TITLE="[JDEV] just wondering...">MatthewM at vdr.com
+       </A><BR>
+    <I>Mon Jan  7 10:55:23 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039888.html">[JDEV] Re: Problem to block a user
+</A></li>
+        <LI>Next message: <A HREF="039895.html">[JDEV] Installing ICQV7-T - libsigc++1.0.0 - problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39894">[ date ]</a>
+              <a href="thread.html#39894">[ thread ]</a>
+              <a href="subject.html#39894">[ subject ]</a>
+              <a href="author.html#39894">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>(I apologize if this comes late, I receive the &quot;digest&quot; rather than being
+swamped with e-mails...)
+
+I'm mostly guessing here, but I believe the reason for a &quot;running&quot; XML
+document is for the implicit connection status this provides.  If the
+document is still open (and there hasn't been an ungraceful disconnect of
+some sort), then the client is still connected to the server, and vice
+versa.  I'm sure temas or stpeter will provide better explanations...(-:
+
+As far as Java-based XML libraries go, dom4j *can* handle this (incoming)
+just fine, as long as you use its XPath-based &quot;event processing&quot; features
+(which return dom4j ElementPath objects, from which you get a complete
+Element/Attribute/Text/etc...).  For outgoing XML, there's some fiddling you
+can do with dom4j's XMLFormatters to get it to not write the closing tag for
+a specific element (me personally, I've pretty much just encode that first
+element line by hand).  Also, when it comes to incoming streams of XML,
+dom4j will need to use it's internal parser (AElfred).  This is done in one
+of two ways:  making sure _no_other_XML_parser_ is on the classpath, or
+setting the property org.xml.sax.driver to the fully-qualified name of the
+AElfred parser (which I believe is &quot;org.dom4j.io.aelfred.SAXDriver&quot;).
+
+I'm not very familiar with JDOM, so I cannot answer for that one.
+Otherwise, you could just use AElfred directly (it can be obtained at
+&quot;<A HREF="http://www.opentext.com/services/content_management_services/xml_sgml_solut">http://www.opentext.com/services/content_management_services/xml_sgml_solut</A>
+ions.html#aelfred_and_sax&quot;).
+
+Hope this helps you out,
+
+
+-----Original Message-----
+From: zak [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">zsy at photoalley.com</A>]
+Sent: Friday, January 04, 2002 4:42 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: [JDEV] just wondering...
+
+
+hi all,
+
+i was just wondering why the opening xml stream was designed to work the way
+
+it does.  my question really is why can't/should't/doesn't the opening xml 
+stream contain a closing element?  what is the rationale behind keeping a 
+running xml document going for the duration of the session.  furthurmore, it
+
+makes it akward to use some of the handy XML libraries out there like JDOM, 
+dom4j, etc. because many of the classes require well formed xml.  i know
+that 
+the sax parser makes it possible to deal with non well formed xml, but i'd 
+prefer to just drop the data returned by the server in to some sort of 
+document class instead of using a sax handler to pick out the individual xml
+
+elements i'm interested in.  plus using the sax parser to directly read from
+
+a socket inputstream has it's own associated issues i'd like to avoid.  
+
+for example, instead of sending this...
+
+ &lt;?xml version='1.0' encoding='UTF-8' ?&gt; &lt;stream:stream to='jabber.org' 
+xmlns='jabber:client' xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;
+
+doesn't it make sense to send...
+
+ &lt;?xml version='1.0' encoding='UTF-8' ?&gt; &lt;stream:stream to='jabber.com' 
+xmlns='jabber:client' xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;
+&lt;/stream:stream&gt;
+
+i'm interested to hear how other people are dealing with this, and how any
+of 
+you are using libraries such as JDOM.  i'm not slamming the implementation.
+
+just curious.
+
+regards, zak.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039888.html">[JDEV] Re: Problem to block a user
+</A></li>
+	<LI>Next message: <A HREF="039895.html">[JDEV] Installing ICQV7-T - libsigc++1.0.0 - problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39894">[ date ]</a>
+              <a href="thread.html#39894">[ thread ]</a>
+              <a href="subject.html#39894">[ subject ]</a>
+              <a href="author.html#39894">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

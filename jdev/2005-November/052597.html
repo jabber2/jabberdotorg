@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Two questions regarding JEP-0124 HTTP Binding
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Two%20questions%20regarding%20JEP-0124%20HTTP%20Binding&In-Reply-To=%3C20051114200505.GE24835%40i.cantcode.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="052596.html">
+   <LINK REL="Next"  HREF="052602.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Two questions regarding JEP-0124 HTTP Binding</H1>
+    <B>Jack Moffitt</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Two%20questions%20regarding%20JEP-0124%20HTTP%20Binding&In-Reply-To=%3C20051114200505.GE24835%40i.cantcode.com%3E"
+       TITLE="[jdev] Two questions regarding JEP-0124 HTTP Binding">jack at xiph.org
+       </A><BR>
+    <I>Mon Nov 14 14:05:05 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="052596.html">[jdev] Two questions regarding JEP-0124 HTTP Binding
+</A></li>
+        <LI>Next message: <A HREF="052602.html">[jdev] Re: Two questions regarding JEP-0124 HTTP Binding
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#52597">[ date ]</a>
+              <a href="thread.html#52597">[ thread ]</a>
+              <a href="subject.html#52597">[ subject ]</a>
+              <a href="author.html#52597">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The following comments are based on my interpretation of the spec, which
+is reflected in the implementation of Punjab.
+
+&gt;<i> Is there something wrong with having a larger value for 'inactivity' 
+</I>&gt;<i> (allowable inactivity period for a client) than 'wait' (longest time 
+</I>&gt;<i> that server will wait before responding to any request during the 
+</I>&gt;<i> session)? Somehow, having 'inactivity' &gt; 'wait' seems wrong, but I'm 
+</I>&gt;<i> unable to pinpoint a logical flaw.
+</I>
+The 'wait' period is not really one of inactivity.  The server has a
+request pending for the client, it's just choosing not to respond as
+thre is not enough data yet to warrant one.  In punjab, as soon as any
+data arrives, a pending request will get a response immediately.  If the
+'wait' timeout expires, a blank response is sent.
+
+'inactivity' is when there has been no request at all.  For instance, if
+a user left the page and the code stopped polling, the server will
+eventually time out.  I believe in punjab we now set this to a few
+minutes.  I think the default 'wait' is 60 seconds.
+
+&gt;<i> The 'polling' attribute specifies the minimal amount of time a client 
+</I>&gt;<i> should wait between two polling (empty) requests. Does 'between' specify 
+</I>&gt;<i> the time between the starttime of both requests, or the time between 
+</I>&gt;<i> receiving a reply of the first request and the start of the second request?
+</I>
+Between start times makes the most sense.  When you poll, the server
+will wait if there is no data.  If you poll every 60 seconds, say, and
+the server waits for 60 seconds, you are doing one round trip per
+minute, during idle, but you have as little network latency as is
+possible via a proxy.  Otherwise, if you polled 60 seconds after you got
+a response, some messages will experience high latency if they arrive in
+the dead time.
+
+A good client and server implementation should provide you with about
+the same latency as a directly connected TCP client (minus the proxy
+latency of course).  It's a cleverly designed protocol.
+
+jack.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="052596.html">[jdev] Two questions regarding JEP-0124 HTTP Binding
+</A></li>
+	<LI>Next message: <A HREF="052602.html">[jdev] Re: Two questions regarding JEP-0124 HTTP Binding
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#52597">[ date ]</a>
+              <a href="thread.html#52597">[ thread ]</a>
+              <a href="subject.html#52597">[ subject ]</a>
+              <a href="author.html#52597">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

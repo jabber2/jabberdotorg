@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabberd patch
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20jabberd%20patch&In-Reply-To=MWMail.aqomhkgf%40host.none">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="015932.html">
+   <LINK REL="Next"  HREF="015934.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabberd patch</H1>
+    <B>Richard Dobson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20jabberd%20patch&In-Reply-To=MWMail.aqomhkgf%40host.none"
+       TITLE="[JDEV] jabberd patch">richard at dobson-i.net
+       </A><BR>
+    <I>Wed Feb 26 18:17:37 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="015932.html">[JDEV] jabberd patch
+</A></li>
+        <LI>Next message: <A HREF="015934.html">[JDEV] Open Source?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#15942">[ date ]</a>
+              <a href="thread.html#15942">[ thread ]</a>
+              <a href="subject.html#15942">[ subject ]</a>
+              <a href="author.html#15942">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> In fact when I shutdown my windows jabberd 1.4.2 with ctrl-c it doesn't
+</I>&gt;<i> say anything at all.. it just disconnects the socket.
+</I>
+Sure but the win32 server is not the best thing to judge by, it has 
+notorious problems, hopefully jabberd2 will solve them. Also that just 
+seems to be another implementation problem to me so doesn't strictly 
+have much bearing on these discussions.
+
+&gt;<i> Look, I already quoted from the documentation that there can be more
+</I>&gt;<i> then one reason why a jabber-server would send a stream:error. What the
+</I>&gt;<i> description should be it doesn't say anywhere, nor should it because
+</I>&gt;<i> it's supposed to be a human readable description, it's not meant for
+</I>&gt;<i> letting your client distinguise what type of stream error it is.
+</I>
+Of course it shouldnt be used if you have an alternative, but at the 
+moment until the stream error code discussions have finalised we dont, 
+it is the only thing we can use to even remotely guess what is 
+happening, im not arguing that the protocol shouldn't be altered to 
+make it better using the error codes but we need a solution now for all 
+the misbehaving clients until jabber servers with the new protocol have 
+been deployed everywhere (possibly quite a long way off).
+
+&gt;<i> Can you agree with me on this?
+</I>
+Yes but as ive said above we need to work with what we have at the 
+moment to solve the problems until servers with the updated protocol 
+have been widely deployed. So if you dont want to use the CDATA to 
+determine the reason for disconnection then we will just need to have 
+it so clients must not try auto-reconnecting when they get a stream 
+error followed by a stream end, but if the client gets an error code 
+(because they are using an updated server) they can use that to 
+determine if they can try auto-reconnecting, but if there is no error 
+code must not try to auto-reconnect (the way Exodus works).
+
+&gt;<i> If you can then maybe you can also agree with me that according to the
+</I>&gt;<i> documentation there can be different causes, and that some clients will
+</I>&gt;<i> want to auto-reconnect in some of those cases.
+</I>
+Yes but if you dont want to use the CDATA to try and find out what the 
+error is we must just use the lowest denominator, and because at least 
+one reason for disconnection means you shouldn't reconnect if you get a 
+stream:error you must not reconnect.
+
+&gt;&gt;<i> But it doesnt just say error, it says and i quote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> &lt;stream:error&gt;Disconnected&lt;/stream:error&gt;&lt;/stream:stream&gt;
+</I>&gt;<i>
+</I>&gt;<i> As far as I know jabberd 1.4.2 does this, yes. But it shouldn't make a
+</I>&gt;<i> difference what it says. Maybe jabberd2 says &lt;stream:error&gt;Replaced by
+</I>&gt;<i> another session: disconnected&lt;/stream:error&gt;&lt;/stream:stream&gt;, it would
+</I>&gt;<i> make a lot more sense to me but in your world this would mean all the
+</I>&gt;<i> clients would be broken again?
+</I>
+Ah but hopefully we can get the stream error codes into jabberd2 before 
+it goes final so they can be used to reliably determine the reason for 
+disconnection.
+
+&gt;<i> They only have this &quot;bug&quot; because the server doesn't let them know why
+</I>&gt;<i> they are disconnected. If Exodus fixes this with a hack that scans for
+</I>&gt;<i> &quot;Disconnected&quot; (wich I find hard to believe since it really *is* such a
+</I>&gt;<i> big hack) or if it simply doesn't reconnect at all on &lt;stream:error&gt;
+</I>&gt;<i> that probably work on jabberd 1.4.2 and maybe some others too, but it
+</I>&gt;<i> is and will be a hack that no other client has to have, *since it's a
+</I>&gt;<i> hack*. That's why the rest don't HAVE to manage, or should IMHO.
+</I>
+Exodus seems to fix this by just detecting stream:error's and not then 
+trying to reconnect which I think is perfectly reasonable for other 
+clients to do until stream:error codes are widely spread in servers, 
+but as ive said to solve the problem we need to handle it for all the 
+thousands of jabberd servers that are already deployed, not just wait 
+for the protocol change since that doesn't help the already deployed 
+servers.
+
+&gt;<i> I think this is a bizare way of handeling things, and even if it would
+</I>&gt;<i> be a decent approach, it's surthenly not standardized or even
+</I>&gt;<i> documented for that matter(at least I haven't seen it anywhere). So
+</I>&gt;<i> again, it's a hack that works on jabber1.4.2 and maybe some others (or
+</I>&gt;<i> all known for all I care) but who knows what SecretRedmondJabberD and
+</I>&gt;<i> ObscureC64JabberD send back instead of &quot;Disconnected&quot;. Maybe they even
+</I>&gt;<i> send &quot;Disconnected&quot; eg. when the sessionmanager goes down? Maybe some
+</I>&gt;<i> current implementions use &quot;Disconnected&quot; for more then just duplicate
+</I>&gt;<i> sessions? That would already break your hack.
+</I>
+Ah well since there are not very many different servers available that 
+have a significant deployment I dont see this as a problem, as since 
+most new servers will contain the stream:error codes being worked on 
+(i.e. the newer protocol specs) so it is really only the currently 
+deployed (legacy) servers we really need to worry about.
+
+So overall I think we should just not auto-reconnect upon the reception 
+of a stream:error followed by a stream end, but if we receive an error 
+code (currently being worked on) in the stream:error which tells us the 
+reason we can use that to do different things.
+
+&gt;<i> Proper error-codes and documented behaviour for closing a stream and
+</I>&gt;<i> rejecting login because of duplicate sessions is needed. A means of
+</I>&gt;<i> indicating that you don't want to &quot;hijack&quot; another session is nice too,
+</I>&gt;<i> since it increases functionality for all clients that want to implement
+</I>&gt;<i> it.
+</I>
+Yes I think some way of a client specifying that it doesn't want to 
+hijack an existing session is the best way to go rather than 
+standardizing the hack Wes has done, since once the anti-hijack is done 
+the hack is unnecessary and bad for other clients.
+
+Richard
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="015932.html">[JDEV] jabberd patch
+</A></li>
+	<LI>Next message: <A HREF="015934.html">[JDEV] Open Source?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#15942">[ date ]</a>
+              <a href="thread.html#15942">[ thread ]</a>
+              <a href="subject.html#15942">[ subject ]</a>
+              <a href="author.html#15942">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

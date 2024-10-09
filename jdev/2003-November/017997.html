@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: jabberd 1.4.3 release candidate again
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20jabberd%201.4.3%20release%20candidate%20again&In-Reply-To=Pine.LNX.4.53.0310311920430.9973%40bluebox.conspiracy.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="017995.html">
+   <LINK REL="Next"  HREF="018002.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: jabberd 1.4.3 release candidate again</H1>
+    <B>Frank Seesink</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20jabberd%201.4.3%20release%20candidate%20again&In-Reply-To=Pine.LNX.4.53.0310311920430.9973%40bluebox.conspiracy.net"
+       TITLE="[JDEV] Re: jabberd 1.4.3 release candidate again">frank at mail.wvnet.edu
+       </A><BR>
+    <I>Mon Nov  3 01:27:30 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="017995.html">[JDEV] ANNOUNCE: jabberd 2.0 beta 3 available for download
+</A></li>
+        <LI>Next message: <A HREF="018002.html">[JDEV] Re: jabberd 1.4.3 release candidate again
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17997">[ date ]</a>
+              <a href="thread.html#17997">[ thread ]</a>
+              <a href="subject.html#17997">[ subject ]</a>
+              <a href="author.html#17997">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">maqi at jabberstudio.org</A> wrote:
+&gt;<i> jabberd 1.4.3 will be released the next days. It's a maintenance release
+</I>&gt;<i> including some fixes and several features.
+</I>&gt;<i> <A HREF="http://jabberd.jabberstudio.org/1.4/release-1.4.3.shtml">http://jabberd.jabberstudio.org/1.4/release-1.4.3.shtml</A>
+</I>&gt;<i> 
+</I>&gt;<i> Please check out the jabberd14 HEAD code from CVS for testing and post
+</I>&gt;<i> comments here.
+</I>...
+____________________________________________________________
+UPDATED CYGWIN PATCHES / CRYPT
+
+Downloaded the latest CVS today.  Thanks for adding in the Cygwin patches.
+
+However, the new ./jsm/modules/mod_auth_crypt.c file helped point out a 
+glaring omission on my part (TRANSLATION:  I had a brain fart :-/ ). In 
+various Makefiles (most notably ./jsm/Makefile, but applies to others as 
+well), I forgot to add $(LIBS) to the end of the dllwrap line.
+
+Currently those lines read
+
+	dllwrap --def ... $(LDFLAGS)
+
+but they SHOULD read
+
+	dllwrap --def ... $(LDFLAGS) $(LIBS)
+
+mod_auth_crypt.c also showed that libcrypt (&quot;-lcrypt&quot;) was not part of 
+the standard LIBS definition in Cygwin.  Not sure if this latter part is 
+Cygwin-specific, or whether the ./configure script should be modified on 
+line 36 to read
+
+	LIBS=&quot;$LIBS -lcrypt&quot;
+
+so all platforms have this.  For now I have modified ./configure under 
+the Cygwin section by adding a line (line 171) to read:
+
+	LIBS=&quot;$LIBS -lcrypt&quot;
+
+To play it safe, I am attaching a new version of the tar/gz file (with 
+the same files) I initially sent, and the necessary Makefiles and 
+./configure script already modified.  Comparing these files to the CVS 
+versions should point out the changes pretty easily.  This might be 
+easier than me describing what I've changed.  Again, apologies for not 
+sending diffs.  If you need any more information, or need me to send 
+this any other way, please let me know.
+
+FYI:  With these last few adjustments, I have compiled the latest CVS 
+without issue, complete with SSL.  I even hooked in JUD, MU-Conference, 
+etc., using same techniques already described in original post, and 
+everything just worked.  So these last tweaks should do it.
+
+____________________________________________________________
+REGARDING LATEST CVS (downloaded 02 Nov 2003)
+
+During compilation, I noted just one warning message from the entire 
+compilation:
+
+...
+
+gcc -g -Wall -I. -I.. -I/usr/include/openssl -DHAVE_SSL 
+-I/usr/local/include  -I
+../../jabberd/   -c -o mod_browse.o mod_browse.c
+mod_browse.c:250:3: warning: no newline at end of file
+
+...
+
+Minor issue at worst, and does not impact compilation/linking.  But 
+thought I'd mention it since you asked us to test this.
+
+____________________________________________________________
+GNU Pth
+
+For what it's worth, I've been compiling against GNU Pth 2.0.0 without 
+issue for several months.  I believe Pth 1.4.1 may have issues, but any 
+issues I see (which I believe are more Cygwin-specific and due almost 
+exclusively to fork()ing) in Pth 2.0.0 are the same as in Pth 1.4.0.
+
+By the way, I noticed your vote to *exclude* GNU Pth from the 1.4.3 
+distribution.  Is that the plan?  Or was that just thinking out loud?
+
+Though the build of Jabberd is by no means bulletproof when it comes to 
+systems which do not have Pth already compiled/installed, I found it 
+handy to have Pth included in the Jabberd tarball when I first started 
+(and even later when building Jabberd on clean systems).  Only much 
+later did I Google for the latest version of Pth and start tinkering. 
+For folks not altogether familiar with the Pth library, this exclusion 
+might cause more grief.
+
+And if excluded, shouldn't ./configure be modified to remove all the 
+lines relevant to Pth compilation?  If I read it right, if Pth is not 
+installed and Pth 1.4.0 is not included with Jabberd in the place where 
+it was for Jabberd 1.4.2, the user will get a one line message saying no 
+version of Pth found on the system, complete with a URL to the Pth site. 
+  But shouldn't we at least provide some indication as to what version 
+they need to download/compile/install?  Just a thought.
+____________________________________________________________
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: jabberd143cygwinpatches.tar.gz
+Type: application/x-gzip
+Size: 22119 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20031103/9eae7395/attachment.bin">https://www.jabber.org/jdev/attachments/20031103/9eae7395/attachment.bin</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="017995.html">[JDEV] ANNOUNCE: jabberd 2.0 beta 3 available for download
+</A></li>
+	<LI>Next message: <A HREF="018002.html">[JDEV] Re: jabberd 1.4.3 release candidate again
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17997">[ date ]</a>
+              <a href="thread.html#17997">[ thread ]</a>
+              <a href="subject.html#17997">[ subject ]</a>
+              <a href="author.html#17997">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

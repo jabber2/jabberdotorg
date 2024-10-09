@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Moving passwords into LDAP (was Re: Storing passwords on Jabber server)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Moving%20passwords%20into%20LDAP%20%28was%20Re%3A%20Storing%20passwords%20on%20Jabber%20server%29&In-Reply-To=F100LOzezdD0xH4S7w70001236f%40hotmail.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="008956.html">
+   <LINK REL="Next"  HREF="008946.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Moving passwords into LDAP (was Re: Storing passwords on Jabber server)</H1>
+    <B>jabber at msg.net</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Moving%20passwords%20into%20LDAP%20%28was%20Re%3A%20Storing%20passwords%20on%20Jabber%20server%29&In-Reply-To=F100LOzezdD0xH4S7w70001236f%40hotmail.com"
+       TITLE="[JDEV] Moving passwords into LDAP (was Re: Storing passwords on Jabber server)">jabber at msg.net
+       </A><BR>
+    <I>Sun Aug  5 00:48:26 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="008956.html">[JDEV] Jabber with Linux distros? Target the ISP market
+</A></li>
+        <LI>Next message: <A HREF="008946.html">[JDEV] Moving passwords into LDAP (was Re: Storing passwords on Jabber server)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8945">[ date ]</a>
+              <a href="thread.html#8945">[ thread ]</a>
+              <a href="subject.html#8945">[ subject ]</a>
+              <a href="author.html#8945">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> Is there anyway for me to prevent the server from storing the actual
+</I>&gt;<i> passwords in the username.xml files in the spool directory? Where is this 
+</I>&gt;<i> done? In mod_register.c?
+</I>
+Yes- IIRC, it is handled in mod_register.c, the code is easy to read,
+and to patch to remove this 'feature'. If you simply replace the plaintext
+password  with gibberish, and keep the zero-knowledge stored computed hash,
+users could then _only_ log in with 0K authentication.
+
+Does anybody have a list of 0K enabled clients?
+ 
+
+&gt;<i> In case you are wondering why I want to do this, I would like my users to 
+</I>&gt;<i> authenticate directly against my LDAP directory server, and store only their 
+</I>&gt;<i> username on the jabber server. All users in my directory will be allowed to 
+</I>&gt;<i> create jabber accounts and they can use the same password they use to bind 
+</I>&gt;<i> to the directory, to login to the jabber server.
+</I>
+This is an entirely different issue, and I do not believe anybody has come
+up with a 100% solution to this problem.
+
+There are several people doing work on integrating Jabber with LDAP, each
+taking different approaches to the issue-- some examples include 'ldapauth',
+'mod_auth_ldap', and 'xdb_ldap'.  Of these, only 'mod_auth_ldap' appears to
+be actively developed, and all three have scalability issues.
+
+There are also security issues, for example, 'ldaputh' requires that the
+Jabber server be able to retrieve the plaintext of the user's password from
+LDAP, and the LDAP credentials of the server are stored in the XML
+configuration. The security implications are obvious...
+
+OTOH, while 'mod_auth_ldap' never retrieves the user's plaintext password
+from the server, and works without priviledged access to the LDAP server,
+it only supports Jabber's password (no Digest, no 0K) authentication, where
+the client sends their password in the clear. This isn't so bad if you can
+ensure that your clients always use SSL to connect to the server.
+
+
+What you are looking for sounds much like the problem I was looking to solve a
+few months ago, you can find the discussion in the archives. I've since
+abandoned that idea, due to unrelated LDAP issues (political, not technical).
+
+An approach that you might consider is to disable 'mod_register' entirely,
+then use a web-based interface similar to 'Jabber Web Steward' from
+<A HREF="http://www.inutility.net/files/">http://www.inutility.net/files/</A> to create the username.xml spool files,
+with entirely bogus random-character strings for the password. You can
+password protect the web page where users create their own accounts using
+an Apache LDAP module, and use mod_auth_ldap in Jabber:
+
+<A HREF="http://cataclysm.cx/jabber/mod_auth_ldap/mod_auth_ldap.c">http://cataclysm.cx/jabber/mod_auth_ldap/mod_auth_ldap.c</A>
+
+
+Kevin Kadow
+MSG.Net, Inc.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="008956.html">[JDEV] Jabber with Linux distros? Target the ISP market
+</A></li>
+	<LI>Next message: <A HREF="008946.html">[JDEV] Moving passwords into LDAP (was Re: Storing passwords on Jabber server)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8945">[ date ]</a>
+              <a href="thread.html#8945">[ thread ]</a>
+              <a href="subject.html#8945">[ subject ]</a>
+              <a href="author.html#8945">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

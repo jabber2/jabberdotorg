@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Get the length of the utf-8 sequence in Java
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Re%3A%20Get%20the%20length%20of%20the%20utf-8%20sequence%20in%20Java&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="020107.html">
+   <LINK REL="Next"  HREF="020109.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Get the length of the utf-8 sequence in Java</H1>
+    <B>Chris Mullins</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Re%3A%20Get%20the%20length%20of%20the%20utf-8%20sequence%20in%20Java&In-Reply-To="
+       TITLE="[jdev] Re: Get the length of the utf-8 sequence in Java">cmullins at winfessor.com
+       </A><BR>
+    <I>Thu Sep  9 15:52:46 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="020107.html">[jdev] Re: Get the length of the utf-8 sequence in Java
+</A></li>
+        <LI>Next message: <A HREF="020109.html">[jdev] PyMSNt --&gt; PyAIM-t --&gt; PyFoo-t ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20108">[ date ]</a>
+              <a href="thread.html#20108">[ thread ]</a>
+              <a href="subject.html#20108">[ subject ]</a>
+              <a href="author.html#20108">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The algorithm below misses out on the UTF8 encoded code points that are greater than 0xFFFF. 
+ 
+According to:
+<A HREF="http://developers.sun.com/dev/gadc/technicalpublications/articles/utf8.html">http://developers.sun.com/dev/gadc/technicalpublications/articles/utf8.html</A>
+ 
+(although Java pre 1.5 doesn't support UTF32 codepoints, so I'm not sure what would happen here if someone send you one of those). 
+ 
+The algorithm found on that page looks like it'll take care of what you're looking for. 
+ 
+-- 
+Chris Mullins
+ 
+ 
+ 
+-----Original Message----- 
+From: Cedric Vivier [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cedricv at neonux.com</A>] 
+Sent: Thu 9/9/2004 2:19 AM 
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> 
+Cc: 
+Subject: [jdev] Re: Get the length of the utf-8 sequence in Java
+
+
+
+	I do not believe Java has a standard method for this in the standard
+	library, but you could implement yours :
+	
+	
+	public int byte_length(String s) {
+	     int numchars = s.length();
+	     int numbytes = 0;
+	
+	     for (int i = 0 ; i &lt; numchars ; i++) {
+	       int c = s.charAt(i);
+	       if ((c &gt;= 0x0001) &amp;&amp; (c &lt;= 0x007F)) numbytes++;
+	       else if (c &gt; 0x07FF) numbytes += 3;
+	       else numbytes += 2;
+	     }
+	
+	     return numbytes;
+	}
+	
+	
+	I have no idea if it would be faster than your current method though,
+	but it should be more memory-efficient at least.
+	
+	
+	--cedricv
+	
+	_______________________________________________
+	jdev mailing list
+	<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+	<A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+	
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="020107.html">[jdev] Re: Get the length of the utf-8 sequence in Java
+</A></li>
+	<LI>Next message: <A HREF="020109.html">[jdev] PyMSNt --&gt; PyAIM-t --&gt; PyFoo-t ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20108">[ date ]</a>
+              <a href="thread.html#20108">[ thread ]</a>
+              <a href="subject.html#20108">[ subject ]</a>
+              <a href="author.html#20108">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

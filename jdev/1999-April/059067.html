@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] server computation is inevitable
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20server%20computation%20is%20inevitable&In-Reply-To=%3CPine.LNX.4.10.9904230254430.4260-100000%40chimera.acm.jhu.edu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="059069.html">
+   <LINK REL="Next"  HREF="059068.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] server computation is inevitable</H1>
+    <B>Corbett J. Klempay</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20server%20computation%20is%20inevitable&In-Reply-To=%3CPine.LNX.4.10.9904230254430.4260-100000%40chimera.acm.jhu.edu%3E"
+       TITLE="[JDEV] server computation is inevitable">cklempay at chimera.acm.jhu.edu
+       </A><BR>
+    <I>Fri Apr 23 02:04:27 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="059069.html">[JDEV] STATUS
+</A></li>
+        <LI>Next message: <A HREF="059068.html">[JDEV] server computation is inevitable
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59067">[ date ]</a>
+              <a href="thread.html#59067">[ thread ]</a>
+              <a href="subject.html#59067">[ subject ]</a>
+              <a href="author.html#59067">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I've been laying some initial code in mod_digsig...and it's becoming
+increasingly clear that some crypto computation will be needed on the
+server side in order to authenticate clients trying to log on securely.  
+
+Basically:
+
+in the equation y = g^x mod p
+
+the server has: y, g, and p 
+the client has: y, g, p, and x (x is the secret key)
+
+In order to verify that the client is who he says he is, all the server
+needs is x...he can plug it into the equation and if it checks out, then
+all is kosher.  However, you don't want to be sending the client's
+_secret_ key in plaintext; that defeats the whole point of having a secure
+login in the first place...the system would be no more secure than ICQ
+(sending the secret x in plaintext is not functionally different than ICQ
+sending the login password in plaintext).
+
+So, some kind of public-key based challenge-response protocol will
+probably be instituted to convey the secret x without sending x in
+plaintext.  This will require computation on the server side (so in other
+words, logging a user into the server isn't going to just be a check to
+see if (passwd == stored passwd)).  
+
+I'm looking longest and hardest at challenge response based on digital
+signatures right now (totally avoiding straight up public key crypto
+itself...export controls...damn they are lame)...if anyone has a copy of
+the CRC Press _Handbook of Applied Cryptography_ (great book, btw), it's
+pages 404 and 405.
+
+In related news, it looks like GNU MP (GMP) is what I'm using for large
+integer support (and the associated operations).
+
+Also: if a protocol other than just &quot;here's my name and password&quot; (the
+standard, insecure login) is going to be needed to support secure logins,
+how does this fit (or not fit) into the current Jabber protocol?
+
+I'll be visiting a friend at Carnegie Mellon this weekend (leaving
+tomorrow), but should be checking my mail from there...feedback would be
+useful.  Thanks guys!
+
+------------------------------------------------------------------------------
+Corbett J. Klempay			         Quote of the Week:
+<A HREF="http://www.acm.jhu.edu/~cklempay">http://www.acm.jhu.edu/~cklempay</A>       &quot;A commune is where people join 
+					together to share their lack of 
+					wealth.&quot;
+------------------------------------------------------------------------------
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="059069.html">[JDEV] STATUS
+</A></li>
+	<LI>Next message: <A HREF="059068.html">[JDEV] server computation is inevitable
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59067">[ date ]</a>
+              <a href="thread.html#59067">[ thread ]</a>
+              <a href="subject.html#59067">[ subject ]</a>
+              <a href="author.html#59067">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

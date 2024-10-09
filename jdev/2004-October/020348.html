@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Using german umlauts and other special characters in	jabber client
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Using%20german%20umlauts%20and%20other%20special%20characters%20in%0A%09jabber%20client&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="020346.html">
+   <LINK REL="Next"  HREF="020350.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Using german umlauts and other special characters in	jabber client</H1>
+    <B>Jana von dem Berge</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Using%20german%20umlauts%20and%20other%20special%20characters%20in%0A%09jabber%20client&In-Reply-To="
+       TITLE="[jdev] Using german umlauts and other special characters in	jabber client">jvdberge at web.de
+       </A><BR>
+    <I>Fri Oct 15 04:47:48 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="020346.html">[jdev] Using german umlauts and other special characters in	jabber client
+</A></li>
+        <LI>Next message: <A HREF="020350.html">[jdev] Using german umlauts and other special characters in	jabber client
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20348">[ date ]</a>
+              <a href="thread.html#20348">[ thread ]</a>
+              <a href="subject.html#20348">[ subject ]</a>
+              <a href="author.html#20348">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thancs for the reply!
+
+But I have not declared another encoding. I think UTF-8 &quot;knows&quot; the german umlauts, is that wrong?
+
+
+
+
+
+Jabber software development list &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt; schrieb am 15.10.04 11:23:12:
+&gt;<i> 
+</I>&gt;<i> Hi Jana!
+</I>&gt;<i> 
+</I>&gt;<i> Jana von dem Berge schrieb am 2004-10-15 10:58:44:
+</I>&gt;<i> &gt; I'm running jabberd 1.4.3 and I have Problems with german umlauts. 
+</I>&gt;<i> &gt; When I send a message with a Client to the server with e.g. an '&#252;' I see the '&#252;' in the debugging outputs of the server.
+</I>&gt;<i> &gt; But when I read from the socket with 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; recv(j-&gt;fd, buf, sizeof(buf)-1, 0); (language c)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; the umlaut is know an '&#195;&#188;' and other special characters like '&#224;' act the same way.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Do you think I have to configurate my jabebr-server or do I replace all these characters in my Client-C-Programm with the
+</I>&gt;<i> &gt; right characters?
+</I>&gt;<i> 
+</I>&gt;<i> This are not strange characters ;) It's just that XMPP/Jabber does not
+</I>&gt;<i> use the Latin-1/ISO-8859-1 charset you are used to use (and probably
+</I>&gt;<i> using in your applications) but the UTF-8 encoding of Unicode. Therefore
+</I>&gt;<i> XMPP is able to carry &quot;all&quot; characters not only a limited subset of
+</I>&gt;<i> (less than) 256 characters you have in Latin-1.
+</I>&gt;<i> 
+</I>&gt;<i> If you want to stick on using Latin-1 as your local charset (*),
+</I>&gt;<i> take care, that you convert the characters from your local charset to
+</I>&gt;<i> UTF-8 before transmitting and to convert them from UTF-8 back to your
+</I>&gt;<i> local charset after receiving.
+</I>&gt;<i> 
+</I>&gt;<i> If you declare another encoding than UTF-8 in the xml declaration using
+</I>&gt;<i> the encoding attribute, the jabberd 1.4.x implementation and many others
+</I>&gt;<i> will detect that you are using an other charset and will convert the
+</I>&gt;<i> incoming data to UTF-8 ... but as you noticed on the outgoing stream
+</I>&gt;<i> jabberd does always use the UTF-8 encoding.
+</I>&gt;<i> That jabberd accepts other encodings than UTF-8 is a feature available
+</I>&gt;<i> in the XML parser used by jabberd (and other servers), but you should
+</I>&gt;<i> not rely on this, as it is not neccessary by the XMPP standard to accept
+</I>&gt;<i> other encodings than UTF-8.
+</I>&gt;<i> 
+</I>&gt;<i> If you are working on a unix plattform, you can use the function iconv()
+</I>&gt;<i> (man 3 iconv) to convert between different charsets. I don't know, if
+</I>&gt;<i> this function exists on (native) windows as well.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Tot kijk
+</I>&gt;<i>     Matthias
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> (*) you might also consider changing to using unicode in your
+</I>&gt;<i> application by using the wchar_t character type instead of the char one.
+</I>&gt;<i> 
+</I>&gt;<i> -- 
+</I>&gt;<i> Fon: +49-(0)70 0770 07770       <A HREF="http://web.amessage.info">http://web.amessage.info</A>
+</I>&gt;<i> HAM: DB1MW                      xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mawis at amessage.info</A>
+</I>&gt;<i> 
+</I>&gt;<i> &lt;hr&gt;
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+__________________________________________________________
+Mit WEB.DE FreePhone mit hoechster Qualitaet ab 0 Ct./Min.
+weltweit telefonieren! <A HREF="http://freephone.web.de/?mc=021201">http://freephone.web.de/?mc=021201</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="020346.html">[jdev] Using german umlauts and other special characters in	jabber client
+</A></li>
+	<LI>Next message: <A HREF="020350.html">[jdev] Using german umlauts and other special characters in	jabber client
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20348">[ date ]</a>
+              <a href="thread.html#20348">[ thread ]</a>
+              <a href="subject.html#20348">[ subject ]</a>
+              <a href="author.html#20348">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

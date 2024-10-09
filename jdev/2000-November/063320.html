@@ -1,0 +1,381 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> oops (was: RE: [JDEV] AIM Transport Release)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20oops%20%28was%3A%20RE%3A%20%5BJDEV%5D%20AIM%20Transport%20Release%29&In-Reply-To=%3C002301c050e4%2408223900%240201a8c0%40dorm.lan%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="063316.html">
+   <LINK REL="Next"  HREF="063317.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>oops (was: RE: [JDEV] AIM Transport Release)</H1>
+    <B>Reavis Sutphin-Gray</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20oops%20%28was%3A%20RE%3A%20%5BJDEV%5D%20AIM%20Transport%20Release%29&In-Reply-To=%3C002301c050e4%2408223900%240201a8c0%40dorm.lan%3E"
+       TITLE="oops (was: RE: [JDEV] AIM Transport Release)">reavis2000 at fnmail.com
+       </A><BR>
+    <I>Fri Nov 17 16:15:06 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="063316.html">oops (was: RE: [JDEV] AIM Transport Release)
+</A></li>
+        <LI>Next message: <A HREF="063317.html">[JDEV] Dangling pointers, ref counting and concurrency
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63320">[ date ]</a>
+              <a href="thread.html#63320">[ thread ]</a>
+              <a href="subject.html#63320">[ subject ]</a>
+              <a href="author.html#63320">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Did you configure aimtrans with the --with-jabber2 option? This looks
+like the problem I was having when I forgot to use this option. If
+this is the case aimtrans is actually connecting on port 5269 instead
+of the one you specified on the command line.
+
+- ----- Original Message ----- 
+From: &quot;Jay Chalfant&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at outbackinc.com</A>&gt;
+To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;; &quot;Jay Chalfant&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at outbackinc.com</A>&gt;
+Sent: Friday, November 17, 2000 12:13 PM
+Subject: RE: oops (was: RE: [JDEV] AIM Transport Release)
+
+
+&gt;<i> Dennis, Temas..
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for these tips, I think I am closer now than I was before. I
+</I>&gt;<i> have followed the aimtrans README and Dennis' comments and this is
+</I>&gt;<i> where I am at:  
+</I>&gt;<i> 
+</I>&gt;<i> o For some reason, adns will not read from /etc/hosts on my system.
+</I>&gt;<i> /etc/host.conf indicates &quot;order hosts bind&quot; but the adns test tool,
+</I>&gt;<i> adnshost, will not resolve from /etc/hosts. Therefore, I added a
+</I>&gt;<i> new A record for 'aimtrans' to our DNS and gave it (a) the IP of
+</I>&gt;<i> the jabberd server and then (b) 127.0.01. In either case, the
+</I>&gt;<i> result was the same and in both cases I provide the correct IP in
+</I>&gt;<i> the jabber.xml service element (see below).
+</I>&gt;<i> 
+</I>&gt;<i> o In jabber.xml, I added 'aimtrans.internal.outbackinc.com' to both
+</I>&gt;<i> the services and agents jid's as below. Initially, I tried only the
+</I>&gt;<i> service element, but this resulted in no listing of the AIM
+</I>&gt;<i> Transport to the WinJab client. Adding the agent element corrected
+</I>&gt;<i> this.
+</I>&gt;<i> 
+</I>&gt;<i>   &lt;service id='aimtrans.internal.outbackinc.com'&gt;
+</I>&gt;<i>     &lt;accept&gt;
+</I>&gt;<i>       &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+</I>&gt;<i>       &lt;port&gt;7009&lt;/port&gt;
+</I>&gt;<i>       &lt;secret&gt;test&lt;/secret&gt;
+</I>&gt;<i>     &lt;/accept&gt;
+</I>&gt;<i>   &lt;/service&gt;
+</I>&gt;<i> 
+</I>&gt;<i>         &lt;agent jid=&quot;aimtrans.internal.outbackinc.com&quot;&gt;
+</I>&gt;<i>           &lt;name&gt;AIM Transport&lt;/name&gt;
+</I>&gt;<i>           &lt;description&gt;This is the AIM Transport&lt;/description&gt;
+</I>&gt;<i>           &lt;transport&gt;AIM/AOL ScreenName&lt;/transport&gt;
+</I>&gt;<i>           &lt;service&gt;aim&lt;/service&gt;
+</I>&gt;<i>           &lt;register/&gt;
+</I>&gt;<i>         &lt;/agent&gt;
+</I>&gt;<i> 
+</I>&gt;<i> o With these settings, I start jabberd and aimtrans as follows:
+</I>&gt;<i> [<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at roo</A> jabber-1.2]# ./jabberd/jabberd -D
+</I>&gt;<i> [<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at roo</A> adns-1.0]# /usr/local/bin/aimtrans  -D -n
+</I>&gt;<i> aimtrans.internal.outbackinc.com -e
+</I>&gt;<i> aimtrans.internal.outbackinc.com -p 7009 -s test
+</I>&gt;<i> 
+</I>&gt;<i> It appears that aimtrans connects to jabberd without issue. When I
+</I>&gt;<i> try to register for the AIM Transport from the WinJab client, I get
+</I>&gt;<i> an error (from WinJab debux XML):
+</I>&gt;<i> SENT: &lt;iq type=&quot;get&quot; id=&quot;wjAgent_1_1&quot;
+</I>&gt;<i> to=&quot;aimtrans.internal.outbackinc.com&quot;&gt;&lt;query
+</I>&gt;<i> xmlns=&quot;jabber:iq:register&quot;&gt;&lt;/query&gt;&lt;/iq&gt;
+</I>&gt;<i> RECV: &lt;iq type='error' id='wjAgent_1_1' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work'
+</I>&gt;<i> from='aimtrans.internal.outbackinc.com'&gt;&lt;query
+</I>&gt;<i> xmlns='jabber:iq:register'/&gt;&lt;error code='502'&gt;External Server
+</I>&gt;<i> Error&lt;/error&gt;&lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> This is better than before when I never received a response from
+</I>&gt;<i> the Jabber Server. However, it still looks like jabberd is still
+</I>&gt;<i> having trouble finding the service because it 'bounces' the
+</I>&gt;<i> message. Here is the relevant sections from the jabberd and
+</I>&gt;<i> aimtrans debug output:
+</I>&gt;<i> 
+</I>&gt;<i> jabberd:
+</I>&gt;<i> ========
+</I>&gt;<i> [<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at roo</A> jabber-1.2]# ./jabberd/jabberd -D
+</I>&gt;<i> ..
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  io_select.c:339 io_main checking sockets
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  deliver.c:472 DELIVER 4:roo &lt;route
+</I>&gt;<i> to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/81A7B20' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">13 at c2s</A>/8100910'&gt;&lt;iq type='get'
+</I>&gt;<i> id='wjAgent_1_1' to='aimtrans.internal.outbackinc.com'&gt;&lt;query
+</I>&gt;<i> xmlns='jabber:iq:register'/&gt;&lt;/iq&gt;&lt;/route&gt;
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  deliver.c:344 delivering to instance
+</I>&gt;<i> 'sessions' Fri Nov 17 03:21:32 2000  deliver.c:84 (8092D10)incoming
+</I>&gt;<i> packet &lt;route to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/81A7B20' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">13 at c2s</A>/8100910'&gt;&lt;iq
+</I>&gt;<i> type='get' id='wjAgent_1_1'
+</I>&gt;<i> to='aimtrans.internal.outbackinc.com'&gt;&lt;query
+</I>&gt;<i> xmlns='jabber:iq:register'/&gt;&lt;/iq&gt;&lt;/route&gt;
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  users.c:147
+</I>&gt;<i> js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/81A7B20,81035B8) Fri Nov 17 03:21:32 2000  mtq
+</I>&gt;<i> 8103ED8 entering from pth
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  mtq 8103ED8 queue call 81BBA70
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  sessions.c:289 THREAD:SESSION:FROM
+</I>&gt;<i> received a packet!
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  modules.c:124 mapi_call 1
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  modules.c:147 MAPI 81A7DF0
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  modules.c:147 MAPI 81A7E00
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  modules.c:147 MAPI 81A7E20
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  modules.c:147 MAPI 81A7E30
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  modules.c:163 mapi_call returning
+</I>&gt;<i> unhandled Fri Nov 17 03:21:32 2000  deliver.c:262
+</I>&gt;<i> deliver(to[aimtrans.internal.outbackinc.com],from[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work],type[4
+</I>&gt;<i> ],packet [&lt;iq type='get' id='wjAgent_1_1'
+</I>&gt;<i> to='aimtrans.internal.outbackinc.com' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work'&gt;&lt;query
+</I>&gt;<i> xmlns='jabber:iq:register'/&gt;&lt;/iq&gt;])
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  deliver.c:472 DELIVER
+</I>&gt;<i> 1:aimtrans.internal.outbackinc.com &lt;iq type='get' id='wjAgent_1_1'
+</I>&gt;<i> to='aimtrans.internal.outbackinc.com' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work'&gt;&lt;query
+</I>&gt;<i> xmlns='jabber:iq:register'/&gt;&lt;/iq&gt;
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  deliver.c:344 delivering to instance
+</I>&gt;<i> 'aimtrans.internal.outbackinc.com'
+</I>&gt;<i> Fri Nov 17 03:21:32 2000  mtq 8103ED8 leaving to pth
+</I>&gt;<i> Fri Nov 17 03:21:35 2000  users.c:82 checking users for host roo
+</I>&gt;<i> Fri Nov 17 03:21:35 2000  usercount 1   total users
+</I>&gt;<i> Fri Nov 17 03:21:40 2000  users.c:82 checking users for host roo
+</I>&gt;<i> Fri Nov 17 03:21:40 2000  usercount 1   total users
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  log.c:105 &lt;log type='warn'
+</I>&gt;<i> from='-internal'&gt;base_accept Bouncing packet intended for
+</I>&gt;<i> aimtrans.internal.outbackinc.com&lt;/log&gt;
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  deliver.c:472 DELIVER 3:-internal &lt;log
+</I>&gt;<i> type='warn' from='-internal'&gt;base_accept Bouncing packet intended
+</I>&gt;<i> for
+</I>&gt;<i> aimtrans.internal.outbackinc.com&lt;/log&gt;
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  deliver.c:344 delivering to instance
+</I>&gt;<i> 'logger' 20001117T11:21:42: [warn] (-internal): base_accept
+</I>&gt;<i> Bouncing packet intended for aimtrans.internal.outbackinc.com
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  deliver.c:278 delivery failed (External
+</I>&gt;<i> Server Error)
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  log.c:105 &lt;log type='notice'
+</I>&gt;<i> from='aimtrans.internal.outbackinc.com'&gt;bouncing a packet to
+</I>&gt;<i> aimtrans.internal.outbackinc.com from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work: External Server
+</I>&gt;<i> Error&lt;/log&gt;
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  deliver.c:472 DELIVER
+</I>&gt;<i> 3:aimtrans.internal.outbackinc.com &lt;log type='notice'
+</I>&gt;<i> from='aimtrans.internal.outbackinc.com'&gt;bouncing a packet to
+</I>&gt;<i> aimtrans.internal.outbackinc.com from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work: External Server
+</I>&gt;<i> Error&lt;/log&gt;
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  deliver.c:344 delivering to instance
+</I>&gt;<i> 'logger' 20001117T11:21:42: [notice]
+</I>&gt;<i> (aimtrans.internal.outbackinc.com): bouncing a packet to
+</I>&gt;<i> aimtrans.internal.outbackinc.com from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work: External Server
+</I>&gt;<i> Error
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  deliver.c:472 DELIVER 1:roo &lt;iq
+</I>&gt;<i> type='error' id='wjAgent_1_1' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work'
+</I>&gt;<i> from='aimtrans.internal.outbackinc.com'&gt;&lt;query
+</I>&gt;<i> xmlns='jabber:iq:register'/&gt;&lt;error code='502'&gt;External Server
+</I>&gt;<i> Error&lt;/error&gt;&lt;/iq&gt;
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  deliver.c:344 delivering to instance
+</I>&gt;<i> 'sessions' Fri Nov 17 03:21:42 2000  deliver.c:84 (8092D10)incoming
+</I>&gt;<i> packet &lt;iq type='error' id='wjAgent_1_1' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work'
+</I>&gt;<i> from='aimtrans.internal.outbackinc.com'&gt;&lt;query
+</I>&gt;<i> xmlns='jabber:iq:register'/&gt;&lt;error code='502'&gt;External Server
+</I>&gt;<i> Error&lt;/error&gt;&lt;/iq&gt;
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  users.c:147 js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work,81035B8)
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  deliver.c:44 delivering locally to
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work Fri Nov 17 03:21:42 2000  modules.c:124 mapi_call 3
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  modules.c:163 mapi_call returning
+</I>&gt;<i> unhandled Fri Nov 17 03:21:42 2000  mtq 8103ED8 entering from pth
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  mtq 8103ED8 queue call 81BCCB8
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  sessions.c:337 THREAD:SESSION:TO received
+</I>&gt;<i> data from aimtrans.internal.outbackinc.com!
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  modules.c:124 mapi_call 0
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  modules.c:147 MAPI 81A7E10
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  modules.c:163 mapi_call returning
+</I>&gt;<i> unhandled Fri Nov 17 03:21:42 2000  deliver.c:472 DELIVER 4:c2s
+</I>&gt;<i> &lt;route
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/81A7B20' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">13 at c2s</A>/8100910'&gt;&lt;iq type='error'
+</I>&gt;<i> id='wjAgent_1_1' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work'
+</I>&gt;<i> from='aimtrans.internal.outbackinc.com'&gt;&lt;query
+</I>&gt;<i> xmlns='jabber:iq:register'/&gt;&lt;error code='502'&gt;External Server
+</I>&gt;<i> Error&lt;/error&gt;&lt;/iq&gt;&lt;/route&gt;
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  deliver.c:344 delivering to instance
+</I>&gt;<i> 'c2s' Fri Nov 17 03:21:42 2000  client.c:124 Found the sock for
+</I>&gt;<i> this user Fri Nov 17 03:21:42 2000  mtq 8103ED8 leaving to pth
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  io_select.c:339 io_main checking sockets
+</I>&gt;<i> Fri Nov 17 03:21:42 2000  io_select.c:105 WRITE 13 len 177 of &lt;iq
+</I>&gt;<i> type='error' id='wjAgent_1_1' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work'
+</I>&gt;<i> from='aimtrans.internal.outbackinc.com'&gt;&lt;query
+</I>&gt;<i> xmlns='jabber:iq:register'/&gt;&lt;error code='502'&gt;External Server
+</I>&gt;<i> Error&lt;/error&gt;&lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> aimtrans:
+</I>&gt;<i> =========
+</I>&gt;<i> [<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at roo</A> adns-1.0]# /usr/local/bin/aimtrans  -D -n
+</I>&gt;<i> aimtrans.internal.outbackinc.com -e
+</I>&gt;<i> aimtrans.internal.outbackinc.com -p 7009 -s test
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/log.c:79 log_init
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/main.c:59 Loading Transport
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/ehandler.c:44
+</I>&gt;<i> ehandler_new(aimtrans.internal.outbackinc.com,jabber:server)
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/ehlist.c:26
+</I>&gt;<i> list_add(aimtrans.internal.outbackinc.com)
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/etherxs.c:124 attempting socket
+</I>&gt;<i> connect to aimtrans.internal.outbackinc.com for transport
+</I>&gt;<i> aimtrans.internal.outbackinc.com
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/xmlstream.c:26 xmlstream_connect
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/tstream.c:63 tstream_new
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/xmlstream.c:101 head: &lt;?xml
+</I>&gt;<i> version='1.0'?&gt;&lt;stream:stream
+</I>&gt;<i> xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='3A151482'
+</I>&gt;<i> xmlns='jabber:server' to='aimtrans.internal.outbackinc.com'
+</I>&gt;<i> from='aimtrans.internal.outbackinc.com'
+</I>&gt;<i> xmlns:etherx='<A HREF="http://etherx.jabber.org/'">http://etherx.jabber.org/'</A>
+</I>&gt;<i> etherx:secret='11ff64a0a85d10d2c7d7531279387d26976e7e43'&gt;
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/tstream.c:133 tstream_write_buffer
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/ehandler.c:72 spun off connection
+</I>&gt;<i> attempt Fri Nov 17 03:20:34 2000  debug/external.c:23 [AIM] Loaded
+</I>&gt;<i> transport with aimtrans.internal.outbackinc.com as host alias
+</I>&gt;<i> 
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/main.c:75 Main loop waiting
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/unknown.c:11 THREAD:UNKNOWN
+</I>&gt;<i> starting Fri Nov 17 03:20:34 2000  debug/tstream.c:212
+</I>&gt;<i> tstream_main: startup Fri Nov 17 03:20:34 2000 
+</I>&gt;<i> debug/xmlstream.c:222 xmlstream_main: startup Fri Nov 17 03:20:34
+</I>&gt;<i> 2000  debug/tstream.c:335 tstream_connect:
+</I>&gt;<i> ADNS[aimtrans.internal.outbackinc.com:5269]
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/tstream.c:357 tstream_connect: ADNS
+</I>&gt;<i> A lookup loop
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/tstream.c:365 tstream_connect: ADNS
+</I>&gt;<i> found some responses, attempting to connect
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/tstream.c:492 tstream_socket 5269
+</I>&gt;<i> 127.0.0.1 Fri Nov 17 03:20:34 2000  debug/tstream.c:374
+</I>&gt;<i> tstream_connectd:
+</I>&gt;<i> ADNS[127.0.0.1]
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/tstream.c:263 tstream write event 0
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/tstream.c:285 tstream_write 296
+</I>&gt;<i> blocks Fri Nov 17 03:20:34 2000  debug/tstream.c:285 tstream_write
+</I>&gt;<i> 0 blocks Fri Nov 17 03:20:34 2000  debug/tstream.c:247 tstream read
+</I>&gt;<i> event
+</I>&gt;<i> Fri Nov 17 03:20:34 2000  debug/xmlstream.c:222 xmlstream_main:
+</I>&gt;<i> startup Fri Nov 17 03:20:34 2000  debug/etherxs.c:61 got root tag
+</I>&gt;<i> from etherx! Fri Nov 17 03:20:34 2000  debug/tstream.c:188
+</I>&gt;<i> tstream_oob_flush
+</I>&gt;<i> Fri Nov 17 03:22:07 2000  error/aimtrans Received KILL, shutting
+</I>&gt;<i> down [<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at roo</A> adns-1.0]#
+</I>&gt;<i> 
+</I>&gt;<i> We are going to be running an important demo this weekend and are
+</I>&gt;<i> still hoping to be able to run that demo on 1.2 and the latest
+</I>&gt;<i> aimtrans so we have the 'presence' and other fixes. If anyone can
+</I>&gt;<i> provide somre more pointers, it would really be appreciated.
+</I>&gt;<i> 
+</I>&gt;<i> And again, thanks to all who have helped thus far and thanks in
+</I>&gt;<i> advance to all who reply to this post.
+</I>&gt;<i> 
+</I>&gt;<i> -J
+</I>&gt;<i> 
+</I>&gt;<i>  ----------------------
+</I>&gt;<i> Jay Chalfant
+</I>&gt;<i> OutBack Resource Group
+</I>&gt;<i> www.outbackinc.com
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; From: Dennis Noordsij [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis.noordsij at wiral.com</A>]
+</I>&gt;<i> &gt; Sent: Friday, November 17, 2000 1:28 AM
+</I>&gt;<i> &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>; Jay Chalfant
+</I>&gt;<i> &gt; Subject: Re: oops (was: RE: [JDEV] AIM Transport Release)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Friday 17 November 2000 04:41, Jay Chalfant wrote:
+</I>&gt;<i> &gt; &gt; OOPS!! This is _my_ mistake.. in my excitement over the new 
+</I>&gt;<i> &gt; packages I
+</I>&gt;<i> &gt; &gt; forgot to build libfaim which is where these defines are
+</I>&gt;<i> &gt; found. Now that I
+</I>&gt;<i> &gt; &gt; am back on track, aimtrans-0.8 builds flawlessly. However,
+</I>&gt;<i> &gt; even with 0.8 I
+</I>&gt;<i> &gt; &gt; still have the configuration issues reported in the post
+</I>&gt;<i> &gt; earlier (&quot;close to
+</I>&gt;<i> &gt; &gt; good news&quot;). That is, jabberd cannot dns resolve the aim
+</I>&gt;<i> &gt; transport. Still
+</I>&gt;<i> &gt; &gt; looking for help on that one.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Jay, make sure the domain aim.roo actually somehow exists.
+</I>&gt;<i> &gt; That is, points to
+</I>&gt;<i> &gt; an IP number.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; How I do it is like this, my agents point to irc.mydomain,
+</I>&gt;<i> &gt; icq.mydomain, etc.
+</I>&gt;<i> &gt; &quot;Mydomain&quot; points to my actual network address, say for
+</I>&gt;<i> &gt; example 192.168.10.1.
+</I>&gt;<i> &gt; I set up my /etc/hosts to contain:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; 127.0.0.1   localhost   irc.mydomain   icq.mydomain
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; And in jabber.xml I tell it (in the service JID's) to listen
+</I>&gt;<i> &gt; on 127.0.0.1
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; If you told jabber to listen for the AIM transport on
+</I>&gt;<i> &gt; 127.0.0.1, I recommend
+</I>&gt;<i> &gt; adding aim.roo to your /etc/hosts file. Noone else needs the
+</I>&gt;<i> &gt; domain name like
+</I>&gt;<i> &gt; that, only jabber, so its fine to leave it on that machine
+</I>&gt;<i> &gt; only (ie the rest
+</I>&gt;<i> &gt; of the world needs no clue as to where or what aim.roo is, just
+</I>&gt;<i> &gt; roo). 
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Works for me :-)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Dennis
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+-----BEGIN PGP SIGNATURE-----
+Version: PGPfreeware 6.5.8 for non-commercial use &lt;<A HREF="http://www.pgp.com">http://www.pgp.com</A>&gt;
+
+iQA/AwUBOhWtsWJCKwhdZ0ueEQKDOACfezMCaQhsDVslJhpAQowojHqzmv8AnAjo
+8VieGFJk8HudridHGhdXMb9I
+=dEgU
+-----END PGP SIGNATURE-----
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="063316.html">oops (was: RE: [JDEV] AIM Transport Release)
+</A></li>
+	<LI>Next message: <A HREF="063317.html">[JDEV] Dangling pointers, ref counting and concurrency
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63320">[ date ]</a>
+              <a href="thread.html#63320">[ thread ]</a>
+              <a href="subject.html#63320">[ subject ]</a>
+              <a href="author.html#63320">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

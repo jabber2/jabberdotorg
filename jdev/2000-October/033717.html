@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Karma and Jabber 1.2 RC
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Karma%20and%20Jabber%201.2%20RC&In-Reply-To=%3C20001030203534.G2779%40Flint.digix.dyndns.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="033715.html">
+   <LINK REL="Next"  HREF="033716.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Karma and Jabber 1.2 RC</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Karma%20and%20Jabber%201.2%20RC&In-Reply-To=%3C20001030203534.G2779%40Flint.digix.dyndns.org%3E"
+       TITLE="[JDEV] Karma and Jabber 1.2 RC">keith at digix.dyndns.org
+       </A><BR>
+    <I>Mon Oct 30 19:35:34 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="033715.html">[JDEV] Karma and Jabber 1.2 RC
+</A></li>
+        <LI>Next message: <A HREF="033716.html">[JDEV] Karma and Jabber 1.2 RC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33717">[ date ]</a>
+              <a href="thread.html#33717">[ thread ]</a>
+              <a href="subject.html#33717">[ subject ]</a>
+              <a href="author.html#33717">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Jim,
+
+  See below...
+
+&lt;snip/&gt;
+&gt;<i> The behavior is a pretty steep throttle.  In the the 6000-12000 char message
+</I>&gt;<i> case
+</I>&gt;<i> above, it essentially shuts down the xmit window to a trickle until the
+</I>&gt;<i> message 
+</I>&gt;<i> finally gets out.
+</I>
+That is true, and it's done that way for a reason.. a &quot;typical&quot; message, such as &quot;hi, how are you?&quot; is only about 150 bytes of xml data.. so figure a &quot;normal&quot; max around 400 bytes per message, on average...  the user would have to send 3 such messages per every two seconds to *begin* to drop karma.. and they would have to sustain this rate for over 6-8 (or so) seconds to hit zero karma... this rate is considered abusive, when you consider a server that has 100K connected users on it... it's not giving each user their fair CPU timeslice.  
+
+Messages of 6000-12000 characters are rare, and probably should be rate limited.. you can probably sneak this message by, if you have your karma set to a max of 15 or so, and it will go through without hitting zero karma... (if you still want to have limits).. or make the penalty less harsh, by default it's -5, which will pause for 10 seconds before reading from the socket again, you can make it -1, and it will only pause 2 seconds before reading again, also, if you change the restore value to match the max, they will get to send more data while they are being severly rate limited (out of karma)... since they will be restored to a higher karma, when thier penalty is &quot;paid&quot;.  each of these, or both, will result in a higher &quot;throughput&quot; when sending a large ammount of data.
+
+&lt;snip/&gt;
+&gt;<i> Can I do that with settings in jabber.xml (what settings might I
+</I>&gt;<i> use?) or do 
+</I>&gt;<i> I need to go into the pthsock code and compile larger numbers in?
+</I>
+you can change that right in the jabber.xml file.. for example:
+&lt;service id=&quot;c2s&quot;&gt;
+ &lt;host&gt;pth-csock.127.0.0.1&lt;/host&gt;
+ &lt;load&gt;&lt;pthsock_client&gt;./pthsock/pthsock_client.so&lt;/pthsock_client&gt;&lt;/load&gt;
+ &lt;pthcsock xmlns='jabber:config:pth-csock'&gt;
+  &lt;listen&gt;5222&lt;/listen&gt;
+  &lt;!-- could be &lt;authtime&gt;10&lt;/authtime&gt; for 10 seconds, etc --&gt;
+  &lt;authtime/&gt; &lt;!-- unlimited time to auth --&gt;
+  &lt;rate time=&quot;5&quot; points=&quot;25&quot;/&gt; &lt;!-- 25 connects in 5 seconds limit (per IP) --&gt;
+  &lt;karma&gt;
+   &lt;max&gt;10&lt;/max&gt;
+   &lt;inc&gt;1&lt;/inc&gt;
+   &lt;dec&gt;1&lt;/dec&gt;
+   &lt;restore&gt;5&lt;/restore&gt;
+   &lt;penalty&gt;-5&lt;/penalty&gt;
+  &lt;/karma&gt;
+ &lt;/pthcsock&gt;
+&lt;/service&gt;
+
+in the above jabber.xml snippet, (which is in CVS) there are a few configurable knobs.. &lt;authtime&gt;5&lt;/authtime&gt; is the timeout (in seconds) they are given to successfully authenticate with the server.  &lt;rate ... /&gt; is a connection rate limit.. i.e. how fast you can connect to the server from the same IP address in a row.  and then there is the &lt;karma/&gt; section to configure the karma stuff... other things, like KARMA_INIT, and KARMA_READ_MAX will have to be done in the code, but IMHO, they do not need to be changed.. you can get the desired functionality from these other configurable bits.
+
+&gt;<i> 
+</I>&gt;<i> Just wondering...Are the rates mentioned in the karma.txt document 
+</I>&gt;<i>   (5.5K/2sec, 1K/2 sec) pretty much regarded as the typical usage/user?  
+</I>
+they are the rates i calculated based on the default karma values -- if they are wrong, let me know, and i will update that readme
+
+&gt;<i>   I notice that other chat systems like IRC have file transfer capabilities,
+</I>&gt;<i>   is Jabber expected to be able to do this?  Will these xfer windows work
+</I>&gt;<i>   for this?  Is this a client issue, meaning that the client needs to be
+</I>&gt;<i> aware
+</I>&gt;<i>   of these windows and be intelligent enough to pace itself during
+</I>&gt;<i> transmissions?
+</I>
+Yes, on all counts, however, file transfers happen &quot;out of band&quot; via direct client to client HTTP transfers, so this bypasses io rate limits all together.  (unless the client implements them for some reason)
+
+&lt;snip/&gt;
+
+Keith Minkler
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="033715.html">[JDEV] Karma and Jabber 1.2 RC
+</A></li>
+	<LI>Next message: <A HREF="033716.html">[JDEV] Karma and Jabber 1.2 RC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33717">[ date ]</a>
+              <a href="thread.html#33717">[ thread ]</a>
+              <a href="subject.html#33717">[ subject ]</a>
+              <a href="author.html#33717">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

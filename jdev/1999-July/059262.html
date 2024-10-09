@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Anyone bored?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Anyone%20bored%3F&In-Reply-To=%3CHHLLDHHGJKOPAAAA%40my-deja.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="059263.html">
+   <LINK REL="Next"  HREF="059264.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Anyone bored?</H1>
+    <B>Thomas D. Charron</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Anyone%20bored%3F&In-Reply-To=%3CHHLLDHHGJKOPAAAA%40my-deja.com%3E"
+       TITLE="[JDEV] Anyone bored?">tcharron at my-deja.com
+       </A><BR>
+    <I>Fri Jul  9 13:53:05 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="059263.html">[JDEV] Re: (No Subject)
+</A></li>
+        <LI>Next message: <A HREF="059264.html">[JDEV] AIM transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59262">[ date ]</a>
+              <a href="thread.html#59262">[ thread ]</a>
+              <a href="subject.html#59262">[ subject ]</a>
+              <a href="author.html#59262">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>  Anyone bored?  ;-P  This little diddy will be checked in soon, but it's just a VERY simplistic example of building an IRC &lt;=&gt; Jabber bridge in perl.  All THIS really does is connect to an IRC server, the local Jabber server, and say on #JabTest what is 'say'ed to them via Jabber..
+
+  Lemme alone, I was bored and reading up on the Net::IRC module..  ;-P
+
+
+---
+Thomas Charron
+
+
+--== Sent via Deja.com <A HREF="http://www.deja.com/">http://www.deja.com/</A> ==--
+Share what you know. Learn what you don't.
+-------------- next part --------------
+#!/usr/local/bin/perl
+
+@INC = (`pwd`<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">, at INC</A>);
+
+use Net::Jabber;
+use Net::IRC;
+
+my $irc = new Net::IRC;
+
+print &quot;Creating connection to IRC server...\n&quot;;
+
+my $conn = $irc-&gt;newconn(Server   =&gt; ($ARGV[0]  ||  'irc-w.primenet.com'),
+                         Port     =&gt; 6667,
+                         Nick     =&gt; 'Boolahman',
+                         Ircname  =&gt; 'This bot brought to you by Net::IRC.',
+                         Username =&gt; 'quetzal')
+or die &quot;irctest: Can't connect to IRC server.\n&quot;;
+
+
+print &quot;Installing handler routines for IRC...\n&quot;;
+
+$conn-&gt;add_global_handler([ 251,252,253,254,302,255 ], \&amp;on_init);
+$conn-&gt;add_global_handler('disconnect', \&amp;on_disconnect);
+$conn-&gt;add_global_handler(376, \&amp;on_connect);                     
+
+print &quot;Installing Handler routines for Jabber...\n&quot;;
+
+SetCallbacks(&quot;message&quot; =&gt; \&amp;JabberMessage);
+
+print &quot;Creating connection to Jabber server...\n&quot;;
+
+Connect(&quot;localhost&quot;) || die(&quot;Connecting Jabber: $!&quot;);
+
+SendSimple qw(login user u pass p nick Test'User);
+
+while(1)
+{
+     Process(1) || die(&quot;Processing: $!&quot;);
+     $irc-&gt;do_one_loop(); 
+}
+
+sub JabberMessage {
+	my %Message = Simplify(@_);
+	irc-&gt;privmsg(&quot;#JabTest&quot;, $Message{&quot;say&quot;});
+}
+
+sub on_connect {
+        my $self = shift;
+
+        print &quot;Joining #JabTest...\n&quot;;
+        $self-&gt;join(&quot;#JabTest&quot;);
+        $self-&gt;topic(&quot;#JabTest&quot;);
+}
+
+# Handles some messages you get when you connect
+sub on_init {
+    my ($self, $event) = @_;
+    my (@args) = ($event-&gt;args);
+    shift (@args);
+
+    print &quot;*** @args\n&quot;;
+}                 
+
+# Reconnect to the server when we die.
+sub on_disconnect {
+        my ($self, $event) = @_;
+
+        print &quot;Disconnected from &quot;, $event-&gt;from(), &quot; (&quot;,
+              ($event-&gt;args())[0], &quot;). Attempting to reconnect...\n&quot;;
+        $self-&gt;connect();
+}       
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="059263.html">[JDEV] Re: (No Subject)
+</A></li>
+	<LI>Next message: <A HREF="059264.html">[JDEV] AIM transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59262">[ date ]</a>
+              <a href="thread.html#59262">[ thread ]</a>
+              <a href="subject.html#59262">[ subject ]</a>
+              <a href="author.html#59262">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

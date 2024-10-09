@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] custom registration [was authenticated registration]
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20custom%20registration%20%5Bwas%20authenticated%20registration%5D&In-Reply-To=%3CFF2AF4D762A0D3119E86009027C39A06078AF1F8%40sea-ex0.starwave.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="035848.html">
+   <LINK REL="Next"  HREF="035859.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] custom registration [was authenticated registration]</H1>
+    <B>Robert Temple</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20custom%20registration%20%5Bwas%20authenticated%20registration%5D&In-Reply-To=%3CFF2AF4D762A0D3119E86009027C39A06078AF1F8%40sea-ex0.starwave.com%3E"
+       TITLE="[JDEV] custom registration [was authenticated registration]">robert.temple at dig.com
+       </A><BR>
+    <I>Sun Mar 11 03:14:58 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="035848.html">[JDEV] Presence information not sent from AIM transport
+</A></li>
+        <LI>Next message: <A HREF="035859.html">[JDEV] custom registration [was authenticated registration]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35854">[ date ]</a>
+              <a href="thread.html#35854">[ thread ]</a>
+              <a href="subject.html#35854">[ subject ]</a>
+              <a href="author.html#35854">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>In each of the 3 auth modules that I know of, there is this one common
+line of code that gets passwords:
+
+foo = xdb_get(m-&gt;si-&gt;xc, m-&gt;user-&gt;id, NS_AUTH_0K);
+
+If we create custom modules that replace each of the 3 default auth
+modules, then all we need to do is to just swap that line of code out
+for some of our own custom code.  Not too much of a big deal, but in
+the future if you guys need to make changes to one of those modules, 
+then we will need to go back change our code the same way.  Or if you
+come out with a great new super secure authentication module, using
+something like kerberos, then we will have to go through and swap out
+that one line for our replacement lines again.
+
+Simply from a maintenence standpoint, its going to require a lot of
+extra work and communication trying keep up with changes the jabber
+team makes.
+
+now if those lines where replaced with something like
+
+if (use_custom_auth)
+  foo = (*custom_get_password_function_pointer)(m-&gt;si-&gt;xc, m-&gt;user-&gt;id);
+else
+  foo = xdb_get(m-&gt;si-&gt;xc, m-&gt;user-&gt;id, NS_AUTH_0K);
+
+It would be a lot easier to supply our own passwords.
+
+-Robert
+
+-----Original Message-----
+From: Thomas Muldowney [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">temas at box5.net</A>]
+Sent: Tuesday, March 06, 2001 11:55 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] custom registration [was authenticated registration]
+
+
+Well we designed the module system for this reason, to be able to plugin new
+modules for items that are needed.  Need a different auth system, boom hook
+in the module and it should be running.  Want to verify users on
+registration?
+Hook in a new mod_register.  If you are not a coder at this point I would
+suggest adding the ideas to the Asylum (<A HREF="http://www.jabber.org/?oid=425">http://www.jabber.org/?oid=425</A>) so
+that
+they can get even more exposure and perhaps hacked together if someone can
+do
+it easily.
+
+--temas
+
+On Tue, Mar 06, 2001 at 09:31:27PM -0800, Robert Temple wrote:
+&gt;<i> We are in the same boat as you. We have a large database of 
+</I>&gt;<i> users we would like to get into the Jabber system.  It would 
+</I>&gt;<i> work best for us if all registration messages sent by clients 
+</I>&gt;<i> got rejected. And when the jabber server received an auth 
+</I>&gt;<i> message the it wouldn't look into its own database for a 
+</I>&gt;<i> password, but instead it would  somehow fetch the password 
+</I>&gt;<i> from our system.   And if the password matched but the user 
+</I>&gt;<i> didn't exist in the Jabber system yet, it would create the 
+</I>&gt;<i> new database entry (the users xml file) for that new user.
+</I>&gt;<i> 
+</I>&gt;<i> I'd rather not have users passwords stored in the Jabber 
+</I>&gt;<i> database at all, we already have a database of usernames &amp;
+</I>&gt;<i> passwords. The less password we have, the more secure we are.
+</I>&gt;<i> 
+</I>&gt;<i> Further, it would be really nice if when someone added someone 
+</I>&gt;<i> else to their roster but that person didn't exist, the server 
+</I>&gt;<i> would check our registration system to see if they exist there, 
+</I>&gt;<i> and if they did, send a special message back to the client that 
+</I>&gt;<i> lets them send an email to that new person that would ask if 
+</I>&gt;<i> they want to sign up for Jabber.
+</I>&gt;<i> 
+</I>&gt;<i> Short of rewriting a few server modules, there isn't an easy
+</I>&gt;<i> way to do this.   I'd like to see a standard auth API to do 
+</I>&gt;<i> what we need in the Jabber server or instead of an API, 
+</I>&gt;<i> pehaps a configuration where the server would get auth 
+</I>&gt;<i> auth verification from an external agent over exterx instead.
+</I>&gt;<i> 
+</I>&gt;<i> It seems like custom authentication is needed by a lot of 
+</I>&gt;<i> groups.
+</I>&gt;<i> 
+</I>&gt;<i> -Robert
+</I>&gt;<i> 
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kadokev at msg.net</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kadokev at msg.net</A>]
+</I>&gt;<i> &gt; Sent: Tuesday, March 06, 2001 9:57 PM
+</I>&gt;<i> &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; Subject: Re: [JDEV] authenticated registration
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &gt; I would like to stop just anyone from registering with my 
+</I>&gt;<i> &gt; jabber server.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I have a similar issue. I need to authenticate new users 
+</I>&gt;<i> &gt; registering with
+</I>&gt;<i> &gt; the jabber server, to ensure that the 'login' being created is their
+</I>&gt;<i> &gt; 'official' username. That is, to ensure that 
+</I>&gt;<i> &gt; '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">login at jabber.ourdomain.com</A>'
+</I>&gt;<i> &gt; is the same as their 'login' for the 'ourdomain' NT domain.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; No matter how big disclaimers I put up as to the 
+</I>&gt;<i> &gt; non-verifiability of user
+</I>&gt;<i> &gt; information, I cannot risk having 'Bob HelpDeskGuy' register 
+</I>&gt;<i> &gt; as 'Jim TheCEO'.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; It would probably be excessive (yet fun) to try to build 
+</I>&gt;<i> &gt; strong authentication
+</I>&gt;<i> &gt; into the Jabber server, but perhaps the server *could* be 
+</I>&gt;<i> &gt; extended to 'proxy'
+</I>&gt;<i> &gt; user authentication to a web server?
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &gt; I hear you could set the spool directory read only to stop 
+</I>&gt;<i> &gt; people from
+</I>&gt;<i> &gt; &gt; adding themselves. Ideally, jabberd should be able to 
+</I>&gt;<i> &gt; require that a user
+</I>&gt;<i> &gt; &gt; wishing to be added to the server supply the administrator 
+</I>&gt;<i> &gt; account login
+</I>&gt;<i> &gt; &gt; information, or be added to the server by the administrator 
+</I>&gt;<i> &gt; him/herself.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Has anybody looked into having the 'spool' directory owned by 
+</I>&gt;<i> &gt; a web server,
+</I>&gt;<i> &gt; and use a CGI script on the HTTPd to create the XML files?  
+</I>&gt;<i> &gt; This would allow
+</I>&gt;<i> &gt; for authentication of initial account creation via any 
+</I>&gt;<i> &gt; mechanism supported
+</I>&gt;<i> &gt; by Apache- RADIUS, LDAP, NIS, mSQL, DCE, NDS, TACACS+, etc.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; What I'll most likely end up with is a web site that uses an Apache
+</I>&gt;<i> &gt; NT domain authentication module 
+</I>&gt;<i> &gt; (<A HREF="http://www.asaban.com/index_pl.html">http://www.asaban.com/index_pl.html</A>) to
+</I>&gt;<i> &gt; verify their identity and create the XML file the first time. 
+</I>&gt;<i> &gt; The script
+</I>&gt;<i> &gt; may also go to an LDAP server and extract their full name and 
+</I>&gt;<i> &gt; other detail
+</I>&gt;<i> &gt; at the same time.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Kevin
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="035848.html">[JDEV] Presence information not sent from AIM transport
+</A></li>
+	<LI>Next message: <A HREF="035859.html">[JDEV] custom registration [was authenticated registration]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35854">[ date ]</a>
+              <a href="thread.html#35854">[ thread ]</a>
+              <a href="subject.html#35854">[ subject ]</a>
+              <a href="author.html#35854">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,376 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] New Transport Architecture - Idea
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20New%20Transport%20Architecture%20-%20Idea&In-Reply-To=%3C14975.2458.188348.23575%40badger.wordzoo.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="035297.html">
+   <LINK REL="Next"  HREF="035280.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] New Transport Architecture - Idea</H1>
+    <B>Jared Rhine</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20New%20Transport%20Architecture%20-%20Idea&In-Reply-To=%3C14975.2458.188348.23575%40badger.wordzoo.com%3E"
+       TITLE="[JDEV] New Transport Architecture - Idea">jared at wordzoo.com
+       </A><BR>
+    <I>Mon Feb  5 14:14:18 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="035297.html">[JDEV] New Transport Architecture - Idea
+</A></li>
+        <LI>Next message: <A HREF="035280.html">[JDEV] Secure instant messaging.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35300">[ date ]</a>
+              <a href="thread.html#35300">[ thread ]</a>
+              <a href="subject.html#35300">[ subject ]</a>
+              <a href="author.html#35300">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>[Citation date: Mon, 5 Feb 2001 11:46:17 -0800]
+
+&gt;&gt;&gt;&gt;&gt;<i> Mark == Mark Zamoyta &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>
+    Mark&gt; I was unaware of what RSS was, but I'll look into it!  The
+    Mark&gt; key thing is to leverage the content and services of
+    Mark&gt; existing websites, and make it instantly available to Jabber
+    Mark&gt; users.
+
+I'm currently using the script below to act as a pseudo-user which
+collects RSS information as posts it as a headline to my Jabber
+server, which shows up on the headlines tab of my winjab client.  To
+receive headlines, I subscribe to the 'headline' user's presence.
+It's based on the framework by DJ Adams at:
+
+  <A HREF="http://www.pipetree.com/jabber/">http://www.pipetree.com/jabber/</A>
+
+I too agree that this is a superior approach to new transports.  I'm
+not familiar with the RSS transport, though.  I think I'll prefer to
+implement a pseudo-user client-based approach like this so I can have
+simple control over posting logic, such as filtering (and mapping from
+moreover.com 'click here' URLs to the actual URL).
+
+Note, although DJ Adams' original framework was presence-sensitive
+(only sent headlines if you were available) this version isn't (I like
+to wake up in the morning with a headlines tab full of new stories).
+Don't let this thing run too unattended, as it will happily keep
+posting headlines even if you're not logged in.
+
+-- begin --
+
+#!/usr/bin/perl
+
+use Net::Jabber;
+use LWP::Simple;
+use LWP::UserAgent;
+use XML::RSS;
+use File::Path;
+use URI::Escape;
+
+use strict;
+
+use constant CACHEDIR =&gt; '/tmp/jabber-headlines-cache';
+use constant DEBUGFILE =&gt; '/tmp/jabber-headlines.log';
+
+use constant SERVER   =&gt; 'xxxxx;  # Obscured
+use constant PORT     =&gt; 5222;
+use constant USER     =&gt; 'headlines';
+use constant PASSWORD =&gt; 'xxxxx; # Obscured
+use constant RESOURCE =&gt; 'bot';
+use constant DELAY    =&gt; 600;
+use constant VERBOSE  =&gt; 3;
+
+my %present;
+my %cache;
+my %fullcache;
+
+my %sources = (
+               '<A HREF="http://www.jabber.org/rss/articles.xml'">http://www.jabber.org/rss/articles.xml'</A> =&gt; 5,
+               '<A HREF="http://slashdot.org/slashdot.rdf'">http://slashdot.org/slashdot.rdf'</A> =&gt; 2,
+               '<A HREF="http://search.cpan.org/recent.rdf'">http://search.cpan.org/recent.rdf'</A> =&gt; 4,
+               '<A HREF="http://udell.roninhouse.com/udell.rdf'">http://udell.roninhouse.com/udell.rdf'</A> =&gt; 7,
+               '<A HREF="http://freshmeat.net/backend/fm.rdf'">http://freshmeat.net/backend/fm.rdf'</A> =&gt; 9,
+               '<A HREF="http://www.mozilla.org/news.rdf'">http://www.mozilla.org/news.rdf'</A> =&gt; 9,
+               '<A HREF="http://www.newsforge.com/newsforge.rdf'">http://www.newsforge.com/newsforge.rdf'</A> =&gt; 6,
+               '<A HREF="http://www.wired.com/news_drop/netcenter/netcenter.rdf'">http://www.wired.com/news_drop/netcenter/netcenter.rdf'</A> =&gt; 3,
+               '<A HREF="http://www.moreover.com/cgi-local/page?index_home+rss'">http://www.moreover.com/cgi-local/page?index_home+rss'</A> =&gt; 2,
+#              '<A HREF="http://www.moreover.com/cgi-local/page?index_computerservices+rss'">http://www.moreover.com/cgi-local/page?index_computerservices+rss'</A> =&gt; 3,
+               '<A HREF="http://www.moreover.com/cgi-local/page?index_enterprisecomputing+rss'">http://www.moreover.com/cgi-local/page?index_enterprisecomputing+rss'</A> =&gt; 3,
+#              '<A HREF="http://www.moreover.com/cgi-local/page?index_e-commerce+rss'">http://www.moreover.com/cgi-local/page?index_e-commerce+rss'</A> =&gt; 3,
+               '<A HREF="http://www.moreover.com/cgi-local/page?index_personaltechnology+rss'">http://www.moreover.com/cgi-local/page?index_personaltechnology+rss'</A> =&gt; 2,
+               '<A HREF="http://www.moreover.com/cgi-local/page?index_wireless+rss'">http://www.moreover.com/cgi-local/page?index_wireless+rss'</A> =&gt; 2,
+               '<A HREF="http://www.xenite.org/channels/lordoftherings.rss'">http://www.xenite.org/channels/lordoftherings.rss'</A> =&gt; 8,
+               '<A HREF="http://xml.com/xml/scriptingnews.rdf'">http://xml.com/xml/scriptingnews.rdf'</A> =&gt; 4,
+# Betanews?
+               '<A HREF="http://www.nwfusion.com:8080/rss/wireless/query.html?qt=%2Bwireless&amp;nh=10&amp;rf=1'">http://www.nwfusion.com:8080/rss/wireless/query.html?qt=%2Bwireless&amp;nh=10&amp;rf=1'</A> =&gt; 5,
+#              '<A HREF="http://www.xmltree.com/whatsnew/rss.cfm'">http://www.xmltree.com/whatsnew/rss.cfm'</A> =&gt; 17,
+               '<A HREF="http://www.moreover.com/cgi-local/page?index_xml+rss'">http://www.moreover.com/cgi-local/page?index_xml+rss'</A> =&gt; 7,
+               '<A HREF="http://ilrt.org/discovery/rdf/resources/rss.rdf'">http://ilrt.org/discovery/rdf/resources/rss.rdf'</A> =&gt; 19,
+               '<A HREF="http://www.xmlhack.com/rsscat.php'">http://www.xmlhack.com/rsscat.php'</A> =&gt; 3,
+               '<A HREF="http://rootprompt.org/rss/'">http://rootprompt.org/rss/'</A> =&gt; 4,
+               '<A HREF="http://www.apacheweek.com/issues/apacheweek-headlines.xml'">http://www.apacheweek.com/issues/apacheweek-headlines.xml'</A> =&gt; 8,
+               '<A HREF="http://www.oreillynet.com/pub/q/32'">http://www.oreillynet.com/pub/q/32'</A> =&gt; 7,
+               '<A HREF="http://www.soap-wrc.com/webservices/rss.asp'">http://www.soap-wrc.com/webservices/rss.asp'</A> =&gt; 10,
+               '<A HREF="http://www.kuro5hin.org/backend.rdf'">http://www.kuro5hin.org/backend.rdf'</A> =&gt; 9,
+               '<A HREF="http://cnn.com/cnn.rss'">http://cnn.com/cnn.rss'</A> =&gt; 5,
+               '<A HREF="http://p.moreover.com/cgi-local/page?index_java+rss'">http://p.moreover.com/cgi-local/page?index_java+rss'</A> =&gt; 8,
+               '<A HREF="http://p.moreover.com/cgi-local/page?index_science+rss'">http://p.moreover.com/cgi-local/page?index_science+rss'</A> =&gt; 9,
+               '<A HREF="http://memepool.com/memepool.rss'">http://memepool.com/memepool.rss'</A> =&gt; 11,
+               '<A HREF="http://www.geekpress.com/index.xml'">http://www.geekpress.com/index.xml'</A> =&gt; 13,
+
+              );
+
+# Redirect stdout
+my $debug = DEBUGFILE;
+open STDERR, &quot;&gt;$debug&quot; or die &quot;Can't redirect stdout: $!&quot;;
+
+my @sources = keys %sources;
+my $count = 1;
+
+mkpath(CACHEDIR,1,0700);
+
+my $connection = Net::Jabber::Client-&gt;new();
+
+log3(&quot;Making connection to Jabber server&quot;);
+$connection-&gt;Connect( hostname =&gt; SERVER,
+                      port     =&gt; PORT ) 
+  or die &quot;Cannot connect ($!)\n&quot;;
+
+log3(&quot;Attempting Ident/Auth&quot;);
+my @result = $connection-&gt;AuthSend( username =&gt; USER,
+                                    password =&gt; PASSWORD,
+                                    resource =&gt; RESOURCE );
+
+if ($result[0] ne &quot;ok&quot;) {
+  die &quot;Ident/Auth with server failed: $result[0] - $result[1]\n&quot;;
+}
+
+log3(&quot;Setting headline handler&quot;);
+$SIG{ALRM} = \&amp;do_headlines;
+
+log3(&quot;Setting presence handler&quot;);
+$connection-&gt;SetCallBacks( presence =&gt; \&amp;handle_presence );
+
+log3(&quot;Requesting roster&quot;);
+$connection-&gt;RosterGet();
+
+log3(&quot;Sending presence&quot;);
+$connection-&gt;PresenceSend();
+
+log3(&quot;Retrieving RSS for first time and setting alarm&quot;);
+do_headlines();
+
+log3(&quot;Entering main loop&quot;);
+while(defined($connection-&gt;Process())) { }
+
+log3(&quot;Cancelling alarm&quot;);
+alarm(0);
+
+print &quot;ERROR: The connection was killed...\n&quot;;
+
+exit(0);
+
+sub do_headlines {
+
+  $count += 1;
+#  foreach my $source (@sources) {
+  foreach my $source (grep { ($count/$sources{$_}) == int($count/$sources{$_}) } (sort keys %sources)) {
+
+    # Retrieve the RSS
+    log3(&quot;Getting $source&quot;);
+    my $data = get($source);
+
+    # Skip if cannot retrieve
+    unless (defined($data)) {
+      log1(&quot;Cannot retrieve $source - skipping&quot;);
+      next;
+    }
+
+    # Process any messages
+    $connection-&gt;Process(1);
+
+    my $rss = XML::RSS-&gt;new();
+
+    # Parse the RSS and get the items
+    $rss-&gt;parse($data);
+    my @items = @{$rss-&gt;{items}};
+
+    # Discover any new items
+    log3(&quot;Looking for new items&quot;);
+    foreach my $item (@items) {
+
+      # Stop looking if we reach an item we've
+      # already seen
+      last if exists $cache{$source} and $cache{$source} eq $item-&gt;{link};
+
+      my $orglink = $item-&gt;{link};
+      my $link = $orglink;
+
+      # Check cache
+      my $file = CACHEDIR . &quot;/&quot; . uri_escape($link,&quot;^A-Za-z0-9\\.:\\?&quot;);
+      if ($fullcache{$link} or -r $file) {
+        log2(&quot;Skipping because previously seen: $link&quot;);
+        next;
+      }
+
+      log2(&quot;New item from $source - $item-&gt;{title}&quot;);
+
+      # Create headline message
+      my $msg = Net::Jabber::Message-&gt;new();
+  
+      $msg-&gt;SetMessage(
+                        type     =&gt; 'headline',
+                        subject  =&gt; $item-&gt;{title}, 
+                        body     =&gt; $item-&gt;{description}, 
+                      );
+
+      # Add to cache
+      log3(&quot;Adding $link ($file) to cache&quot;);
+      $fullcache{$link} = 1;
+      open TOUCH, &quot;&gt;$file&quot; or warn &quot;Couldn't create/touch cache file $file: $!&quot;;
+      close TOUCH;
+
+      my $oob = $msg-&gt;NewX('jabber:x:oob');
+      $oob-&gt;SetDesc($item-&gt;{title});
+
+      # If moreover, find the real URL.
+      if ($orglink =~ m{^<A HREF="http://[a-z]\.moreover\.com/}">http://[a-z]\.moreover\.com/}</A>) {
+        my $ua = LWP::UserAgent-&gt;new;
+
+        my $request = HTTP::Request-&gt;new('GET',$orglink);
+        my $response = $ua-&gt;simple_request($request);
+        if ($response-&gt;header('location')) {
+          log3(&quot;Successful retrieval redirected of $orglink&quot;);
+          $link = $response-&gt;header('location');
+        } else {
+          my $headers = $response-&gt;headers_as_string;
+          log3(&quot;Unsuccessful retrieval of $orglink&quot;);
+          log3(&quot;Headers: $headers&quot;);
+          $link = $orglink;
+        }
+        log2(&quot;Replacing moreover URL $orglink with $link&quot;);
+      }
+
+      $oob-&gt;SetURL($link);
+ 
+      my @sendees;
+
+      # Send the headline to all that are present
+      foreach my $recipient (keys %present) {
+        sleep 2;
+        $msg-&gt;SetTo($recipient);
+        $connection-&gt;Send($msg);
+        push @sendees, $recipient;
+      }
+            
+      log2(&quot;Sent to &quot;.(join(&quot;, &quot;, @sendees) || &quot;nobody&quot;));
+
+       # This will prevent all the items being
+      # counted as new the first time through
+      # the loop (but allows the first item in
+      # the RSS to be sent).
+      #last unless exists($cache{$source});
+    }
+
+    # Remember the latest new item
+    $cache{$source} = $items[0]-&gt;{link};
+  }
+
+  log3(&quot;Setting alarm&quot;);
+  alarm(DELAY);
+}
+
+sub handle_presence {
+ 
+  my $presence = new Net::Jabber::Presence(@_);
+  my $jid  = $presence-&gt;GetFrom();
+  my $show = $presence-&gt;GetShow();
+  my $type = $presence-&gt;GetType();
+
+  $jid =~ s!\/.*$!!; # remove any resource suffix from JID
+
+  log3(&quot;Presence from $jid:\n&quot;.$presence-&gt;GetXML());
+ 
+  # Subscription request:
+  # Accept, and request subscription to them.
+  if ($type eq &quot;subscribe&quot;) {
+    log3(&quot;$jid requests subscription&quot;);
+    $connection-&gt;Send($presence-&gt;Reply(type =&gt; 'subscribed'));
+    $connection-&gt;Send($presence-&gt;Reply(type =&gt; 'subscribe'));
+  }
+
+  # Request to unsubscribe:
+  # Acknowledge, and request unsubscription from them.
+  # Don't forget to remove them from the present list, too.
+  if ($type eq &quot;unsubscribe&quot;) {
+    log3(&quot;$jid requests unsubscription&quot;);
+    $connection-&gt;Send($presence-&gt;Reply(type =&gt; 'unsubscribed'));
+    $connection-&gt;Send($presence-&gt;Reply(type =&gt; 'unsubscribe'));
+    delete $present{$jid};
+  }
+
+  # User has disconnected
+  if ($type eq &quot;unavailable&quot;) {
+    log3(&quot;$jid unavailable&quot;);
+    delete $present{$jid};
+  }
+
+  # Default presence information (type is blank)
+  $present{$jid} = 1 if $type eq &quot;&quot;;
+}
+
+sub log1 {
+  # WARN
+  my $msg = shift;
+  return unless VERBOSE &gt;= 1;
+  print STDERR &quot;WARN: $msg\n&quot;;
+}
+
+sub log2 {
+  # INFO
+  my $msg = shift;
+  return unless VERBOSE &gt;= 2;
+  print STDERR &quot;INFO: $msg\n&quot;;
+}
+
+sub log3 {
+  # DBUG
+  my $msg = shift;
+  return unless VERBOSE &gt;= 3;
+  print STDERR &quot;DBUG: $msg\n&quot;;
+}
+
+-- end --
+
+-- <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jared at wordzoo.com</A>
+
+&quot;Come, let us retract the foreskin of misconception and apply the wire
+ brush of enlightenment.&quot; -- Geoff Miller
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="035297.html">[JDEV] New Transport Architecture - Idea
+</A></li>
+	<LI>Next message: <A HREF="035280.html">[JDEV] Secure instant messaging.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35300">[ date ]</a>
+              <a href="thread.html#35300">[ thread ]</a>
+              <a href="subject.html#35300">[ subject ]</a>
+              <a href="author.html#35300">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

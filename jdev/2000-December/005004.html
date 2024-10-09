@@ -1,0 +1,259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> Debians jabber layout (was Re: [JDEV] Building Jabber 1.2)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Debians%20jabber%20layout%20%28was%20Re%3A%20%5BJDEV%5D%20Building%20Jabber%201.2%29&In-Reply-To=NEBBKCIPGLCNCINKDKMMAEDDCFAA.chadws%40networksplus.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005002.html">
+   <LINK REL="Next"  HREF="005005.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>Debians jabber layout (was Re: [JDEV] Building Jabber 1.2)</H1>
+    <B>Bernd Eckenfels</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Debians%20jabber%20layout%20%28was%20Re%3A%20%5BJDEV%5D%20Building%20Jabber%201.2%29&In-Reply-To=NEBBKCIPGLCNCINKDKMMAEDDCFAA.chadws%40networksplus.net"
+       TITLE="Debians jabber layout (was Re: [JDEV] Building Jabber 1.2)">lists at lina.inka.de
+       </A><BR>
+    <I>Tue Dec  5 22:48:58 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005002.html">[JDEV] Building Jabber 1.2
+</A></li>
+        <LI>Next message: <A HREF="005005.html">[JDEV] The Extents of the JabberApplet
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5004">[ date ]</a>
+              <a href="thread.html#5004">[ thread ]</a>
+              <a href="subject.html#5004">[ subject ]</a>
+              <a href="author.html#5004">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tue, Dec 05, 2000 at 09:37:14PM -0600, Chad W. Skinner wrote:
+&gt;<i> Over the weekend I made a couple of SPEC files for jabber 1.0 and was
+</I>&gt;<i> working on some for 1.2 when I noticed the config script for jabber 1.2 does
+</I>&gt;<i> not allow you to specify where the files will be placed. I am wanting to
+</I>&gt;<i> build an RPM file to install the files in the following locations. Does
+</I>&gt;<i> anyone know if this is possible or how I would do it?
+</I>
+I have done it for debian by copying it by hand, it is a lot of work:
+
+first install all .so files (FHS recommends /usr/lib/jabber/*/*.so). The
+set the jabber home to /usr/lib/jabber, this requires patching the makefile.
+And then specify the XMLCONFIG file /etc/jabber/jabber.xml this requires a
+patch, too. After that you can specify the spool die (/vare/lib/jabber/) in
+the config file.
+
+If you are curious look at the Debian's package info page
+<A HREF="http://packages.debian.org/unstable/net/jabber.html.">http://packages.debian.org/unstable/net/jabber.html.</A> But it will take a few
+hours until it is created.
+
+There you can access the patch. The debian/rules file and the patches are
+mot interesting to you.
+
+&gt;<i> 
+</I>&gt;<i>   /
+</I>&gt;<i>   |-- etc
+</I>&gt;<i>   |   `-- jabber
+</I>&gt;<i>   |       `-- jabber.xml
+</I>&gt;<i>   |-- usr
+</I>&gt;<i>   |   |-- bin
+</I>&gt;<i>   |   |   `--jabberd
+</I>
+&gt;<i>   |   |-- lib
+</I>&gt;<i>   |   |   |-- dnsrv.so
+</I>&gt;<i>   |   |   |-- jsm.so
+</I>&gt;<i>   |   |   |-- pthsock_client.so
+</I>&gt;<i>   |   |   |-- pthsock_server.so
+</I>&gt;<i>   |   |   `-- xdb_file.so
+</I>
+i used the default subdird under /usr/lib/jabber/{jsm,dnsrv,pthsock,xdb_file}
+
+
+&gt;<i>   `-- var
+</I>&gt;<i>       |-- log
+</I>&gt;<i>       `-- spool
+</I>&gt;<i>           `-- jabber
+</I>
+i use /var/lib/jabber, since it is not only spooled data (the offline
+messages) but also state data (the user database). Otherwise the Layout is
+the same:
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/:
+total 4
+drwxr-xr-x    2 root     root         1024 Dec  5 03:01 DEBIAN
+drwxr-xr-x    4 root     root         1024 Dec  5 03:01 etc
+drwxr-xr-x    5 root     root         1024 Dec  5 03:01 usr
+drwxr-xr-x    4 root     root         1024 Dec  5 03:01 var
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/DEBIAN:
+total 8
+-rw-r--r--    1 root     root           65 Dec  5 01:37 conffiles
+-rw-r--r--    1 root     root          745 Dec  5 03:01 control
+-rw-r--r--    1 root     root         3045 Dec  5 03:01 md5sums
+-rwxr-xr-x    1 root     root          387 Dec  5 03:01 postinst
+-rwxr-xr-x    1 root     root          157 Dec  5 03:01 postrm
+-rwxr-xr-x    1 root     root          288 Dec  5 03:01 prerm
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/etc:
+total 2
+drwxr-xr-x    2 root     root         1024 Dec  5 03:01 init.d
+drwxr-xr-x    2 root     root         1024 Dec  5 03:01 jabber
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/etc/init.d:
+total 2
+-rwxr-xr-x    1 root     root         1832 Dec  5 02:52 jabber
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/etc/jabber:
+total 8
+-rwxr-xr-x    1 root     root          625 Dec  5 03:01 jabber.cfg
+-rw-r--r--    1 root     root         6755 Dec  5 03:01 jabber.xml
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr:
+total 3
+drwxr-xr-x    3 root     root         1024 Dec  5 03:01 lib
+drwxr-xr-x    2 root     root         1024 Dec  5 03:01 sbin
+drwxr-xr-x    3 root     root         1024 Dec  5 03:01 share
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr/lib:
+total 1
+drwxr-xr-x    6 root     root         1024 Dec  5 03:01 jabber
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr/lib/jabber:
+total 4
+drwxr-xr-x    2 root     root         1024 Dec  5 03:01 dnsrv
+drwxr-xr-x    2 root     root         1024 Dec  5 03:01 jsm
+drwxr-xr-x    2 root     root         1024 Dec  5 03:01 pthsock
+drwxr-xr-x    2 root     root         1024 Dec  5 03:01 xdb_file
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr/lib/jabber/dnsrv:
+total 18
+-rw-r--r--    1 root     root        16680 Dec  5 03:01 dnsrv.so
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr/lib/jabber/jsm:
+total 82
+-rw-r--r--    1 root     root        82744 Dec  5 03:01 jsm.so
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr/lib/jabber/pthsock:
+total 64
+-rw-r--r--    1 root     root        28780 Dec  5 03:01 pthsock_client.so
+-rw-r--r--    1 root     root        32984 Dec  5 03:01 pthsock_server.so
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr/lib/jabber/xdb_file:
+total 10
+-rw-r--r--    1 root     root        10212 Dec  5 03:01 xdb_file.so
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr/sbin:
+total 65
+-rwxr-xr-x    1 root     root        65236 Dec  5 03:01 jabberd
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr/share:
+total 1
+drwxr-xr-x    3 root     root         1024 Dec  5 03:01 doc
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr/share/doc:
+total 1
+drwxr-xr-x    4 root     root         1024 Dec  5 03:01 jabber
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr/share/doc/jabber:
+total 12
+-rw-r--r--    1 root     root         1687 Oct 31 12:21 README
+-rw-r--r--    1 root     root          912 Dec  5 02:55 README.Debian
+-rw-r--r--    1 root     root          826 Oct 31 11:06 TODO
+-rw-r--r--    1 root     root         2526 Oct 31 12:21 UPGRADE
+-rw-r--r--    1 root     root          279 Dec  5 01:35 changelog.Debian.gz
+-rw-r--r--    1 root     root         1083 Nov  6 23:43 copyright
+drwxr-xr-x    2 root     root         1024 Dec  5 03:01 examples
+drwxr-xr-x    3 root     root         1024 Dec  5 03:01 html
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr/share/doc/jabber/examples:
+total 14
+-rw-r--r--    1 root     root          267 Dec  5 03:01 agents_list.xml
+-rw-r--r--    1 root     root         2511 Dec  5 03:01 developer.xml
+-rw-r--r--    1 root     root         2017 Dec  5 03:01 home.xml
+-rw-r--r--    1 root     root         1485 Dec  5 03:01 intranet.xml
+-rw-r--r--    1 root     root         2479 Dec  5 03:01 isp.xml
+-rw-r--r--    1 root     root         2090 Dec  5 03:01 standard.xml
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr/share/doc/jabber/html:
+total 44
+-rw-r--r--    1 root     root         4133 Dec  5 03:01 charchitecture.html
+-rw-r--r--    1 root     root         1719 Dec  5 03:01 chbackground.html
+-rw-r--r--    1 root     root         2871 Dec  5 03:01 chconfigfile.html
+-rw-r--r--    1 root     root         1752 Dec  5 03:01 chgoals.html
+-rw-r--r--    1 root     root         2715 Dec  5 03:01 chintro.html
+-rw-r--r--    1 root     root          888 Dec  5 03:01 docbook.css
+-rw-r--r--    1 root     root         2444 Dec  5 03:01 index.html
+drwxr-xr-x    2 root     root         1024 Dec  5 03:01 stylesheet-images
+-rw-r--r--    1 root     root         3699 Dec  5 03:01 x214.html
+-rw-r--r--    1 root     root         3369 Dec  5 03:01 x64.html
+-rw-r--r--    1 root     root        15008 Dec  5 03:01 x78.html
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/usr/share/doc/jabber/html/stylesheet-images:
+total 17
+-rw-r--r--    1 root     root         1039 Dec  5 03:01 caution.gif
+-rw-r--r--    1 root     root          995 Dec  5 03:01 home.gif
+-rw-r--r--    1 root     root         1081 Dec  5 03:01 important.gif
+-rw-r--r--    1 root     root          964 Dec  5 03:01 next.gif
+-rw-r--r--    1 root     root         1070 Dec  5 03:01 note.gif
+-rw-r--r--    1 root     root          944 Dec  5 03:01 prev.gif
+-rw-r--r--    1 root     root         1029 Dec  5 03:01 tip.gif
+-rw-r--r--    1 root     root           95 Dec  5 03:01 toc-blank.gif
+-rw-r--r--    1 root     root          843 Dec  5 03:01 toc-minus.gif
+-rw-r--r--    1 root     root          846 Dec  5 03:01 toc-plus.gif
+-rw-r--r--    1 root     root          922 Dec  5 03:01 up.gif
+-rw-r--r--    1 root     root         1052 Dec  5 03:01 warning.gif
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/var:
+total 2
+drwxr-xr-x    3 root     root         1024 Dec  5 03:01 lib
+drwxr-xr-x    3 root     root         1024 Dec  5 03:01 log
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/var/lib:
+total 1
+drwxr-xr-x    2 daemon   root         1024 Dec  5 03:01 jabber
+
+/home/ecki/debian/jabber/jabber-1.2/debian/tmp/var/log:
+total 1
+drwxr-xr-x    2 daemon   root         1024 Dec  5 03:01 jabber
+
+&gt;<i> I am not a programmer and don't understand the configuration script or make
+</I>&gt;<i> files at all. Does anyone know if the next release will have a more standard
+</I>&gt;<i> configuration file with it?
+</I>
+I hope so! But even having options for Config File Base, For Spool, and for Home
+would be enough for Debian or Redhat needs
+
+Greetings
+Bernd
+-- 
+  (OO)      -- <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Bernd_Eckenfels at Wendelinusstrasse39.76646Bruchsal.de</A> --
+ ( .. )  ecki@{inka.de,linux.de,debian.org} <A HREF="http://home.pages.de/~eckes/">http://home.pages.de/~eckes/</A>
+  o--o     *plush*  2048/93600EFD  <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">eckes at irc</A>  +497257930613  BE5-RIPE
+(O____O)  When cryptography is outlawed, bayl bhgynjf jvyy unir cevinpl!
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005002.html">[JDEV] Building Jabber 1.2
+</A></li>
+	<LI>Next message: <A HREF="005005.html">[JDEV] The Extents of the JabberApplet
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5004">[ date ]</a>
+              <a href="thread.html#5004">[ thread ]</a>
+              <a href="subject.html#5004">[ subject ]</a>
+              <a href="author.html#5004">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

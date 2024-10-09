@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Heartbeat patch for dialup and laptop users and faulty presence info
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Heartbeat%20patch%20for%20dialup%20and%20laptop%20users%20and%20faulty%20presence%20info&In-Reply-To=%3C20020529142629.GA23003%40cayenne.docutraq.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042145.html">
+   <LINK REL="Next"  HREF="042147.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Heartbeat patch for dialup and laptop users and faulty presence info</H1>
+    <B>Dave Turner</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Heartbeat%20patch%20for%20dialup%20and%20laptop%20users%20and%20faulty%20presence%20info&In-Reply-To=%3C20020529142629.GA23003%40cayenne.docutraq.com%3E"
+       TITLE="[JDEV] Heartbeat patch for dialup and laptop users and faulty presence info">jabber at figroll.com
+       </A><BR>
+    <I>Wed May 29 09:26:29 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042145.html">[JDEV] Heartbeat patch for dialup and laptop users and faulty presence info
+</A></li>
+        <LI>Next message: <A HREF="042147.html">[JDEV] Heartbeat patch for dialup and laptop users and faulty presence info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42146">[ date ]</a>
+              <a href="thread.html#42146">[ thread ]</a>
+              <a href="subject.html#42146">[ subject ]</a>
+              <a href="author.html#42146">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, May 29, 2002 at 09:55:28AM -0400, Nathan Sharp wrote:
+&gt;<i> The biggest argument I've heard so far is that ping/pongs would take too 
+</I>&gt;<i> much bandwidth.  If your end users would prefer very slightly less 
+</I>&gt;<i> bandwidth used yet LOST MESSAGES AND FAULTY PRESENCE info, well, you got 
+</I>&gt;<i> different users than mine.
+</I>
+With the ping/acks there's a simple way to cut down on a large amount of
+the bandwidth required.  From your first post I think that you are
+already doing this, but I'll just write it down to make sure.
+
+The server only needs to send the ping to the client if it hasn't heard
+from the client within the chosen time-period.  Therefore, each time the
+server receives a packet from a given client it can reset its timer for
+that client.  For active clients this could mean never receiving a ping
+because the server is happy that it's alive.
+
+For clients that are inactive and responding to pings the bandwidth
+consumed is almost certainly less than that which would be used if the
+client has active.  So in the calculations of bandwidth usage I think
+you need to include the estimations for how much bandwidth COULD be
+used based on the number of connected clients.
+
+Finally, in the implementation the overhead for tracking timeouts for
+each client isn't that great.  At first guess one might have a timer
+for each client, that's not the way to go.  Use one timer and a
+scheduler to queue up future pings, rescheduling when the server
+handles a packet for a client.
+
+
+I'm not sure if pings get my vote yet, but I think this helps show that
+the bandwidth argument needn't be too much of a concern.
+
+-- 
+Dave Turner
+<A HREF="http://figroll.com/">http://figroll.com/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042145.html">[JDEV] Heartbeat patch for dialup and laptop users and faulty presence info
+</A></li>
+	<LI>Next message: <A HREF="042147.html">[JDEV] Heartbeat patch for dialup and laptop users and faulty presence info
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42146">[ date ]</a>
+              <a href="thread.html#42146">[ thread ]</a>
+              <a href="subject.html#42146">[ subject ]</a>
+              <a href="author.html#42146">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

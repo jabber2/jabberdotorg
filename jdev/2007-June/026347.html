@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Different behaviors of ejabbered and openFire in pushing	messages to the client!
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Different%20behaviors%20of%20ejabbered%20and%20openFire%20in%20pushing%0A%09messages%20to%20the%20client%21&In-Reply-To=e591c7850706182035g37f0c8e2kc9b87ae54f7ffa76%40mail.gmail.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="026346.html">
+   <LINK REL="Next"  HREF="026348.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Different behaviors of ejabbered and openFire in pushing	messages to the client!</H1>
+    <B>Mridul Muralidharan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Different%20behaviors%20of%20ejabbered%20and%20openFire%20in%20pushing%0A%09messages%20to%20the%20client%21&In-Reply-To=e591c7850706182035g37f0c8e2kc9b87ae54f7ffa76%40mail.gmail.com"
+       TITLE="[jdev] Different behaviors of ejabbered and openFire in pushing	messages to the client!">mridul at sun.com
+       </A><BR>
+    <I>Mon Jun 18 23:01:13 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="026346.html">[jdev] Different behaviors of ejabbered and openFire in pushing	messages to the client!
+</A></li>
+        <LI>Next message: <A HREF="026348.html">[jdev] Different behaviors of ejabbered and openFire in pushing	messages to the client!
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26347">[ date ]</a>
+              <a href="thread.html#26347">[ thread ]</a>
+              <a href="subject.html#26347">[ subject ]</a>
+              <a href="author.html#26347">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Hi,
+
+   I think Peter is in the process of clarifying the bis spec on the 
+subscription appendix's. /me pokes psa :)
+It might be a good idea to wait for that to be complete ... currently, 
+the state of specs is a bit icky from an impl point of view (though well 
+defined).
+
+Roughly, 3921 says these :
+
+- a user can add any contact to his roster, this does not trigger a 
+presence subscription request - but a roster push(*) will occur.
+
+- a user can ask for subscription to contact : (if contact is not in the 
+user's roster (step 1 omitted), it gets automatically added) this 
+triggers a roster push(*) with change in subscription status (ask
+attribute).
+
+- if contact is online, subscribe is pushed to all available resources 
+using rules similar to roster push(*).
+
+- if contact is offline or no resource is available which satisfies rule 
+for roster push(*), this is stored for later delivery.
+
+- if contact rejects subscription (unsubscribed), this triggers a roster 
+update in user's roster appropriately (must not result in removal of 
+entry - I see that some servers remove the contact's jid from user 
+roster) and a corresponding roster push(*).
+
+- 3921 says that the unsubscribed must be delivered to the user's 
+resources(*).
+
+(*) The roster push above will happen only to all resources which have 
+requested (or modified) roster in some way (including asking for 
+subscription).
+
+Similar steps above when contact's approves subscription.
+
+The state table related to inbound unsubscribe, unsubscribed and 
+subscribed could be changed for 3921 bis spec (it has already been 
+changed for subscribed). If I am not wrong, the last step above would 
+not happen - that is, unsubscribe(d) will not be routed to the user.
+
+Here, I assumed that there is no subscription between user &amp; contact, if 
+that is present, it just adds more to the flow - refer to section 9 in 
+3921 [1]
+
+Hope this clarifies. The steps above are the same irrespective of 
+whether it is a local contact, s2s contact, clustered configuration or 
+other combinations.
+
+Regards,
+Mridul
+
+[1] <A HREF="http://www.xmpp.org/rfcs/rfc3921.html#substates">http://www.xmpp.org/rfcs/rfc3921.html#substates</A>
+
+Tran Thai Son wrote:
+&gt;<i> Hi all,
+</I>&gt;<i> 
+</I>&gt;<i> I am writing a client and I've experienced different behaviors from 
+</I>&gt;<i> different servers in handling client's actions such as add / accept / 
+</I>&gt;<i> deny subscription requests. What surprised me is that it seems there is 
+</I>&gt;<i> no standard behaviors ( e.g. processes of treating actions, order of 
+</I>&gt;<i> notification messages pushing to the clients...) for the server.
+</I>&gt;<i> 
+</I>&gt;<i> E.g.:
+</I>&gt;<i> - ejabbered 1.1.3 always adds the incoming contact to the user's roster 
+</I>&gt;<i> (with the subscription status = 0, means no relationship) before pushing 
+</I>&gt;<i> the subscription (add-friend) request to the user. So the client gets 
+</I>&gt;<i> two messages: one to notify that there is an item added, the next to 
+</I>&gt;<i> notify that there is a subscription request.
+</I>&gt;<i> - meanwhile, openFire 3.3.1 does not add the contact before, so you get 
+</I>&gt;<i> only the later message. One (probably) bug I found: even when the client 
+</I>&gt;<i> sent a message denying the subscription request, the server still adds 
+</I>&gt;<i> the contact to the user's roster (with subscription= 0)
+</I>&gt;<i> 
+</I>&gt;<i> Furthermore, with the same actions from the clients, the number  and 
+</I>&gt;<i> order of messages that the servers send significantly different.
+</I>&gt;<i> E.g.
+</I>&gt;<i> - ejabbered 1.1.3 tends to not to send any message to the contact with 
+</I>&gt;<i> subscription = 0. Example: If user B denied a subscription request from 
+</I>&gt;<i> user B (means no relationship at the moment), B will not receive the 
+</I>&gt;<i> next unsubscription request from A, but with openFire 3.3.1, it will.
+</I>&gt;<i> - Furthermore, I found the order of messages that openFire pushes to the 
+</I>&gt;<i> clients rather annoying. For example, if user A removes user B from its 
+</I>&gt;<i> roster (and therefore B will also remove A - my implementation), A will 
+</I>&gt;<i> receive &quot;unsubscribed&quot; and &quot;unsubscribe&quot; (respectively) from B before 
+</I>&gt;<i> received the notification that its removal was done. So you cannot trust 
+</I>&gt;<i> that: when you remove a contact from your roster, you won't receive 
+</I>&gt;<i> unexpected message from that contact; You also see that contact still in 
+</I>&gt;<i> your roster for a while (with subscription = 0).
+</I>&gt;<i> 
+</I>&gt;<i> Does any body experience similar problems ?
+</I>&gt;<i> 
+</I>&gt;<i> Son.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="026346.html">[jdev] Different behaviors of ejabbered and openFire in pushing	messages to the client!
+</A></li>
+	<LI>Next message: <A HREF="026348.html">[jdev] Different behaviors of ejabbered and openFire in pushing	messages to the client!
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26347">[ date ]</a>
+              <a href="thread.html#26347">[ thread ]</a>
+              <a href="subject.html#26347">[ subject ]</a>
+              <a href="author.html#26347">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

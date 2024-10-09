@@ -1,0 +1,279 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] conference room creation
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20conference%20room%20creation&In-Reply-To=%3C009e01c2955b%24dd0d3cb0%240301a8c0%40mars%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="073601.html">
+   <LINK REL="Next"  HREF="073614.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] conference room creation</H1>
+    <B>Rob Davis</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20conference%20room%20creation&In-Reply-To=%3C009e01c2955b%24dd0d3cb0%240301a8c0%40mars%3E"
+       TITLE="[JDEV] conference room creation">lists at solarismedia.co.uk
+       </A><BR>
+    <I>Tue Nov 26 08:54:49 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="073601.html">[JDEV] conference room creation
+</A></li>
+        <LI>Next message: <A HREF="073614.html">[JDEV] conference room creation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#73604">[ date ]</a>
+              <a href="thread.html#73604">[ thread ]</a>
+              <a href="subject.html#73604">[ subject ]</a>
+              <a href="author.html#73604">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi David
+
+Thanks for the suggestion - I did check this.
+
+First I am sending (MUC compliant) presence to the room; then I am
+requesting the config form (using 'get') and then I am sending the
+following form response, with only the fields I want to change:
+
+SEND: &lt;iq type=&quot;set&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test at mydomain.com</A>/home&quot;
+to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">newroom at conference.localhost</A>&quot; id=&quot;create2&quot;&gt;&lt;query
+xmlns=&quot;<A HREF="http://jabber.org/protocol/muc#owner&quot;">http://jabber.org/protocol/muc#owner&quot;</A>&gt;&lt;x xmlns=&quot;jabber:x:data&quot;
+type=&quot;submit&quot;&gt;&lt;field var=&quot;title&quot;&gt;&lt;value&gt;Kitchen&lt;/value&gt;&lt;/field&gt;&lt;field
+var=&quot;maxusers&quot;&gt;&lt;value&gt;10&lt;/value&gt;&lt;/field&gt;&lt;field
+var=&quot;public&quot;&gt;&lt;value&gt;1&lt;/value&gt;&lt;/field&gt;&lt;field
+var=&quot;persistent&quot;&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;&lt;/x&gt;&lt;/query&gt;&lt;/iq&gt;
+
+MUC sends the following response, suggesting that all is OK:
+
+RECEIVE: &lt;iq type=&quot;result&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">newroom at conference.localhost</A>&quot;
+to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test at mydomain.com</A>/home&quot; id=&quot;create2&quot; /&gt;
+
+But if I then browse the rooms, the values have not changed:
+
+SEND: &lt;iq type=&quot;get&quot; to=&quot;conference.localhost&quot; id=&quot;rooms&quot;&gt;&lt;query
+xmlns=&quot;jabber:iq:browse&quot; /&gt;&lt;/iq&gt;
+
+RECEIVE: &lt;iq type=&quot;result&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test at mydomain.com</A>/home&quot; id=&quot;rooms&quot;
+from=&quot;conference.localhost&quot;&gt;&lt;conference xmlns=&quot;jabber:iq:browse&quot;
+type=&quot;public&quot; name=&quot;Public
+Chatrooms&quot;&gt;&lt;ns&gt;<A HREF="http://jabber.org/protocol/muc&lt;/ns">http://jabber.org/protocol/muc&lt;/ns</A>&gt;&lt;ns&gt;jabber:iq:register
+&lt;/ns&gt;&lt;ns&gt;jabber:iq:version&lt;/ns&gt;&lt;ns&gt;jabber:iq:time&lt;/ns&gt;&lt;ns&gt;jabber:iq:last
+&lt;/ns&gt;&lt;conference type=&quot;public&quot; jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lobby at conference.localhost</A>&quot;
+name=&quot;The Lobby (0/25)&quot; /&gt;&lt;conference type=&quot;public&quot;
+jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">newroom at conference.localhost</A>&quot; name=&quot;newroom (1/30)&quot;
+/&gt;&lt;/conference&gt;&lt;/iq&gt;
+
+Notice how neither the room name nor the max users have changed in
+reponse to the form.
+
+Mysterious....
+
+Rob
+
+
+----- Original Message -----
+From: &quot;David Sutton&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber at dsutton.legend.uk.com</A>&gt;
+To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Sent: Tuesday, November 26, 2002 12:46 PM
+Subject: Re: [JDEV] conference room creation
+
+
+&gt;<i> Hi there,
+</I>&gt;<i>
+</I>&gt;<i>   Just as a thought, how about 'get'ing the form before trying to
+</I>'set'
+&gt;<i>   it? :)
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i>   David
+</I>&gt;<i>
+</I>&gt;<i> On Tue, Nov 26, 2002 at 01:59:22AM -0000, Rob Davis wrote:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I seem to have solved this for the moment, by sending presence to
+</I>the
+&gt;<i> &gt; new room (using the old group chat protocol) before issuing the
+</I>&gt;<i> &gt; configuration request. However this does not seem to be behaviour as
+</I>&gt;<i> &gt; documented in JEP-45 so I don't think this its quite right...
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; My problem now is that once I receive the configuration form and
+</I>reply
+&gt;<i> &gt; by sending back the form (with only several fields completed - the
+</I>ones
+&gt;<i> &gt; I want to change), MUC then responds by sending the entire config
+</I>form
+&gt;<i> &gt; again, BUT the values in my submitted fields have not been changed.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; i.e. the room configuration request is not being carried out for
+</I>some
+&gt;<i> &gt; reason.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Any thoughts?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Rob
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ----- Original Message -----
+</I>&gt;<i> &gt; From: &quot;Rob Davis&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lists at solarismedia.co.uk</A>&gt;
+</I>&gt;<i> &gt; To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> &gt; Sent: Monday, November 25, 2002 5:32 PM
+</I>&gt;<i> &gt; Subject: Re: [JDEV] conference room creation
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Following David's suggestion (from earlier this month) about
+</I>creating
+&gt;<i> &gt; &gt; rooms (without entering them) in MUC, I am sending the
+</I>&gt;<i> &gt; &gt; following room configuration request to MUC, as per JEP-45:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; &lt;iq type=&quot;set&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test at jabber.mydomain.com</A>/home&quot;
+</I>&gt;<i> &gt; &gt; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">newroom at conference.localhost</A>&quot; id=&quot;create1&quot;&gt;&lt;query
+</I>&gt;<i> &gt; &gt; xmlns=&quot;<A HREF="http://jabber.org/protocol/muc#owner&quot;">http://jabber.org/protocol/muc#owner&quot;</A> /&gt;&lt;/iq&gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; However, rather than getting a configuration form as expected (or
+</I>a
+&gt;<i> &gt; &gt; documented error), I am getting the following error:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; &lt;iq type=&quot;error&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">newroom at conference.localhost</A>&quot;
+</I>&gt;<i> &gt; &gt; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test at jabber.mydomain.com</A>/home&quot; id=&quot;create1&quot;&gt;&lt;query
+</I>&gt;<i> &gt; &gt; xmlns=&quot;<A HREF="http://jabber.org/protocol/muc#owner&quot;">http://jabber.org/protocol/muc#owner&quot;</A> /&gt;&lt;error
+</I>code=&quot;400&quot;&gt;Bad
+&gt;<i> &gt; &gt; Request&lt;/error&gt;&lt;/iq&gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Does anyone know what is going wrong here?
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Rob
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; ----- Original Message -----
+</I>&gt;<i> &gt; &gt; &gt; From: &quot;David Sutton&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber at dsutton.legend.uk.com</A>&gt;
+</I>&gt;<i> &gt; &gt; &gt; To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> &gt; &gt; &gt; Sent: Tuesday, November 05, 2002 6:54 AM
+</I>&gt;<i> &gt; &gt; &gt; Subject: Re: [JDEV] conference room creation
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Hi there,
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;   With the existing conference (0.4 or v2) you can't avoid
+</I>entering
+&gt;<i> &gt; &gt; the
+</I>&gt;<i> &gt; &gt; &gt;   room.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;   With MU-Conference, you can. Its a new conference system I
+</I>&gt;<i> &gt; released
+</I>&gt;<i> &gt; &gt; &gt;   today, based on JEP-0045
+</I>&gt;<i> &gt; (<A HREF="http://www.jabber.org/jeps/jep-0045.html">http://www.jabber.org/jeps/jep-0045.html</A>)
+</I>&gt;<i> &gt; &gt; &gt;   If you send a room configuration request to a room that
+</I>doesn't
+&gt;<i> &gt; &gt; exist,
+</I>&gt;<i> &gt; &gt; &gt;   the room is created and the configuration form is returned to
+</I>you.
+&gt;<i> &gt; &gt; The
+</I>&gt;<i> &gt; &gt; &gt;   problem is that normal rooms get deleted after ~5 minutes of
+</I>being
+&gt;<i> &gt; &gt; &gt;   empty, so you'll want to enable the 'persistent' option. This
+</I>will
+&gt;<i> &gt; &gt; &gt;   mean the room exists, even if the server is restarted. The
+</I>room
+&gt;<i> &gt; &gt; &gt;   creator can then just destroy the room when they've finished
+</I>with
+&gt;<i> &gt; &gt; it.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Regards,
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;   David
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; On Sun, Nov 03, 2002 at 12:11:40PM -0000, Rob Davis wrote:
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; Hi there,
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; I have a question about managing rooms with Jabber.
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; I am developing a Jabber client. When I want to create and
+</I>enter a
+&gt;<i> &gt; &gt; &gt; &gt; conference room on the Jabber conference server, I simply send
+</I>&gt;<i> &gt; &gt; &gt; presence
+</I>&gt;<i> &gt; &gt; &gt; &gt; to the new room's address and it is created.
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; Is there a way for the client to create a conference room
+</I>without
+&gt;<i> &gt; &gt; &gt; &gt; actually having to enter that room?
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; Rob
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; --
+</I>&gt;<i> &gt; &gt; &gt; David Sutton
+</I>&gt;<i> &gt; &gt; &gt; Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dsutton at legend.co.uk</A>
+</I>&gt;<i> &gt; &gt; &gt; Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">peregrine at legend.net.uk</A>
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="073601.html">[JDEV] conference room creation
+</A></li>
+	<LI>Next message: <A HREF="073614.html">[JDEV] conference room creation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#73604">[ date ]</a>
+              <a href="thread.html#73604">[ thread ]</a>
+              <a href="subject.html#73604">[ subject ]</a>
+              <a href="author.html#73604">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

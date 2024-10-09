@@ -1,0 +1,239 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] GZipping Jabber Messages
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20GZipping%20Jabber%20Messages&In-Reply-To=%3COFDDDACDED.8A0A4C8B-ON85256B38.00100500%40pok.ibm.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039862.html">
+   <LINK REL="Next"  HREF="039869.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] GZipping Jabber Messages</H1>
+    <B>Michael F Lin</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20GZipping%20Jabber%20Messages&In-Reply-To=%3COFDDDACDED.8A0A4C8B-ON85256B38.00100500%40pok.ibm.com%3E"
+       TITLE="[JDEV] GZipping Jabber Messages">MFLIN at us.ibm.com
+       </A><BR>
+    <I>Fri Jan  4 22:21:08 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039862.html">[JDEV] GZipping Jabber Messages
+</A></li>
+        <LI>Next message: <A HREF="039869.html">[JDEV] GZipping Jabber Messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39863">[ date ]</a>
+              <a href="thread.html#39863">[ thread ]</a>
+              <a href="subject.html#39863">[ subject ]</a>
+              <a href="author.html#39863">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>We could use ASN.1 to rewrite the XML markup in a terser format, and
+probably we'd do about as well as gzip for much less processing power. This
+would do darn well for presence tags which tend to be highly regular. But
+ASN.1 wouldn't really help us for arbitrary message or iq payloads which
+are hopefully where we spend most of our bandwidth (this is a risky
+conjecture - I know). Then again, on a per-packet basis gzip doesn't seem
+to really help much either (pending more tests).
+
+So ASN.1 or any similar binary dictionary encoding of our XML could save us
+some bandwidth, more efficiently than gzip, but I guess it would be a hard
+sell to show that this is worth the more difficult implementation and
+ambiguity that would result from effectively having two different wire
+protocols...
+
+-Mike
+
+
+
+
+                                                                                                                                       
+                      Max Metral                                                                                                       
+                      &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Max.Metral at peopl</A>        To:       &quot;'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;                                         
+                      epchq.com&gt;               cc:                                                                                     
+                      Sent by:                 Subject:  RE: [JDEV] GZipping Jabber Messages                                           
+                      <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber</A>                                                                                                
+                      .org                                                                                                             
+                                                                                                                                       
+                                                                                                                                       
+                      01/04/2002 05:46                                                                                                 
+                      PM                                                                                                               
+                      Please respond to                                                                                                
+                      jdev                                                                                                             
+                                                                                                                                       
+                                                                                                                                       
+
+
+
+Seems to me you'd probably save a lot more, in aggregate, by encoding the
+tags in a standard notation (i.e. the ASN.1 comment I made before) rather
+than the payload.  A token-y, session long (or server global) scheme would
+be a lot lower processing overhead and save a ton of bandwidth.
+
+XML was never meant to be bandwidth sensitive, in fact has almost the
+opposite as a goal.  But it's still great for what we're using it for in
+general.  A transparent (servers would support both) optimization only
+would
+make sense.
+
+-----Original Message-----
+From: Julian Missig [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">julian at jabber.org</A>]
+Sent: Friday, January 04, 2002 5:31 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] GZipping Jabber Messages
+
+
+It's not really defining a binary transport layer, it's just gzipping
+the stream. They're looking for something less processor-intensive than
+SSL, I imagine.
+
+You can argue the merits of it when/if it comes up as an official
+extension/replacement for bits of Jabber via a JEP. Until then, unless
+you have a better suggestion, I think they're pretty much free to play
+with want they want. Maybe they'll figure out something that would be
+worth writing up a JEP for. Maybe not. Official Jabber won't contain it
+until they write up a JEP, so there's no need to worry.
+
+Julian
+--
+email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">julian at jabber.org</A>
+jabber:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">julian at jabber.org</A>
+
+Michael F Lin wrote:
+
+&gt;<i> Is this in parallel to how SSL works with encryption or does SSL do
+</I>&gt;<i> compression already? If so then lets just use SSL. If not, then I find
+</I>the
+&gt;<i> idea of defining our own binary transport layer a bit unsettling. We're
+</I>&gt;<i> talking XML, we should be above all that ;-)
+</I>&gt;<i>
+</I>&gt;<i> -Mike
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+&gt;<i>                       Julian Missig
+</I>
+&gt;<i>                       &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">julian at jabber.or</A>        To:       <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>
+&gt;<i>                       g&gt;                       cc:
+</I>
+&gt;<i>                       Sent by:                 Subject:  Re: [JDEV]
+</I>GZipping Jabber Messages
+&gt;<i>                       <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber</A>
+</I>
+&gt;<i>                       .org
+</I>
+&gt;<i>
+</I>
+&gt;<i>
+</I>
+&gt;<i>                       01/04/2002 04:57
+</I>
+&gt;<i>                       PM
+</I>
+&gt;<i>                       Please respond to
+</I>
+&gt;<i>                       jdev
+</I>
+&gt;<i>
+</I>
+&gt;<i>
+</I>
+&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Nah, I think they're talking about gzipping all of the data, sending it,
+</I>&gt;<i> and ungzipping before sending it to the XML parser on the other side,
+</I>&gt;<i> just like SSL works.
+</I>&gt;<i>
+</I>&gt;<i> Julian
+</I>&gt;<i> --
+</I>&gt;<i> email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">julian at jabber.org</A>
+</I>&gt;<i> jabber:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">julian at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i> Michael F Lin wrote:
+</I>&gt;<i>
+</I>&gt;<i>  &gt; Keep in mind that the gzip data would have to be base64 coded, which
+</I>&gt;<i>  &gt; would increase its size by 33%. So you can run the statistics and
+</I>&gt;<i>  &gt; figure out how long your payloads have to be to get better than 33%
+</I>&gt;<i>  &gt; compression ratios with gzip, but I imagine it is quite long
+</I>&gt;<i>  &gt; relative to the average since of a Jabber packet
+</I>&gt;<i>  &gt; (message/presence/iq).
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; -Mike
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; Adam Theo
+</I>&gt;<i>  &gt;  &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">adamtheo at theoret</A>        To:       jdev &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i>  &gt;  ic.com&gt;                  cc:
+</I>&gt;<i>  &gt;  Sent by:                 Subject:  [JDEV] GZipping Jabber Messages
+</I>&gt;<i>  &gt;  <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber</A>
+</I>&gt;<i>  &gt;  .org
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; 01/04/2002 03:32
+</I>&gt;<i>  &gt;  PM
+</I>&gt;<i>  &gt;  Please respond to
+</I>&gt;<i>  &gt;  jdev
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; Hi, all. There's a good discussion going on over at the DotGNU
+</I>&gt;<i>  &gt; Developer list about gzip'ing the XML that is transmitted around on
+</I>&gt;<i>  &gt; the DotGNU platform.
+</I>&gt;<i>  &gt;
+</I>&gt;<i>  &gt; Was wondering if it would be possible to incorporate the same thing
+</I>&gt;<i>  &gt; for future versions of the Jabber server? Is it feasible, anyway?
+</I>&gt;<i>  &gt; They are saying the trade-offs for extra resource consumption would
+</I>&gt;<i>  &gt; not be bad at all if designed into the server properly, and would
+</I>&gt;<i>  &gt; reduce bandwidth very dramatically (like by 80%, i think). This
+</I>&gt;<i>  &gt; would be useful for high-volume servers with enough processing
+</I>&gt;<i>  &gt; power, i think...
+</I>
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039862.html">[JDEV] GZipping Jabber Messages
+</A></li>
+	<LI>Next message: <A HREF="039869.html">[JDEV] GZipping Jabber Messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39863">[ date ]</a>
+              <a href="thread.html#39863">[ thread ]</a>
+              <a href="subject.html#39863">[ subject ]</a>
+              <a href="author.html#39863">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

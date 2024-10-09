@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] sniffing
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sniffing&In-Reply-To=%3C200410271308.08759.snake%40penza-gsm.ru%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="079035.html">
+   <LINK REL="Next"  HREF="079039.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] sniffing</H1>
+    <B>Alexey Nezhdanov</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20sniffing&In-Reply-To=%3C200410271308.08759.snake%40penza-gsm.ru%3E"
+       TITLE="[jdev] sniffing">snake at penza-gsm.ru
+       </A><BR>
+    <I>Wed Oct 27 04:08:08 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="079035.html">[jdev] sniffing
+</A></li>
+        <LI>Next message: <A HREF="079039.html">[jdev] Creating rooms with mu-conference
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79037">[ date ]</a>
+              <a href="thread.html#79037">[ thread ]</a>
+              <a href="subject.html#79037">[ subject ]</a>
+              <a href="author.html#79037">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&#1042; &#1089;&#1086;&#1086;&#1073;&#1097;&#1077;&#1085;&#1080;&#1080; &#1086;&#1090; &#1057;&#1088;&#1077;&#1076;&#1072; 27 &#1054;&#1082;&#1090;&#1103;&#1073;&#1088;&#1100; 2004 12:18 Alex Kogan &#1085;&#1072;&#1087;&#1080;&#1089;&#1072;&#1083;(a):
+&gt;<i> &gt; You should really consider using TLS.
+</I>&gt;<i>
+</I>&gt;<i>  This  is  what  I  cannot  understand  to the bottom of things. Which
+</I>&gt;<i>  definite  steps  are involved in this usage? How do I start and go on
+</I>&gt;<i>  with encryption?
+</I>
+My client and server doing exactly this:
+both entities have agreed upon starting TLS - server starts SSL in server mode 
+and client starts SSL in client mode.
+After SSL negotiation stream is restarted in both directions to ensure that 
+channel is working.
+
+Real code:
+======= server =====================
+        x509 = X509()
+        x509.parse(cert)
+        certChain = X509CertChain([x509])
+        privateKey = parsePEMKey(key, private=True)
+        connection = TLSConnection(session._sock)
+        connection.handshakeServer(certChain, privateKey, reqCert=False)
+        session._sslObj = connection 
+        session._recv = connection.read 
+        session._send = connection.send 
+        session.StartStream() 
+======== client =====================
+        session._sslObj = socket.ssl(session._sock, None, None)
+        session._recv = session._sslObj.read
+        session._send = session._sslObj.write
+        session.StartStream() 
+==================================
+
+-- 
+Respectfully
+Alexey Nezhdanov
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="079035.html">[jdev] sniffing
+</A></li>
+	<LI>Next message: <A HREF="079039.html">[jdev] Creating rooms with mu-conference
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#79037">[ date ]</a>
+              <a href="thread.html#79037">[ thread ]</a>
+              <a href="subject.html#79037">[ subject ]</a>
+              <a href="author.html#79037">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

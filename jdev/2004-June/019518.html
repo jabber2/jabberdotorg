@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Whiteboard.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Whiteboard.&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="019532.html">
+   <LINK REL="Next"  HREF="019521.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Whiteboard.</H1>
+    <B>Heiner Wolf</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Whiteboard.&In-Reply-To="
+       TITLE="[jdev] Whiteboard.">wolf at bluehands.de
+       </A><BR>
+    <I>Fri Jun  4 12:31:21 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="019532.html">[jdev] &lt;route&gt; - using this tag with components
+</A></li>
+        <LI>Next message: <A HREF="019521.html">[jdev] Implementation of &lt;history&gt; portion of MUC spec
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19518">[ date ]</a>
+              <a href="thread.html#19518">[ thread ]</a>
+              <a href="subject.html#19518">[ subject ]</a>
+              <a href="author.html#19518">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+there are 3 additions. 
+
+Summary:
+1. Add optional &lt;subject/&gt; and &lt;body/&gt; to the &lt;path/&gt; for 
+   annotations (see TEXT).
+2. Add optional shape-attribute for path with values like: 'rect',
+   'pointer' (see SHAPE HINT).
+3. Add an optional uri-attribute for DOM-based positioning
+   (see ALTERNATE POSITIONING). 
+
+The ALTERNATE POSITIONING is only for positioning above an HTML DOM 
+window. So probably ony the first to apply for whiteboarding in general.
+
+TEXT:
+  I added a text element. I know the arguments agains text:
+    - Text is difficult because of fonts and 
+    - Assumed JEP-113 re-uses SVG and assumed JEP-113 is simple. Then 
+      text in general is ruled out, because SVG-text is complex, which 
+      the simplicity assumption.
+
+  However, as you wrote: typical karma settings make path based text 
+  impossible. If we want simple text then we must deviate from SVG. Here
+
+  is what I have: I do not really need text as a graphical design
+  element, but as an annotation. So, text is rather an opaque rectangle 
+  with text
+
+  inside. I am using:
+    &lt;text x=1 y=2 w=30 h=40 stroke=#000000 stroke-width=5&gt;Text&lt;/text&gt;
+  The attributes describe the rectangle. The payload text has no styles 
+  at all yet. While I am writing I just discover, that it might be nice 
+  to merge the &lt;text/&gt;, which is basically a rectangle, with the path 
+  element, so that any &lt;path/&gt; can have a payload Text. Maybe like
+  &lt;message/&gt; with &lt;subject/&gt; and &lt;body/&gt; sub-tags. I would not define 
+  where the annotation is attached to the path. That's up to the 
+  implementation.
+  It is not a content element, like SVG-text. 
+
+SHAPE HINT
+  I also implemented pointers, which are just paths with a fixed shape.
+  But for the implementation it was nice to know that it is a pointer. 
+  The shape is fixed. It can not be changed accidentally. The hotspot 
+  is always at the tip of the pointer (arrow). 
+  I implemented a rectange to frame things. It is a path, but it is nice
+
+  for the implementation to 'know' that it is a rectangle. Moving a
+  point of the path will keep the rectangle shape by adjusting other 
+  points. So, I propose a 'shape' hint for the &lt;path/&gt;
+  The shape-attribute also helps to position the annotation
+  appropriatly.
+  
+ALTERNATE POSITIONING
+  My whiteboard draws on the web page where people meet (Peter, if you
+  read this: yes, I am talking about the LLuna project). 
+  For the whiteboard on the web page I added a positioning relative to
+  DOM elements of the underlying browser window. I use a uri-attribute 
+  for the path. The uri-attribute overrides absolute coordinate based
+  positioning. 
+  It looks like: 
+    uri='dom:/BODY[1]/DIV[2]/IMG[1]#(225,98)'
+  This means the position is pixel (225,98) relative to the element
+  which is the 1st IMG in the 2nd DIV of the 1st BODY tag. There is 
+  usually only one, but of course, I keep the index for consistency.
+  BTW: the URI refers to a pixel. Is a pixel a resource in the URI
+  sense?
+  Expressing the absolute URI including the URL of the document:
+    uri='<A HREF="http://www.jabber.org/#dom:/BODY[1]/DIV[2]/IMG[1]#(225,98">http://www.jabber.org/#dom:/BODY[1]/DIV[2]/IMG[1]#(225,98</A>)'
+  There is a frameset issue. Each frame has a complete DOM. The uri is
+  like:
+    uri='dom:/BODY[1]/FRAMESET[1]/FRAME[2]/BODY[1]/TABLE[1]/TR[2]/...
+
+  using one DOM as a start, the switching to another DOM, if a FRAME
+  comes in the way.
+
+hw
+--
+Dr. Klaus H. Wolf
+bluehands GmbH &amp; Co.mmunication KG
+<A HREF="http://www.bluehands.de/people/hw">http://www.bluehands.de/people/hw</A>
++49 (0721) 16108 75
+--
+LLuna: Jabber enabled virtual presence on the web / <A HREF="http://www.lluna.de/">http://www.lluna.de/</A>
+Galactic developments: Open source future history /
+<A HREF="http://www.galactic-developments.com/">http://www.galactic-developments.com/</A>
+
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Rodolfo Gonzalez Gonzalez 
+</I>&gt;<i> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rodolfo at equinoxe.g-networks.net</A>]
+</I>&gt;<i> Sent: Friday, June 04, 2004 6:10 PM
+</I>&gt;<i> To: Heiner Wolf
+</I>&gt;<i> Subject: RE: [jdev] Whiteboard.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> On Fri, 4 Jun 2004, Heiner Wolf wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Hi,
+</I>&gt;<i> 
+</I>&gt;<i> Hello Heiner,
+</I>&gt;<i> 
+</I>&gt;<i> &gt; I implemented the JEP-113 in LLuna (www.lluna.de). I needed 
+</I>&gt;<i> a simple WB
+</I>&gt;<i> &gt; protocol for Jabber and JEP-113 is as good as anything 
+</I>&gt;<i> (simple) I would
+</I>&gt;<i> &gt; dream up myself. So there was no point in re-inventing. I made some
+</I>&gt;<i> &gt; (compatible) extensions and sent them to the author. I 
+</I>&gt;<i> don't know what
+</I>&gt;<i> &gt; he did with my comments.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> It sounds like a good choice. Is there anyway to share those 
+</I>&gt;<i> extensions? I
+</I>&gt;<i> didn't know about LLuna, but it looks great.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks in advance.
+</I>&gt;<i> Rodolfo.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="019532.html">[jdev] &lt;route&gt; - using this tag with components
+</A></li>
+	<LI>Next message: <A HREF="019521.html">[jdev] Implementation of &lt;history&gt; portion of MUC spec
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19518">[ date ]</a>
+              <a href="thread.html#19518">[ thread ]</a>
+              <a href="subject.html#19518">[ subject ]</a>
+              <a href="author.html#19518">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] SOCKS5 Bytestream File Transfer problem
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20SOCKS5%20Bytestream%20File%20Transfer%20problem&In-Reply-To=200502251538.32613.justin-keyword-jabber.093179%40affinix.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="021223.html">
+   <LINK REL="Next"  HREF="021227.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] SOCKS5 Bytestream File Transfer problem</H1>
+    <B>Anthony Ortiz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20SOCKS5%20Bytestream%20File%20Transfer%20problem&In-Reply-To=200502251538.32613.justin-keyword-jabber.093179%40affinix.com"
+       TITLE="[jdev] SOCKS5 Bytestream File Transfer problem">anthonypaulo at gmail.com
+       </A><BR>
+    <I>Sat Feb 26 04:14:10 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="021223.html">[jdev] SOCKS5 Bytestream File Transfer problem
+</A></li>
+        <LI>Next message: <A HREF="021227.html">[jdev] Re: SOCKS5 Bytestream File Transfer problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#21225">[ date ]</a>
+              <a href="thread.html#21225">[ thread ]</a>
+              <a href="subject.html#21225">[ subject ]</a>
+              <a href="author.html#21225">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hmmm... okay, so I took your suggestion regarding the handshake. I
+change my code to do the following now  :
+
+[pseudo code]
+Set Socks5Proxy to 192.168.1.100:8010
+Set Socks5Proxy to direct connect to 192.168.1.100 and no-authentication
+Open a Socks5Connection to 192.168.1.100:8010
+
+So far so good, everything works well up to this point. I then send a
+SOCKS request as described in the protocol and send it
+[<A HREF="http://www.faqs.org/rfcs/rfc1928.html].">http://www.faqs.org/rfcs/rfc1928.html].</A> It sends just fine but then I
+get a weird response back from the initiator. Instead of getting a
+response packet I get the following :
+
+000000000
+
+*sigh*... 9 zeros... nothing at all like the request packet that i was
+expecting according to the protocol. Now I know I'm definitely doing
+something wrong. How were you guys able to implement this based on
+just the JEP-0065?? Am I really that dense or is there another
+document I should be looking at??
+
+:<i>(((
+</I>
+Anyway, thanks for the assist so far... it's gotta be something stupid
+in the way I'm implementing this but I can't see it for the life of
+me...
+
+Anthony
+
+On Fri, 25 Feb 2005 15:38:32 -0800, Justin Karneges
+&lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">justin-keyword-jabber.093179 at affinix.com</A>&gt; wrote:
+&gt;<i> On Friday 25 February 2005 02:50 pm, Anthony Ortiz wrote:
+</I>&gt;<i> &gt; [1] If the Target is willing to accept the bytestream, it MUST attempt
+</I>&gt;<i> &gt; to open a standard TCP socket on the network address of the StreamHost
+</I>&gt;<i> &gt; communicated by the Initiator. If the Initiator provides more than one
+</I>&gt;<i> &gt; StreamHost, the Target SHOULD try to connect to them in the order they
+</I>&gt;<i> &gt; occur.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ...
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; [3] If the Target is able to open a TCP socket on a StreamHost, it
+</I>&gt;<i> &gt; MUST utilize the SOCKS5 protocol specified in RFC 1928 [7] to
+</I>&gt;<i> &gt; establish the connection with the StreamHost. In accordance with the
+</I>&gt;<i> &gt; SOCKS5 RFC, the Target MAY have to authenticate in order to use the
+</I>&gt;<i> &gt; proxy. However, any authentication required is beyond the scope of
+</I>&gt;<i> &gt; this JEP.
+</I>&gt;<i> [snip]
+</I>&gt;<i> &gt; At first, my understanding was that I should open a standard TCP
+</I>&gt;<i> &gt; connection to the streamhost(s) (192.168.1.100:8010 in this particular
+</I>&gt;<i> &gt; case) in order to test if the connnection could be made (as per the
+</I>&gt;<i> &gt; paragraph [1]). I did this at first and that part worked fine &amp; was
+</I>&gt;<i> &gt; able to connect, but then I stripped that code out because it seemed
+</I>&gt;<i> &gt; redundant after I read paragraph [3] which states that I will have to
+</I>&gt;<i> &gt; open a SOCKS5 connection to that streamhost anyway, and in the
+</I>&gt;<i> 
+</I>&gt;<i> Maybe it's not fully clear (and I'm simply reading from the quoted text you
+</I>&gt;<i> provided), but what [3] is intended to mean is that you would perform the
+</I>&gt;<i> SOCKS5 protocol over the established TCP connection from [1].  There are not
+</I>&gt;<i> two connections.  I suppose it is spelled out in steps like this in case
+</I>&gt;<i> you're writing your own SOCKS protocol code.  If you're using a SOCKS library
+</I>&gt;<i> to perform the connection, which will both create the TCP connection as well
+</I>&gt;<i> as negotiate the SOCKS5 protocol over it, then that's all you need to use.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Proxy.setDefaultProxy(host, port); // sets SOCKS5 proxy to be
+</I>&gt;<i> &gt; 192.168.1.100:8010
+</I>&gt;<i> &gt;
+</I>&gt;<i> [snip]
+</I>&gt;<i> &gt; So this tells me that the actual SOCKS5 host to connect to is the SHA1
+</I>&gt;<i> &gt; hash of sid + from + to and that the port is 0. That is why I have the
+</I>&gt;<i> &gt; following line in my code :
+</I>&gt;<i> 
+</I>&gt;<i> Well, just to ensure our terminology is clear, the SOCKS5 host (or proxy, or
+</I>&gt;<i> server, or whatever) is 192.168.1.100.  The destination (or DST) host, ie the
+</I>&gt;<i> one that you'll ask the SOCKS5 host to bridge you to, is the hash.
+</I>&gt;<i> 
+</I>&gt;<i> Of course, you're aware that the hash is not a real host, and that the SOCKS5
+</I>&gt;<i> host (in this example, Psi) is not actually going to perform an outbound
+</I>&gt;<i> connection to the DST as a result.  It is simply used as a handshake.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Socket ss = new SocksSocket(SocksHost, 0);
+</I>&gt;<i> 
+</I>&gt;<i> My confusion with this line of code is that I don't see how it relates to the
+</I>&gt;<i> Proxy object.  In other words, how does the SocksSocket know what SOCKS5 host
+</I>&gt;<i> to connect to?  I know nothing about the library you're using though, so
+</I>&gt;<i> maybe the Proxy object interfaces with some global settings in the
+</I>&gt;<i> background, and SocksSocket draws from that.
+</I>&gt;<i> 
+</I>&gt;<i> It could be that you understand the protocol, and are coding with the right
+</I>&gt;<i> intent, but simply coding it wrong. ;-)
+</I>&gt;<i> 
+</I>&gt;<i> &gt; p.s. btw Justin... great work on the PSI client!
+</I>&gt;<i> 
+</I>&gt;<i> Glad you like it. :)
+</I>&gt;<i> 
+</I>&gt;<i> Have fun,
+</I>&gt;<i> -Justin
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="021223.html">[jdev] SOCKS5 Bytestream File Transfer problem
+</A></li>
+	<LI>Next message: <A HREF="021227.html">[jdev] Re: SOCKS5 Bytestream File Transfer problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#21225">[ date ]</a>
+              <a href="thread.html#21225">[ thread ]</a>
+              <a href="subject.html#21225">[ subject ]</a>
+              <a href="author.html#21225">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Question on using NIO with SAX
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Question%20on%20using%20NIO%20with%20SAX&In-Reply-To=%3Cg02sa50k.fsf%40jabber.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="070397.html">
+   <LINK REL="Next"  HREF="070439.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Question on using NIO with SAX</H1>
+    <B>Joe Hildebrand</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Question%20on%20using%20NIO%20with%20SAX&In-Reply-To=%3Cg02sa50k.fsf%40jabber.com%3E"
+       TITLE="[JDEV] Question on using NIO with SAX">jhildebrand at jabber.com
+       </A><BR>
+    <I>Fri Mar 22 11:25:47 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="070397.html">[JDEV] Question on using NIO with SAX
+</A></li>
+        <LI>Next message: <A HREF="070439.html">[JDEV] Net::Jabber and oob
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#70398">[ date ]</a>
+              <a href="thread.html#70398">[ thread ]</a>
+              <a href="subject.html#70398">[ subject ]</a>
+              <a href="author.html#70398">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I did a JNI wrapper around xpat for marbles, as a stop-gap.
+
+<A HREF="http://marbles.sourceforge.net/">http://marbles.sourceforge.net/</A>
+
+Haven't worked on it in a while, but it should still be there.
+
+
+
+&quot;Chan, Oscar&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">OChan at pogo.com</A>&gt; writes:
+
+&gt;<i> Thanks. I guess I will have to live with this until the SAX API provide
+</I>&gt;<i> API for this push-model parser.  
+</I>&gt;<i>
+</I>&gt;<i> I looked at the Xerces-J parser's parseSome() method, but it is only for
+</I>&gt;<i> parsing the first line of XML document to get the encoding in XML
+</I>&gt;<i> Declaration, so it does not work in the way that I needed.
+</I>&gt;<i>
+</I>&gt;<i> Thanks again, 
+</I>&gt;<i>
+</I>&gt;<i> Oscar 
+</I>&gt;<i>
+</I>&gt;<i> -----Original Message----- 
+</I>&gt;<i> From: David Waite [ mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mass at akuma.org</A> &lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mass at akuma.org</A>&gt; ] 
+</I>&gt;<i> Sent: Thursday, March 21, 2002 5:16 PM 
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> 
+</I>&gt;<i> Subject: Re: [JDEV] Question on using NIO with SAX 
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> This is an issue with the SAX Api (which understandably, we can't 
+</I>&gt;<i> change). What you want is a push-model parser (like SAX) which takes a 
+</I>&gt;<i> block of bytes/characters and calls events on the DocumentHandler (on 
+</I>&gt;<i> that thread) until that block of data has been processed, then returns 
+</I>&gt;<i> or saves the remainder until the next time it is passed.  SAX does not 
+</I>&gt;<i> define this, and anything which does this at least is extending SAX. 
+</I>&gt;<i>
+</I>&gt;<i> I believe Xerces-J at least defines a parseSome method on its XmlParser 
+</I>&gt;<i> method, but I don't know if this does what you want. 
+</I>&gt;<i>
+</I>&gt;<i> -David Waite 
+</I>&gt;<i>
+</I>&gt;<i> Chan, Oscar wrote: 
+</I>&gt;<i>
+</I>&gt;&gt;<i> Hi all, 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> I am new here.  I am now developing a message server based on the 
+</I>&gt;&gt;<i> subset of Jabber protocol. I am building using Java, and SAX parser in
+</I>&gt;<i>
+</I>&gt;&gt;<i> javax.xml.parsers package.   My problem is that I am trying to code 
+</I>&gt;&gt;<i> the server so that it can use NIO (new i/o) package once java 1.4 is 
+</I>&gt;&gt;<i> stable enough to use.  By using NIO, it eliminates the problem of 
+</I>&gt;&gt;<i> having a thread per socket because it multiplexes the input and store 
+</I>&gt;&gt;<i> the data in a buffer instead of blocking the call and waiting until 
+</I>&gt;&gt;<i> data is available.  Usually, the server machine will slow down when 
+</I>&gt;&gt;<i> the number of thread reach about 1000.  Therefore, NIO will increase 
+</I>&gt;&gt;<i> the number of connection that we can have. 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Since parse() method in java.xml.parsers.SAXParser is using a blocking
+</I>&gt;<i>
+</I>&gt;&gt;<i> I/O and, hence, it increase the number of threads. Does anyone know 
+</I>&gt;&gt;<i> any workaround for it, or any future support for SAX using NIO? 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Thanks 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Oscar 
+</I>&gt;&gt;<i> 
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________ 
+</I>&gt;<i> jdev mailing list 
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> 
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &lt;<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>&gt;  
+</I>&gt;<i>
+</I>
+-- 
+Joe Hildebrand
+Chief Architect
+Jabber, Inc.
+<A HREF="http://www.jabber.com/">http://www.jabber.com/</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="070397.html">[JDEV] Question on using NIO with SAX
+</A></li>
+	<LI>Next message: <A HREF="070439.html">[JDEV] Net::Jabber and oob
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#70398">[ date ]</a>
+              <a href="thread.html#70398">[ thread ]</a>
+              <a href="subject.html#70398">[ subject ]</a>
+              <a href="author.html#70398">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: [Psi-devel] Some login/sasl questions for 0.11
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20%5BPsi-devel%5D%20Some%20login/sasl%20questions%20for%200.11&In-Reply-To=%3C8728.1170699885.827122%40invsysm1%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="084470.html">
+   <LINK REL="Next"  HREF="084520.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: [Psi-devel] Some login/sasl questions for 0.11</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20%5BPsi-devel%5D%20Some%20login/sasl%20questions%20for%200.11&In-Reply-To=%3C8728.1170699885.827122%40invsysm1%3E"
+       TITLE="[jdev] Re: [Psi-devel] Some login/sasl questions for 0.11">dave at cridland.net
+       </A><BR>
+    <I>Mon Feb  5 12:24:45 CST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="084470.html">[jdev] Re: [Psi-devel] Some login/sasl questions for 0.11
+</A></li>
+        <LI>Next message: <A HREF="084520.html">[jdev] Jabber Consulting Position 
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#84471">[ date ]</a>
+              <a href="thread.html#84471">[ thread ]</a>
+              <a href="subject.html#84471">[ subject ]</a>
+              <a href="author.html#84471">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Mon Feb  5 14:46:01 2007, Matthias Wimmer wrote:
+&gt;<i> Dave Cridland schrieb:
+</I>&gt;&gt;&gt;<i> Concerning the question if establishing a SASL encryption layer 
+</I>&gt;&gt;&gt;<i> should be supported inside a connection, that is already 
+</I>&gt;&gt;&gt;<i> protected by a TLS layer:
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> This interested me, so I discussed this with the SASL guys in the 
+</I>&gt;&gt;<i> office, and the result, as I understand it is as follows.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Basically, what you're discussing is related to Channel Binding - 
+</I>&gt;&gt;<i> there's a lot of work going on in that area in the IETF at the 
+</I>&gt;&gt;<i> moment, including an updated DIGEST-MD5 which does channel 
+</I>&gt;&gt;<i> binding. There's other mechanisms under development which will 
+</I>&gt;&gt;<i> also use channel binding. This basically ensures that both ends of 
+</I>&gt;&gt;<i> the authentication have the same idea of the encrypted channel 
+</I>&gt;&gt;<i> used.
+</I>&gt;<i> 
+</I>&gt;<i> Right.
+</I>&gt;<i> 
+</I>&gt;&gt;<i> Now, if you use SASL security layers in addition to TLS, then this 
+</I>&gt;&gt;<i> does negate the need for channel binding, but it also negates the 
+</I>&gt;&gt;<i> need for TLS to a large degree. So for a server, you want SASL 
+</I>&gt;&gt;<i> security layers, and ignore TLS.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Since SASL security layers are weaker, often, and also have 
+</I>&gt;&gt;<i> certain undesirable properties, such as transmitting the userid 
+</I>&gt;&gt;<i> and authid in the clear, though, you want to be using TLS as a 
+</I>&gt;&gt;<i> client.
+</I>&gt;<i> 
+</I>&gt;<i> On the server side I also cannot just not offer TLS and only offer 
+</I>&gt;<i> a security layer in SASL. If I would do so, I would not allow the 
+</I>&gt;<i> client to authenticate using TLS - which is the probably strongest 
+</I>&gt;<i> way we currently have for client authentication and ensuring an 
+</I>&gt;<i> encrypting layer.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>For some values of strongest, yes. Kerberos is also a possibility, 
+though, as is SRP.
+
+
+&gt;<i> I think if a server does not care that there is a security layer to 
+</I>&gt;<i> the client (current standard case), the connection should not use a 
+</I>&gt;<i> SASL security layer inside the TLS layer. But this shouldn't be the 
+</I>&gt;<i> client that decides that this SASL layer is not established, but 
+</I>&gt;<i> the server.
+</I>&gt;<i> Therefore I think that Psi should establish the auth-conf layer of 
+</I>&gt;<i> DIGEST-MD5 if that is offered by the server - but servers typically 
+</I>&gt;<i> should not offer this layer if TLS has already been established - 
+</I>&gt;<i> as it is the server for which it matters if that second security 
+</I>&gt;<i> layer exists or not.
+</I>
+Or, as a short-term possibility, you could run auth-int inside TLS, 
+and then exchange XMPP-level channel binding messages, perhaps via a 
+simple IQ. That'll have much the same effect as channel binding. (Of 
+course, without the auth-int, it's meaningless).
+
+That's got to be a lot cheaper than encrypting twice, and should work 
+find in the normal case of there being no MITM. It's also much easier 
+to code.
+
+Dave.
+-- 
+Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at jabber.org</A>
+  - <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+  - <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="084470.html">[jdev] Re: [Psi-devel] Some login/sasl questions for 0.11
+</A></li>
+	<LI>Next message: <A HREF="084520.html">[jdev] Jabber Consulting Position 
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#84471">[ date ]</a>
+              <a href="thread.html#84471">[ thread ]</a>
+              <a href="subject.html#84471">[ subject ]</a>
+              <a href="author.html#84471">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

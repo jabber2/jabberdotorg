@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] MSNP8 Security Enhancement
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20MSNP8%20Security%20Enhancement&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="017557.html">
+   <LINK REL="Next"  HREF="017562.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] MSNP8 Security Enhancement</H1>
+    <B>harmeet_im at kodemuse.com</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20MSNP8%20Security%20Enhancement&In-Reply-To="
+       TITLE="[JDEV] MSNP8 Security Enhancement">harmeet_im at kodemuse.com
+       </A><BR>
+    <I>Fri Sep 12 01:03:08 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="017557.html">[JDEV] MSNP8 Security Enhancement
+</A></li>
+        <LI>Next message: <A HREF="017562.html">[JDEV] MSNP8 Security Enhancement
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17561">[ date ]</a>
+              <a href="thread.html#17561">[ thread ]</a>
+              <a href="subject.html#17561">[ subject ]</a>
+              <a href="author.html#17561">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>From: Andrew Sayers &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">andrew-list-jabber-jdev at ccl.bham.ac.uk</A>&gt;
+
+&gt;<i> True for both MD5 and SSL.  However, sniffing an MD5 authentication is
+</I>&gt;<i> trivial, and brute-forcing your password from that won't take long.
+</I>
+A secure hash uniquely identifies a plain text(password) but has the
+property that it is computationally unfeasible to get the plaintext
+from hash. MD5 is not the best but the one-way property is pretty sound.
+
+&gt;<i> If you're talking about DNS spoofing individual clients, you can already
+</I>&gt;<i> do that with MSNP7.
+</I>
+True, the protocol is plaintext so always limited security there,
+unless one encrypts the traffic. However in MSNP7 the client knows the
+password and never transmits that(secure or unsecure).
+
+----- Original Message -----
+From: Tijl Houtbeckers &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">thoutbeckers at splendo.com</A>&gt;
+Sent: Sep 12, 3:28 AM
+
+&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">harmeet_im at kodemuse.com</A> wrote on 12-9-2003 2:45:03:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;Pre MSN P8 authentication was based on client computing a secure hash
+</I>&gt;<i> &gt;and sending it to the server, but the new SSL authentication requires
+</I>&gt;<i> &gt;you to send the password over SSL. ie. the Password is actually sent
+</I>&gt;<i> &gt;to one of n servers. This appears (to me) to actually reduce security.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;- Password is sent to remote location.
+</I>&gt;<i> 
+</I>&gt;<i> That remote location is aware of your password anyway.
+</I>
+True, but I never sent my password to MSN in MSNP7, just a secure
+token derived from my password. It is also possible to store the
+password information without needing to store the password.
+
+&gt;<i> 
+</I>&gt;<i> &gt;- If password is relayed from destination SSL server to one or more
+</I>&gt;<i> &gt;  upstream servers, my password(not obfuscated hash) is sent to more
+</I>&gt;<i> &gt;  nodes.
+</I>&gt;<i> 
+</I>&gt;<i> It's reasonable to assume that the risk of someone intercepting 
+</I>
+&gt;<i> the 
+</I>&gt;<i> traffic between the desination server and the actual server that 
+</I>&gt;<i> verifies your password is basically the same as one of those machines 
+</I>&gt;<i> being compromised. I'm sure security for these servers and any traffic 
+</I>&gt;<i> inbetween them is *very* tight. 
+</I>
+It is a lot easier to intercept than compromise a machine. Imagine if
+your ISP is compromised, then may hundered or thousand subscribers are
+prone. The small local ISP here(Canada) has for some reason no
+firewall hardware.
+
+One security principal that may apply is - 'need to know'. So, does MS
+really need to know my password to verify me. Can't it for instance do
+with a fixed transformation of the password ? Of course it can. A SHA
+like transformation of password is the same as password as far as
+identification is concerned but has the sweet property that one cannot
+get the original from it.
+  
+&gt;<i> 
+</I>&gt;<i> &gt;- SSL is prone to man in the middle attack. So one can insert an SSL
+</I>&gt;<i> &gt;  Server that appears to be the destination. This can be done if the
+</I>&gt;<i> &gt;  DNS is compromised. (This could be done at network level, hosts file
+</I>&gt;<i> &gt;  etc.) SSL on client side may verify destination servers identity
+</I>&gt;<i> &gt;  against a truststore but that is vulnerable too. :-( If the SSL
+</I>&gt;<i> &gt;  Server can be mimicked basically the attacker can create a proxy,
+</I>&gt;<i> &gt;  appear like the real destination and slurp all passwords. My point
+</I>&gt;<i> &gt;  is that MS has actually reduced security by forcing people to send
+</I>&gt;<i> &gt;  their password over network instead of hash of password.
+</I>&gt;<i> 
+</I>&gt;<i> Er.. this is new to me?! Aren't SSL certificates meant to prevent 
+</I>&gt;<i> exactly what you are describing here? 
+</I>
+Certificates are only used to identify. Server side may not even ask
+for it(as with MSNP8 and most HTTPS Servers) or the client may decide
+to either trust a configurable set or ignore the server certificates.
+
+&gt;<i> the only 
+</I>&gt;<i> thing you could do is relay the SSL encrypted data to where it's 
+</I>&gt;<i> supposed to go (the hotmail / passport SSL servers). There is no way to 
+</I>&gt;<i> decrypt it.
+</I>
+If you are the SSL Server to one side and you are the SSL Client to
+another side, you have access to data. This is weakness in the SSL
+protocol, that derives directly from it being an application protocol
+over TCP/IP.
+
+The main trick for SSL man in the middle attack is to make client
+think you are a valid server, and server think you are a valid
+client. MSN P8 currently does not do mutual authentication, so for it
+any SSL client is valid and the client trusts (a) a large set of
+identities and (b) a truststore on client machine that can be altered.
+
+&gt;<i> However, with SSL there is one more advantage for Microsoft. With the 
+</I>&gt;<i> old protocol there is no way of establishing what the client is. Just 
+</I>&gt;<i> that it's someone who knows the username and password. With SSL however 
+</I>&gt;<i> there is the possibilities of client-side certificates. 
+</I>
+Yes, but PKI is hard to enforce. That is one reason we are not using
+SMIME. Client side certificates are expensive and easy to grab.
+
+&gt;<i> If Microsoft 
+</I>&gt;<i> decides to only allow their own clients and 3rd party clients with a 
+</I>&gt;<i> proper license they can choose to only provide a clientside certificate 
+</I>&gt;<i> for those clients. 
+</I>&gt;<i> 
+</I>&gt;<i> Sure, you eaily &quot;rip out&quot; the clientside cert. from an official MSN 
+</I>&gt;<i> client and use it in your own unofficial client or transport. 
+</I>
+Agreed, the real issue is how will they secure the client side
+certificate if they ever get to it. MSN official client has to be on
+my machine for me to use it and if it is on my machine, I can grab it
+and use it.
+
+&gt;<i> Technically it will work, but legally you're on a lot more shaky ground 
+</I>&gt;<i> than when you were simply reverse enigneering a protocol and building 
+</I>&gt;<i> your own implementation of it. In other words, one could argue that you 
+</I>&gt;<i> steal the SSL certificate and you use it to break into Microsofts 
+</I>&gt;<i> servers. 
+</I>
+I don't think so but I am no lawyer. To me if something(certificate or
+license or passport) identifies me, it gives me the right to use it to
+identify me. Putting it another way, I could permit my identification
+but should not require permission to use my indentification.
+
+I think, all MS is trying to do is arm twist companies like Trillian
+to payup, and hopefully they will not target open source products or
+end users.
+
+
+I maybe wrong, but would be really interested in reading an
+authoritative account on MSN P8 Security improvement.
+
+Harmeet
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="017557.html">[JDEV] MSNP8 Security Enhancement
+</A></li>
+	<LI>Next message: <A HREF="017562.html">[JDEV] MSNP8 Security Enhancement
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#17561">[ date ]</a>
+              <a href="thread.html#17561">[ thread ]</a>
+              <a href="subject.html#17561">[ subject ]</a>
+              <a href="author.html#17561">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] MU-Conference and network connection loss
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20MU-Conference%20and%20network%20connection%20loss&In-Reply-To=%3C11D121AB355B69448D3A9F2132D2A3AA194B21%40niobe.BlueHands.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="048893.html">
+   <LINK REL="Next"  HREF="048895.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] MU-Conference and network connection loss</H1>
+    <B>Heiner Wolf</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20MU-Conference%20and%20network%20connection%20loss&In-Reply-To=%3C11D121AB355B69448D3A9F2132D2A3AA194B21%40niobe.BlueHands.de%3E"
+       TITLE="[jdev] MU-Conference and network connection loss">wolf at bluehands.de
+       </A><BR>
+    <I>Wed Jun 16 13:54:42 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="048893.html">[jdev] change to JabberStudio project request process
+</A></li>
+        <LI>Next message: <A HREF="048895.html">[jdev] Re: jdev Digest, Vol 5,	Issue 16 - Co-existing Jabber1 &amp; Jabber 2 on same Linux box
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48894">[ date ]</a>
+              <a href="thread.html#48894">[ thread ]</a>
+              <a href="subject.html#48894">[ subject ]</a>
+              <a href="author.html#48894">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I get an &quot;interesing&quot; behaviour with MU-Conference when the client's internet network connection drops and comes back. One source of connection loss is when a WLAN goes down temporarily. My client re-joins chat rooms silently. 
+
+BUT: after the client sends the new presence-available to the room, it gets a presence-UNavailable from the room, even before it gets the presence-available back. It seems as if the room notices very late that the user disconnected and tells everyone. It does it so late, that the client already tried to join again. From the clients point of view its like: instead of the presence-available acknowledgement, it gets a presence-unavailable, which is very confusing. I need an ugly hack, that &quot;ignores&quot; presence-unavailable as long as the presence-available is not acknowledged. Sounds bad and may behave bad under different conditions.
+
+This works quite deterministic, so that I guess wildly, that the conf component is not notified of the connection loss at all. Only when the client comes back, the server seems to notice and tell the conf component about the client's connection loss. But then its too late. 
+
+In other words:
+
+Client-&gt;Server: Connection setup, login, etc.
+Client-&gt;Conf  : presence-available
+Conf-&gt;Client  : presence-available (ack)
+        -- network loss --
+        -- network back --
+Client-&gt;Server: New connection setup, login, etc.
+Client-&gt;Conf  : presence-available
+Conf-&gt;Client  : presence-UNavailable        &lt;--- this one should not be here
+Conf-&gt;Client  : presence-available (ack)
+
+Versions:
+  Server: jabberd 1.4.3
+  Conf: MU-Conference 0.6.1-20031116
+
+Any comments from the MU-conf/server development?
+
+hw
+--
+Dr. Klaus H. Wolf
+bluehands GmbH &amp; Co.mmunication KG
+<A HREF="http://www.bluehands.de/people/hw">http://www.bluehands.de/people/hw</A>
++49 (0721) 16108 75
+--
+LLuna: Jabber enabled virtual presence on the web / <A HREF="http://www.lluna.de/">http://www.lluna.de/</A>
+Galactic developments: Open source future history / <A HREF="http://www.galactic-developments.com/">http://www.galactic-developments.com/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="048893.html">[jdev] change to JabberStudio project request process
+</A></li>
+	<LI>Next message: <A HREF="048895.html">[jdev] Re: jdev Digest, Vol 5,	Issue 16 - Co-existing Jabber1 &amp; Jabber 2 on same Linux box
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48894">[ date ]</a>
+              <a href="thread.html#48894">[ thread ]</a>
+              <a href="subject.html#48894">[ subject ]</a>
+              <a href="author.html#48894">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

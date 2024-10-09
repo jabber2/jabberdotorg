@@ -1,0 +1,245 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> close to good news (was RE: [JDEV] AIM Transport Release)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20close%20to%20good%20news%20%28was%20RE%3A%20%5BJDEV%5D%20AIM%20Transport%20Release%29&In-Reply-To=%3C9D7F61B87714D31194530090276212441F4735%40outback.internal.outbackinc.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="063313.html">
+   <LINK REL="Next"  HREF="063298.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>close to good news (was RE: [JDEV] AIM Transport Release)</H1>
+    <B>Jay Chalfant</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20close%20to%20good%20news%20%28was%20RE%3A%20%5BJDEV%5D%20AIM%20Transport%20Release%29&In-Reply-To=%3C9D7F61B87714D31194530090276212441F4735%40outback.internal.outbackinc.com%3E"
+       TITLE="close to good news (was RE: [JDEV] AIM Transport Release)">jchalfan at outbackinc.com
+       </A><BR>
+    <I>Thu Nov 16 19:51:56 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="063313.html">[JDEV] WinJab Search Via has no options
+</A></li>
+        <LI>Next message: <A HREF="063298.html">oops (was: RE: [JDEV] AIM Transport Release)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63297">[ date ]</a>
+              <a href="thread.html#63297">[ thread ]</a>
+              <a href="subject.html#63297">[ subject ]</a>
+              <a href="author.html#63297">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Since I couldn't build the latest aim-transport but did have the new
+libetherx-1.2, I decided to try to build the previous aim-transport
+(11/9/00) that initially complained about pool_label(). Well, that works. I
+now can run both jabberd (1.2) and a relatively current aim-transport. The
+only missing item is configuration which is the focus of this post..
+
+I changed the default jabber.xml as follows:
+
+- update the hostname to 'roo' (the local hostname)
+- uncomment the aim transport agent and change the jid to 'aim.roo'
+
+I then start jabberd (./jabberd/jabberd -D) and aimtrans
+(/usr/local/bin/aimtrans -n aim.roo -D). When I start aimtrans, I see a
+flurry of activity in the jabberd trace and it all looks good. I then
+connect to jabberd with the latest WinJab and it all looks good. I then try
+to register the aim transport from the WinJab client and it doesn't look
+good. It appears that even though aimtrans has connected to jabberd, jabberd
+doesn't know how to find/route packets to aimtrans when the time comes. This
+is the relevant part of the log:
+
+~~~~~~~~~~~~~~~
+Thu Nov 16 17:23:10 2000  users.c:82 checking users for host roo
+Thu Nov 16 17:23:10 2000  usercount 1	total users
+Thu Nov 16 17:23:15 2000  users.c:82 checking users for host roo
+Thu Nov 16 17:23:15 2000  usercount 1	total users
+Thu Nov 16 17:23:15 2000  io_select.c:339 io_main checking sockets
+Thu Nov 16 17:23:15 2000  deliver.c:472 DELIVER 4:roo &lt;route
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/8196528' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">12 at c2s</A>/80EF318'&gt;&lt;iq type='get' id='wjAgent_1_1'
+to='aim.roo'&gt;&lt;query xmlns='jabber:iq:register'/&gt;&lt;/iq&gt;&lt;/route&gt;
+Thu Nov 16 17:23:15 2000  deliver.c:344 delivering to instance 'sessions'
+Thu Nov 16 17:23:15 2000  deliver.c:84 (8081E28)incoming packet &lt;route
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/8196528' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">12 at c2s</A>/80EF318'&gt;&lt;iq type='get' id='wjAgent_1_1'
+to='aim.roo'&gt;&lt;query xmlns='jabber:iq:register'/&gt;&lt;/iq&gt;&lt;/route&gt;
+Thu Nov 16 17:23:15 2000  users.c:147 js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/8196528,80F1FC0)
+Thu Nov 16 17:23:15 2000  mtq 80F28E0 entering from pth
+Thu Nov 16 17:23:15 2000  mtq 80F28E0 queue call 8198FD8
+Thu Nov 16 17:23:15 2000  sessions.c:289 THREAD:SESSION:FROM received a
+packet!
+Thu Nov 16 17:23:15 2000  modules.c:124 mapi_call 1
+Thu Nov 16 17:23:15 2000  modules.c:147 MAPI 81967F8
+Thu Nov 16 17:23:15 2000  modules.c:147 MAPI 8196808
+Thu Nov 16 17:23:15 2000  modules.c:147 MAPI 8196828
+Thu Nov 16 17:23:15 2000  modules.c:147 MAPI 8196838
+Thu Nov 16 17:23:15 2000  modules.c:163 mapi_call returning unhandled
+Thu Nov 16 17:23:15 2000  deliver.c:262
+deliver(to[aim.roo],from[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work],type[4],packet[&lt;iq type='get'
+id='wjAgent_1_1' to='aim.roo' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work'&gt;&lt;query
+xmlns='jabber:iq:register'/&gt;&lt;/iq&gt;])
+Thu Nov 16 17:23:15 2000  deliver.c:472 DELIVER 1:aim.roo &lt;iq type='get'
+id='wjAgent_1_1' to='aim.roo' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work'&gt;&lt;query
+xmlns='jabber:iq:register'/&gt;&lt;/iq&gt;
+Thu Nov 16 17:23:15 2000  deliver.c:344 delivering to instance 'dnsrv'
+Thu Nov 16 17:23:15 2000  mtq 80F28E0 leaving to pth
+Thu Nov 16 17:23:15 2000  dnsrv.c:330 dnsrv: Recv'd a lookup request:
+aim.roo
+Thu Nov 16 17:23:15 2000  dnsrv.c:360 dnsrv: Creating lookup request queue
+for aim.roo
+Thu Nov 16 17:23:15 2000  dnsrv.c:370 dnsrv: Transmitting lookup request for
+aim.roo to coprocess
+Thu Nov 16 17:23:15 2000  dnsrv.c:106 dnsrv: Recv'd lookup request for
+aim.roo
+Thu Nov 16 17:23:15 2000  srv_resolv.c:101 srv: SRV resolution of
+_jabber._tcp.aim.roo
+Thu Nov 16 17:23:15 2000  srv_resolv.c:88 srv: Standard resolution of
+aim.roo
+Thu Nov 16 17:23:15 2000  srv_resolv.c:92 srv: Unable to resolve: aim.roo
+Thu Nov 16 17:23:15 2000  dnsrv.c:255 dnsrv: Unable to resolve ip for
+aim.roo
+
+Thu Nov 16 17:23:15 2000  log.c:105 &lt;log type='warn' from='-internal'&gt;Packet
+Delivery Failed, invalid packet, dropping &amp;lt;route type=&amp;apos;error&amp;apos;
+iperror=&amp;apos;&amp;apos;&amp;gt;&amp;lt;iq type=&amp;apos;get&amp;apos;
+id=&amp;apos;wjAgent_1_1&amp;apos; to=&amp;apos;aim.roo&amp;apos;
+from=&amp;apos;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work&amp;apos;&amp;gt;&amp;lt;query
+xmlns=&amp;apos;jabber:iq:register&amp;apos;/&amp;gt;&amp;lt;/iq&amp;gt;&amp;lt;error
+code=&amp;apos;502&amp;apos;&amp;gt;Unable to resolve
+hostname.&amp;lt;/error&amp;gt;&amp;lt;/route&amp;gt;&lt;/log&gt;
+Thu Nov 16 17:23:15 2000  deliver.c:472 DELIVER 3:-internal &lt;log type='warn'
+from='-internal'&gt;Packet Delivery Failed, invalid packet, dropping &amp;lt;route
+type=&amp;apos;error&amp;apos; iperror=&amp;apos;&amp;apos;&amp;gt;&amp;lt;iq type=&amp;apos;get&amp;apos;
+id=&amp;apos;wjAgent_1_1&amp;apos; to=&amp;apos;aim.roo&amp;apos;
+from=&amp;apos;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work&amp;apos;&amp;gt;&amp;lt;query
+xmlns=&amp;apos;jabber:iq:register&amp;apos;/&amp;gt;&amp;lt;/iq&amp;gt;&amp;lt;error
+code=&amp;apos;502&amp;apos;&amp;gt;Unable to resolve
+hostname.&amp;lt;/error&amp;gt;&amp;lt;/route&amp;gt;&lt;/log&gt;
+Thu Nov 16 17:23:15 2000  deliver.c:344 delivering to instance 'logger'
+20001117T01:23:15: [warn] (-internal): Packet Delivery Failed, invalid
+packet, dropping &lt;route type='error' iperror=''&gt;&lt;iq type='get'
+id='wjAgent_1_1' to='aim.roo' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at roo</A>/Work'&gt;&lt;query
+xmlns='jabber:iq:register'/&gt;&lt;/iq&gt;&lt;error code='502'&gt;Unable to resolve
+hostname.&lt;/error&gt;&lt;/route&gt;
+Thu Nov 16 17:23:20 2000  users.c:82 checking users for host roo
+Thu Nov 16 17:23:20 2000  usercount 1	total users
+Thu Nov 16 17:23:25 2000  users.c:82 checking users for host roo
+Thu Nov 16 17:23:25 2000  usercount 1	total users
+~~~~~~~~~~~~~~~
+
+As a wild guess, I did try to add aim.roo to /etc/hosts (!?) but that just
+produced a different stream of error messages. I'm looking for any
+aim-transport/jabberd config tips of any sort! The comment in the jabber.xml
+file that these aren't real agents and that you will be told what to enter
+when you install a real agent leave me with the feeling that I am probably a
+long way off.
+
+Thanks in advance to any who find the time to respond.
+
+-J
+
+----------------------
+Jay Chalfant
+OutBack Resource Group
+www.outbackinc.com
+
+
+
+
+
+
+
+
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Jay Chalfant [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at outbackinc.com</A>]
+</I>&gt;<i> Sent: Thursday, November 16, 2000 4:37 PM
+</I>&gt;<i> To: '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'
+</I>&gt;<i> Subject: RE: [JDEV] AIM Transport Release
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Temas,
+</I>&gt;<i> 
+</I>&gt;<i> Thanks much for the quick turnaround. However, it looks like 
+</I>&gt;<i> there are some
+</I>&gt;<i> #defines missing:
+</I>&gt;<i> 
+</I>&gt;<i> sessions.c: In function `at_parse_authresp':
+</I>&gt;<i> sessions.c:174: `AIM_CB_SPECIAL_CONNCOMPLETE' undeclared 
+</I>&gt;<i> (first use in this
+</I>&gt;<i> function)
+</I>&gt;<i> sessions.c:174: (Each undeclared identifier is reported only once
+</I>&gt;<i> sessions.c:174: for each function it appears in.)
+</I>&gt;<i> sessions.c: In function `at_session_create':
+</I>&gt;<i> sessions.c:459: `AIM_SESS_FLAGS_NONBLOCKCONNECT' undeclared 
+</I>&gt;<i> (first use in
+</I>&gt;<i> this function)
+</I>&gt;<i> sessions.c:459: too many arguments to function `aim_session_init'
+</I>&gt;<i> sessions.c:509: `AIM_CB_SPECIAL_FLAPVER' undeclared (first use in this
+</I>&gt;<i> function)
+</I>&gt;<i> sessions.c:511: `AIM_CB_SPECIAL_CONNCOMPLETE' undeclared 
+</I>&gt;<i> (first use in this
+</I>&gt;<i> function)
+</I>&gt;<i> sessions.c: In function `_aim_select':
+</I>&gt;<i> sessions.c:853: `AIM_CONN_STATUS_INPROGRESS' undeclared 
+</I>&gt;<i> (first use in this
+</I>&gt;<i> function)
+</I>&gt;<i> make[1]: *** [sessions.o] Error 1
+</I>&gt;<i> make: *** [all-recursive] Error 1
+</I>&gt;<i> 
+</I>&gt;<i> Any chance I could get these tonight?
+</I>&gt;<i> 
+</I>&gt;<i> thanks,
+</I>&gt;<i> 
+</I>&gt;<i> -J
+</I>&gt;<i> 
+</I>&gt;<i> ----------------------
+</I>&gt;<i> Jay Chalfant
+</I>&gt;<i> OutBack Resource Group
+</I>&gt;<i> www.outbackinc.com
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; From: Thomas Muldowney [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">temas at box5.net</A>]
+</I>&gt;<i> &gt; Sent: Thursday, November 16, 2000 1:11 PM
+</I>&gt;<i> &gt; To: Jabber Development
+</I>&gt;<i> &gt; Subject: [JDEV] AIM Transport Release
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; I just put AIM Transport version 0.8 on download.jabber.org.  
+</I>&gt;<i> &gt; Have fun!
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; --temas
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="063313.html">[JDEV] WinJab Search Via has no options
+</A></li>
+	<LI>Next message: <A HREF="063298.html">oops (was: RE: [JDEV] AIM Transport Release)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63297">[ date ]</a>
+              <a href="thread.html#63297">[ thread ]</a>
+              <a href="subject.html#63297">[ subject ]</a>
+              <a href="author.html#63297">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

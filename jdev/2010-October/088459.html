@@ -1,0 +1,198 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Alternate MUC Authentication Mechanisms
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3C4CB76A69.9010404%40stpeter.im%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088458.html">
+   <LINK REL="Next"  HREF="088460.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Alternate MUC Authentication Mechanisms</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Alternate%20MUC%20Authentication%20Mechanisms&In-Reply-To=%3C4CB76A69.9010404%40stpeter.im%3E"
+       TITLE="[jdev] Alternate MUC Authentication Mechanisms">stpeter at stpeter.im
+       </A><BR>
+    <I>Thu Oct 14 14:39:05 CST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088458.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+        <LI>Next message: <A HREF="088460.html">[jdev] Signing (Was:  Alternate MUC Authentication Mechanisms)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88459">[ date ]</a>
+              <a href="thread.html#88459">[ thread ]</a>
+              <a href="subject.html#88459">[ subject ]</a>
+              <a href="author.html#88459">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 10/14/10 1:39 PM, Alex Milowski wrote:
+&gt;<i> On Thu, Oct 14, 2010 at 4:57 AM, Peter Saint-Andre &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at stpeter.im</A>&gt; wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Why would we do authentication-in-registration, rather than define a new
+</I>&gt;&gt;<i> remote authentication extension? XEP-0077 is already overloaded to a
+</I>&gt;&gt;<i> great degree, and the two functions of registration and authentication
+</I>&gt;&gt;<i> seem quite separate to me.
+</I>&gt;<i> 
+</I>&gt;<i> To begin with, I was really thinking of just having the ability to use
+</I>&gt;<i> digest password mechanisms.  The flow I am think is:
+</I>&gt;<i> 
+</I>&gt;<i> 1. The client joining the MUC room sends an
+</I>&gt;<i> {urn:ietf:params:xml:ns:xmpp-sasl}auth
+</I>&gt;<i>     element selecting the authentication mechanism in the presence mechanism.
+</I>&gt;<i> 
+</I>&gt;<i> 2. The client receives a {urn:ietf:params:xml:ns:xmpp-sasl}challenge element
+</I>&gt;<i>     via stanza response from the room.
+</I>&gt;<i> 
+</I>&gt;<i> 3. The client responds with a {urn:ietf:params:xml:ns:xmpp-sasl}response element
+</I>&gt;<i>     embedded in a response stanza send to the room.
+</I>&gt;<i> 
+</I>&gt;<i> 4. If authentication succeeds, membership in the room proceeds as it normally
+</I>&gt;<i>     would do so.
+</I>&gt;<i> 
+</I>&gt;<i> The question is what stanza elements should be used for (2) and (3).  These
+</I>&gt;<i> stanzas would need to be directed at the room.
+</I>&gt;<i> 
+</I>&gt;<i> Alternatively, an iq/@type='set' and iq/@type='response' could be used for 1-4
+</I>&gt;<i> (two iq set/response messages) as a way to alternatively join the room.  The
+</I>&gt;<i> nice thing about doing it with iq stanzas is that the existing way of joining
+</I>&gt;<i> a room doesn't have to change.
+</I>
+Yes, something like that. We can encapsulate the SASL protocol from the
+RFC into IQ stanzas:
+
+1. Client joins room
+
+&lt;presence
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>/thirdwitch'&gt;
+  &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'/">http://jabber.org/protocol/muc'/</A>&gt;
+&lt;/presence&gt;
+
+2. Room returns &lt;not-authorized/&gt; error with supported SASL mechanisms
+
+&lt;presence
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+    type='error'&gt;
+  &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'/">http://jabber.org/protocol/muc'/</A>&gt;
+  &lt;error type='auth'&gt;
+    &lt;not-authorized xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/&gt;
+    &lt;mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;
+      &lt;mechanism&gt;SCRAM-SHA-1-PLUS&lt;/mechanism&gt;
+      &lt;mechanism&gt;SCRAM-SHA-1&lt;/mechanism&gt;
+      &lt;mechanism&gt;PLAIN&lt;/mechanism&gt;
+    &lt;/mechanisms&gt;
+  &lt;/error&gt;
+&lt;/presence&gt;
+
+3. Client authenticates via IQ-set (copy and paste from 3920bis)
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+    id='zxg1d285'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>'
+    type='set'&gt;
+  &lt;auth xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;
+              mechanism=&quot;SCRAM-SHA-1&quot;&gt;
+        biwsbj1qdWxpZXQscj1vTXNUQUF3QUFBQU1BQUFBTlAwVEFBQUFBQUJQVTBBQQ==
+  &lt;/auth&gt;
+&lt;/iq&gt;
+
+4. Room returns IQ-result with challenge
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>'
+    id='zxg1d285'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+    type='result'&gt;
+  &lt;challenge xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;
+    cj1vTXNUQUF3QUFBQU1BQUFBTlAwVEFBQUFBQUJQVTBBQWUxMjQ2OTViLTY5Y
+    TktNGRlNi05YzMwLWI1MWIzODA4YzU5ZSxzPU5qaGtZVE0wTURndE5HWTBaaT
+    AwTmpkbUxUa3hNbVV0TkRsbU5UTm1ORE5rTURNeixpPTQwOTY=
+  &lt;/challenge&gt;
+&lt;/iq&gt;
+
+5. Client sends response via IQ-set
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+    id='lk5sd1v4'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>'
+    type='set'&gt;
+  &lt;response xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;
+    Yz1iaXdzLHI9b01zVEFBd0FBQUFNQUFBQU5QMFRBQUFBQUFCUFUwQUFlMTI0N
+    jk1Yi02OWE5LTRkZTYtOWMzMC1iNTFiMzgwOGM1OWUscD1VQTU3dE0vU3ZwQV
+    RCa0gyRlhzMFdEWHZKWXc9
+  &lt;/response&gt;
+&lt;/iq&gt;
+
+6. Room returns success
+
+&lt;iq from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>'
+    id='lk5sd1v4'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+    type='result'&gt;
+  &lt;success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;
+    dj1wTk5ERlZFUXh1WHhDb1NFaVc4R0VaKzFSU289
+  &lt;/success&gt;
+&lt;/iq&gt;
+
+7. Client sends new request to join room (kind of like a stream reset)
+
+&lt;presence
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>/thirdwitch'&gt;
+  &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'/">http://jabber.org/protocol/muc'/</A>&gt;
+&lt;/presence&gt;
+
+8. Room allows client to join (it might automatically make the user a
+member of the room, and we might want to define a new status code for
+&quot;user is authenticated&quot;, I suggest 215 -- yes, I know we're going to get
+rid of status codes, but until we do...)
+
+&lt;presence
+    from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at chat.shakespeare.lit</A>/thirdwitch'
+    to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'&gt;
+  &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+    &lt;item affiliation='member' role='participant'/&gt;
+    &lt;status code='215'/&gt;
+  &lt;/x&gt;
+&lt;/presence&gt;
+
+I'll forward this message to the <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">muc at xmpp.org</A> for discussion there.
+
+/psa
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 6105 bytes
+Desc: S/MIME Cryptographic Signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20101014/df04b3f1/attachment.bin">https://www.jabber.org/jdev/attachments/20101014/df04b3f1/attachment.bin</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088458.html">[jdev] Alternate MUC Authentication Mechanisms
+</A></li>
+	<LI>Next message: <A HREF="088460.html">[jdev] Signing (Was:  Alternate MUC Authentication Mechanisms)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88459">[ date ]</a>
+              <a href="thread.html#88459">[ thread ]</a>
+              <a href="subject.html#88459">[ subject ]</a>
+              <a href="author.html#88459">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

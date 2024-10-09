@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Perl code sample needed...
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Perl%20code%20sample%20needed...&In-Reply-To=20030127074022.41749.qmail%40web21504.mail.yahoo.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="015649.html">
+   <LINK REL="Next"  HREF="015660.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Perl code sample needed...</H1>
+    <B>rebbaj rebbaj</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Perl%20code%20sample%20needed...&In-Reply-To=20030127074022.41749.qmail%40web21504.mail.yahoo.com"
+       TITLE="[JDEV] Perl code sample needed...">rebbaj2000 at yahoo.co.uk
+       </A><BR>
+    <I>Mon Jan 27 18:44:22 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="015649.html">[JDEV] Perl code sample needed...
+</A></li>
+        <LI>Next message: <A HREF="015660.html">[JDEV] Perl code sample needed...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#15658">[ date ]</a>
+              <a href="thread.html#15658">[ thread ]</a>
+              <a href="subject.html#15658">[ subject ]</a>
+              <a href="author.html#15658">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Hmmmm
+
+I seem to be making progress but I do not understand why:)  Perhaps someone can explain what is going on.  In the IQ callback, I can get the first item in the roster by referencing it as follows with the Net::Jabber 1.0028 pm release.  
+
+my @query = $iq-&gt;GetQuery();
+print (&quot;name = &quot;, $query[0]-&gt;GetItems-&gt;GetName(), &quot;\n&quot;);
+print (&quot;JID = &quot;, $query[0]-&gt;GetItems-&gt;GetJID(), &quot;\n&quot;); 
+print (&quot;Subscription = &quot;, $query[0]-&gt;GetItems-&gt;GetSubscription(), &quot;\n&quot;);
+print (&quot;Group = &quot;, $query[0]-&gt;GetItems-&gt;GetGroup(), &quot;\n&quot;);
+
+How do I get the second item?  Using $query[1] does not do not as the array appears to have only one element although there are 10 items in the roster..  
+
+What does the GetItem object do?  It is typed as a Master but I am not sure I understand what that means..
+
+Any help is greatly appreciated as I get (slowly) through this learning curve.
+
+Regards
+ 
+
+ rebbaj rebbaj &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rebbaj2000 at yahoo.co.uk</A>&gt; wrote:
+Thanks Curtis, 
+I have not seen any referenced to the RosterParse in Jabber::Net 1.0028.  It only seems to show up in the 1.0024 documentation.  Is there a way to do this using 1.0028? 
+ Curtis Hawthorne &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cghawthorne at yahoo.com</A>&gt; wrote: Rebbaj,
+
+I think what you want is the RosterParse method in
+Net::Jabber. It returns a hash with all the information
+you need. For instance:
+
+sub InIQ {
+my $sid = shift;
+my $iq = shift;
+
+my %rosterupdate = $iq-&gt;RosterParse($iq);
+
+foreach (keys %rosterupdate) {
+print &quot;Name: &quot;, $_-&gt;{name}, &quot;\n&quot;;
+print &quot;Subscription: &quot;, $_-&gt;{subscription}, &quot;\n&quot;;
+print &quot;Ask: &quot;, $_-&gt;{ask}, &quot;\n&quot;;
+print &quot;Groups: &quot;, $_-&gt;{groups}, &quot;\n&quot;;
+}
+}
+
+&gt;<i>From there you could turn it into an array if you wanted,
+</I>but I would think a hash would be easier to work with.
+
+Curtis H.
+
+--- rebbaj rebbaj wrote:
+&gt;<i> 
+</I>&gt;<i> After some more testing, I got the impression that the
+</I>&gt;<i> following callback logic would work. Getting the s
+</I>&gt;<i> does not seem to work. Has anybody ever made this work
+</I>&gt;<i> before?? 
+</I>&gt;<i> sub InIQ
+</I>&gt;<i> {
+</I>&gt;<i> my $sid = shift;
+</I>&gt;<i> my $iq = shift; 
+</I>&gt;<i> my $id = $iq-&gt;GetID();
+</I>&gt;<i> print &quot;id = $id\n&quot;; # works 
+</I>&gt;<i> my $type = $iq-&gt;GetType();
+</I>&gt;<i> print &quot;type = $type\n&quot;; #works 
+</I>&gt;<i> my $xmlns = $iq-&gt;GetQueryXMLNS();
+</I>&gt;<i> print &quot;xmlns = $xmlns\n&quot;; #works 
+</I>&gt;<i> foreach my $query ($iq-&gt;GetQuery-&gt;GetItems) {
+</I>&gt;<i> print (&quot;JID = $query-&gt;GetItem()-&gt;GetJID\n&quot;); # prints a
+</I>&gt;<i> hash
+</I>&gt;<i> print (&quot;Name = $query-&gt;GetItem()-&gt;GetName\n&quot;); #
+</I>&gt;<i> prints a hash
+</I>&gt;<i> print (&quot;Subscription =
+</I>&gt;<i> $query-&gt;GetItem()-&gt;GetSubscription\n&quot;); # prints a hash
+</I>&gt;<i> print (&quot;Group = $query-&gt;GetItem()-&gt;GetGroup[0]\n&quot;); #
+</I>&gt;<i> prints a hash
+</I>&gt;<i> }
+</I>&gt;<i> } 
+</I>
+
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Mail Plus - Powerful. Affordable. Sign up now.
+<A HREF="http://mailplus.yahoo.com">http://mailplus.yahoo.com</A>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+---------------------------------
+With Yahoo! Mail you can get a bigger mailbox -- choose a size that fits your needs
+
+
+
+
+---------------------------------
+With Yahoo! Mail you can get a bigger mailbox -- choose a size that fits your needs
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20030128/2a5a95d4/attachment.htm">https://www.jabber.org/jdev/attachments/20030128/2a5a95d4/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="015649.html">[JDEV] Perl code sample needed...
+</A></li>
+	<LI>Next message: <A HREF="015660.html">[JDEV] Perl code sample needed...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#15658">[ date ]</a>
+              <a href="thread.html#15658">[ thread ]</a>
+              <a href="subject.html#15658">[ subject ]</a>
+              <a href="author.html#15658">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

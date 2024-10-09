@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Net::Jabber and ssl
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Net%3A%3AJabber%20and%20ssl&In-Reply-To=%3C468E08FA.1060008%40richardson.name%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085031.html">
+   <LINK REL="Next"  HREF="085033.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Net::Jabber and ssl</H1>
+    <B>Alasdair Richardson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Net%3A%3AJabber%20and%20ssl&In-Reply-To=%3C468E08FA.1060008%40richardson.name%3E"
+       TITLE="[jdev] Net::Jabber and ssl">alasdair at richardson.name
+       </A><BR>
+    <I>Fri Jul  6 04:18:50 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085031.html">[jdev] Net::XMPP2 0.01 Released
+</A></li>
+        <LI>Next message: <A HREF="085033.html">[jdev] registering a service
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85032">[ date ]</a>
+              <a href="thread.html#85032">[ thread ]</a>
+              <a href="subject.html#85032">[ subject ]</a>
+              <a href="author.html#85032">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I have been trying to connect to my jabber server using Net::Jabber and 
+getting an error. I started to look at the code but since I guess other 
+people having been using it successfully I must be doing something 
+wrong. The code is very simple, so its difficult to see what I am doing 
+wrong! The server is from Exodus.
+
+  my $connection = Net::Jabber::Client-&gt;new( debugLevel =&gt; $self-&gt;{jlog}, );
+ if (
+       $connection-&gt;Connect(
+                             hostname =&gt; $self-&gt;{server},
+                             port     =&gt; $self-&gt;{port},
+                             tls      =&gt; 1,
+       )
+    )
+  {
+    $self-&gt;{connection} = $connection;
+  } else
+  {
+    $self-&gt;setError( $connection-&gt;GetErrorCode() );
+
+    # Still seems to be connected sometimes!
+    $connection-&gt;Disconnect();
+  }
+
+and what gets printed out with debugLevel = 1
+
+
+XML::Stream: new: hostname = (ch-gva-pc57.jabcap.tld)
+XML::Stream: SetCallBacks: tag(node) func(CODE(0x204d590))
+XMPP::Conn: SetCallBacks: tag(message) func(CODE(0x204d7dc))
+XMPP::Conn: SetCallBacks: tag(presence) func(CODE(0x204d878))
+XMPP::Conn: SetCallBacks: tag(iq) func(CODE(0x204d938))
+XMPP::Conn: SetDirectXPathCallBacks: 
+xpath(/[@xmlns=&quot;urn:ietf:params:xml:ns:xmpp
+-tls&quot;]) func(CODE(0x2762894))
+XMPP::Conn: SetDirectXPathCallBacks: 
+xpath(/[@xmlns=&quot;urn:ietf:params:xml:ns:xmpp
+-sasl&quot;]) func(CODE(0x27629d8))
+XMPP::Conn: Connect: host(jabretalk:5222) namespace(jabber:client)
+XMPP::Conn: Connect: timeout(10)
+XML::Stream: Connect: type(tcpip)
+XML::Stream: Connect: Got a connection
+XML::Stream: Send: (&lt;?xml version='1.0'?&gt;&lt;stream:stream version='1.0' 
+xmlns:stre
+am='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> xmlns='jabber:client' 
+to='jabretalk' from=
+'ch-gva-pc57.jabcap.tld' xml:lang='en' &gt;)
+XML::Stream: Read: buff(&lt;?xml version='1.0' 
+encoding='UTF-8'?&gt;&lt;stream:stream xml
+ns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> xmlns=&quot;jabber:client&quot; 
+from=&quot;jabreta
+lk&quot; id=&quot;3e15b6bd&quot; xml:lang=&quot;en&quot; version=&quot;1.0&quot;&gt;)
+XML::Stream: Read: buff(&lt;stream:features&gt;&lt;starttls 
+xmlns=&quot;urn:ietf:params:xml:ns
+:<i>xmpp-tls&quot;&gt;&lt;required/&gt;&lt;/starttls&gt;&lt;mechanisms 
+</I>xmlns=&quot;urn:ietf:params:xml:ns:xmpp-
+sasl&quot;&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;mechanism&gt;CR
+AM-MD5&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;/stream:features&gt;)
+XMPP::Conn: Connect: connection made
+XML::Stream: SetCallBacks: tag(node) func(CODE(0x2762b34))
+XML::Stream: Send: (&lt;starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/&gt;)
+XML::Stream: Read: buff(&lt;proceed xmlns=&quot;urn:ietf:params:xml:ns:xmpp-tls&quot;/&gt;)
+XML::Stream: TLSClientProceed: Convert normal socket to SSL
+XML::Stream: TLSClientProceed: sock(IO::Socket::INET=GLOB(0x2762c60))
+XML::Stream: LoadSSL: Load the IO::Socket::SSL module
+XML::Stream: LoadSSL: Success
+XML::Stream: TLSClientProceed: ssl_sock(IO::Socket::SSL=GLOB(0x2762c60))
+XML::Stream: TLSClientProceed: SSL: We are secure
+XML::Stream: Send: (&lt;?xml version='1.0'?&gt;&lt;stream:stream version='1.0' 
+xmlns:stre
+am='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> xmlns='jabber:client' 
+to='jabretalk' from=
+'ch-gva-pc57.jabcap.tld' xml:lang='en' &gt;)
+XML::Stream: Read: buff(&lt;?xml version='1.0' 
+encoding='UTF-8'?&gt;&lt;stream:stream xml
+ns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> xmlns=&quot;jabber:client&quot; 
+from=&quot;jabreta
+lk&quot; id=&quot;3e15b6bd&quot; xml:lang=&quot;en&quot; 
+version=&quot;1.0&quot;&gt;&lt;stream:features&gt;&lt;mechanisms xmlns
+=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;
+PLAIN&lt;/mechanism&gt;&lt;mechanism&gt;CRAM-MD5&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;compression 
+xmlns=
+&quot;<A HREF="http://jabber.org/features/compress&quot;">http://jabber.org/features/compress&quot;</A>&gt;&lt;method&gt;zlib&lt;/method&gt;&lt;/compression&gt;&lt;auth 
+x
+mlns=&quot;<A HREF="http://jabber.org/features/iq-auth&quot;/">http://jabber.org/features/iq-auth&quot;/</A>&gt;&lt;/stream:features&gt;)
+Can't use an undefined value as a HASH reference at 
+C:/Perl/site/lib/XML/Stream.
+pm line 1167.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085031.html">[jdev] Net::XMPP2 0.01 Released
+</A></li>
+	<LI>Next message: <A HREF="085033.html">[jdev] registering a service
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85032">[ date ]</a>
+              <a href="thread.html#85032">[ thread ]</a>
+              <a href="subject.html#85032">[ subject ]</a>
+              <a href="author.html#85032">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

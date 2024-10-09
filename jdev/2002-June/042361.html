@@ -1,0 +1,567 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] File transfers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfers&In-Reply-To=%3COFB982FB29.F4EBE31C-ON85256BD1.00755B54%40pok.ibm.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042359.html">
+   <LINK REL="Next"  HREF="042363.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] File transfers</H1>
+    <B>Michael F Lin</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfers&In-Reply-To=%3COFB982FB29.F4EBE31C-ON85256BD1.00755B54%40pok.ibm.com%3E"
+       TITLE="[JDEV] File transfers">MFLIN at us.ibm.com
+       </A><BR>
+    <I>Fri Jun  7 17:22:40 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042359.html">[JDEV] File transfers
+</A></li>
+        <LI>Next message: <A HREF="042363.html">[JDEV] Implementation of JEP-0025 (Jabber HTTP Polling)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42361">[ date ]</a>
+              <a href="thread.html#42361">[ thread ]</a>
+              <a href="subject.html#42361">[ subject ]</a>
+              <a href="author.html#42361">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Given a certain set of assumptions which make up our model, I'll agree that
+the bandwidth _flows_ are different, in direction and duration but not in
+magnitude. I do not think, however, that cost should be different.
+
+The assumptions are:
+
+(1) Each ISP deploys its own Jabber server
+(2) ISPs incur no per-megabyte charge to transfer data between nodes
+directly connected to it
+(3) The one-time hardware/engineering cost for the ISP's NOC to internally
+handle a larger amount of data, but over a longer time, is acceptable.
+
+If a source sends something to a destination that is connected to the same
+ISP, then by (2) there is no cost incurred. If the source sends something
+to a destination through a Jabber server and all three are connected to the
+same ISP, then by (2) there is still no cost incurred. The ISP has to deal
+with some more internal traffic, which is why we have (3).
+
+If a source sends something to a destination which is connected to a
+different ISP, then there is some fixed cost incurred by the transmission
+between the two ISPs. I claim that there is the same fixed cost for an
+in-band transfer, because the extra hops to and from Jabber servers are
+internal to the ISP networks.
+
+I'll grant that these assumptions are a lot. (1) is certainly not true
+today, although we believe it could be someday, if the technology is good
+enough. (2) seems reasonable because the ISP would not charge itself for
+its own hardware usage. (3) may be arguable, but the acceptability of this
+cost is subjective.
+
+I can't overstate enough the point that a big part of our philosophy has
+been if we're not sure how it should work, look at how e-mail works. (1) is
+the key assumption for our model, but what do we do in a world where it is
+not true? That means we are Hotmail. Everyone has a pretty small mailbox
+size cap (=&gt; maximum message size) so that we can keep cost bounded. Or, we
+charge you. If you need to transfer something really big, go out of band.
+But our service is fine for sending around your document attachments.
+
+If you go back to that first post I listed, it was a list of Really Hard
+Problems for Jabber to solve. We believe we have some solid ideas for (1)
+and (3). We have been toying around with (4) and (5), but not yet
+satisfactorily. We know the steps that need to be taken to get (2) going,
+but we're politically restricted from taking them. (7) has been going
+decently in the JSF.
+
+(6) is the nightmare. This is where sendmail has completely failed us. As
+soon as you introduce multi-hop routing, whatever security value dialback
+has today (which is mediocre at best) evaporates. There has been a lot of
+recent work in Standards-JIG towards (6). SASL is great and we should have
+it, but client/server authentication is not the real problem. The huge
+problems are S2S and end-to-end trust. These have been problems forever.
+The PKI technology is there, but are we going to deploy it, and are people
+going to be smart enough to use it?
+
+-Mike
+
+
+
+|<i>---------+----------------------------&gt;
+</I>|<i>         |           Max Metral       |
+</I>|<i>         |           &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Max.Metral at peopl</A>|
+</I>|<i>         |           epchq.com&gt;       |
+</I>|<i>         |           Sent by:         |
+</I>|<i>         |           <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber</A>|
+</I>|<i>         |           .org             |
+</I>|<i>         |                            |
+</I>|<i>         |                            |
+</I>|<i>         |           06/07/2002 04:15 |
+</I>|<i>         |           PM               |
+</I>|<i>         |           Please respond to|
+</I>|<i>         |           jdev             |
+</I>|<i>         |                            |
+</I>|<i>---------+----------------------------&gt;
+</I>  &gt;------------------------------------------------------------------------------------------------------------------------------|
+  |                                                                                                                              |
+  |       To:       &quot;'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;                                                                        |
+  |       cc:                                                                                                                    |
+  |       Subject:  RE: [JDEV] File transfers                                                                                    |
+  |                                                                                                                              |
+  |                                                                                                                              |
+  &gt;------------------------------------------------------------------------------------------------------------------------------|
+
+
+
+Ok, this sounds more sane now, but I still want to make sure I'm
+understanding you right.  You say that:
+
+&quot;The bandwidth that goes through the Jabber server would have gone through
+the pipe anyway.&quot;
+
+In the case of using a direct client-to-client transfer (whatever protocol)
+versus using a client-server-client transfer, the bandwidth flows and costs
+are much different.  Do you agree?
+
+-----Original Message-----
+From: Michael F Lin [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">MFLIN at us.ibm.com</A>]
+Sent: Friday, June 07, 2002 3:17 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: RE: [JDEV] File transfers
+
+
+
+The point of the model is that Jabber servers are deployed by ISPs for
+their users, or corporations on their intranets. Again, just like sendmail.
+The bandwidth that goes through the Jabber server would have gone through
+the pipe anyway.
+
+The null server idea is a fine idea. You are correct to say that &quot;others&quot;
+have suggested it before. We brought it up about 6 months ago, to be
+precise.
+
+<A HREF="http://mailman.jabber.org/pipermail/jdev/2002-January/009653.html">http://mailman.jabber.org/pipermail/jdev/2002-January/009653.html</A>
+<A HREF="http://mailman.jabber.org/pipermail/jdev/2002-January/009658.html">http://mailman.jabber.org/pipermail/jdev/2002-January/009658.html</A>
+<A HREF="http://mailman.jabber.org/pipermail/jdev/2002-January/009963.html">http://mailman.jabber.org/pipermail/jdev/2002-January/009963.html</A>
+
+(By the way, the idea is also copied from sendmail). Everything we are
+suggesting here completely extends to null servers as well as regular
+Jabber servers, and benefits them just as much. There are many other
+powerful directions you can take the null server besides file transfer. It
+is particularly nice for systemically defeating AOL's attempts to block us.
+The trouble is that we need a solid, flexible, *open-source* native Windows
+codebase (thanks, Tipic, but no thanks) for a Jabber server for this to
+work. This is not something we are working on, for political reasons. It is
+something that should be done eventually, and for this reason we are
+keeping a close eye on Joe's Jabber.NET work. Unfortunately, Joe can't
+build the Jabber server there, also for political reasons. But we can fill
+in the infrastructure in the meantime.
+
+-Mike
+
+
+
+|<i>---------+----------------------------&gt;
+</I>|<i>         |           Max Metral       |
+</I>|<i>         |           &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Max.Metral at peopl</A>|
+</I>|<i>         |           epchq.com&gt;       |
+</I>|<i>         |           Sent by:         |
+</I>|<i>         |           <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber</A>|
+</I>|<i>         |           .org             |
+</I>|<i>         |                            |
+</I>|<i>         |                            |
+</I>|<i>         |           06/07/2002 02:24 |
+</I>|<i>         |           PM               |
+</I>|<i>         |           Please respond to|
+</I>|<i>         |           jdev             |
+</I>|<i>         |                            |
+</I>|<i>---------+----------------------------&gt;
+</I>
+&gt;<i>
+</I>---------------------------------------------------------------------------
+---------------------------------------------------|
+  |
+|<i>
+</I>  |       To:       &quot;'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+|<i>
+</I>  |       cc:
+|<i>
+</I>  |       Subject:  RE: [JDEV] File transfers
+|<i>
+</I>  |
+|<i>
+</I>  |
+|<i>
+</I>
+&gt;<i>
+</I>---------------------------------------------------------------------------
+---------------------------------------------------|
+
+
+
+It's not a size thing, it's an &quot;existence&quot; thing.  In the case of
+client-to-client, if I'm running a Jabber server at Exodus say, I pay for
+pretty much 0 bandwidth for that transfer since that cost is paid by the
+clients ISP's (which may or may not be me, most likely not).  If the server
+is involved, I pay for 2x the size of the file + whatever chunking or
+retransmission overhead + temporary (how long) storage and resource load.
+Now, *MAYBE* an answer could be that instead of HTTP as our &quot;random&quot;
+protocol, we actually use a simple Jabber server on the client for
+client-to-client, and that therefore if it happens to be hosted by the
+&quot;real&quot; Jabber server, everything just works the same.  Maybe this is what
+others have suggested?  But even then, I'd say we want a &quot;parallel-band&quot;
+method rather than in-band, and I don't think it solves the H.323 and other
+protocol problems...
+
+
+-----Original Message-----
+From: Michael F Lin [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">MFLIN at us.ibm.com</A>]
+Sent: Friday, June 07, 2002 1:46 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: RE: [JDEV] File transfers
+
+
+
+Max, I understand the argument about bandwidth costs if we were talking
+about encoding all binary data in base64, increasing its size by 33%.
+However, this does not need to be the case, as XIB and SOAP Attachments
+(well, sorta) show. The model we envision for deployment of Jabber is just
+like sendmail, with servers being deployed at the site level. This is the
+model on which sendmail defeated propriety e-mail providers (online
+services), and I propose it is the model upon which Jabber can defeat
+proprietary IM providers. In this case there isn't much additional
+bandwidth usage that you should have to pay for. Presumably, you pay for
+your backbone connection, and the same amount of data is going to the
+external Internet as would be the case in a P2P transfer to some external
+Internet node. I'll grant there is some argument about increasing bandwidth
+usage internally within your NOC (maybe over a culmulative 20 feet of
+cable), but if you're not running at saturation this shouldn't cost you
+anything, and if it does it's a one-time cost.
+
+I am saying that file transfers and binary data of unextreme size or
+bitrate belong in band. I don't have a concrete definition of &quot;unextreme&quot;,
+but I think we can come up with some examples:
+
+Unextreme (in-band | parallel-band):
+Office-type documents
+Source files
+PDFs
+Pictures
+Streaming audio (maybe)
+Largish XML data islands which the server should not have to parse, load
+into a DOM, etc.
+
+Extreme for the forseeable future:
+CD images
+DivX
+
+Extreme for the near future, but probably not for terribly long:
+MP3s
+Streaming video
+
+The point is that it should not be necessary to jump through the absurd
+hoops of negotiating firewalls with these stateful proxy servers and
+talking and/or understanding a foreign protocol in order to transfer a
+slightly largish chunk of data which does may or may not happen to be XML.
+I am not saying that nothing should be done out of band. I am saying it is
+feasible and very worthwhile to do certain things (which are more than what
+we are doing now, and which will grow as time goes on) in-band.
+
+I will agree that current Jabber technology is not suitable for this. We
+would like to see a simple and ruthlessly efficient binary wire protocol
+which uses XML exactly where XML is advantageous in JNG, and finally
+acknowledges that the advantages of using XML as a wire protocol are not
+the same as the advantages of using XML as a document format. Whether you
+agree with all the large payload stuff or not, JNG needs a better wire
+protocol, and I think everybody knows it. The point is that once you adopt
+such a protocol (which allows the possibility of kernel-mode caching,
+zero-copy streaming, page-aligned buffers, and other performance tricks),
+not only do we get huge performance and scalability benefits, but
+transporting large binary payloads becomes completely feasible - and it's
+all almost as easy as what we're doing now. But more on that later.
+
+-Mike
+
+
+
+|<i>---------+----------------------------&gt;
+</I>|<i>         |           Max Metral       |
+</I>|<i>         |           &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Max.Metral at peopl</A>|
+</I>|<i>         |           epchq.com&gt;       |
+</I>|<i>         |           Sent by:         |
+</I>|<i>         |           <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber</A>|
+</I>|<i>         |           .org             |
+</I>|<i>         |                            |
+</I>|<i>         |                            |
+</I>|<i>         |           06/07/2002 12:17 |
+</I>|<i>         |           PM               |
+</I>|<i>         |           Please respond to|
+</I>|<i>         |           jdev             |
+</I>|<i>         |                            |
+</I>|<i>---------+----------------------------&gt;
+</I>
+&gt;<i>
+</I>---------------------------------------------------------------------------
+---------------------------------------------------|
+  |
+|<i>
+</I>  |       To:       &quot;'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+|<i>
+</I>  |       cc:
+|<i>
+</I>  |       Subject:  RE: [JDEV] File transfers
+|<i>
+</I>  |
+|<i>
+</I>  |
+|<i>
+</I>
+&gt;<i>
+</I>---------------------------------------------------------------------------
+---------------------------------------------------|
+
+
+
+Have you been looking at the fact that no service provider is going to be
+able to afford a system that does in-band binary transfer exclusively?  Are
+you saying all file transfer and binary data (H.323) belong in band?  Just
+trying to make sure I understand your suggestion.
+
+-----Original Message-----
+From: Michael F Lin [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">MFLIN at us.ibm.com</A>]
+Sent: Friday, June 07, 2002 11:38 AM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] File transfers
+
+
+
+I would also add that encoding concerns could be alleviated by using
+something like Jer's XIB or SOAP attachments, which are extensions to XML
+streams that allows inline binary payloads. There are a few things we would
+do differently, but that's the general idea.
+
+Again, the key advantage is that all packets are still JID-routed, so we
+get through all firewalls and NATs without having to set up complicated
+stateful proxy servers in addition to what we already have.
+
+Really, the way to do this is to define a maximum _packet_ size, for all
+Jabber packets. This makes everything manageable from the server side. If
+you need to transfer a packet larger than that maximum size, either drop
+out of band and deal with firewall problems yourself, or chunk the message.
+Personally, I think the latter is preferable, because all these problems of
+negotiating through firewalls and finding PASS servers just go away.
+
+Unfortunately, it is not easy to define a maximum packet size because we
+don't have length-prefixed framing, so you never know the length of a
+packet until you've received the whole thing - by which time
+you (almost) might as well send it along anyway! This is why we need
+something like JEP-0017 or XATP.
+
+Guys, frankly, we've been looking at this problem in this lab for the last
+_year_ (some of you may remember me talking about it at JabberCon, over
+most of the same objections). We've done the research and the prototypes
+for high-performance Jabber-like messaging systems. I know the
+disadvantages seem obvious and the advantages seem hard to accept - but we
+are positive that high-performance, scalable in-band or parallel-band
+transfer of large payloads is both practically advantageous and technically
+feasible.
+
+We are preparing a detailed proposal on the matter, which we hope will be a
+major concrete step towards JNG. I hope we can soon put this silly argument
+to rest for now.
+
+-Mike
+
+
+
+|<i>---------+------------------------------&gt;
+</I>|<i>         |           &quot;Michael Rothwell&quot; |
+</I>|<i>         |           &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rothwell at holly-spr</A>|
+</I>|<i>         |           ings.nc.us&gt;        |
+</I>|<i>         |           Sent by:           |
+</I>|<i>         |           <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.o</A>|
+</I>|<i>         |           rg                 |
+</I>|<i>         |                              |
+</I>|<i>         |                              |
+</I>|<i>         |           06/06/2002 04:23 PM|
+</I>|<i>         |           Please respond to  |
+</I>|<i>         |           jdev               |
+</I>|<i>         |                              |
+</I>|<i>---------+------------------------------&gt;
+</I>
+&gt;<i>
+</I>---------------------------------------------------------------------------
+---------------------------------------------------|
+  |
+|<i>
+</I>  |       To:       &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+|<i>
+</I>  |       cc:
+|<i>
+</I>  |       Subject:  Re: [JDEV] File transfers
+|<i>
+</I>  |
+|<i>
+</I>  |
+|<i>
+</I>
+&gt;<i>
+</I>---------------------------------------------------------------------------
+---------------------------------------------------|
+
+
+
+The jabber server could simply have a config option for &quot;max transfer
+size,&quot; which ,when set to zero, disables all file transfers. Clients are
+notified of the file-transfer capabilities of the server by the server. You
+could even take it one step further and allow/disallow file-transfter use
+per account ID and/or groups. Other config options which would be useful
+are &quot;cache time&quot; and &quot;max cache size&quot; -- if cache time and/or size are
+zero, then if the server cannot stream the data directly to the
+recipient(s), it informs the client that the recipient isn't accepting
+transfers. You could even limit the number of transfers/person/day, etc.
+
+Leave it up to the clients to B64 encode/decode the transfer. The server
+doesn't have to care, which will reduce processing load. The &quot;max size&quot;
+parameters will be for the encoded versions, which is what server operators
+care about, because it's what they pay for.
+
+Server-supported transfers would be a nice config option, esp. for
+behind-the-firewall and small-number-of-users servers.
+
+ ----- Original Message -----
+ From: Gallo, Felix S.
+ To: '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'
+ Sent: Thursday, June 06, 2002 3:54 PM
+ Subject: RE: [JDEV] File transfers
+
+
+
+ Mike writes:
+ &gt; Firstly, there is no inherent problem with sending moderately
+ &gt; large files through a software server. Sendmail does it all
+ &gt; day, every day, on a massive scale, without relying on
+ &gt; client-to-client connections.
+
+
+ However, most mail is accessed through POP, IMAP, or Exchange,
+ which are definitely client-to-client connections -- for the
+ simple reason that sendmail doesn't scale very well.  For
+ every byte send to a sendmail server, two bytes traverse the
+ network.  Most unfortunately, those two bytes always involve
+ just the one sendmail server and its attached network.
+
+
+ What positives do you get for having the sendmail server involved
+ in a large file transaction between two parties?  You get a
+ guarantee of delivery and no need for continued storage on the
+ sending party's side (since the file 'moves' to the sendmail server).
+ If you're sending the file to multiple users at once, you get less
+ traffic on your local network (the server takes the load).
+ You also get an opportunity to mediate the file somehow (e.g.,
+ virus checking it as a service, converting it from aac into mp3,
+ storing it for later delivery to other users..)
+
+
+ What positives do you get for not having the sendmail server
+ involved?  The network on the sendmail server sees 0X load
+ rather than 2X load; the latency is lower; the sendmail server
+ has no storage requirement; and you have arguably fewer points
+ of failure.
+
+
+ Pragmatically, taking the load off the server is more valuable
+ in the normal case than replicating HTTP/FTP/SMTP/FXP yet again.
+ The fact that 'SMTP does it' is not a great rationale for forcing
+ all the jabber servers to pay 2X bandwidth costs for file transfers
+ between their users.
+
+
+ F.
+
+
+
+
+ **********************************************************************
+ E-mail sent through the Internet is not secure. Western Asset therefore
+ recommends that you do not send any confidential or sensitive information
+ to
+ us via electronic mail, including social security numbers, account
+ numbers,
+ or personal identification numbers. Delivery, and or timely delivery of
+ Internet mail is not guaranteed. Western Asset therefore recommends that
+ you do not send time sensitive or action-oriented messages to us via
+ electronic mail.
+ **********************************************************************
+
+
+
+
+
+
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042359.html">[JDEV] File transfers
+</A></li>
+	<LI>Next message: <A HREF="042363.html">[JDEV] Implementation of JEP-0025 (Jabber HTTP Polling)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42361">[ date ]</a>
+              <a href="thread.html#42361">[ thread ]</a>
+              <a href="subject.html#42361">[ subject ]</a>
+              <a href="author.html#42361">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

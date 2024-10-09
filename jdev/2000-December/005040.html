@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] mod_mymod.c
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20mod_mymod.c&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005039.html">
+   <LINK REL="Next"  HREF="005041.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] mod_mymod.c</H1>
+    <B>Rodolphe Duge de Bernonville</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20mod_mymod.c&In-Reply-To="
+       TITLE="[JDEV] mod_mymod.c">rod at idealx.com
+       </A><BR>
+    <I>Fri Dec  8 05:53:37 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005039.html">[JDEV] mod_mymod.c
+</A></li>
+        <LI>Next message: <A HREF="005041.html">[JDEV] mod_mymod.c
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5040">[ date ]</a>
+              <a href="thread.html#5040">[ thread ]</a>
+              <a href="subject.html#5040">[ subject ]</a>
+              <a href="author.html#5040">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dennis Noordsij a &#233;crit :
+&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> The m-&gt;s-&gt;x xmlnode is empty in the session end handler, but the
+</I>&gt;<i> m-&gt;s-&gt;presence xmlnode contains the full jid. So if I could send this jid to
+</I>&gt;<i> the other instance that would be cool :-)
+</I>&gt;<i> 
+</I>&gt;<i> x = m-&gt;s-&gt;presence
+</I>&gt;<i> x = xmlnode_wrap(x, &quot;route&quot;);
+</I>&gt;<i> xmlnode_put_attrib(x, &quot;to&quot;, &quot;myinstance&quot;);
+</I>&gt;<i> 
+</I>&gt;<i> But there are jpackets and dpackets and several delivery mechanisms, all I
+</I>&gt;<i> want is for &quot;myinstance&quot; to receive a packet of the form
+</I>&gt;<i> 
+</I>&gt;<i> &lt;presence from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at mydomain</A>/blah&quot; type=&quot;unavailable&quot;/&gt;
+</I>&gt;<i> 
+</I>&gt;<i> Or encapsulated in &lt;route&gt; tags, thats all fine.
+</I>&gt;<i> 
+</I>&gt;<i> All the work in mod_mymod is done, (handling multiple resources online for a
+</I>&gt;<i> single user, etc) - the only thing not working is sending the packet to
+</I>&gt;<i> myinstance.
+</I>&gt;<i> 
+</I>&gt;<i> Any help appreciated :-)
+</I>&gt;<i> Regards,
+</I>&gt;<i> Dennis
+</I>&gt;<i> 
+</I>&gt;<i> PS Keith thanks for the clarification on the MIO bit.
+</I>&gt;<i> 
+</I>
+jpacket are packets inside jsm ...
+dpacket are packets inside jabberd ...
+
+
+what you want to do here is to deliver your packet to another
+instance in jabberd :
+
+First, your instance must be registered with a &quot;register_instance&quot; 
+(that may 
+be done automatically if you are using the &lt;accept&gt; tag ).
+
+Second, just create the xmlnode you want to send to your instance (here 
+I suppose msg is your xmlnode )
+and send it  with the &quot;deliver&quot; function ... 
+
+
+you can also wrap your packet into a &lt;route&gt; tag if you dont
+want to modify the &quot;from&quot; and &quot;to&quot; attributes of your packet 
+  
+
+js_mapi_session(es_END, m-&gt;s, mod_pub_logout_handler, NULL);
+
+
+mreturn mod_example_logout_handler(mapi m, void *arg)
+{
+    xmlnode msg;
+
+    msg = xmlnode_new_tag(&quot;message&quot;);
+    xmlnode_put_attrib(msg, &quot;from&quot;, jid_full(m-&gt;packet-&gt;from)); 
+    xmlnode_put_attrib(msg, &quot;to&quot;, NAME_OF_YOUR_INSTANCE);
+
+    deliver(dpacket_new(msg), m-&gt;si-&gt;i);
+  
+    xmlnode_free(msg);
+  
+    return M_PASS;
+}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005039.html">[JDEV] mod_mymod.c
+</A></li>
+	<LI>Next message: <A HREF="005041.html">[JDEV] mod_mymod.c
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5040">[ date ]</a>
+              <a href="thread.html#5040">[ thread ]</a>
+              <a href="subject.html#5040">[ subject ]</a>
+              <a href="author.html#5040">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

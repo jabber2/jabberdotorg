@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] patch to fix presence problem
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20patch%20to%20fix%20presence%20problem&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="009320.html">
+   <LINK REL="Next"  HREF="009318.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] patch to fix presence problem</H1>
+    <B>peter.zijlstra at chello.nl</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20patch%20to%20fix%20presence%20problem&In-Reply-To="
+       TITLE="[JDEV] patch to fix presence problem">peter.zijlstra at chello.nl
+       </A><BR>
+    <I>Wed Sep  5 11:10:49 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="009320.html">[JDEV] Is the jabber applet project alive?
+</A></li>
+        <LI>Next message: <A HREF="009318.html">[JDEV] patch to fix presence problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9314">[ date ]</a>
+              <a href="thread.html#9314">[ thread ]</a>
+              <a href="subject.html#9314">[ subject ]</a>
+              <a href="author.html#9314">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,.
+
+with the latest CVS version there is a problem with mod_presence.
+The reply to a presence/probe isn't given a recipient, thus new
+connects will not see allready connected roster subscribees as such.
+
+The patch included fixes this.
+
+Regards,
+Peter Zijlstra
+-------------- next part --------------
+*** jsm/modules/mod_presence.c	Wed Sep  5 18:01:50 2001
+--- jsm/modules/mod_presence.c.fix	Wed Sep  5 18:04:58 2001
+***************
+*** 70,77 ****
+              log_debug(&quot;mod_presence&quot;,&quot;probe from %s and no presence to return&quot;,jid_full(m-&gt;packet-&gt;from));
+          }else if(_mod_presence_notified(m-&gt;packet-&gt;from,notify))
+          {
+              log_debug(&quot;mod_presence&quot;,&quot;got a probe, responding to %s&quot;,jid_full(m-&gt;packet-&gt;from));
+!             js_deliver(m-&gt;si,jpacket_new(xmlnode_dup(m-&gt;s-&gt;presence)));
+          }else{
+              log_debug(&quot;mod_presence&quot;,&quot;%s attempted to probe by someone not qualified&quot;,jid_full(m-&gt;packet-&gt;from));
+          }
+--- 70,81 ----
+              log_debug(&quot;mod_presence&quot;,&quot;probe from %s and no presence to return&quot;,jid_full(m-&gt;packet-&gt;from));
+          }else if(_mod_presence_notified(m-&gt;packet-&gt;from,notify))
+          {
++             xmlnode x;
+              log_debug(&quot;mod_presence&quot;,&quot;got a probe, responding to %s&quot;,jid_full(m-&gt;packet-&gt;from));
+!             x = xmlnode_dup(m-&gt;s-&gt;presence);
+!             /* tell the packet where to go */
+!             xmlnode_put_attrib(x,&quot;to&quot;,jid_full(m-&gt;packet-&gt;from));
+!             js_deliver(m-&gt;si,jpacket_new(x));
+          }else{
+              log_debug(&quot;mod_presence&quot;,&quot;%s attempted to probe by someone not qualified&quot;,jid_full(m-&gt;packet-&gt;from));
+          }
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="009320.html">[JDEV] Is the jabber applet project alive?
+</A></li>
+	<LI>Next message: <A HREF="009318.html">[JDEV] patch to fix presence problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9314">[ date ]</a>
+              <a href="thread.html#9314">[ thread ]</a>
+              <a href="subject.html#9314">[ subject ]</a>
+              <a href="author.html#9314">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

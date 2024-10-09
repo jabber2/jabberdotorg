@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Best practices regarding roster management by clients ?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Best%20practices%20regarding%20roster%20management%20by%20clients%20%3F&In-Reply-To=%3C20050908130030.GA1163%40blop.info%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="081409.html">
+   <LINK REL="Next"  HREF="081397.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Best practices regarding roster management by clients ?</H1>
+    <B>Lucas Nussbaum</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Best%20practices%20regarding%20roster%20management%20by%20clients%20%3F&In-Reply-To=%3C20050908130030.GA1163%40blop.info%3E"
+       TITLE="[jdev] Best practices regarding roster management by clients ?">lucas at lucas-nussbaum.net
+       </A><BR>
+    <I>Thu Sep  8 08:00:30 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="081409.html">[jdev] Re: JEP-0153: vCard-Based Avatars,	any client support for EXTVAL
+</A></li>
+        <LI>Next message: <A HREF="081397.html">[jdev] Best practices regarding roster management by clients ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81396">[ date ]</a>
+              <a href="thread.html#81396">[ thread ]</a>
+              <a href="subject.html#81396">[ subject ]</a>
+              <a href="author.html#81396">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+The XMPP IM RFC[0] explains how subscriptions and roster integrate.
+However, several points are left to the client author's discretion, and
+this lead to some confusion. I haven't found any global policy about
+this.
+
+[0] <A HREF="http://www.xmpp.org/specs/rfc3921.html#int">http://www.xmpp.org/specs/rfc3921.html#int</A>
+
+First, let's update everyone about subscription states. A contact in
+your roster can have the following subscription states :
+
+- subscription=none : You aren't interested in the other party's
+  presence, and neither is the other party interested in yours.
+
+- subscription=from : The other party is interested in your presence
+  information, but you don't care about the other party. (You must be
+  somebody important ;) 
+
+- subscription=to : You are interested in the other party's presence,
+  but the other party doesn't care about your presence. (The other party
+  must be a client developer of a busy server admin ;)
+
+- subscription=both : You and the other party are interested in each other.
+
+Additionally, if sub=from or sub=none, you can have ask=subscribe, which
+means you asked for the other party authorisation to see its presence,
+but the other party hasn't answered yet.
+
+Now, my questions :
+
+(A) Should a client display contacts with subscription=none or
+subscription=from (and not ask=subscribe) ? You obviously don't care
+about those contacts, and they will never send you any presence, so why
+lose space in your contact list ?
+
+(B) How should clients handle the removal of contacts ? I think that :
+
+- if sub=both, a presence type=unsubscribe should be sent so
+  subscription becomes from (the fact that you are no longer interested
+  in somebody's presence doesn't mean the other party doesn't want to
+  see your presence anymore). Additionally, the client should ask the
+  user whether he wants to forbid the other party from seeing the user
+  presence (and then send presence with type=unsubscribed)
+
+- if sub=to, sub=from or sub=none, there's no problem.
+
+What do you think ?
+
+This is a problem in a lot of clients. For example, both tkabber and
+gajim display contacts with sub=none or sub=from (see (A)), and both
+send presence type=unsubscribe and type=unsubscribed when the user
+&quot;removes&quot; a contact from roster.
+
+When we reach a consensus, maybe an Informational JEP about this should
+be written.
+-- 
+|<i> Lucas Nussbaum
+</I>|<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lucas at lucas-nussbaum.net</A>   <A HREF="http://www.lucas-nussbaum.net/">http://www.lucas-nussbaum.net/</A> |
+</I>|<i> jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lucas at nussbaum.fr</A>             GPG: 1024D/023B3F4F |
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="081409.html">[jdev] Re: JEP-0153: vCard-Based Avatars,	any client support for EXTVAL
+</A></li>
+	<LI>Next message: <A HREF="081397.html">[jdev] Best practices regarding roster management by clients ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81396">[ date ]</a>
+              <a href="thread.html#81396">[ thread ]</a>
+              <a href="subject.html#81396">[ subject ]</a>
+              <a href="author.html#81396">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

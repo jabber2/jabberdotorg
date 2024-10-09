@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Error messages (was: jabber.transport dropping connection..)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Error%20messages%20%28was%3A%20jabber.transport%20dropping%20connection..%29&In-Reply-To=%3CPine.LNX.3.96.990325083741.21807B-100000%40mondo.eppg.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058907.html">
+   <LINK REL="Next"  HREF="058910.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Error messages (was: jabber.transport dropping connection..)</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Error%20messages%20%28was%3A%20jabber.transport%20dropping%20connection..%29&In-Reply-To=%3CPine.LNX.3.96.990325083741.21807B-100000%40mondo.eppg.com%3E"
+       TITLE="[JDEV] Error messages (was: jabber.transport dropping connection..)">jeremie at jabber.org
+       </A><BR>
+    <I>Thu Mar 25 08:58:39 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058907.html">[JDEV] jabber.transport dropping connection..
+</A></li>
+        <LI>Next message: <A HREF="058910.html">[JDEV] Error messages (was: jabber.transport dropping connection..)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58909">[ date ]</a>
+              <a href="thread.html#58909">[ thread ]</a>
+              <a href="subject.html#58909">[ subject ]</a>
+              <a href="author.html#58909">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+&gt;<i> 	I noticed that when an XML processing error occurs, jabber.transport
+</I>&gt;<i> promptly drops connection..  I'm wondering if this is how it should be
+</I>&gt;<i> handled, versus perhaps creating a new entry in our little protocol scheme.
+</I>&gt;<i> 
+</I>&gt;<i> &lt;error&gt;
+</I>&gt;<i>   &lt;type&gt;Parse&lt;/type&gt;
+</I>&gt;<i>   &lt;description&gt;There was an error parsing your XML&lt;/description&gt;
+</I>&gt;<i>   &lt;severity&gt;Fatal&lt;/severity&gt;
+</I>&gt;<i> &lt;/error&gt;
+</I>&gt;<i> 
+</I>&gt;<i> 	This would also allow for other errors that need to be passed back to the
+</I>&gt;<i> client to be, such as user login errors:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;error&gt;
+</I>&gt;<i>   &lt;type&gt;Authentication&lt;type&gt;
+</I>&gt;<i>   &lt;description&gt;Invalid User ID/Password&lt;/description&gt;
+</I>&gt;<i>   &lt;severity&gt;Mild&lt;/severity&gt;
+</I>&gt;<i> &lt;/error&gt;
+</I>&gt;<i> 
+</I>&gt;<i> 	Comments?  Suggestions?
+</I>
+Right now the approach is to actually send a &lt;message/&gt; with
+&lt;ext&gt;error&lt;/ext&gt;.  I've gone back and forth with myself about this a few
+times, and am really sitting on the fence.
+
+On one hand, I like having errors be special messages that clients can
+*optionally* intercept, or just deliver them.  This is just one less thing
+that a client would be _required_ to deal with and one less, and one less
+thing the server and transports have to handle.  Basically, if you
+consider &quot;messages&quot; to be your primary communication channel(like email)
+then errors would just be delivered via that channel.
+
+On the other hand, it's really tempting to add to the protocol and create
+a nice clean way of communicating errors.
+
+I think I'm still of the attitude that if we can utilize the existing
+protocol to do this *and* add the feature of allowing clients to be
+simplier if they want to be, than using messages to communicate errors is
+better.
+
+It's difficult to strike a good balance between protocol bloat and
+overloading the existing structure.  Currently, I see things breaking down
+thusly:
+
+	One time value communications: &lt;messages/&gt;
+	Background &quot;status&quot; communications: &lt;status/&gt;
+	Client only sesion communications: &lt;roster/&gt;
+	Global static information communications &lt;query/&gt;  (this is new)
+
+Errors definately fall into the first category :)
+
+
+On the first subject, just disconnecting when XML errors happen:  yes,
+it's probably not the nicest thing to do... It shouldn't happen in the
+&quot;real world&quot; often, but I'll have it at least send an error of some type
+before it disconnects. 
+
+
+Jer
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058907.html">[JDEV] jabber.transport dropping connection..
+</A></li>
+	<LI>Next message: <A HREF="058910.html">[JDEV] Error messages (was: jabber.transport dropping connection..)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58909">[ date ]</a>
+              <a href="thread.html#58909">[ thread ]</a>
+              <a href="subject.html#58909">[ subject ]</a>
+              <a href="author.html#58909">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

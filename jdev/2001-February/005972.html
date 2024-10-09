@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] RE: AIX compilation of jabber server.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20RE%3A%20AIX%20compilation%20of%20jabber%20server.&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005969.html">
+   <LINK REL="Next"  HREF="005974.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] RE: AIX compilation of jabber server.</H1>
+    <B>David Clissold</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20RE%3A%20AIX%20compilation%20of%20jabber%20server.&In-Reply-To="
+       TITLE="[JDEV] RE: AIX compilation of jabber server.">cliss at austin.ibm.com
+       </A><BR>
+    <I>Fri Feb  2 16:32:51 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005969.html">[JDEV] Re: Server problems 1.2 &amp; 1.4
+</A></li>
+        <LI>Next message: <A HREF="005974.html">[JDEV] Runtime errors with Jabber 1.2/1.4RC on FreeBSD x86
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5972">[ date ]</a>
+              <a href="thread.html#5972">[ thread ]</a>
+              <a href="subject.html#5972">[ subject ]</a>
+              <a href="author.html#5972">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>OK -- I have an answer for the module loading failure on AIX.
+
+dlopen() would not load most of these 1.4 .so modules because they
+were importing one or more symbols that were not resolved at the
+time they were loaded.   The 1.2 ones worked simply because they
+didn't have this problem.
+Looking at all the symbols that are imported by all the .so files,
+I found 3 symbols that were not exported from anywhere.  All 3
+symbols are indeed in the jabberd executable itself.  But, all 3
+start with an underscore ... and &quot;-bexpall&quot; exports all symbols
+except those that begin with an underscore.  Apparently these were
+not there in 1.2.  So the answer is just that we need to explicitly
+export these from the main executable.  Unfortunately, that seems
+to mean creating an export file on the fly.
+
+So, here is my new modification to the &quot;configure&quot; script:
+
+##############################################
+    AIX)
+        #create an export file:
+cat &lt;&lt;EOF &gt;jabberd/jabberd.exp
+#!
+_mio_xml_parser
+_pool_new
+_pool_new_heap
+EOF
+        CFLAGS=&quot;$CFLAGS -DMAXDNAME=1025&quot;
+        MCFLAGS=&quot;$MCFLAGS -Wl,-G&quot;
+        XLDFLAGS=&quot;$XLDFLAGS -Wl,-brtl,-bexpall,-bE:jabberd.exp&quot;;;
+##############################################
+
+That is, I have added the export file with the needed symbols,
+and I have added the &quot;-bE:jabberd.exp&quot; flag.  It's a little uglier, but
+every one of the modules now loads successfully for me.
+
+However, I now have another problem to investigate.
+If I use the default &quot;jabber.xml&quot; file (from 1.4pre2) exactly as is,
+all modules load successfully, but shortly thereafter jabberd dies
+with a &quot;Signal 65535&quot; error.  This does not happen with just
+a basic xml file that loads only pthsock_client.so, or only xdb_file.so,
+for example.
+
+David Clissold
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cliss at austin.ibm.com</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005969.html">[JDEV] Re: Server problems 1.2 &amp; 1.4
+</A></li>
+	<LI>Next message: <A HREF="005974.html">[JDEV] Runtime errors with Jabber 1.2/1.4RC on FreeBSD x86
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5972">[ date ]</a>
+              <a href="thread.html#5972">[ thread ]</a>
+              <a href="subject.html#5972">[ subject ]</a>
+              <a href="author.html#5972">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

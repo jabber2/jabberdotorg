@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] phew
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20phew&In-Reply-To=00113018031600.00817%40dennis">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004929.html">
+   <LINK REL="Next"  HREF="004930.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] phew</H1>
+    <B>Schuyler Heath</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20phew&In-Reply-To=00113018031600.00817%40dennis"
+       TITLE="[JDEV] phew">sheath at jabber.org
+       </A><BR>
+    <I>Thu Nov 30 18:10:43 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004929.html">[JDEV] phew
+</A></li>
+        <LI>Next message: <A HREF="004930.html">[JDEV] Want to run local JUD
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4943">[ date ]</a>
+              <a href="thread.html#4943">[ thread ]</a>
+              <a href="subject.html#4943">[ subject ]</a>
+              <a href="author.html#4943">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+On Thu, Nov 30, 2000 at 06:03:16PM +0200, Dennis Noordsij wrote:
+&gt;<i> Now, someone tries to authenticate. For some reason a simple 
+</I>&gt;<i> 
+</I>&gt;<i> &lt;xdb id=&quot;1&quot; from=&quot;...&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">... at .....</A>/jabber:iq:auth&quot; type=&quot;get&quot;&gt; 
+</I>&gt;<i> 
+</I>&gt;<i> is sent to my xdb module. It expects me to send for example
+</I>&gt;<i> 
+</I>&gt;<i> &lt;xdb id=&quot;1&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">... at .....</A>/jabber:iq:auth&quot; to=&quot;....&quot; type=&quot;result&quot;&gt;
+</I>&gt;<i>   &lt;password/&gt;
+</I>&gt;<i> &lt;/xdb&gt;
+</I>&gt;<i> 
+</I>&gt;<i> Next my LDAP authentication script receives the proper 
+</I>&gt;<i> 
+</I>&gt;<i> &lt;route...&lt;xdb...&lt;query...&lt;iq
+</I>&gt;<i> 
+</I>&gt;<i> tag with the necessary info to perform the authentication.
+</I>&gt;<i> 
+</I>&gt;<i> Question 1
+</I>&gt;<i> Why is that one xdb tag w.r.t. jabber:iq:auth sent to the xdb module? To 
+</I>&gt;<i> fetch the information necessary for authentication (password) from the 
+</I>&gt;<i> backend for use in the proper authentication module? Or to simply check if 
+</I>&gt;<i> the user exists at all?
+</I>
+Simply to check if the user exists.
+
+&gt;<i> 
+</I>&gt;<i> After a succesfull login my xdb script receives 
+</I>&gt;<i> 
+</I>&gt;<i> &lt;xdb id=&quot;4&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">... at .....</A>/jabber:iq:roster&quot; from=&quot;.....&quot; type=&quot;get&quot;&gt;
+</I>&gt;<i> 
+</I>&gt;<i> I answer with for example
+</I>&gt;<i> 
+</I>&gt;<i> &lt;xdb id=&quot;4&quot; type=&quot;result&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">... at .....</A>/jabber:iq:roster&quot; to=&quot;....&quot;&gt;
+</I>&gt;<i>  &lt;iq xmlns=&quot;jabber:iq:roster&quot;&gt;
+</I>&gt;<i>   &lt;item jid=&quot;dennis&quot; name=&quot;Dennis&quot; subscription=&quot;none&quot;&gt;
+</I>&gt;<i>     &lt;group&gt;Friends&lt;/group&gt;
+</I>&gt;<i>   &lt;/item&gt;
+</I>&gt;<i> &lt;/xdb&gt;
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 2 things can happen now.
+</I>&gt;<i> 
+</I>&gt;<i> Firstly, if I have &lt;mod_presence&gt; support loaded in the JSM, the following 
+</I>&gt;<i> happens:
+</I>&gt;<i> 
+</I>&gt;<i> &gt;From the xdb script point of view:
+</I>&gt;<i>  single auth request for the login, as above
+</I>&gt;<i>  single roster request, as above
+</I>&gt;<i>  connection to jabberd lost
+</I>
+Is that the *exact* xml you're sending?  The xml above isn't valid which
+would cause your connection to jabberd to be closed.  Strictly speaking
+it should be &lt;query xmln=&quot;jabber:iq:roster&quot; not &lt;iq/&gt;.  Otherwise I can't
+think of why your connection would be dropped.
+
+&lt;xdb id=&quot;4&quot; type=&quot;result&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">... at .....</A>/jabber:iq:roster&quot; to=&quot;....&quot;&gt;
+  &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+    &lt;item jid=&quot;dennis&quot; name=&quot;Dennis&quot; subscription=&quot;none&quot;&gt;
+      &lt;group&gt;Friends&lt;/group&gt;
+    &lt;/item&gt;
+  &lt;/query&gt;
+&lt;/xdb&gt;
+
+&gt;<i> &gt;From the gabber point of view
+</I>&gt;<i>  logged in .. ok
+</I>&gt;<i>  received roster data .. in &lt;iq..&lt;query..&lt;item tags, xml is correct.
+</I>&gt;<i>  sent &lt;presence/&gt;
+</I>&gt;<i>  transmitter error, disconnected: 4
+</I>&gt;<i> 
+</I>&gt;<i> &gt;From the jabberd -D point of view:
+</I>&gt;<i>  logging in went fine
+</I>&gt;<i>  received the roster information from xdbperl, sent it to jabber
+</I>&gt;<i>  received the &lt;presence/&gt; tag from gabber
+</I>&gt;<i>  delivering to instance xdbperl
+</I>&gt;<i>  base_load.c:323 xdb_get() waiting for <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at domain</A> jabber:iq:roster 
+</I>&gt;<i>  at this point jabberd has died. No segfault, no error, just gone
+</I>
+
+Is your connection lost before you send the result?  If so, your result is
+never received so the request is timed out.  You will still see the
+&quot;delivering to instance xdbperl&quot; even though packet are not reaching your
+script.  Packet are buffered for a default of 30 seconds before they
+are bounced.  This is to give the client a chance to reconnect.  Unfortunately,
+there seems to be a bug that makes jabberd die when a xdb request is resent after
+5 seconds (or something along those lines).
+
+&gt;<i> MAYBE I am wrong about my assumption the mod_presence data is simply the part 
+</I>&gt;<i> of the JSM that handles it, I don't know if it is in any way related to 
+</I>&gt;<i> wether the information comes from xdb_file spool files or somewhere else.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> If I do not have &lt;mod_presence&gt; enabled, this happens:
+</I>&gt;<i> 
+</I>&gt;<i> Same as above, except for the crash
+</I>&gt;<i> deliver.c:84 incoming packet, the &lt;presence/&gt; tag from jabber 
+</I>&gt;<i> I am not sure what happens with it, but it seems to be ok. I do not know if 
+</I>&gt;<i> presence would now actually work.
+</I>&gt;<i> jabber:x:offline is deliverd to my xdbperl module next
+</I>&gt;<i> All is fine and dandy, until
+</I>
+mod_presence makes a xdb request for the user's roster.  This is so
+it can notify the people subscribed to the user that they are now online.
+By disabling mod_presence the xdb request that is crashing the server
+is no longer made.
+
+&gt;<i> I use gabber to send a message to a user that is not logged in (well it 
+</I>&gt;<i> doesn't even exist, but how would jabber now? unless that is what the one 
+</I>&gt;<i> line &lt;xdb type=&quot;get&quot;.....&gt; tag with jabber:iq:auth is for?
+</I>
+Right, that is what the jabber:iq:auth is for.  The user doesn't exist
+therefor offline messages cannot be stored.
+
+&gt;<i> Now, if I do nothing, the xdbperl script will receive three jabber:x:offline 
+</I>&gt;<i> requests, and then jabberd will die.
+</I>&gt;<i> 
+</I>&gt;<i> If I however in the mean time try to send a message to anyone else, jabber 
+</I>&gt;<i> will claim to deliver an xdb auth tag to xdbperl, but in reality jabber dies 
+</I>&gt;<i> before xdbperl has ever seen anything.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> All the time the &quot;crash&quot; sequence (according to the -D output) is
+</I>&gt;<i> 
+</I>&gt;<i> delivering to instance xdbperl
+</I>&gt;<i> xdb_set() waiting for <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at domain</A> jabber:[iq|x]:[offline|auth|roster]
+</I>&gt;<i> 
+</I>&gt;<i> Then jabberd is gone.
+</I>
+It sounds as if jabberd is never receiving your result.  If your connection
+has been dropped, this would make since :)  Or if you're sending invalid
+xml.  Sorry if this doesn't really answer your question.
+
+&gt;<i> My goal is to control the backend jabber uses for all it's user info, that 
+</I>&gt;<i> means I want it to come to me (my script :) to ask anything, to authenticate, 
+</I>&gt;<i> add and delete users from roster lists, vcards, etc. I want to define what 
+</I>&gt;<i> happens with offline messages and how they are retrieved. If possible I would 
+</I>&gt;<i> even like to control the presence list (so I can &quot;fake&quot; a user being 
+</I>&gt;<i> available when in fact he is not logged in to jabber but has an agent 
+</I>&gt;<i> forwarding his messages to sms and receiving his messages and putting them 
+</I>&gt;<i> back on the wire on his behalf. ie the other party thinks he is using jabber 
+</I>&gt;<i> when in fact he is not).
+</I>
+A component may create a session by sending:
+&lt;route type=&quot;session&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at localhost</A>/sms&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">9 at perlsms</A>&quot;/&gt;
+
+All packet for the session will be delivered from jsm to perlsms like so:
+
+&lt;route to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">9 at perlsms</A>&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at localhost</A>/sms&quot;&gt;
+  &lt;message ...../&gt;
+&lt;/route&gt;
+
+To kill your session send:
+&lt;route type=&quot;error&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at localhost</A>/sms&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">9 at perlsms</A>&quot;/&gt;
+
+perlsms.localhost could then be subscribed to the user so it knows the users
+presence and hence when to create or kill the fake session.
+
+&gt;<i> What exactly do the mod_.... references do? Do they simply define features 
+</I>&gt;<i> that are on or off?
+</I>
+Yes.  They also allows you to control the order in which the modules are called
+and to make it simpler to extend jsm in the future.
+
+&gt;<i> And why does jabber die on me like that? Btw I use the Net::Jabber module, 
+</I>&gt;<i> but even if it was flakey it shouldn't cause jabberd to die right?
+</I>
+Because it's a bug :)
+
+Schuyler
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004929.html">[JDEV] phew
+</A></li>
+	<LI>Next message: <A HREF="004930.html">[JDEV] Want to run local JUD
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4943">[ date ]</a>
+              <a href="thread.html#4943">[ thread ]</a>
+              <a href="subject.html#4943">[ subject ]</a>
+              <a href="author.html#4943">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

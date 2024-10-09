@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Bug in jabberd2 (2.1.13) on win32
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Bug%20in%20jabberd2%20%282.1.13%29%20on%20win32&In-Reply-To=%3C35d657240802060834y5426303cw942a6ecc869307cd%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085619.html">
+   <LINK REL="Next"  HREF="085629.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Bug in jabberd2 (2.1.13) on win32</H1>
+    <B>Dan Hulme</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Bug%20in%20jabberd2%20%282.1.13%29%20on%20win32&In-Reply-To=%3C35d657240802060834y5426303cw942a6ecc869307cd%40mail.gmail.com%3E"
+       TITLE="[jdev] Bug in jabberd2 (2.1.13) on win32">dhulme at gmail.com
+       </A><BR>
+    <I>Wed Feb  6 10:34:38 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085619.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+        <LI>Next message: <A HREF="085629.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85620">[ date ]</a>
+              <a href="thread.html#85620">[ thread ]</a>
+              <a href="subject.html#85620">[ subject ]</a>
+              <a href="author.html#85620">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>All of this information is nice to have, however, it all seems like it
+would cause my logon to fail even when SASL is disabled.  However, as
+soon as I disable SASL (even on the client), I am able to connect.  In
+other words, without changing the server configuration at all, I can
+connect if I tell the client not to use encryption.  Doesn't this
+basically mean my ntlogon etc. is configured correctly?
+
+On Feb 6, 2008 3:55 AM, Adam Strzelecki &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ono at java.pl</A>&gt; wrote:
+&gt;<i> Dan,
+</I>&gt;<i>
+</I>&gt;<i> It seems your problem isn't related neither to SASL or ntlogon, nor to
+</I>&gt;<i> TLS. It is the &quot;bind&quot; command problem that fails.
+</I>&gt;<i> I'm not sure why it fails though but it may be StorageManager that
+</I>&gt;<i> isn't running for your domain and which is responsible for binding
+</I>&gt;<i> after successful authentication.
+</I>&gt;<i>
+</I>&gt;<i> Make sure SM is running and its sm.xml sm/id matches c2s/local/id of
+</I>&gt;<i> c2s.xml, checkout you got same domain and your components are
+</I>&gt;<i> connected to router:
+</I>&gt;<i>  &gt; c2s.log
+</I>&gt;<i> &gt; Tue Feb 05 00:17:11 2008 [notice] [mydomain.com] configured;
+</I>&gt;<i> &gt; realm=mydomain.com, registration disabled
+</I>&gt;<i> &gt; Tue Feb 05 00:17:11 2008 [notice] connection to router established
+</I>&gt;<i>  &gt; sm.log
+</I>&gt;<i> &gt; Tue Feb 05 00:17:19 2008 [notice] id: mydomain.com
+</I>&gt;<i>
+</I>&gt;<i> &gt; Tue Feb 05 00:17:19 2008 [notice] connection to router established
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Note that domain setting is setting used for ntlogon to indicate which
+</I>&gt;<i> ADS domain (or computer) should be used as auth source.
+</I>&gt;<i>
+</I>&gt;<i> &gt; SEND: &lt;iq type='set' id='1007'&gt;&lt;bind
+</I>&gt;<i> &gt; xmlns='urn:ietf:params:xml:ns:xmpp-
+</I>&gt;<i> &gt; bind'&gt;&lt;resource&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Coccinella at computer</A>&lt;/resource&gt;&lt;/bind&gt;&lt;/iq&gt;
+</I>&gt;<i> &gt; RECV: &lt;stream:error
+</I>&gt;<i> &gt; xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;&lt;internal-server-error
+</I>&gt;<i> &gt; xmlns='urn:ietf:params:xml:ns:xmpp-streams'/&gt;&lt;text
+</I>&gt;<i> &gt; xmlns='urn:ietf:params:xml:ns:xmpp-streams'&gt;internal server
+</I>&gt;<i> &gt; error&lt;/text&gt;&lt;/stream:error&gt;&lt;/stream:stream&gt;
+</I>&gt;<i> &gt; SEND: &lt;/stream:stream&gt;
+</I>&gt;<i>
+</I>&gt;<i> @Tomasz: Do you have any clue what else may cause internal server
+</I>&gt;<i> error? Would be nice if we could have more clear error reporting in
+</I>&gt;<i> this case @ c2s.c:
+</I>&gt;<i>
+</I>&gt;<i>              /* route errors */
+</I>&gt;<i>              if(nad_find_attr(nad, 0, -1, &quot;error&quot;, NULL) &gt;= 0) {
+</I>&gt;<i>                  log_debug(ZONE, &quot;routing error&quot;);
+</I>&gt;<i>
+</I>&gt;<i>                  sx_error(sess-&gt;s, stream_err_INTERNAL_SERVER_ERROR,
+</I>&gt;<i> &quot;internal server error&quot;);
+</I>&gt;<i>                  sx_close(sess-&gt;s);
+</I>&gt;<i>
+</I>&gt;<i>                  nad_free(nad);
+</I>&gt;<i>                  return 0;
+</I>&gt;<i>              }
+</I>&gt;<i>
+</I>&gt;<i> I think we could pass there some more meaningful error description to
+</I>&gt;<i> the client? Like &quot;sm for this domain is not running&quot; or cannot connect
+</I>&gt;<i> to sm.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Cheers,
+</I>&gt;<i> --
+</I>&gt;<i> Adam Strzelecki |: nanoant.com :|
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085619.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+	<LI>Next message: <A HREF="085629.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85620">[ date ]</a>
+              <a href="thread.html#85620">[ thread ]</a>
+              <a href="subject.html#85620">[ subject ]</a>
+              <a href="author.html#85620">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

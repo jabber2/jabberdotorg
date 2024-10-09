@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] A rapidxml fork for XMPP
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20A%20rapidxml%20fork%20for%20XMPP&In-Reply-To=%3CCABt5oAvXagRYynQXMO7-Dt8AkKKjNZrmCMgZeXH%2B67yXfb74Eg%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="089780.html">
+   <LINK REL="Next"  HREF="089785.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] A rapidxml fork for XMPP</H1>
+    <B>mat henshall</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20A%20rapidxml%20fork%20for%20XMPP&In-Reply-To=%3CCABt5oAvXagRYynQXMO7-Dt8AkKKjNZrmCMgZeXH%2B67yXfb74Eg%40mail.gmail.com%3E"
+       TITLE="[jdev] A rapidxml fork for XMPP">mat at squareconnect.com
+       </A><BR>
+    <I>Thu Dec  5 06:15:51 UTC 2013</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="089780.html">[jdev] A rapidxml fork for XMPP
+</A></li>
+        <LI>Next message: <A HREF="089785.html">[jdev] A rapidxml fork for XMPP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89781">[ date ]</a>
+              <a href="thread.html#89781">[ thread ]</a>
+              <a href="subject.html#89781">[ subject ]</a>
+              <a href="author.html#89781">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>The significance of bloat is less than initially expected. We have built a
+complete XMPP M2M framework for the WAN side of the equation that ends up
+with  very small packets - certainly smaller than most network frames&#8230;
+Presence and command and sensor readings in practice never exceed the
+network frame size. Authentication and binding etc is a little onerous, but
+not overly so and happens rarely. The XMPP extension we have developed for
+M2M  is being used by some large global brands on some fairly large
+implementations. So far, bloat has never come up (except in the initial
+technical sales meeting). Nor has latency&#8230; We frequently demo turning
+lights on and off in Asia via a server on the west coast. That being said
+there are use cases where link local connection is required for both
+reliability and performance reasons. And in this case we use the same XML
+stanza's sent via CoAP for these use cases, or where appropriate the native
+'association' commands if the end points are on some specialized control
+protocol.
+
+I do agree on the need for using optimized parsers (we have an xml parser
+that fits in a few hundred bytes of code and read only memory) that is
+extremely fast and efficient on small devices. BTW the trick to avoid the
+tag comparison is to convert the various tags and namespaces to hash values
+as they come in during parsing and then only compare on the hash value. We
+have a small utility that calculates the hash values and writes as a header
+file as part of the compile time all the possible namespaces and tag names
+that we are interested in. Extremely efficient in terms of both computation
+and memory space. Careful choice of the hash algorithm means very little
+chance of collision.
+
+When looking at 'bloat', the question to be asked is what is the impact on
+the overall device/system. We have found in practice and  at scale that it
+is not a major issue. It has not measurably affected the latency across the
+internet either &#8230; and from a computational point of view, sending things
+via SSL is probably a more intense compute than parsing the XML. And that
+would be done whether Binary or not. You can make the argument that your
+cell phone data plan is directly affected&#8230; but again, in practise it is
+very small in comparison to everything else going over the connection.
+
+I am interested in Alexander Holland's statement &quot;it's because they are
+unnecessary for the simple task of sending and receiving messages or
+presence states&quot;. To an extent this is true. We work with a lot
+of proprietary binary protocols&#8230; and transform them to standardized XMPP
+XML stanza's when something of interest needs to be published to a wide set
+of listeners in the cloud&#8230; or when an external system makes a control
+request. I think for light weight battery powered sensors that are part of
+a mesh network then binary makes sense because at that level, every CPU
+cycle costs battery life.  We have found though that on almost any device
+that is permanently powered and has a network stack on it&#8230; the overhead is
+trivial. I think the key to breaking this argument down is to determine if
+the  WAN has different architectural requirements than the link local
+level. And that leads to different tradeoffs. That being said we run the
+XMPP stanza's over CoAP for link local control when we want UDP based IP
+connections. Because the XML parsing is efficient and and robust to change.
+And of course you can build that into a binary protocol.. at the cost of
+simplicity&#8230; and then you may as well use XMPP&#8230;
+
+My two cents worth, based on implementing production quality multi-country
+M2M architectures using XMPP.
+
+It works, it is secure, it is scalable and 'fast enough'
+
+Mat
+
+
+
+
+
+
+
+
+
+On Wed, Dec 4, 2013 at 6:59 PM, Yusuke DOI &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">yusuke.doi at toshiba.co.jp</A>&gt; wrote:
+
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> I don't oppose your idea but let me do some 'defence' for XML-ish data
+</I>&gt;<i> from industrial point of view...
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> (2013-12-05 08:25), Alexander Holler wrote:
+</I>&gt;<i>
+</I>&gt;&gt;<i> But my whole point is, that they are bloat in both, code and resource
+</I>&gt;&gt;<i> size (I know about in-situ parsers, but even those have to parse).
+</I>&gt;&gt;<i> And I don't see any reason why the stuff which goes over the wire
+</I>&gt;&gt;<i> should be in a &quot;somewhat&quot; human readable format. And with SSL, that
+</I>&gt;&gt;<i> human readable thing is already gone (on the wire).
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Thanks to the 'bloat' we can import external entities such as IEC or IEEE
+</I>&gt;<i> standards. They looks like dinosaurs for net-ish peoples, but they are
+</I>&gt;<i> still alive and growing. And some of such industrial people are trying to
+</I>&gt;<i> use XMPP (OpenADR, IEEE 21451-4, etc.) as data transport and session
+</I>&gt;<i> management framework.
+</I>&gt;<i>
+</I>&gt;<i> For M2M side, I feel there are two schools: JSON-CoAP-IETF-ish M2M and
+</I>&gt;<i> IEEE/IEC/ISO-ish M2M. The both say 'we are the M2M framework' but the field
+</I>&gt;<i> is totally different. Former will born and die rapidly, with high evolution
+</I>&gt;<i> rate. Looks cool. But for (at least some part of) industrial people, doing
+</I>&gt;<i> business over such framework is not acceptable. XMPP, combined with
+</I>&gt;<i> well-defined XML, will be reliable enough (will not die too soon), and has
+</I>&gt;<i> strong schema system to start writing specs without a reference
+</I>&gt;<i> implementation (don't blame me on it, that's the different world :p ).
+</I>&gt;<i>
+</I>&gt;<i> We cannot build long-running infrastructures such as electrical grid, mass
+</I>&gt;<i> transport system, or international logistics system without such 'bloats'.
+</I>&gt;<i> I like XMPP because of it.
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i>
+</I>&gt;<i> Yusuke
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i>
+</I>
+
+
+-- 
+
+Mat Henshall
+Founder and CEO, Square Connect, Inc.
+San Jose, CA
+www.squareconnect.com
+cell: 650.814.7585
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20131204/f8b78d63/attachment-0001.html">https://www.jabber.org/jdev/attachments/20131204/f8b78d63/attachment-0001.html</A>&gt;
+</PRE>
+
+
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="089780.html">[jdev] A rapidxml fork for XMPP
+</A></li>
+	<LI>Next message: <A HREF="089785.html">[jdev] A rapidxml fork for XMPP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89781">[ date ]</a>
+              <a href="thread.html#89781">[ thread ]</a>
+              <a href="subject.html#89781">[ subject ]</a>
+              <a href="author.html#89781">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

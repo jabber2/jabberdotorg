@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Net::Jabber and jabberd config
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Net%3A%3AJabber%20and%20jabberd%20config&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005297.html">
+   <LINK REL="Next"  HREF="005305.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Net::Jabber and jabberd config</H1>
+    <B>Chris Goldman</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Net%3A%3AJabber%20and%20jabberd%20config&In-Reply-To="
+       TITLE="[JDEV] Net::Jabber and jabberd config">gold at spine.com
+       </A><BR>
+    <I>Wed Dec 20 19:11:58 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005297.html">[JDEV] Compiling JabberServer 1.2, 'pool_new', 'pool_heap'
+</A></li>
+        <LI>Next message: <A HREF="005305.html">[JDEV] Net::Jabber and jabberd config
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5294">[ date ]</a>
+              <a href="thread.html#5294">[ thread ]</a>
+              <a href="subject.html#5294">[ subject ]</a>
+              <a href="author.html#5294">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello all,
+
+First, I'd like to thank everyone here -- I've lurked for a while, and
+gotten a jabber 1.2 server working, with groupchat.
+
+Now, however, I need more active assistance.  I wonder, can anyone help
+me figure out what I am doing wrong?
+
+I am trying to set my jabber server up to accept communication on a
+TCP/IP link, and use Net::Jabber to write my component.
+
+Here is the relevant part of my jabber.xml file:
+
+  &lt;service id=&quot;mylistener&quot;&gt; 
+    &lt;host/&gt; 
+    &lt;accept&gt; 
+      &lt;ip&gt;208.185.86.169&lt;/ip&gt; 
+      &lt;port&gt;7423&lt;/port&gt; 
+      &lt;secret&gt;tell_no_one&lt;/secret&gt; 
+    &lt;/accept&gt; 
+  &lt;/service&gt; 
+
+And my script:
+
+#!/usr/bin/perl -w
+
+use Net::Jabber;
+$Con = new Net::Jabber::Component( debuglevel =&gt; 2,
+                                   debugfile =&gt; 'stdout',
+                                   debugtime =&gt; 1 );
+
+$Con-&gt;Connect( hostname =&gt; '208.185.86.169',
+               port =&gt; 7423,
+               secret =&gt; 'tell_no_one',
+               componentname =&gt; 'mylistener' );
+
+if ($Con-&gt;Connected())
+  { 
+    print &quot;We are connected to the server...\n&quot;;
+  }
+
+$Con-&gt;Disconnect();
+
+When I start my server, everything looks okay, but it fails to respond
+to connection requests from my regular IM clients.  When I run my
+script, with debugging on, I get this:
+
+[20:03:15] XML::Stream: new: hostname = (im.cddms.com)
+[20:03:15] XML::Stream: SetCallBacks: tag(node) func(CODE(0x85b6040))
+[20:03:15] NJ::Component: Connect: type()
+[20:03:15] NJ::Component: Connect: hostname(208.185.86.169)
+secret(tell_no_one) componentname(mylistener)
+[20:03:15] XML::Stream: Connect: type(tcpip)
+[20:03:15] XML::Stream: Send: (&lt;?xml version=&quot;1.0&quot;?&gt;&lt;stream:stream
+xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A>
+xmlns=&quot;jabber:component:accept&quot; to=&quot;mylistener&quot; from=&quot;im.cddms.com&quot; &gt;)
+
+Here it hangs.  If I kill the server, the component client quits,
+logging this:
+
+[20:03:56] XML::Stream: Read: ()
+[20:03:56] XML::Stream: Read: ERROR
+[20:03:56] NJ::Component: Connected: (0)
+[20:03:56] NJ::Component: Disconnect: bye bye
+
+Finally, the relevant (I think) server debug output:
+
+Wed Dec 20 17:01:22 2000  deliver.c:206 Registering goldlistener with
+instance mylistener
+Wed Dec 20 17:01:22 2000  base_host.c:60 base_host_config registering
+host (null) with section 'mylistener'
+
+Wed Dec 20 17:01:22 2000  deliver.c:206 Registering (null) with instance
+mylistener
+Wed Dec 20 17:01:22 2000  base_accept.c:563 base_accept_config
+performing configuration &lt;accept&gt;
+      &lt;ip&gt;208.185.86.169&lt;/ip&gt;
+      &lt;port&gt;7423&lt;/port&gt;
+      &lt;secret&gt;tell_no_one&lt;/secret&gt;
+    &lt;/accept&gt;
+
+Wed Dec 20 17:01:22 2000  base_accept.c:604 new sink 80835C0
+Wed Dec 20 17:01:22 2000  deliver.c:473 DELIVER 1:update.jabber.org
+&lt;presence from='localhost' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jsm at update.jabber.org</A>/1.2'/&gt;
+Wed Dec 20 17:01:22 2000  deliver.c:344 delivering to instance
+'mylistener'
+Wed Dec 20 17:01:22 2000  deliver.c:344 delivering to instance 'dnsrv'
+Wed Dec 20 17:01:22 2000  base_accept.c:422 new listener thread starting
+for &lt;host mylistener=''/&gt;
+Wed Dec 20 17:02:53 2000  base_accept.c:453 new connection on port 7423
+from ip 208.185.86.169 as fd 14
+Wed Dec 20 17:02:53 2000  log.c:105 &lt;log type='notice'
+from='-internal'&gt;base_accept: new connection on port 7423 from ip
+208.185.86.
+169&lt;/log&gt;
+Wed Dec 20 17:02:53 2000  deliver.c:473 DELIVER 3:-internal &lt;log
+type='notice' from='-internal'&gt;base_accept: new connection on port
+7423 from ip 208.185.86.169&lt;/log&gt;
+Wed Dec 20 17:02:53 2000  deliver.c:344 delivering to instance 'logger'
+20001221T01:02:53: [notice] (-internal): base_accept: new connection on
+port 7423 from ip 208.185.86.169
+
+I have this sneaking suspicion that somehow, I've set up a loop in
+resolving the destination of some message, and this is what is causing
+the hang, but my understanding of the jabber architecture still has a
+ways to go.
+
+Any help is appreciated.  Thanks!
+
+Chris Goldman
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gold at spine.com</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005297.html">[JDEV] Compiling JabberServer 1.2, 'pool_new', 'pool_heap'
+</A></li>
+	<LI>Next message: <A HREF="005305.html">[JDEV] Net::Jabber and jabberd config
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5294">[ date ]</a>
+              <a href="thread.html#5294">[ thread ]</a>
+              <a href="subject.html#5294">[ subject ]</a>
+              <a href="author.html#5294">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

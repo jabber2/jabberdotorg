@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] SASL debugging
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20SASL%20debugging&In-Reply-To=DDBBBCA4-7586-408D-B63E-FF626D605E27%40gmail.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="023549.html">
+   <LINK REL="Next"  HREF="023551.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] SASL debugging</H1>
+    <B>Norman Rasmussen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20SASL%20debugging&In-Reply-To=DDBBBCA4-7586-408D-B63E-FF626D605E27%40gmail.com"
+       TITLE="[jdev] SASL debugging">norman at rasmussen.co.za
+       </A><BR>
+    <I>Sat Dec 10 17:45:46 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="023549.html">[jdev] SASL debugging
+</A></li>
+        <LI>Next message: <A HREF="023551.html">[jdev] SASL debugging
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23553">[ date ]</a>
+              <a href="thread.html#23553">[ thread ]</a>
+              <a href="subject.html#23553">[ subject ]</a>
+              <a href="author.html#23553">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>except Object is a real-object with fields, and not an XmlNode with
+attributes, and children, etc.  Not that anything create using xsd.exe
+is a really-usable-object. (please ignore the blood stains on the
+wall, I have still not recovered from the fight I had with xsd.exe)
+
+On 12/11/05, Joe Hildebrand &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hildjj at gmail.com</A>&gt; wrote:
+&gt;<i> This always works in Jabber-Net:
+</I>&gt;<i>
+</I>&gt;<i> System.Text.Encoding.UTF8.GetBytes(elem.OuterXml)
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> On Dec 10, 2005, at 3:42 PM, Norman Rasmussen wrote:
+</I>&gt;<i>
+</I>&gt;<i> &gt; Trying to get an object serialized into a utf-8 xml string _without_
+</I>&gt;<i> &gt; the 0xfeff header.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; public static string GetStringFromObject(object Object, Type Type) {
+</I>&gt;<i> &gt;     MemoryStream ms = new MemoryStream();
+</I>&gt;<i> &gt;     StreamWriter sw = new StreamWriter(ms, Encoding.UTF8);
+</I>&gt;<i> &gt;     XmlTextWriter xw = new XmlTextWriter(sw);
+</I>&gt;<i> &gt;     xw.Formatting = Formatting.Indented;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;     XmlSerializer serializer = new XmlSerializer(Type);
+</I>&gt;<i> &gt;     serializer.Serialize(xw, Object);
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;     return Encoding.UTF8.GetString(ms.ToArray()).TrimStart('\xfeff');
+</I>&gt;<i> &gt; }
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; if I tried it any other way, then either the xml would be labeled as
+</I>&gt;<i> &gt; utf-16 (when it was actually utf-8/ascii - who knows because it all
+</I>&gt;<i> &gt; happened to be 7-bit clean) and the web service would bitch, or it
+</I>&gt;<i> &gt; would be utf-16 and the web service would bitch, or I managed to get
+</I>&gt;<i> &gt; utf-8 encoding (and the xml header said it was utf-8), but the web
+</I>&gt;<i> &gt; service I was sending the string to would choke on the utf-8 leader.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On 12/10/05, David Waite &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwaite at gmail.com</A>&gt; wrote:
+</I>&gt;<i> &gt;&gt;&gt; As you found, sometimes the .net framework actually does a utf-16
+</I>&gt;<i> &gt;&gt;&gt; encoding when you ask it for utf-8.  This has nailed me recently
+</I>&gt;<i> &gt;&gt;&gt; when
+</I>&gt;<i> &gt;&gt;&gt; trying to use webservices.  I ended up having to add and remove the
+</I>&gt;<i> &gt;&gt;&gt; 'marker' bytes (0xff, 0xfe) at the front of the byte array to get it
+</I>&gt;<i> &gt;&gt;&gt; to work properly.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; Are you encoding using the io framework rather than the text
+</I>&gt;<i> &gt;&gt; encoding framework?
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; -David Waite
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; --
+</I>&gt;<i> &gt; - Norman Rasmussen
+</I>&gt;<i> &gt;  - Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>
+</I>&gt;<i> &gt;  - Home page: <A HREF="http://norman.rasmussen.co.za/">http://norman.rasmussen.co.za/</A>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+
+--
+- Norman Rasmussen
+ - Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>
+ - Home page: <A HREF="http://norman.rasmussen.co.za/">http://norman.rasmussen.co.za/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="023549.html">[jdev] SASL debugging
+</A></li>
+	<LI>Next message: <A HREF="023551.html">[jdev] SASL debugging
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23553">[ date ]</a>
+              <a href="thread.html#23553">[ thread ]</a>
+              <a href="subject.html#23553">[ subject ]</a>
+              <a href="author.html#23553">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

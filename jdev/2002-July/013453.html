@@ -1,0 +1,228 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] id attr in message packets
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20id%20attr%20in%20message%20packets&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="013461.html">
+   <LINK REL="Next"  HREF="013462.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] id attr in message packets</H1>
+    <B>Constantin Nickonov</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20id%20attr%20in%20message%20packets&In-Reply-To="
+       TITLE="[JDEV] id attr in message packets">Nickonov at jabber.com
+       </A><BR>
+    <I>Tue Jul 16 08:59:50 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="013461.html">[JDEV] 100k users...
+</A></li>
+        <LI>Next message: <A HREF="013462.html">[JDEV] Compiling jadc2s
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13453">[ date ]</a>
+              <a href="thread.html#13453">[ thread ]</a>
+              <a href="subject.html#13453">[ subject ]</a>
+              <a href="author.html#13453">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>You could also make the 'thread' attribute hold more than one value (choose
+your delimeter), i.e.,
+
+  &lt;thread&gt;root;parent;grandparent;etc&lt;/thread&gt;
+
+Since your client need only communicate with others like it, you can both
+generate and make sense of this value at any point.
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Sean Wheeler [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">swheeler at media.mit.edu</A>]
+</I>&gt;<i> Sent: Monday, July 15, 2002 8:58 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] id attr in message packets
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Thanks for the explanation. Your point about message ordering is well
+</I>&gt;<i> taken, I imagine many would complain if servers did not ensure ordered
+</I>&gt;<i> arrival.  I now understand the id tag is not really for pinning down
+</I>&gt;<i> messages in the conversation but more as a client 
+</I>&gt;<i> convenience. This sucks,
+</I>&gt;<i> so since I'm not building an IM client and I don't have to 
+</I>&gt;<i> interact with
+</I>&gt;<i> any other clients in my project I might have to veer from the 
+</I>&gt;<i> standard for
+</I>&gt;<i> my purposes.
+</I>&gt;<i> 
+</I>&gt;<i> I think my problem does exist and in fact is a general one if you
+</I>&gt;<i> want/need to think of an interchange as a nested tree 
+</I>&gt;<i> structure. A reply
+</I>&gt;<i> is a child node, and your point is well taken that preserving 
+</I>&gt;<i> ordering of
+</I>&gt;<i> messages from a single client helps a lot. But since the tree 
+</I>&gt;<i> is deeply
+</I>&gt;<i> nested, how can you make reference to any node in the tree?  My first
+</I>&gt;<i> interpretation of what a thread &quot;should be&quot; is a reference to the root
+</I>&gt;<i> node.  This is actually the case, but in a more limited way, since the
+</I>&gt;<i> protocol only creates a tree of depth 1.
+</I>&gt;<i> 
+</I>&gt;<i> One scheme allowing 'n-depth tree' conversations is for a 
+</I>&gt;<i> child to be able
+</I>&gt;<i> to identify its parent, and this is what I was looking at the 
+</I>&gt;<i> id tag for.
+</I>&gt;<i> Another more elegant scheme is to use a tag that refers to 
+</I>&gt;<i> the root node
+</I>&gt;<i> of the implicit tree structure, call it 'root', or 'conversation' or
+</I>&gt;<i> whatever, and stick it in an x tag in another namespace.  Given the
+</I>&gt;<i> protocol and the common usage of id, this creates the kind of tree I'm
+</I>&gt;<i> looking for, but there's no assurance that the tree structure is
+</I>&gt;<i> accurately represented if a third party that doesnt have the full
+</I>&gt;<i> conversation history is thrown in.  For this the implicit root of the
+</I>&gt;<i> conversation would have to identify itself somehow, either by adding
+</I>&gt;<i> another tag in the x namespace, setting thread and root to 
+</I>&gt;<i> the same value,
+</I>&gt;<i> etc...
+</I>&gt;<i> 
+</I>&gt;<i> I'll have to take a closer look at JEP-0033.
+</I>&gt;<i> 
+</I>&gt;<i> Sean
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> On Mon, 15 Jul 2002, Ben Schumacher wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; On Sun, 14 Jul 2002, Sean Wheeler wrote:
+</I>&gt;<i> &gt; &gt; On Sun, 14 Jul 2002, Jeremy Nickurak wrote:
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; The id attribute is intended to be used so that the 
+</I>&gt;<i> sender and receiver
+</I>&gt;<i> &gt; &gt; &gt; can refer to particular messages. For example, someone 
+</I>&gt;<i> might implement a
+</I>&gt;<i> &gt; &gt; &gt; &quot;addendum&quot; message type/namespace that changes some 
+</I>&gt;<i> element of the
+</I>&gt;<i> &gt; &gt; &gt; previous message:
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &lt;message id=&quot;3&quot; type=&quot;addendum&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bar at media</A>&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at media</A>&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;    &lt;x xmlns=&quot;jabber:x:addendum&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;       &lt;append id=&quot;1&quot;&gt;
+</I>&gt;<i> &gt; &gt; &gt;          See also <A HREF="http://somepage.com/">http://somepage.com/</A> for more details.
+</I>&gt;<i> &gt; &gt; &gt;       &lt;/append&gt;
+</I>&gt;<i> &gt; &gt; &gt;    &lt;/x&gt;
+</I>&gt;<i> &gt; &gt; &gt; &lt;/message&gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; That way, the &lt;append&gt; tag's &quot;id&quot; attribute can be 
+</I>&gt;<i> uniquesly associated
+</I>&gt;<i> &gt; &gt; &gt; with a particular mesage <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bar at media</A> has already sent to 
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at media.</A>
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Thanks!
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Yes, this is precisely the kind of thing i'm looking for. 
+</I>&gt;<i>  I also need the
+</I>&gt;<i> &gt; &gt; ability to refer to the reply that foo sends, and I can't 
+</I>&gt;<i> really figure
+</I>&gt;<i> &gt; &gt; out how to do this without some non-standard crutch.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Maybe a rough ascii diagram helps.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt;    [...snip...]
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Sean-
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I think you are struggling to find a solution to a problem 
+</I>&gt;<i> that doesn't
+</I>&gt;<i> &gt; really exist. Since all Jabber messages arrive in order (at 
+</I>&gt;<i> least with
+</I>&gt;<i> &gt; current server implementations), there is no need to know 
+</I>&gt;<i> explicitly that
+</I>&gt;<i> &gt; a user sends two messages as a reply to a single message 
+</I>&gt;<i> from the other
+</I>&gt;<i> &gt; end. It is implicit that if a message is sent by bar to 
+</I>&gt;<i> foo, and then foo
+</I>&gt;<i> &gt; sends two responses on the same &lt;thread&gt;, they are 
+</I>&gt;<i> obviously &quot;replying&quot; to
+</I>&gt;<i> &gt; the original message by bar. In addition, id numbers used 
+</I>&gt;<i> in most clients
+</I>&gt;<i> &gt; don't relate directly to conversations. Most client 
+</I>&gt;<i> libraries will simply
+</I>&gt;<i> &gt; increase the value of the id each time a packet is sent. id's are
+</I>&gt;<i> &gt; generally not intended for this purpose. In fact, there is 
+</I>&gt;<i> no guarantee
+</I>&gt;<i> &gt; that other clients will behave in the way you have 
+</I>&gt;<i> described, and I would
+</I>&gt;<i> &gt; even go so far as to venture a guess that very few currently do.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; For example, considering the following exchange:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; 1) foo sends a message to bar with id='1'
+</I>&gt;<i> &gt; 2) bar replies to message from foo without an id
+</I>&gt;<i> &gt; 3) foo sends an iq request in iq:register to component x with id='2'
+</I>&gt;<i> &gt; 4) foo replies to message from bar with id='3'
+</I>&gt;<i> &gt; 5) component x sends iq result to foo with id='2'
+</I>&gt;<i> &gt; 6) bar replies to message from foo without an id
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ... etc.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; You'll notice that bar does not use id's in its message 
+</I>&gt;<i> packets. This
+</I>&gt;<i> &gt; behavior can be expected, because it is considered an 
+</I>&gt;<i> optional attribute
+</I>&gt;<i> &gt; in the spec. (see: 
+</I>&gt;<i> <A HREF="http://jabber.org/ietf/draft-miller-xmpp-core-00.txt">http://jabber.org/ietf/draft-miller-xmpp-core-00.txt</A>)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Basically, for the purposes of message threading, the 
+</I>&gt;<i> &lt;thread&gt; element is
+</I>&gt;<i> &gt; the appropriate feature of the protocol to use. If this is 
+</I>&gt;<i> insufficient
+</I>&gt;<i> &gt; for your needs, I suggest you look at JEP-0033. While this 
+</I>&gt;<i> JEP is still
+</I>&gt;<i> &gt; experimental, it would provide you with the functionality 
+</I>&gt;<i> you need and
+</I>&gt;<i> &gt; would save you from trying to overload another feature of 
+</I>&gt;<i> the protocol,
+</I>&gt;<i> &gt; which could cause incompatibilities and issues with some clients.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; See JEP-0033: <A HREF="http://jabber.org/jeps/jep-0033.html">http://jabber.org/jeps/jep-0033.html</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Cheers,
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; bs.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="013461.html">[JDEV] 100k users...
+</A></li>
+	<LI>Next message: <A HREF="013462.html">[JDEV] Compiling jadc2s
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13453">[ date ]</a>
+              <a href="thread.html#13453">[ thread ]</a>
+              <a href="subject.html#13453">[ subject ]</a>
+              <a href="author.html#13453">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

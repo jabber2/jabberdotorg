@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Memory leak in jabberd 1.4.2
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Memory%20leak%20in%20jabberd%201.4.2&In-Reply-To=20030314073302.GA22107%40reks.ftc.ru">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="016055.html">
+   <LINK REL="Next"  HREF="016036.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Memory leak in jabberd 1.4.2</H1>
+    <B>Eugeny Korekin</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Memory%20leak%20in%20jabberd%201.4.2&In-Reply-To=20030314073302.GA22107%40reks.ftc.ru"
+       TITLE="[JDEV] Memory leak in jabberd 1.4.2">az at ftc.ru
+       </A><BR>
+    <I>Mon Mar 24 05:03:51 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="016055.html">[JDEV] Connection problems
+</A></li>
+        <LI>Next message: <A HREF="016036.html">[JDEV] How to evolve a namespace or protocol?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#16067">[ date ]</a>
+              <a href="thread.html#16067">[ thread ]</a>
+              <a href="subject.html#16067">[ subject ]</a>
+              <a href="author.html#16067">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Eugeny Korekin &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">az at ftc.ru</A>&gt; writes:
+
+&gt;<i> I've found outh, that there is a memory leak in jabberd 1.4.2 and
+</I>&gt;<i> jabberd14 from cvs. When jabberd is using external xdb authentification
+</I>&gt;<i> module(i use xdb_auth_cpile), and user tries to login with _wrong_
+</I>&gt;<i> password, jabberd aallocates some memory, and do not frees it after auth
+</I>&gt;<i> attempt. When user uses right password, all is ok. After many
+</I>&gt;<i> unsuccesful auth attempts jabberd crashes.
+</I>
+I has found cause of memory leaks:
+
+*** jabberd/xdb.c	Tue Feb 25 07:35:13 2003
+--- /home/az/src/jabberd/jabberd/xdb.c	Mon Mar 24 13:54:37 2003
+***************
+*** 67,74 ****
+      }
+  
+      /* associte only a non-error packet w/ waiting cache */
+!     if(j_strcmp(xmlnode_get_attrib(p-&gt;x,&quot;type&quot;),&quot;error&quot;) == 0)
+          curx-&gt;data = NULL;
+      else
+          curx-&gt;data = p-&gt;x;
+  
+--- 67,76 ----
+      }
+  
+      /* associte only a non-error packet w/ waiting cache */
+!     if(j_strcmp(xmlnode_get_attrib(p-&gt;x,&quot;type&quot;),&quot;error&quot;) == 0){
+          curx-&gt;data = NULL;
++         pool_free(p-&gt;p);
++     }
+      else
+          curx-&gt;data = p-&gt;x;
+  
+***************
+
+However, jabberd crashes even without that leak. If result from xdb
+doesn't comes fast (faster then few seconds), jabberd may crash.
+When i use pam module of xdb_cpile, this is the usual case, cause
+there is some delay, when pam answers to request with wrong password.
+
+When result comes fast (like, when i use xdb_cpile ldap module with
+local ldap server), jabberd doesn't crash even with many concurrent connections.
+
+
+-- 
+	WBW, Eugeny &lt;az at ftc ru&gt;
+
+Quigley's Law:
+	Whoever has any authority over you, no matter how small, will
+	atttempt to use it.
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="016055.html">[JDEV] Connection problems
+</A></li>
+	<LI>Next message: <A HREF="016036.html">[JDEV] How to evolve a namespace or protocol?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#16067">[ date ]</a>
+              <a href="thread.html#16067">[ thread ]</a>
+              <a href="subject.html#16067">[ subject ]</a>
+              <a href="author.html#16067">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

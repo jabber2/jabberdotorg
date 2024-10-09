@@ -1,0 +1,553 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Server without involving jabber.org?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Server%20without%20involving%20jabber.org%3F&In-Reply-To=%3C3A71ECA2.6E7E09%40redhat.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="035116.html">
+   <LINK REL="Next"  HREF="035120.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Server without involving jabber.org?</H1>
+    <B>Keith Barrett</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Server%20without%20involving%20jabber.org%3F&In-Reply-To=%3C3A71ECA2.6E7E09%40redhat.com%3E"
+       TITLE="[JDEV] Server without involving jabber.org?">kbarrett at redhat.com
+       </A><BR>
+    <I>Fri Jan 26 15:31:14 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="035116.html">[JDEV] Server without involving jabber.org?
+</A></li>
+        <LI>Next message: <A HREF="035120.html">[JDEV] Server without involving jabber.org?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35117">[ date ]</a>
+              <a href="thread.html#35117">[ thread ]</a>
+              <a href="subject.html#35117">[ subject ]</a>
+              <a href="author.html#35117">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thomas Muldowney wrote:
+&gt;<i> 
+</I>&gt;<i> This is a big thread ;-)  Could I see your jabber.xml?  It would help a lot, be
+</I>&gt;<i> sure to remove any passwords ;-)
+</I>&gt;<i> 
+</I>
+attached
+
+-- 
+Keith Barrett
+Red Hat Inc.
+-------------- next part --------------
+&lt;jabber&gt;
+
+  &lt;!--
+  This is the Jabber server configuration file. The file is 
+  broken into different sections based on the services being 
+  managed by jabberd, the server daemon. Most of the important 
+  sections have comments and are easy to modify. You can find
+  full instructions in the server howto, which is available at
+  <A HREF="http://docs.jabber.org/.">http://docs.jabber.org/.</A> Note that when you see a tag like 
+  &quot;jabberd:cmdline&quot;, it's automatically replaced on startup 
+  with the command line flag passed in to jabberd. This enables
+  you to override parameters set in this configuration file if 
+  necessary or desired. Also note as you comment things in and
+  out that jabberd does not like comments within comments, so
+  be careful with your XML. :)
+  --&gt;
+
+  &lt;!-- 
+  The following &lt;service/&gt; section is for the session manager, 
+  the most important component within the server. This section
+  contains the following types of information: 
+
+    * the server's hostname
+    * other basic server information
+    * the location of the session log file
+    * email addresses for server administrators 
+    * the location of the server that provides update information
+    * registration instructions for new users
+    * a welcome message for new users
+    * a list of agents with which users can register
+    * load rules for the modules within the session manager
+
+  --&gt;
+
+  &lt;service id=&quot;sessions&quot;&gt;
+
+    &lt;!-- 
+    Change hostname below to something other than &quot;localhost&quot;, 
+    i.e., to the hostname or IP address of your Jabber server. 
+    Multiple &lt;host/&gt; entries are allowed - each one is for a 
+    separate virtual server. Note that each host entry must 
+    be on one line, the server doesn't like it otherwise! :)
+    --&gt;
+
+    &lt;host&gt;&lt;jabberd:cmdline flag=&quot;h&quot;&gt;localhost&lt;/jabberd:cmdline&gt;&lt;/host&gt;
+
+    &lt;!-- 
+    This is the custom configuration section for the 
+    Jabber session manager, a.k.a. &quot;JSM&quot;. 
+    --&gt;
+
+    &lt;jsm xmlns=&quot;jabber:config:jsm&quot;&gt;
+
+      &lt;!--
+      The &lt;filter/&gt; section below determines settings
+      for mod_filter, a server-side module built into
+      JSM that enables users to set delivery rules for
+      messages they receive (not yet supported by all
+      clients. The &lt;allow/&gt; subsection specifies which
+      conditions and actions to enable. High-level 
+      descriptions of each setting can be found below 
+      (see docs.jabber.org for full details):
+
+      * &lt;default/&gt; - a user cannot delete this one, it's
+        the default rule for delivering messages
+      * &lt;max_size/&gt; - the maximum number of rules in a
+        user's rule set (we don't want to overdo it!)
+      * conditions...
+        * &lt;ns/&gt; - matches the query xmlns attrib on an iq packet
+        * &lt;unavailable/&gt; - matches when user is unavailable
+        * &lt;from/&gt; - matches the sender of the message
+        * &lt;resource/&gt; - matches the receiver's resource
+        * &lt;subject/&gt; - matches the subject of the message
+        * &lt;body/&gt; - matches the body of the message
+        * &lt;show/&gt; - matches the show tag on the receiver's presence
+        * &lt;type/&gt; - matches the type of the message
+        * &lt;roster/&gt; - matches if the sender is in your roster
+        * &lt;group/&gt; - matches if the sender is in the specified group
+      * actions...
+        * &lt;error/&gt; - replies with an error
+        * &lt;offline/&gt; - stores the messages offline
+        * &lt;forward/&gt; - forwards the message to another jid
+        * &lt;reply/&gt; - sends a reply to the sender of the message
+        * &lt;continue/&gt; - continues processing of the rules
+        * &lt;settype/&gt; - changes the type of the message
+      --&gt;
+      &lt;filter&gt;
+          &lt;default/&gt;
+          &lt;max_size&gt;100&lt;/max_size&gt;
+          &lt;allow&gt;
+              &lt;conditions&gt;
+                  &lt;ns/&gt;
+                  &lt;unavailable/&gt;
+                  &lt;from/&gt;
+                  &lt;resource/&gt;
+                  &lt;subject/&gt;
+                  &lt;body/&gt;
+                  &lt;show/&gt;
+                  &lt;type/&gt;
+                  &lt;roster/&gt;
+                  &lt;group/&gt;
+              &lt;/conditions&gt;
+              &lt;actions&gt;
+                  &lt;error/&gt;
+                  &lt;offline/&gt;
+                  &lt;forward/&gt;
+                  &lt;reply/&gt;
+                  &lt;continue/&gt;
+                  &lt;settype/&gt;
+              &lt;/actions&gt;
+          &lt;/allow&gt;
+      &lt;/filter&gt;
+
+      &lt;!-- The server vCard --&gt;
+
+      &lt;vCard&gt;
+        &lt;FN&gt;Jabber Server&lt;/FN&gt;
+        &lt;DESC&gt;A Jabber Server!&lt;/DESC&gt;
+        &lt;URL&gt;<A HREF="http://localhost/&lt;/URL">http://localhost/&lt;/URL</A>&gt;
+      &lt;/vCard&gt;
+
+      &lt;!-- 
+      Registration instructions and required fields. The 
+      notify attribute will send the server administrator(s)
+      a message after each valid registration if it is set
+      to &quot;yes&quot;.
+      --&gt;
+
+      &lt;register notify=&quot;yes&quot;&gt;
+        &lt;instructions&gt;Choose a username and password to register with this server.&lt;/instructions&gt;
+        &lt;name/&gt;
+        &lt;email/&gt;
+      &lt;/register&gt;
+
+      &lt;!-- 
+      A welcome note that is sent to every new user who registers 
+      with your server. Comment it out to disable this function.
+      --&gt;
+
+      &lt;welcome&gt;
+        &lt;subject&gt;Welcome!&lt;/subject&gt;
+        &lt;body&gt;Welcome to the Jabber server at localhost -- we hope you enjoy this service! For information about how to use Jabber, visit the Jabber User's Guide at <A HREF="http://docs.jabber.org/&lt;/body">http://docs.jabber.org/&lt;/body</A>&gt;
+      &lt;/welcome&gt;
+
+      &lt;!-- The location of the session log file. --&gt;
+
+      &lt;log&gt;
+        &lt;file&gt;session.log&lt;/file&gt;
+        &lt;type&gt;session&lt;/type&gt;
+      &lt;/log&gt;
+
+      &lt;!-- 
+      IDs with admin access - these people will receive admin 
+      messages. Note that they can also send announcements to
+      all users of the server, or to all online users. To use
+      the announcement feature, you need to send raw xml and be
+      logged in as one of the admin users. Here is the syntax 
+      for sending an announcement to online users:
+
+        &lt;message to=&quot;yourhostname/announce/online&quot;&gt;
+          &lt;body&gt;announcement here&lt;/body&gt;
+        &lt;/message&gt;
+
+      --&gt;
+
+      &lt;!--
+      &lt;admin&gt;
+        &lt;read&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at localhost</A>&lt;/read&gt;
+        &lt;write&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at localhost</A>&lt;/write&gt;
+      &lt;/admin&gt;
+      --&gt;
+
+      &lt;!--
+      This is the resource that checks for updated versions 
+      of the Jabber server software. Note that you don't lose 
+      any functionality if you comment this out. Removing the
+      &lt;update/&gt; config is especially a good strategy if your 
+      server is behind a firewall. If you want to use this 
+      feature, change 'localhost' to the hostname or IP address 
+      of your server, making sure that it is the same as your 
+      entry for &lt;host/&gt; above.
+      --&gt;
+
+&lt;!-- ### &lt;update&gt;&lt;jabberd:cmdline flag=&quot;h&quot;&gt;localhost&lt;/jabberd:cmdline&gt;&lt;/update&gt; --&gt;
+
+      &lt;!--
+      The &lt;browse/&gt; section identifies the transports and other
+      services that are available from this server. Note that each
+      entity identified here must exist elsewhere or be further 
+      defined in its own &lt;service/&gt; section below. These services 
+      will appear in the user interface of Jabber clients that
+      connect to your server.
+      --&gt;
+
+      &lt;browse&gt;
+
+        &lt;!-- 
+        This is the default agent for the master Jabber User 
+        Directory, a.k.a. &quot;JUD&quot;, which is located at jabber.org.
+        You can add separate &lt;service/&gt; sections for additional
+        directories, e.g., one for a company intranet.
+        --&gt;
+
+&lt;!-- ###
+        &lt;service type=&quot;jud&quot; jid=&quot;users.jabber.org&quot; name=&quot;Jabber User Directory&quot;&gt;
+          &lt;ns&gt;jabber:iq:search&lt;/ns&gt;
+          &lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+        &lt;/service&gt;
+--&gt;
+
+        &lt;!--
+        The following services are examples only, you will need to
+        create/modify them to get them working on your Jabber 
+        server. See the README files for each service and/or the 
+        server howto for further information/instructions. 
+        --&gt;
+
+        &lt;!-- we're commenting these out, of course :)
+
+        &lt;conference type=&quot;private&quot; jid=&quot;conference.localhost&quot; name=&quot;Private Conferencing&quot;/&gt;
+
+        &lt;service type=&quot;aim&quot; jid=&quot;aim.localhost&quot; name=&quot;AIM Transport&quot;&gt;
+          &lt;ns&gt;jabber:iq:gateway&lt;/ns&gt;
+          &lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+        &lt;/service&gt;
+
+        &lt;service type=&quot;yahoo&quot; jid=&quot;yahoo.localhost&quot; name=&quot;Yahoo! Transport&quot;&gt;
+          &lt;ns&gt;jabber:iq:gateway&lt;/ns&gt;
+          &lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+        &lt;/service&gt;
+
+        Need somethere here ###
+
+
+        end of &lt;service/&gt; examples --&gt;
+
+      &lt;/browse&gt;
+
+    &lt;/jsm&gt;
+
+    &lt;!--
+    The following section dynamically loads the individual
+    modules that make up the session manager. Remove or 
+    comment out modules to disable them. Note that the order
+    of modules is important, since packets are delivered 
+    based on the following order!!
+    --&gt;
+
+    &lt;load main=&quot;jsm&quot;&gt;
+      &lt;jsm&gt;./jsm/jsm.so&lt;/jsm&gt;
+      &lt;mod_echo&gt;./jsm/jsm.so&lt;/mod_echo&gt;
+      &lt;mod_roster&gt;./jsm/jsm.so&lt;/mod_roster&gt;
+      &lt;mod_time&gt;./jsm/jsm.so&lt;/mod_time&gt;
+      &lt;mod_vcard&gt;./jsm/jsm.so&lt;/mod_vcard&gt;
+      &lt;mod_last&gt;./jsm/jsm.so&lt;/mod_last&gt;
+&lt;!--  &lt;mod_version&gt;./jsm/jsm.so&lt;/mod_version&gt; don't talk to jabber.org --&gt;
+      &lt;mod_announce&gt;./jsm/jsm.so&lt;/mod_announce&gt;
+      &lt;mod_agents&gt;./jsm/jsm.so&lt;/mod_agents&gt;
+      &lt;mod_browse&gt;./jsm/jsm.so&lt;/mod_browse&gt;
+      &lt;mod_admin&gt;./jsm/jsm.so&lt;/mod_admin&gt;
+      &lt;mod_filter&gt;./jsm/jsm.so&lt;/mod_filter&gt;
+      &lt;mod_offline&gt;./jsm/jsm.so&lt;/mod_offline&gt;
+      &lt;mod_presence&gt;./jsm/jsm.so&lt;/mod_presence&gt;
+      &lt;mod_auth_plain&gt;./jsm/jsm.so&lt;/mod_auth_plain&gt;
+      &lt;mod_auth_digest&gt;./jsm/jsm.so&lt;/mod_auth_digest&gt;
+      &lt;mod_auth_0k&gt;./jsm/jsm.so&lt;/mod_auth_0k&gt;
+      &lt;mod_log&gt;./jsm/jsm.so&lt;/mod_log&gt;
+      &lt;mod_register&gt;./jsm/jsm.so&lt;/mod_register&gt;
+      &lt;mod_xml&gt;./jsm/jsm.so&lt;/mod_xml&gt;
+    &lt;/load&gt;
+
+  &lt;/service&gt;
+
+  &lt;!-- OK, we've finished defining the Jabber Session Manager. --&gt;
+
+  &lt;!-- The &lt;xdb/&gt; component handles all data storage, using the filesystem. --&gt;
+
+  &lt;xdb id=&quot;xdb&quot;&gt;
+    &lt;host/&gt;
+    &lt;load&gt;
+      &lt;xdb_file&gt;./xdb_file/xdb_file.so&lt;/xdb_file&gt;
+    &lt;/load&gt;
+    &lt;xdb_file xmlns=&quot;jabber:config:xdb_file&quot;&gt;
+      &lt;spool&gt;&lt;jabberd:cmdline flag='s'&gt;./spool&lt;/jabberd:cmdline&gt;&lt;/spool&gt;
+    &lt;/xdb_file&gt;
+  &lt;/xdb&gt;
+
+  &lt;!--
+  The following service manages incoming client socket connections.
+  There are several items you can set here to optimize performance:
+
+    * authtime - default is unlimited, but you can set this to
+      limit the amount of time allowed for authentication to be
+      completed, e.g., &lt;authtime&gt;10&lt;/authtime&gt; for 10 seconds
+
+    * rate - this controls the number of times that an IP can try
+      to connect within a certain time period. The default is 25
+      connection attempts (&quot;points&quot;) in five seconds, but you can
+      change this setting as necessary.
+
+    * karma - this is an input/output rate limiting system that
+      the Jabber team came up with to prevent bandwidth hogging.
+      For details about karma, see docs.jabber.org. These
+      settings apply per connection/socket and can be changed as
+      desired.
+
+  --&gt;
+
+  &lt;service id=&quot;c2s&quot;&gt;
+    &lt;load&gt;
+      &lt;pthsock_client&gt;./pthsock/pthsock_client.so&lt;/pthsock_client&gt;
+    &lt;/load&gt;
+    &lt;pthcsock xmlns='jabber:config:pth-csock'&gt;
+      &lt;authtime/&gt;
+      &lt;karma&gt;
+        &lt;dec&gt;1&lt;/dec&gt;
+      &lt;/karma&gt;
+      &lt;!-- 
+      Use these to listen on particular addresses and/or ports.
+      &lt;ip port=&quot;5222&quot;&gt;127.0.0.1&lt;/ip&gt;
+      --&gt;
+      &lt;ip port=&quot;5222&quot;/&gt;
+    &lt;/pthcsock&gt;
+  &lt;/service&gt;
+
+  &lt;!-- 
+  This is the default server logging component, 
+  which copies to a file and to STDERR. 
+  --&gt;
+
+  &lt;log id='logger'&gt;
+    &lt;host/&gt;
+    &lt;format&gt;%d: [%t] (%h): %s&lt;/format&gt;
+    &lt;file&gt;error.log&lt;/file&gt;
+    &lt;stderr/&gt;
+  &lt;/log&gt;
+
+  &lt;!-- The following two services are for handling server-to-server traffic. --&gt;
+
+
+
+  &lt;!-- External asychronous DNS resolver --&gt;
+
+&lt;!-- ###
+  &lt;service id=&quot;dnsrv&quot;&gt;
+    &lt;host/&gt;
+    &lt;load&gt;
+      &lt;dnsrv&gt;./dnsrv/dnsrv.so&lt;/dnsrv&gt;
+    &lt;/load&gt;
+    &lt;dnsrv xmlns=&quot;jabber:config:dnsrv&quot;&gt;
+    	&lt;resend service=&quot;_jabber._tcp&quot;&gt;s2s&lt;/resend&gt;
+             &lt;!-- for supporting SRV records --&gt;
+    	&lt;resend&gt;s2s&lt;/resend&gt; 
+    &lt;/dnsrv&gt;
+  &lt;/service&gt;
+--&gt;
+
+
+  &lt;!--
+  The following 's2s' config handles server connections and 
+  dialback hostname verification.  The &lt;legacy/&gt; element is 
+  here to enable communication with old 1.0 servers. The 
+  karma settings are a little higher here to handle the 
+  higher traffic of server-to-server connections.
+  --&gt;
+
+&lt;!--
+  &lt;service id=&quot;s2s&quot;&gt;
+    &lt;load&gt;
+      &lt;dialback&gt;./dialback/dialback.so&lt;/dialback&gt;
+    &lt;/load&gt;
+    &lt;dialback xmlns='jabber:config:dialback'&gt;
+      &lt;legacy/&gt;
+      &lt;ip port=&quot;7000&quot;/&gt;
+      &lt;ip port=&quot;5269&quot;&gt;127.0.0.1&lt;/ip&gt;
+      &lt;ip port=&quot;5269&quot;/&gt;
+    &lt;/dialback&gt;
+  &lt;/service&gt;
+
+### --&gt;
+
+  &lt;!-- 
+  If you identified additional agents in the main &lt;service/&gt; 
+  section (see examples above), you'll need to define each 
+  of them here using a separate &lt;service/&gt; section for each 
+  &lt;agent/&gt; you identified. Note that the &lt;agent/&gt; sections
+  determine what gets shown to clients that connect to your
+  server, whereas the following &lt;service/&gt; sections define
+  these services within the server itself. The following are
+  examples only, you will need to create/modify them to get 
+  them working on your Jabber server. See the README files 
+  for each agent and/or the server howto for further 
+  information/instructions. 
+  --&gt;
+
+  &lt;!-- we're commenting these out, of course :)
+
+  &lt;service id=&quot;conference&quot;&gt;
+    &lt;load&gt;
+      &lt;groupchat&gt;/path/to/groupchat.so&lt;/groupchat&gt;
+    &lt;/load&gt;
+    &lt;host&gt;conference.localhost&lt;/host&gt;
+  &lt;/service&gt;
+
+  &lt;service id=&quot;irc&quot;&gt;
+    &lt;host&gt;irc.localhost&lt;/host&gt;
+  &lt;/service&gt;
+
+  &lt;service id=&quot;aim.localhost&quot;&gt;
+    &lt;accept&gt;
+      &lt;ip/&gt;
+      &lt;port&gt;7009&lt;/port&gt;
+      &lt;secret&gt;jabber-rocks&lt;/secret&gt;
+    &lt;/accept&gt;
+  &lt;/service&gt;
+
+  &lt;service id=&quot;yahoo.localhost&quot;&gt;
+    &lt;accept&gt;
+      &lt;ip/&gt;
+      &lt;port&gt;9001&lt;/port&gt;
+      &lt;secret&gt;jabber-rocks&lt;/secret&gt;
+    &lt;/accept&gt;
+  &lt;/service&gt;
+
+  end of &lt;service/&gt; examples --&gt;
+
+  &lt;!--
+  The following &lt;io/&gt; config initializes the top-level
+  I/O, otherwise known as MIO (Managed Input/Output).
+  --&gt;
+
+  &lt;io&gt;
+
+    &lt;!-- Set the default karma for *all* sockets --&gt;
+    &lt;!--
+    &lt;karma&gt;
+      &lt;heartbeat&gt;2&lt;/heartbeat&gt;
+      &lt;init&gt;10&lt;/init&gt;
+      &lt;max&gt;10&lt;/max&gt;
+      &lt;inc&gt;1&lt;/inc&gt;
+      &lt;dec&gt;-1&lt;/dec&gt;
+      &lt;penalty&gt;-5&lt;/penalty&gt;
+      &lt;restore&gt;10&lt;/restore&gt;
+    &lt;/karma&gt;
+    --&gt;
+
+    &lt;!-- 
+    Set rate limits to monitor the number of connection
+    attempts (points) per second (time)
+    --&gt;
+    &lt;!--
+    &lt;rate points=&quot;5&quot; time=&quot;25&quot;/&gt;
+    --&gt;
+
+    &lt;!-- 
+    The following section initializes SSL for top-level I/O.
+    This works only when the server is compiled with openssl!
+    --&gt;
+    &lt;!--
+    &lt;ssl&gt;
+      &lt;key ip='192.168.1.1'&gt;/path/to/cert_and_key.pem&lt;/key&gt;
+      &lt;key ip='192.168.1.100'&gt;/path/to/other/cert_and_key.pem&lt;/key&gt;
+    &lt;/ssl&gt;
+    --&gt;
+
+    &lt;!-- 
+    The following section is used to allow or deny 
+    communications from specified IP networks or 
+    addressses. If there is no &lt;allow/&gt; section, 
+    then *all* IPs will be allowed to connect. If 
+    you allow one block, then only that block may 
+    connect. Note that &lt;allow/&gt; is checked before
+    &lt;deny/&gt;, so if a specific address is allowed 
+    but the network for that address is denied, 
+    then that address will still be denied.
+    --&gt;
+    &lt;!--
+    &lt;allow&gt;&lt;ip&gt;127.0.0.0&lt;/ip&gt;&lt;mask&gt;255.255.255.0&lt;/mask&gt;&lt;/allow&gt;
+    &lt;allow&gt;&lt;ip&gt;12.34.56.78&lt;/ip&gt;&lt;/allow&gt;
+    &lt;deny&gt;&lt;ip&gt;22.11.44.0&lt;/ip&gt;&lt;mask&gt;255.255.255.0&lt;/mask&gt;&lt;/deny&gt;
+    --&gt;
+
+  &lt;/io&gt;
+
+
+&lt;/jabber&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="035116.html">[JDEV] Server without involving jabber.org?
+</A></li>
+	<LI>Next message: <A HREF="035120.html">[JDEV] Server without involving jabber.org?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35117">[ date ]</a>
+              <a href="thread.html#35117">[ thread ]</a>
+              <a href="subject.html#35117">[ subject ]</a>
+              <a href="author.html#35117">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

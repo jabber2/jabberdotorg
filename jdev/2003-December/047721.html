@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Problems with SASL DIGEST-MD5 mechanism.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Problems%20with%20SASL%20DIGEST-MD5%20mechanism.&In-Reply-To=%3C20031215232717.GB30345%40gideon.its.monash.edu.au%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="047715.html">
+   <LINK REL="Next"  HREF="047724.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Problems with SASL DIGEST-MD5 mechanism.</H1>
+    <B>Robert Norris</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Problems%20with%20SASL%20DIGEST-MD5%20mechanism.&In-Reply-To=%3C20031215232717.GB30345%40gideon.its.monash.edu.au%3E"
+       TITLE="[JDEV] Problems with SASL DIGEST-MD5 mechanism.">rob at cataclysm.cx
+       </A><BR>
+    <I>Mon Dec 15 17:27:17 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="047715.html">[JDEV] Problems with SASL DIGEST-MD5 mechanism.
+</A></li>
+        <LI>Next message: <A HREF="047724.html">[JDEV] Problems with SASL DIGEST-MD5 mechanism.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47721">[ date ]</a>
+              <a href="thread.html#47721">[ thread ]</a>
+              <a href="subject.html#47721">[ subject ]</a>
+              <a href="author.html#47721">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Mon, Dec 15, 2003 at 05:38:35PM +0300, Alexey Nezhdanov wrote:
+&gt;<i> I found the bug. I can not say for sure if client or server is buggy but this 
+</I>&gt;<i> is the cause:
+</I>
+&gt;<i> python method base64.encodestring(smth) produces base64 code that 
+</I>&gt;<i> *separated*by*newlines*. It is seen on my debug output:
+</I>
+&gt;<i> DEBUG: socket       sent  &lt;response 
+</I>&gt;<i> xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;Y2hhcnNldD11dGYtOCx1c2VybmFtZT0idGVzdCIscmVhbG09Indvb2R5OC5wZW56YS1nc20ucnUi
+</I>&gt;<i> \nLG5vbmNlPSJjYTIxZTFkNzkxYTQzOGQ1N2VhYzc0MDNhMGFlOGEyMzBkODFkNDUzIixuYz0wMDAw
+</I>&gt;<i> \nMDAwMSxjbm9uY2U9Ik9BNk1IWGg2VnFUclJrIixkaWdlc3QtdXJpPSJ4bXBwLyIscmVzcG9uc2U9
+</I>&gt;<i> \nMmNjOTc1ZTc4OGExNTAwZjQwODVlNTY5NjYxYjY1MGEscW9wPWF1dGg=\n&lt;/response&gt;
+</I>&gt;<i> ^^
+</I>
+&gt;<i> And the C implementation of base64 that jabberd2 uses sees this as incorrect 
+</I>&gt;<i> padding and cutting my response, so the c2s returns &quot;error 34: malformed 
+</I>&gt;<i> data&quot;.
+</I>
+RFC 3548 has this:
+
+2.1.  Line feeds in encoded data
+
+   MIME [3] is often used as a reference for base 64 encoding.  However,
+   MIME does not define &quot;base 64&quot; per se, but rather a &quot;base 64
+   Content-Transfer-Encoding&quot; for use within MIME.  As such, MIME
+   enforces a limit on line length of base 64 encoded data to 76
+   characters.  MIME inherits the encoding from PEM [2] stating it is
+   &quot;virtually identical&quot;, however PEM uses a line length of 64
+   characters.  The MIME and PEM limits are both due to limits within
+   SMTP.
+
+   Implementations MUST NOT not add line feeds to base encoded data
+   unless the specification referring to this document explicitly
+   directs base encoders to add line feeds after a specific number of
+   characters.
+
+XMPP Core makes no reference to adding linefeeds (that I can find);
+thus, the client is at fault.
+
+Rob.
+
+-- 
+Robert Norris                                       GPG: 1024D/FC18E6C2
+Email+Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rob at cataclysm.cx</A>                Web: <A HREF="http://cataclysm.cx/">http://cataclysm.cx/</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: Digital signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20031216/9c9a766a/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20031216/9c9a766a/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="047715.html">[JDEV] Problems with SASL DIGEST-MD5 mechanism.
+</A></li>
+	<LI>Next message: <A HREF="047724.html">[JDEV] Problems with SASL DIGEST-MD5 mechanism.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47721">[ date ]</a>
+              <a href="thread.html#47721">[ thread ]</a>
+              <a href="subject.html#47721">[ subject ]</a>
+              <a href="author.html#47721">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

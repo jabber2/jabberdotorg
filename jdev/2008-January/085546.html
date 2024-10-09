@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Bug in jabberd2 (2.1.13) on win32
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Bug%20in%20jabberd2%20%282.1.13%29%20on%20win32&In-Reply-To=%3C35d657240801241506k58b427c1u56aea4603f31a24%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085545.html">
+   <LINK REL="Next"  HREF="085593.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Bug in jabberd2 (2.1.13) on win32</H1>
+    <B>Dan Hulme</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Bug%20in%20jabberd2%20%282.1.13%29%20on%20win32&In-Reply-To=%3C35d657240801241506k58b427c1u56aea4603f31a24%40mail.gmail.com%3E"
+       TITLE="[jdev] Bug in jabberd2 (2.1.13) on win32">dhulme at gmail.com
+       </A><BR>
+    <I>Thu Jan 24 17:06:19 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085545.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+        <LI>Next message: <A HREF="085593.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85546">[ date ]</a>
+              <a href="thread.html#85546">[ thread ]</a>
+              <a href="subject.html#85546">[ subject ]</a>
+              <a href="author.html#85546">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>err, &quot;not completely sure&quot;
+
+On Jan 24, 2008 3:01 PM, Dan Hulme &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dhulme at gmail.com</A>&gt; wrote:
+&gt;<i> Although that patch does seem to work, I'm completely sure it ever
+</I>&gt;<i> frees the mio struct.  Thus, I think the zeroing the event method is
+</I>&gt;<i> better.
+</I>&gt;<i>
+</I>&gt;<i> -Dan
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> On Jan 24, 2008 2:15 PM, Dan Hulme &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dhulme at gmail.com</A>&gt; wrote:
+</I>&gt;<i> &gt; Ok, after looking closer, it does not appear to reuse sockets at all,
+</I>&gt;<i> &gt; but reuses the mio structure.  The structure is pretty simple and was
+</I>&gt;<i> &gt; not remembering the old file descriptor, so I just looked at how it
+</I>&gt;<i> &gt; differed (after being used once) from a completely new one.  What I
+</I>&gt;<i> &gt; noticed was that the &quot;revent&quot; and &quot;event&quot; fields were not being reset
+</I>&gt;<i> &gt; on freeing it for reuse.  I zeroed them (it seems only the event must
+</I>&gt;<i> &gt; be cleared):
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; mio_wsasync.h:68
+</I>&gt;<i> &gt;     static void _mio_free_fd(mio_t m, mio_priv_fd_t priv_fd)            \
+</I>&gt;<i> &gt;     {                                                                   \
+</I>&gt;<i> &gt;         priv_fd-&gt;next_free = MIO(m)-&gt;next_free;                         \
+</I>&gt;<i> &gt;         priv_fd-&gt;mio_fd.fd = 0;                                         \
+</I>&gt;<i> &gt;         priv_fd-&gt;revent = 0;                                         \
+</I>&gt;<i> &gt;         priv_fd-&gt;event = 0;                                         \
+</I>&gt;<i> &gt;         MIO(m)-&gt;next_free = priv_fd;                                    \
+</I>&gt;<i> &gt;     }                                                                   \
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; And the bug goes away.  Since the socket is available for reuse, it
+</I>&gt;<i> &gt; doesn't make sense to remember the old event flags. This may mean that
+</I>&gt;<i> &gt; an event may arrive that doesn't get handled, of course, but if it
+</I>&gt;<i> &gt; *is* to be handled, the mio struct should not be marked as available
+</I>&gt;<i> &gt; until the event is handled.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; In this vein, I have provided a patch which does nothing when
+</I>&gt;<i> &gt; _mio_free_fd is called, but frees it when the FD_CLOSE is received.
+</I>&gt;<i> &gt; It's attached.  It basically replaces mio_free_fd with a dummy
+</I>&gt;<i> &gt; function and moves the functionality to another function.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; -Dan
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Jan 24, 2008 11:25 AM, Dan Hulme &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dhulme at gmail.com</A>&gt; wrote:
+</I>&gt;<i> &gt; &gt; I had forgotten, but this is the case.  Here is confirmation:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; <A HREF="http://msdn2.microsoft.com/en-us/library/ms740481(VS.85">http://msdn2.microsoft.com/en-us/library/ms740481(VS.85</A>).aspx
+</I>&gt;<i> &gt; &gt; &gt; An application should not rely on being able to reuse a socket after it has been shut down.
+</I>&gt;<i> &gt; &gt; &gt; In particular, a Windows Sockets provider is not required to support the use of
+</I>&gt;<i> &gt; &gt; &gt; 'connect' on a socket that has been shut down.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; So the win32 implementation should not be pooling sockets, I guess.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; -Dan
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; On Jan 24, 2008 12:51 AM, Norman Rasmussen &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>&gt; wrote:
+</I>&gt;<i> &gt; &gt; &gt; On Jan 24, 2008 2:14 AM, Dan Hulme &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dhulme at gmail.com</A>&gt; wrote:
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; This function appears to try to append the old closed socket to a
+</I>&gt;<i> &gt; &gt; &gt; &gt; linked list of free sockets.  When the new connection tries to use
+</I>&gt;<i> &gt; &gt; &gt; &gt; this socket, it has trouble.  Once the next connection connects,
+</I>&gt;<i> &gt; &gt; &gt; &gt; however, it will not use that socket as it is still in use, so it will
+</I>&gt;<i> &gt; &gt; &gt; &gt; work.  Not sure why the socket that is being appended is broken, but
+</I>&gt;<i> &gt; &gt; &gt; &gt; if this function is not called (at mio_impl.h: 267), the program works
+</I>&gt;<i> &gt; &gt; &gt; &gt; &quot;fine.&quot;  It may not be reusing sockets, but everything else works.
+</I>&gt;<i> &gt; &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; In my experience win32 does weird things with closed sockets: if you close a
+</I>&gt;<i> &gt; &gt; &gt; listening socket, it doesn't actually go away until all connected clients do
+</I>&gt;<i> &gt; &gt; &gt; too.  It sounds like this is similar, and that perhaps for win32 you
+</I>&gt;<i> &gt; &gt; &gt; shouldn't be trying to pool sockets.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; --
+</I>&gt;<i> &gt; &gt; &gt; - Norman Rasmussen
+</I>&gt;<i> &gt; &gt; &gt;  - Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>
+</I>&gt;<i> &gt; &gt; &gt;  - Home page: <A HREF="http://norman.rasmussen.co.za/">http://norman.rasmussen.co.za/</A>
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085545.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+	<LI>Next message: <A HREF="085593.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85546">[ date ]</a>
+              <a href="thread.html#85546">[ thread ]</a>
+              <a href="subject.html#85546">[ subject ]</a>
+              <a href="author.html#85546">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

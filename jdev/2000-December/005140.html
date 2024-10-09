@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Transports new approach
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Transports%20new%20approach&In-Reply-To=00121219321901.00334%40dennis">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005131.html">
+   <LINK REL="Next"  HREF="005125.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Transports new approach</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Transports%20new%20approach&In-Reply-To=00121219321901.00334%40dennis"
+       TITLE="[JDEV] Transports new approach">keith at digix.dyndns.org
+       </A><BR>
+    <I>Tue Dec 12 14:06:02 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005131.html">[JDEV] Transports new approach
+</A></li>
+        <LI>Next message: <A HREF="005125.html">[JDEV] Rich Text in Messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5140">[ date ]</a>
+              <a href="thread.html#5140">[ thread ]</a>
+              <a href="subject.html#5140">[ subject ]</a>
+              <a href="author.html#5140">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dennis, et al..
+
+the reason that didn't work by the way, is becuase the id is a routable name within jabberd...
+
+so when you had the two &quot;linking&quot; instances (connect on one, and accept on the other) the original jabberd sending to myinstance sends it to the connect instance, delilvering it to the other jabberd.  now, when the other jabberd gets the packet, it calls deliver() on it, to get it to where it needs to go... deliver() sees the myinstance (the linker) id, and delivers to that, as any other hostname.. it probably ALSO got delivered to your &lt;host&gt;myinstnace&lt;/host&gt; as you would have expected.
+
+the reason scheulyer's (hopes he spells it right) config works, is becuase he used an id that no packets would try to deliver to for the linker instances... (i.e. mylinker) (note also that this must be the SAME id on both the connect and accept instances -- due to the way base_accept handles ocnnections)  also, you need to include &lt;host/&gt; sections for *every* host that is on the *other* side of the linker.
+
+you can link multiple jabberds together, such as:
+
+A &lt;--&gt; B &lt;--&gt; C
+
+A &amp; B would have a AB_linker instance, and B &amp; C would have a BC_linker...
+
+the linker on A would have to have &lt;host/&gt;s for all this hosts in B and C
+
+the linker AB_linker on B needs the &lt;host/&gt;s for A and the BC_linkekr on B needs the &lt;host/&gt;s for C
+
+the BC_linker on C needs the &lt;host/&gt;s for both A and B listed.
+
+Hope this example makes sence, and helps clarify the jabberd linking..
+
+(note that you can also link jabberd's with exec and stdout)
+such as:
+
+... in the parent jabberd config ...
+
+&lt;service id=&quot;linker&quot;&gt;
+  &lt;exec&gt;jabberd -c linker.xml&lt;/exec&gt;
+&lt;/service&gt;
+
+... and in the linker.xml ...
+
+&lt;service id=&quot;linker&quot;&gt;
+  &lt;stdout/&gt;
+  &lt;host/&gt;
+&lt;/service&gt;
+
+
+Hope this helps!
+Keith Minkler
+
+On Tue, Dec 12, 2000 at 07:32:19PM +0200, Dennis Noordsij wrote:
+&gt;<i> On Tuesday 12 December 2000 19:26, Thomas Charron wrote:
+</I>&gt;<i> &gt; From: &quot;Dennis Noordsij&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis.noordsij at wiral.com</A>&gt;
+</I>&gt;<i> &gt; Subject: [JDEV] Transports new approach
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; &lt;service id=&quot;myinstance&quot;&gt;
+</I>&gt;<i> &gt; &gt;  &lt;host/&gt;
+</I>&gt;<i> &gt; &gt;  &lt;connect&gt;
+</I>&gt;<i> &gt; &gt;     ....
+</I>&gt;<i> &gt; &gt;  &lt;/connect&gt;
+</I>&gt;<i> &gt; &gt;  &lt;load&gt;&lt;runcomponent&gt;./src/component.so&lt;/runcomponent&gt;&lt;/load&gt;
+</I>&gt;<i> &gt; &gt; &lt;/service&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Eww.  I don't think one instance of a service can be connected *BOTH* as a
+</I>&gt;<i> &gt; loadable module AND a remote connection.  You'd need a second, distinct,
+</I>&gt;<i> &gt; service ID for the second service.
+</I>&gt;<i> 
+</I>&gt;<i> Yes, tried that, makes sense, but didn't work either :-)
+</I>&gt;<i> 
+</I>&gt;<i> I am very much open to any configuration that will let me do what I wanted, 
+</I>&gt;<i> no matter what, so feel free! :))
+</I>&gt;<i> 
+</I>&gt;<i> Regards,
+</I>&gt;<i> Dennis
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005131.html">[JDEV] Transports new approach
+</A></li>
+	<LI>Next message: <A HREF="005125.html">[JDEV] Rich Text in Messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5140">[ date ]</a>
+              <a href="thread.html#5140">[ thread ]</a>
+              <a href="subject.html#5140">[ subject ]</a>
+              <a href="author.html#5140">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

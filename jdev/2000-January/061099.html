@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] &lt;x/&gt; namespace registration
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%3Cx/%3E%20namespace%20registration&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C1480885FD8%40ossex1.ossinc.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="061095.html">
+   <LINK REL="Next"  HREF="061104.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] &lt;x/&gt; namespace registration</H1>
+    <B>Eric Bowersox</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%3Cx/%3E%20namespace%20registration&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C1480885FD8%40ossex1.ossinc.net%3E"
+       TITLE="[JDEV] &lt;x/&gt; namespace registration">ebowersox at corp.webb.net
+       </A><BR>
+    <I>Tue Jan 18 13:29:13 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="061095.html">[JDEV] VB PROGRAMMER
+</A></li>
+        <LI>Next message: <A HREF="061104.html">[JDEV] &lt;x/&gt; namespace registration
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61099">[ date ]</a>
+              <a href="thread.html#61099">[ thread ]</a>
+              <a href="subject.html#61099">[ subject ]</a>
+              <a href="author.html#61099">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> Are we going to do any namespace registration for the x tag?  
+</I>&gt;<i> I'm trying
+</I>&gt;<i> to figure out the direction for providing access to &lt;x/&gt; tags in
+</I>&gt;<i> Net::Jabber and realized that a module for each namespace would be the
+</I>&gt;<i> nicest, but then we would have little rampant modules running around.
+</I>&gt;<i> 
+</I>&gt;<i> Are we going to police this namespace in anyway?  If we don't then the
+</I>&gt;<i> probability of a Client getting confused by an &lt;x xmlns=&quot;x:bob&quot;/&gt; that
+</I>&gt;<i> it supports and an &lt;x xmlns=&quot;x:bob&quot;/&gt; that it doesn't support is high.
+</I>
+My guess is, the namespaces for &lt;x&gt; tags should probably follow a convention
+similar to Java package names.  For instance, we would be able to use an
+extension tag something like:
+
+	&lt;x xmlns=&quot;net:webb:cwxml:whatever&quot;&gt;
+	  &lt;!-- some Webb-specific data here --&gt;
+	&lt;/x&gt;
+
+This would be what we might use for some sort of CommunityWare/XML data that
+piggybacks onto Jabber messages.  You, on the other hand, could define the
+following:
+
+	&lt;x xmlns=&quot;com:ti:what:ever&quot;&gt;
+	  &lt;!-- some TI-specific data here --&gt;
+	&lt;/x&gt;
+
+And that would be data specific to your organization.  The advantage to this
+system is the same as the Java package system: the DNS and trademark laws
+serve to separate your stuff from somebody else's stuff, so it's pretty much
+self-policing.  (There's other syntaxes for XML namespaces that might also
+be used instead.)  Naturally, just as Sun reserves &quot;java.*&quot; package names,
+we reserve &quot;jabber:*&quot; namespace names...
+
+As for implementation, for the Webb Jabber Java Extensible Client Interface
+(aka the &quot;java-webb&quot; module in CVS), I defined extensions as being a special
+type of packet.  You can create a new packet class that represents a
+specific extension type, and register it (or, actually, its &quot;creator&quot; class)
+with the JabberConnection object.  Then, when a MessagePacket comes in, you
+can examine each of its extensions (with the getExtension(int) or
+getExtensions() methods) and see if any of them is an instance of your
+extension class:
+
+	Enumeration enum = message_packet.getExtensions();
+	while (enum.hasMoreElements())
+	{ // look for extensions we're interested in
+	  Packet ext = (Packet)(enum.nextElement());
+	  if (ext instanceof SomeCommunityWareXMLExtension)
+	  { // do something appropriate
+	  } // end if
+
+	} // end while
+
+Unknown extension types are always turned into RawPackets, which let you
+peek at their XML structure through the getTreeRoot() method.
+
+					Eric
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="061095.html">[JDEV] VB PROGRAMMER
+</A></li>
+	<LI>Next message: <A HREF="061104.html">[JDEV] &lt;x/&gt; namespace registration
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61099">[ date ]</a>
+              <a href="thread.html#61099">[ thread ]</a>
+              <a href="subject.html#61099">[ subject ]</a>
+              <a href="author.html#61099">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

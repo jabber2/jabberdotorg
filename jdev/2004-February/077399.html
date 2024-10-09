@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: architecture questions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20architecture%20questions&In-Reply-To=%3C07db01c3f7eb%2489729930%246401a8c0%40jambotech.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="077398.html">
+   <LINK REL="Next"  HREF="077400.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: architecture questions</H1>
+    <B>Joanne</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20architecture%20questions&In-Reply-To=%3C07db01c3f7eb%2489729930%246401a8c0%40jambotech.com%3E"
+       TITLE="[jdev] Re: architecture questions">jlc020404jabber at jambotech.com
+       </A><BR>
+    <I>Fri Feb 20 13:55:49 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="077398.html">[jdev] Re: architecture questions
+</A></li>
+        <LI>Next message: <A HREF="077400.html">[jdev] Re: architecture questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77399">[ date ]</a>
+              <a href="thread.html#77399">[ thread ]</a>
+              <a href="subject.html#77399">[ subject ]</a>
+              <a href="author.html#77399">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+&quot;Peter Saint-Andre&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at jabber.org</A>&gt; wrote in message news:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">20040220184924.GA23167 at jabber.org...</A>
+&gt;<i> On Fri, Feb 20, 2004 at 10:30:59AM -0800, Joanne wrote:
+</I>&gt;<i> 
+</I>&gt;<i> Hi Joanne,It's good to see folks from Jambotech on the list -- I recall
+</I>&gt;<i> some involvement from people there a few years ago. BTW, coding
+</I>&gt;<i> questions belong on this list, not JADMIN (that's for server
+</I>&gt;<i> administration), so no need to cross-post.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; (1) message queuing/processing
+</I>&gt;<i> &gt; It seems that jabber's queuing mechanism is only dependent on a a client's &quot;online&quot; status. If a client is offline, jabber will automatically queue the messages in an offline store. But as soon as the client's online presence is detected, jabber will start &quot;pushing&quot; all queued messages to it automatically. Assuming our jabber client had no queuing mechanism, we would have to block while processing each message. Would this block-&gt;process type of method work well within the jabber framework in order to take advantage of its built in queuing mechanism? I wrote a simple client to test this type of processing and on the surface it appears to work, but I was just wondering if anyone might see other factors/issues/caveats I might not be considering before I choose this type of implementation.
+</I>&gt;<i> 
+</I>&gt;<i> First, you may be confusing &quot;Jabber&quot; wiht specific implementations. Most
+</I>&gt;<i> server implementations will do offline queueing as you describe,
+</I>&gt;<i> but that's a matter of implementation and configuration. Also, the
+</I>&gt;<i> message flood that you refer to on login can be addressed with the
+</I>&gt;<i> protocol defined in JEP-0013.
+</I>
+We're specifically using jabberd 1.4.3 as provided from the jabber.org site with no modifications. Based on this implementation, it appears the offline queueing is active by default. I also took a look at JEP-0013 yesterday, but is that something that is supported out of the box? I guess I'm a little confused about what JEPs actually represent. Ideally, it appears to have solved my message &quot;flooding&quot; concerns, but how can I configure jabberd to operate according to this protocol. Also, are there any issues with just blocking on my message processing loop so that I don't handle any incoming messages before finishing the message I'm currently processing? If I can implement this, the message flooding becomes a non-issue, right? 
+
+&gt;<i> &gt; (2) scalability &amp; redundancy
+</I>&gt;<i> &gt; I would like to connect multiple jabber clients to the same jabber server. Also keep in mind that my clients will only be available within the internal network, so I'm exploiting the A2A (application 2 application) capability of jabber. Although each jabber client does the same thing, they would each need to have unique jids. But I also read that I could run multiple clients with the same jid but with different resource identifiers. Jabber would then decide which client to forward the message to based on the client's presence priority. Unfortunately, this doesn't do any load balancing, but it would allow me to take down one client without disrupting any message processing (since jabber would just forward messages to the next priority client). Is my thinking correct on this?
+</I>&gt;<i> 
+</I>&gt;<i> You could write a custom load-balancing module for the jabberd server,
+</I>&gt;<i> but you're right that such functionality does not exist out of the box
+</I>&gt;<i> for delivery to the various resources for a client.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; (3) load balancing
+</I>&gt;<i> &gt; To truly achieve load balancing, it appears to me that I would need to implement a custom jabber component. All messages would be addressed to this component jid (instead of a client jid as described above). The component would then decide which of the available clients it would forward messages to. However, it appears that we would loose the queuing capability of jabber since store/forward is not available to components (according to &quot;Programming Jabber&quot;), so does that mean I would have to implement my own queuing mechanism within the component? I could probably get away with sacrificing the load balancing component and just rely on the presence priority forwarding of jabber to support redundancy in the short run, but eventually, I could build the load balancing component later. 
+</I>&gt;<i> 
+</I>&gt;<i> Your component would have to do its own queueing.
+</I>&gt;<i> 
+</I>&gt;<i> I probably missed your previous messages to the list -- what kind of
+</I>&gt;<i> application are you trying to write?
+</I>
+We're planning on implementing A2A communication between a java-based jabber client app that runs on our web server and a another server-side jabber client C/C++ app. So all interaction over the jabberd transport is strictly within our internal server network. We currently have a jabber client that has built-in message queueing abilities, but we have discovered reliability issues and difficulties in scalability. So we'd like to implement a more simplified client by removing its queue mechanism &amp; extra threading, but this means offloading that process to jabberd -- which seems logical enough since it already has queueing capability. The only issue becomes controlling the flow of messages to client from the queue, which I can only do by blocking within my client's message event loop.
+
+&gt;<i> Peter
+</I>&gt;<i> 
+</I>&gt;<i> -- 
+</I>&gt;<i> Peter Saint-Andre
+</I>&gt;<i> Jabber Software Foundation
+</I>&gt;<i> <A HREF="http://www.jabber.org/people/stpeter.php">http://www.jabber.org/people/stpeter.php</A>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="077398.html">[jdev] Re: architecture questions
+</A></li>
+	<LI>Next message: <A HREF="077400.html">[jdev] Re: architecture questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77399">[ date ]</a>
+              <a href="thread.html#77399">[ thread ]</a>
+              <a href="subject.html#77399">[ subject ]</a>
+              <a href="author.html#77399">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

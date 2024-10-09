@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Seeking jabber implementers for SCRAM-SHA-1 testing
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Seeking%20jabber%20implementers%20for%20SCRAM-SHA-1%20testing&In-Reply-To=%3C87r5secppe.fsf%40mocca.josefsson.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="087861.html">
+   <LINK REL="Next"  HREF="087865.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Seeking jabber implementers for SCRAM-SHA-1 testing</H1>
+    <B>Simon Josefsson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Seeking%20jabber%20implementers%20for%20SCRAM-SHA-1%20testing&In-Reply-To=%3C87r5secppe.fsf%40mocca.josefsson.org%3E"
+       TITLE="[jdev] Seeking jabber implementers for SCRAM-SHA-1 testing">simon at josefsson.org
+       </A><BR>
+    <I>Wed Nov  4 08:46:53 CST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="087861.html">[jdev] Seeking jabber implementers for SCRAM-SHA-1 testing
+</A></li>
+        <LI>Next message: <A HREF="087865.html">[jdev] Seeking jabber implementers for SCRAM-SHA-1 testing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87863">[ date ]</a>
+              <a href="thread.html#87863">[ thread ]</a>
+              <a href="subject.html#87863">[ subject ]</a>
+              <a href="author.html#87863">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dave Cridland &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A>&gt; writes:
+
+&gt;<i> On Tue Nov  3 15:58:34 2009, Simon Josefsson wrote:
+</I>&gt;&gt;<i> So hopefully it is Just A Small Matter of, err, reordering the
+</I>&gt;&gt;<i> fields
+</I>&gt;&gt;<i> and things will work.  Hopefully.
+</I>&gt;<i>
+</I>&gt;<i> Nope - my implementation and the specification have obviously drifted
+</I>&gt;<i> considerably.
+</I>&gt;<i>
+</I>&gt;<i> I think I've now brought my implementation into line, though, and it
+</I>&gt;<i> still fails to work.
+</I>&gt;<i>
+</I>&gt;<i> The portion I'm finding hardest to test is my Hi() function. I have,
+</I>&gt;<i> for example:
+</I>&gt;<i>
+</I>&gt;<i> Hi( 'pencil', '$\x93&lt;\xdeM\x0e\xa42\xdf:\x86\x19', 4096 ) =&gt;
+</I>&gt;<i> \x1e\x0ba\xd9\xb6&gt;\x8aiN8\x98\xc8c\xad\x85is\x03&quot;='
+</I>&gt;<i>
+</I>&gt;<i> That's with a base64 encoded salt of JJM83k0OpDLfOoYZ
+</I>
+That seems wrong, check your PBKDF2 implementation.  I have created a
+small test tool (see below) to print pbkdf2 outputs, and with those
+inputs I get the following output:
+
+6c 30 ac 3f 42 98 52 b2 14 2e 1f d2 c6 be cb de 36 4a ff 8d 
+
+This is with an PBKDF2 implementation that is used in both GNU Shishi
+for Kerberos V5 and GnuTLS for X.509 (and GNU SASL for SCRAM but that
+proves nothing) so I feel fairly confident that it is correct.  I could
+have made an error in my test tool though.
+
+However I cannot find any test vectors for PBKDF2 which seems bad, I'll
+see if I can put together a document on that.
+
+Here is how to use my tool:
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jas at mocca</A>:~$ git clone <A HREF="git://git.josefsson.org/git/pbkdf2.git">git://git.josefsson.org/git/pbkdf2.git</A>
+...
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jas at mocca</A>:~$ cd pbkdf2/
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jas at mocca</A>:~/pbkdf2 master$ autoreconf -i
+...
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jas at mocca</A>:~/pbkdf2 master$ ./configure
+...
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jas at mocca</A>:~/pbkdf2 master$ make
+...
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jas at mocca</A>:~/pbkdf2 master$ ./pbkdf2 
+4b 00 79 01 b7 65 48 9a be ad 49 d9 26 f7 21 d0 65 a4 29 c1 
+4b 00 79 01 b7 65 48 9a be ad 49 d9 26 f7 21 d0 65 a4 29 c1 
+4b 00 79 01 b7 65 48 9a be ad 49 d9 26 f7 21 d0 65 a4 29 c1 
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jas at mocca</A>:~/pbkdf2 master$ 
+
+See pbkdf2.c for changing the password/salt values.
+
+/Simon
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="087861.html">[jdev] Seeking jabber implementers for SCRAM-SHA-1 testing
+</A></li>
+	<LI>Next message: <A HREF="087865.html">[jdev] Seeking jabber implementers for SCRAM-SHA-1 testing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#87863">[ date ]</a>
+              <a href="thread.html#87863">[ thread ]</a>
+              <a href="subject.html#87863">[ subject ]</a>
+              <a href="author.html#87863">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

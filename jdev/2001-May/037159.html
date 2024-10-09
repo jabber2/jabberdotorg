@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] How to avoid crash on Apple OS X : workaround
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20How%20to%20avoid%20crash%20on%20Apple%20OS%20X%20%3A%20workaround&In-Reply-To=%3C200105181357.AA201982182%40funcall.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="037158.html">
+   <LINK REL="Next"  HREF="037160.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] How to avoid crash on Apple OS X : workaround</H1>
+    <B>Jabber Developer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20How%20to%20avoid%20crash%20on%20Apple%20OS%20X%20%3A%20workaround&In-Reply-To=%3C200105181357.AA201982182%40funcall.com%3E"
+       TITLE="[JDEV] How to avoid crash on Apple OS X : workaround">jabberdev at funcall.com
+       </A><BR>
+    <I>Fri May 18 13:57:24 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="037158.html">[JDEV] Missed my question ??
+</A></li>
+        <LI>Next message: <A HREF="037160.html">[JDEV] Re: [Mac-dev] How to avoid crash on Apple OS X : workaround
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37159">[ date ]</a>
+              <a href="thread.html#37159">[ thread ]</a>
+              <a href="subject.html#37159">[ subject ]</a>
+              <a href="author.html#37159">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>H
+
+i
+
+
+
+A good news 
+:<i> 
+</I>
+I have jabber running without a crash (at least in my tes
+ts)
+ 
+on my Apple Mac OS X sy
+stem
+.
+The workaround is ugly and someone in the core 
+Jabbe
+r 
+team should investigate what's happenin
+g ther
+e.
+First the workaround to make
+ jabber
+ :
+1. in mio.
+c when spawning the mio_main t
+h
+read, ad
+d 
+        pth_attr_set(attr, PTH_ATTR_NAME,
+ &quot;
+mio_ma
+in&quot;
+
+);
+before
+ :
+         mio__data-&gt;t=pth
+_spa
+wn(attr,(vo
+i
+d
+*
+)_
+m
+io_main,NUL
+L
+);
+
+==&gt; this step is important becau
+se now 
+we will custom
+ize 
+the pth library to handle particular
+y this t
+hread!! I know 
+it's 
+ugly that why
+ 
+someone 
+n
+eed to look int
+o
+ it!
+
+2. i
+n pth-1.3.7
+, modify 
+ pth_sche
+d.
+c :
+add the code be
+low :
+if (pth_current
+ != NULL &amp;&amp; s
+trcmp(
+ pth_current-&gt;
+
+name, 
+&quot;mio_main&quot;) =
+= 0) {
+    sa.sa_h
+andler = pth_sc
+hed_eventmana
+ger_sigha
+ndler;
+
+   
+ sigfillset(&amp;sa.s
+a_
+mask);
+    sa.sa_flag
+s
+ =
+ 
+0;
+    si
+gactio
+n(
+S
+IGUSR2, &amp;
+sa, &amp;osa[SIGU
+SR
+2
+]);
+}
+
+be
+fo
+re :
+ 
+ 
+  pth_sc(sigpro
+cmask)
+(
+SIG_SETMASK, &amp;pth_sigb
+lock, 
+&amp;
+
+oss
+);
+
+==&gt; what it does (if 
+I understand correctly this part
+ of
+ t
+he 
+code) : it add the S
+IG
+USR2 signal in the list of hand
+le
+r that 
+should be catched... without this code it seems that the 
+SIGUSR2 used by the mio_write is raised but without any 
+handler installed and so generate the crash.
+Why the handler was removed from the list I do not know, 
+and that's the main problem for all the crash I think.
+
+
+3. You can apparently safely remove the other changes I 
+mentionned in mio.c :
+you can put back the pth_yield() at it's initial place, and 
+remove the pth_usleep() 
+
+Please jabber developer on OS X give it a try and let me 
+know if it's working.
+
+hope it helps!
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="037158.html">[JDEV] Missed my question ??
+</A></li>
+	<LI>Next message: <A HREF="037160.html">[JDEV] Re: [Mac-dev] How to avoid crash on Apple OS X : workaround
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37159">[ date ]</a>
+              <a href="thread.html#37159">[ thread ]</a>
+              <a href="subject.html#37159">[ subject ]</a>
+              <a href="author.html#37159">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

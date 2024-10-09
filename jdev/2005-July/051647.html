@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Implementing JEPs for clients
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Implementing%20JEPs%20for%20clients&In-Reply-To=%3C820a807105072719496a3661%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="051637.html">
+   <LINK REL="Next"  HREF="051648.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Implementing JEPs for clients</H1>
+    <B>Samuel Goto</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Implementing%20JEPs%20for%20clients&In-Reply-To=%3C820a807105072719496a3661%40mail.gmail.com%3E"
+       TITLE="[jdev] Implementing JEPs for clients">samuelgoto at gmail.com
+       </A><BR>
+    <I>Wed Jul 27 21:49:36 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="051637.html">[jdev] Implementing JEPs for clients
+</A></li>
+        <LI>Next message: <A HREF="051648.html">[jdev] Implementing JEPs for clients
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51647">[ date ]</a>
+              <a href="thread.html#51647">[ thread ]</a>
+              <a href="subject.html#51647">[ subject ]</a>
+              <a href="author.html#51647">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I tried 
+
+&lt;iq type='get' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ra017335 at jabber.org</A>' to='jabber.org' id='dico'&gt; 
+&lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#items'/">http://jabber.org/protocol/disco#items'/</A>&gt;&lt;/iq&gt;
+
+but it doesn't work !!! Now I am doing
+
+&lt;iq type='get' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ra017335 at jabber.org</A>' to='jabber.org' id='dico'&gt; 
+&lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#items'/">http://jabber.org/protocol/disco#items'/</A>&gt;&lt;/iq&gt;
+
+without the from attribute and it works !! Thanks !!!
+ 
+
+Thanks, and sorry for the inconvenience.
+
+PS I have chat ... but I don't have mu-chat ... haven't made myself clear ...
+
+==================================
+
+DISCONSIDER THE REST OF THIS EMAIL
+
+I HAD A SUCESSFULL IQ WHEN I WAS 
+WRITING THIS EMAIL ... HEHE ... 
+
+==================================
+
+Yes, I do understand that this is something that I am doing wrong, not
+questioning the jabberd implementation ...
+
+Take a look at my xml negotiation, is this right ?
+
+=============  client  ================
+1) client opening stream 
+===================================
+&lt;stream:stream to='jabber.org' xmlns='jabber:client'
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;&quot;
+=============  server  ================
+2) server opening stream too
+===================================
+&lt;stream:stream xmlns='jabber:client' xml:lang='en'
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> from='jabber.org'  
+id='3E7A272C2A70C' &gt;
+=============  client  ================
+3) client sending plain text authentication
+===================================
+&lt;iq id='login' type='set'&gt;&lt;query
+xmlns='jabber:iq:auth'&gt;&lt;username&gt;ra017335&lt;/username&gt; 
+&lt;password&gt;mypassword&lt;/password&gt;   &lt;resource&gt;shockwave&lt;/resource&gt;
+&lt;/query&gt; &lt;/iq&gt;
+=============  server  ================
+4) server answering that authentication is ok
+===================================
+&lt;iq id='login' type='result'/&gt;
+=============  client  ================
+5) client asking to receive service discovery
+===================================
+&lt;iq type='get' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ra017335 at jabber.org</A>' to='jabber.org' id='dico'&gt; 
+&lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#items'/">http://jabber.org/protocol/disco#items'/</A>&gt;&lt;/iq&gt;
+=============    halt     ================
+connection is still on, but server doesn't respond anything ...
+===================================
+
+Is this stream negotiation enougth to receive the service discovery
+JEP or am I doing something wrong ?
+
+
+On 7/27/05, Julien PUYDT &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">julien.puydt at laposte.net</A>&gt; wrote:
+&gt;<i> Samuel Goto a &#233;crit :
+</I>&gt;<i> &gt; I belive I have completed the IM Protocol.
+</I>&gt;<i> &gt;    1)  chat, etc )
+</I>&gt;<i> 
+</I>&gt;<i> You have IM but no chat!?
+</I>&gt;<i> 
+</I>&gt;<i> &gt;    2) I've connected to the server, started the &lt;stream&gt;, logged and
+</I>&gt;<i> &gt; then sent a
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &lt;iq type='get'
+</I>&gt;<i> &gt;     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.net</A>/orchard'
+</I>&gt;<i> &gt;     to='plays.shakespeare.lit'
+</I>&gt;<i> &gt;     id='info1'&gt;
+</I>&gt;<i> &gt;   &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#info'/">http://jabber.org/protocol/disco#info'/</A>&gt;
+</I>&gt;<i> &gt; &lt;/iq&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;    as suggested on the JEP documentation but got no response from the
+</I>&gt;<i> &gt; server ... I was expecting to receive all the services avaiable, but
+</I>&gt;<i> &gt; got nothing ... I tought something was wrong with my server, so I
+</I>&gt;<i> &gt; tried on jabber.org ... no response either ... what am I donig wrong ?
+</I>&gt;<i> 
+</I>&gt;<i> Two things I notice in your xml node:
+</I>&gt;<i> 1) you probably shouldn't set the &quot;from&quot; yourself ;
+</I>&gt;<i> 2) the &quot;to&quot; should be the name of your server (or &quot;jabber.org&quot;, if it's
+</I>&gt;<i> with jabber.org you tried).
+</I>&gt;<i> 
+</I>&gt;<i> I just tried &lt;iq type='get' to='localhost' id='info0'&gt;&lt;query
+</I>&gt;<i> xmlns='<A HREF="http://jabber.org/protocol/disco#info'/">http://jabber.org/protocol/disco#info'/</A>&gt;&lt;/iq&gt; to my local server
+</I>&gt;<i> (hence the localhost) and received:
+</I>&gt;<i> &lt;iq from='localhost' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">boojum at localhost</A>/JabberHelper' id='info0'
+</I>&gt;<i> type='result'&gt;&lt;query
+</I>&gt;<i> xmlns='<A HREF="http://jabber.org/protocol/disco#info'">http://jabber.org/protocol/disco#info'</A>&gt;&lt;identity
+</I>&gt;<i> category='server' type='im' name='ejabberd'/&gt;&lt;feature
+</I>&gt;<i> var='ejabberd:config'/&gt;&lt;feature
+</I>&gt;<i> var='<A HREF="http://ejabberd.jabberstudio.org/protocol/configure'/">http://ejabberd.jabberstudio.org/protocol/configure'/</A>&gt;&lt;feature
+</I>&gt;<i> var='<A HREF="http://jabber.org/protocol/disco#info'/">http://jabber.org/protocol/disco#info'/</A>&gt;&lt;feature
+</I>&gt;<i> var='<A HREF="http://jabber.org/protocol/disco#items'/">http://jabber.org/protocol/disco#items'/</A>&gt;&lt;feature
+</I>&gt;<i> var='<A HREF="http://jabber.org/protocol/stats'/">http://jabber.org/protocol/stats'/</A>&gt;&lt;feature var='iq'/&gt;&lt;feature
+</I>&gt;<i> var='jabber:iq:last'/&gt;&lt;feature var='jabber:iq:register'/&gt;&lt;feature
+</I>&gt;<i> var='jabber:iq:time'/&gt;&lt;feature var='jabber:iq:version'/&gt;&lt;feature
+</I>&gt;<i> var='presence'/&gt;&lt;feature var='presence-invisible'/&gt;&lt;feature
+</I>&gt;<i> var='vcard-temp'/&gt;&lt;/query&gt;&lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> So you see it _is_ possible to get an answer, when asking correctly ;-)
+</I>&gt;<i> 
+</I>&gt;<i> Cheers,
+</I>&gt;<i> 
+</I>&gt;<i> JP
+</I>&gt;<i> 
+</I>
+
+-- 
+f u cn rd ths u cn b a gd prgmr !
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="051637.html">[jdev] Implementing JEPs for clients
+</A></li>
+	<LI>Next message: <A HREF="051648.html">[jdev] Implementing JEPs for clients
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51647">[ date ]</a>
+              <a href="thread.html#51647">[ thread ]</a>
+              <a href="subject.html#51647">[ subject ]</a>
+              <a href="author.html#51647">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

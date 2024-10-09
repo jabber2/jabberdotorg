@@ -1,0 +1,375 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] GZipping Jabber Messages
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20GZipping%20Jabber%20Messages&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="010586.html">
+   <LINK REL="Next"  HREF="010609.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] GZipping Jabber Messages</H1>
+    <B>mlin at mlin.net</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20GZipping%20Jabber%20Messages&In-Reply-To="
+       TITLE="[JDEV] GZipping Jabber Messages">mlin at mlin.net
+       </A><BR>
+    <I>Sun Jan  6 16:53:00 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="010586.html">[Fwd: Re: [JDEV] GZipping Jabber Messages]
+</A></li>
+        <LI>Next message: <A HREF="010609.html">[JDEV] GZipping Jabber Messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10601">[ date ]</a>
+              <a href="thread.html#10601">[ thread ]</a>
+              <a href="subject.html#10601">[ subject ]</a>
+              <a href="author.html#10601">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>OK, I think this explains quite a bit, because even the uncompressed 
+bandwidth usage (200kb in 24 hours) is essentially negligible. At this 
+rate any appreciable amount of server bandwidth would have the capacity 
+for many millions of connections, and other factors (such as kernel 
+limitations, XML parsing, memory constraints) will limit server capacity 
+long before bandwidth becomes an issue. Therefore, adding compression in a 
+heavily strained server will actually decrease its capacity, because 
+internal resources (such as CPU time and memory) will be taken away to 
+save bandwidth, which is plentiful.
+
+&gt;<i>From the cost perspective, at this rate of transfer, the cost for 
+</I>bandwidth per user is also negligible. Consider that if bandwidth costs 
+$10/GB (this is a number from a web hosting provider, and is probably much 
+higher than one pays for an actual pipe), then supporting one million 
+concurrent users each transferring 200kb in 24 hours costs $2,000 or 0.2 
+cents per user. Certainly this figure decreases if your bandwidth usage 
+decreases, but either number is negligible when compared to the secondary 
+costs of supporting that many users.
+
+The questions, then, are: (1) under what conditions is the bandwidth usage 
+for a client connection non-negligible? and  (2) can you achieve the same 
+high compression ratios under these conditions?
+
+I hypothesize that the answer to question (1) will imply that the data 
+being exchanged with the client is very non-repetitive and thus 
+non-compressible compared to the 200kb that crossed in 24 hours, and so 
+the answer to (2) will be no. But I will have to look into it further.
+
+-Mike
+
+
+
+
+
+&quot;Michael F. March&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">march at indirect.com</A>&gt;
+Sent by: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>
+01/06/2002 02:13 PM
+Please respond to jdev
+
+ 
+        To:     &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+        cc: 
+        Subject:        Re: [JDEV] GZipping Jabber Messages
+
+ 
+
+More info:
+
+I captured XML from a 24 hr Jabber session and the XML from
+that session was 179601 bytes and it compressed down to
+6966 bytes.
+
+
+
+&gt;<i>
+</I>&gt;<i> I was port forwarding a Jabber session...
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> &gt; What is the nature of the data you are transferring?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; After doing a longer session (about 20 minutes), I am getting
+</I>&gt;<i> &gt; about 80% in both directions now..
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; Doing compression with SSH I am getting about 70% compression
+</I>&gt;<i> &gt; &gt; outbound and 80% compression inbound..
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I have not investigated how OpenSSH implements compression on
+</I>&gt;<i> &gt; &gt; the TCP stream though so I am not sure how great of gauge this
+</I>&gt;<i> &gt; &gt; is..
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Update. I am finding that you can get better compression ratios, 
+</I>up
+to
+&gt;<i> &gt; &gt; &gt; around 57%, by maintaining the LZ dictionary between packets. Also
+</I>&gt;<i> this
+</I>&gt;<i> &gt; &gt; &gt; reduces the processor hit asymptotically (but still quite nonzero)
+</I>&gt;<i> with
+</I>&gt;<i> &gt; &gt; &gt; more packets sent along.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; This technique raises still other problems, though, most notably
+</I>&gt;<i> &gt; &gt; &gt; reliability. For this to work the gzip deflater on one end and the
+</I>&gt;<i> &gt; &gt; inflater
+</I>&gt;<i> &gt; &gt; &gt; on the other end must remain exactly in sync for the duration of 
+</I>the
+&gt;<i> &gt; &gt; &gt; connection (hours, days, ...). An error in the compressed stream
+</I>would
+&gt;<i> &gt; be
+</I>&gt;<i> &gt; &gt; &gt; magnified many times over in the inflated stream. So for 
+</I>reliability
+&gt;<i> &gt; you
+</I>&gt;<i> &gt; &gt; &gt; had better hash or at least checksum all the data going across. 
+</I>That
+&gt;<i> &gt; means
+</I>&gt;<i> &gt; &gt; &gt; you have to have an envelope format.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; So for bandwidth and processor usage, this does a lot better than 
+</I>I
+&gt;<i> &gt; &gt; &gt; expected compared to my original run, but now we are just a few
+</I>steps
+&gt;<i> &gt; away
+</I>&gt;<i> &gt; &gt; &gt; (credential verification, key exchange, and stream encryption) 
+</I>from
+&gt;<i> &gt; &gt; &gt; re-doing SSL.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; -Mike
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; ----- Forwarded by Michael F Lin/Cambridge/IBM on 01/05/2002 11:38
+</I>&gt;<i> &gt; &gt; AM -----
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;                       Michael F Lin
+</I>&gt;<i> &gt; &gt; &gt;                                                To:
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt;                       01/04/2002 09:26         cc:
+</I>&gt;<i> &gt; &gt; &gt;                       PM                       From:    Michael F
+</I>&gt;<i> &gt; &gt; Lin/Cambridge/<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">IBM at IBMUS</A>
+</I>&gt;<i> &gt; &gt; &gt;                                                Subject: Re: [JDEV]
+</I>&gt;<i> &gt; &gt; GZipping Jabber Messages(Document link: Michael Lin)
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Hi Adam, I looked over some of the DotGNU mailing list archives at
+</I>the
+&gt;<i> &gt; &gt; &gt; discussion you are referring to.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; One person from DotGNU says
+</I>&gt;<i> &gt; &gt; &gt; ---
+</I>&gt;<i> &gt; &gt; &gt; At the end of the day, it is easier to just gzip it and forget 
+</I>about
+&gt;<i> &gt; &gt; &gt; the problem.  No data loss, and roughly the same level of
+</I>&gt;<i> &gt; &gt; &gt; compaction.  Highly redundant data like XML compresses
+</I>&gt;<i> &gt; &gt; &gt; very well.  For example, the 6 Mb All.xml file for the C#
+</I>&gt;<i> &gt; &gt; &gt; library specification compresses to ~630k using gzip: about
+</I>&gt;<i> &gt; &gt; &gt; 10% of the original size.
+</I>&gt;<i> &gt; &gt; &gt; ---
+</I>&gt;<i> &gt; &gt; &gt; I believe this is misleading in the context of realtime XML 
+</I>streams
+&gt;<i> &gt; (e.g.
+</I>&gt;<i> &gt; &gt; &gt; Jabber; SOAP; presumably, whatever DotGNU will use) because you 
+</I>are
+&gt;<i> not
+</I>&gt;<i> &gt; &gt; &gt; compressing 6Mb of data at once. Rather you are compressing small
+</I>&gt;<i> &gt; packets,
+</I>&gt;<i> &gt; &gt; &gt; a few hundred bytes in length in the case of Jabber, and then
+</I>&gt;<i> &gt; transmitting
+</I>&gt;<i> &gt; &gt; &gt; them individually. I ran some tests to see how gzip performs under
+</I>&gt;<i> &gt; these
+</I>&gt;<i> &gt; &gt; &gt; conditions.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; I wrote a program which generates random Jabber &lt;message/&gt; 
+</I>packets.
+&gt;<i> The
+</I>&gt;<i> &gt; &gt; &gt; body of each message is formed by randomly selecting between 1 and
+</I>25
+&gt;<i> &gt; &gt; words
+</I>&gt;<i> &gt; &gt; &gt; from a 10,000-word English language dictionary file. For each test
+</I>&gt;<i> &gt; vector,
+</I>&gt;<i> &gt; &gt; &gt; the program runs zlib compress, level 9, on it (equivalent [I 
+</I>think]
+&gt;<i> to
+</I>&gt;<i> &gt; &gt; &gt; gzip with maximum compression), then records the compressed size 
+</I>and
+&gt;<i> &gt; the
+</I>&gt;<i> &gt; &gt; &gt; original size. It repeats this until at least 1 million bytes of
+</I>&gt;<i> &gt; &gt; &gt; uncompressed data has been processed.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; The results from about a dozen runs of this program are very
+</I>&gt;<i> &gt; consistent:
+</I>&gt;<i> &gt; a
+</I>&gt;<i> &gt; &gt; &gt; compression ratio of 17% in 7 seconds of runtime. A typical result
+</I>is
+&gt;<i> &gt; &gt; &gt; 1,000,011 total bytes of raw data; 830,654 bytes of compressed 
+</I>data.
+&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; If I comment the code to compress the test vectors, and leave the
+</I>code
+&gt;<i> &gt; to
+</I>&gt;<i> &gt; &gt; &gt; generate the test vectors, the program runs in less than 1 second.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; [This was run on]
+</I>&gt;<i> &gt; &gt; &gt; athena% uname -a
+</I>&gt;<i> &gt; &gt; &gt; SunOS department-of-alchemy.mit.edu 5.8 Generic_108528-08 sun4u
+</I>sparc
+&gt;<i> &gt; &gt; &gt; SUNW,Ultra-60
+</I>&gt;<i> &gt; &gt; &gt; athena%
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Obviously these are preliminary and nonscientific results only, 
+</I>and
+&gt;<i> &gt; there
+</I>&gt;<i> &gt; &gt; &gt; are other factors to consider with Jabber, such as the likelihood
+</I>&gt;<i> &gt; &gt; &gt; previously mentioned that the XML processing is going to be the
+</I>&gt;<i> &gt; limiting
+</I>&gt;<i> &gt; &gt; &gt; factor in processor time. I find the topic quite interesting,
+</I>however,
+&gt;<i> &gt; so
+</I>&gt;<i> &gt; &gt; I
+</I>&gt;<i> &gt; &gt; &gt; am going to fiddle around with it over the next few days and see 
+</I>if
+I
+&gt;<i> &gt; can
+</I>&gt;<i> &gt; &gt; &gt; get it to do better with custom deflate dictionaries and such.
+</I>&gt;<i> &gt; Hopefully
+</I>&gt;<i> &gt; I
+</I>&gt;<i> &gt; &gt; &gt; will even find time to write something on the topic and post it 
+</I>with
+&gt;<i> my
+</I>&gt;<i> &gt; &gt; &gt; source code. However, based on these initial results I am very 
+</I>wary
+of
+&gt;<i> &gt; &gt; &gt; gzipping instant messaging XML because of the apparent high
+</I>processing
+&gt;<i> &gt; &gt; cost
+</I>&gt;<i> &gt; &gt; &gt; and mediocre compression ratio. I will continue to test but my
+</I>&gt;<i> &gt; hypothesis
+</I>&gt;<i> &gt; &gt; &gt; is that gzip or any generic compression algorithm is going to be
+</I>very
+&gt;<i> &gt; &gt; &gt; mediocre for Jabber as instant messaging.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; -Mike
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;                       Adam Theo
+</I>&gt;<i> &gt; &gt; &gt;                       &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">adamtheo at theoret</A>        To:       jdev
+</I>&gt;<i> &gt; &gt; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> &gt; &gt; &gt;                       ic.com&gt;                  cc:
+</I>&gt;<i> &gt; &gt; &gt;                       Sent by:                 Subject:  [JDEV]
+</I>&gt;<i> &gt; GZipping
+</I>&gt;<i> &gt; &gt; Jabber Messages
+</I>&gt;<i> &gt; &gt; &gt;                       <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber</A>
+</I>&gt;<i> &gt; &gt; &gt;                       .org
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;                       01/04/2002 03:32
+</I>&gt;<i> &gt; &gt; &gt;                       PM
+</I>&gt;<i> &gt; &gt; &gt;                       Please respond to
+</I>&gt;<i> &gt; &gt; &gt;                       jdev
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Hi, all. There's a good discussion going on over at the DotGNU
+</I>&gt;<i> &gt; Developer
+</I>&gt;<i> &gt; &gt; &gt; list about gzip'ing the XML that is transmitted around on the 
+</I>DotGNU
+&gt;<i> &gt; &gt; &gt; platform.
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; Was wondering if it would be possible to incorporate the same 
+</I>thing
+&gt;<i> for
+</I>&gt;<i> &gt; &gt; &gt; future versions of the Jabber server? Is it feasible, anyway? They
+</I>are
+&gt;<i> &gt; &gt; &gt; saying the trade-offs for extra resource consumption would not be
+</I>bad
+&gt;<i> &gt; at
+</I>&gt;<i> &gt; &gt; &gt; all if designed into the server properly, and would reduce 
+</I>bandwidth
+&gt;<i> &gt; &gt; &gt; very dramatically (like by 80%, i think). This would be useful for
+</I>&gt;<i> &gt; &gt; &gt; high-volume servers with enough processing power, i think...
+</I>&gt;<i> &gt; &gt; &gt; --
+</I>&gt;<i> &gt; &gt; &gt;     /\    -- Adam Theo, Age 22, Tallahassee FL USA --
+</I>&gt;<i> &gt; &gt; &gt;    //\\   Theoretic Solutions (<A HREF="http://www.theoretic.com">http://www.theoretic.com</A>)
+</I>&gt;<i> &gt; &gt; &gt;   /____\    &quot;Software, Internet Services and Advocacy&quot;
+</I>&gt;<i> &gt; &gt; &gt; /--||--\ Personal Website (<A HREF="http://www.theoretic.com/adamtheo">http://www.theoretic.com/adamtheo</A>)
+</I>&gt;<i> &gt; &gt; &gt;     ||    Jabber Open IM (<A HREF="http://www.jabber.org">http://www.jabber.org</A>)
+</I>&gt;<i> &gt; &gt; &gt;     ||    Email &amp; Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">adamtheo at theoretic.com</A>
+</I>&gt;<i> &gt; &gt; &gt;     ||    AIM: AdamTheo2000   ICQ: 3617306   Y!: AdamTheo2
+</I>&gt;<i> &gt; &gt; &gt;   &quot;A free-market socialist computer geek patriotic American
+</I>buddhist.&quot;
+&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt;
+</I>&gt;<i> &gt; &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20020106/d26e5450/attachment.htm">https://www.jabber.org/jdev/attachments/20020106/d26e5450/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="010586.html">[Fwd: Re: [JDEV] GZipping Jabber Messages]
+</A></li>
+	<LI>Next message: <A HREF="010609.html">[JDEV] GZipping Jabber Messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10601">[ date ]</a>
+              <a href="thread.html#10601">[ thread ]</a>
+              <a href="subject.html#10601">[ subject ]</a>
+              <a href="author.html#10601">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: [jadmin] [jadmin]Port access below 1024
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20%5Bjadmin%5D%20%5Bjadmin%5DPort%20access%20below%201024&In-Reply-To=%3C3CFFA352.1070602%40unboundtech.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042293.html">
+   <LINK REL="Next"  HREF="042299.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: [jadmin] [jadmin]Port access below 1024</H1>
+    <B>Justin Georgeson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20%5Bjadmin%5D%20%5Bjadmin%5DPort%20access%20below%201024&In-Reply-To=%3C3CFFA352.1070602%40unboundtech.com%3E"
+       TITLE="[JDEV] Re: [jadmin] [jadmin]Port access below 1024">jgeorgeson at unboundtech.com
+       </A><BR>
+    <I>Thu Jun  6 13:00:50 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042293.html">[JDEV] Re: [jadmin] [jadmin]Port access below 1024
+</A></li>
+        <LI>Next message: <A HREF="042299.html">[JDEV] File transfers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42312">[ date ]</a>
+              <a href="thread.html#42312">[ thread ]</a>
+              <a href="subject.html#42312">[ subject ]</a>
+              <a href="author.html#42312">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>There is a big if clause to call setuid/setgid in the main function in 
+jabberd.c. I've just been moving that around to see what happens. If I 
+put it right before the while(1) loop at the end of the main function, 
+then the process can bind priviledged ports, the pidfile is right, root 
+owns the pidfile, and the extra jabberd thread (due to loading dnsrv) is 
+still running as root. That's as close as I have come. The problem is 
+that, as viewed from the main function, binding the ports and writing 
+the pidfile all happen in one massive atomic step to process the config 
+file. Perhaps the config file should be extended to have a tag for the 
+username to run as. That way, you could arrange the order the steps are 
+taken as the config file is processed.
+
+Jonathan Augenstine wrote:
+&gt;<i> Justin,
+</I>&gt;<i> 
+</I>&gt;<i> I have two questions.  The first is that have the changes you made to
+</I>&gt;<i> reorder the code been contributed back for inclusion with the
+</I>&gt;<i> distribution?  If not I would be interested in knowing what changes you
+</I>&gt;<i> made, as I have great need to implement this.  The second question is,
+</I>&gt;<i> can you change ownership or permisions on the pid file prior to the fork
+</I>&gt;<i> to make it writable to the designated user and rewrite the pid after the
+</I>&gt;<i> fork()??
+</I>&gt;<i> 
+</I>&gt;<i> Jonathan
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;&gt;<i>-----Original Message-----
+</I>&gt;&gt;<i>From: Justin Georgeson [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jgeorgeson at unboundtech.com</A>] 
+</I>&gt;&gt;<i>Sent: Wednesday, June 05, 2002 6:45 PM
+</I>&gt;&gt;<i>To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+</I>&gt;&gt;<i>Cc: jdev
+</I>&gt;&gt;<i>Subject: [JDEV] Re: [jadmin] [jadmin]Port access below 1024
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>It's not so much the ownership, it's that the pid in the pidfile is 
+</I>&gt;&gt;<i>wrong. I couldn't get the pidfile to be written after the 
+</I>&gt;&gt;<i>fork. Even on 
+</I>&gt;&gt;<i>systems that have a tool to kill all processes with a given name 
+</I>&gt;&gt;<i>(killall jabberd on RedHat for example), that's not always viable, as 
+</I>&gt;&gt;<i>you might have multiple instances and only want to stop one.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Jonathan Augenstine wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>only answer I was given was to have my firewall forward the
+</I>&gt;&gt;&gt;&gt;<i>priviledged 
+</I>&gt;&gt;&gt;&gt;<i>port to the unpriviledged port jabber is running on.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>If I had that option available we would not be having this 
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>exchange. 
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>Unfortunately.
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>Can you clarify what the ramifications are of the problem 
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>you describe 
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>below.  I understand that the pid file is created by root and as a 
+</I>&gt;&gt;&gt;<i>consequence the specified user account is unable to access the pid 
+</I>&gt;&gt;&gt;<i>file. How does this impact?
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>-----Original Message-----
+</I>&gt;&gt;&gt;&gt;<i>From: Justin Georgeson [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jgeorgeson at unboundtech.com</A>]
+</I>&gt;&gt;&gt;&gt;<i>Sent: Wednesday, June 05, 2002 11:55 AM
+</I>&gt;&gt;&gt;&gt;<i>To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+</I>&gt;&gt;&gt;&gt;<i>Subject: Re: [jadmin] [jadmin]
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>Using the -B command line options you can specify what user
+</I>&gt;&gt;&gt;&gt;<i>to run as. I 
+</I>&gt;&gt;&gt;&gt;<i>have successfully reordered the code to bind to the port 
+</I>&gt;&gt;&gt;&gt;<i>before calling 
+</I>&gt;&gt;&gt;&gt;<i>setuid/setgid and forking. The problem is I have been unsuccessful 
+</I>&gt;&gt;&gt;&gt;<i>getting all this done before writing the pidfile, so I end up witha 
+</I>&gt;&gt;&gt;&gt;<i>pidfile with the wrong pid and the process owner can't read. 
+</I>&gt;&gt;&gt;&gt;<i>I've posted 
+</I>&gt;&gt;&gt;&gt;<i>to several lists (this one, jdev, and 
+</I>&gt;&gt;&gt;&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabberd at jabberstudio.org</A>) and the 
+</I>&gt;&gt;&gt;&gt;<i>only answer I was given was to have my firewall forward the 
+</I>&gt;&gt;&gt;&gt;<i>priviledged 
+</I>&gt;&gt;&gt;&gt;<i>port to the unpriviledged port jabber is running on.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>Jonathan Augenstine wrote:
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>I have a question on running Jabber on non-standard ports.  Does
+</I>&gt;&gt;&gt;&gt;&gt;<i>anyone have documentation or notes on how to run Jabber on 
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>ports below
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>1024 but not run Jabber as root?
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>Jonathan Augenstine _______________________________________________
+</I>&gt;&gt;&gt;&gt;&gt;<i>jadmin mailing list
+</I>&gt;&gt;&gt;&gt;&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+</I>&gt;&gt;&gt;&gt;&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jadmin">http://mailman.jabber.org/listinfo/jadmin</A>
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>--
+</I>&gt;&gt;&gt;&gt;<i>Justin Georgeson
+</I>&gt;&gt;&gt;&gt;<i>UnBound Technologies, Inc.
+</I>&gt;&gt;&gt;&gt;<i><A HREF="http://www.unboundtech.com">http://www.unboundtech.com</A>
+</I>&gt;&gt;&gt;&gt;<i>Main   713.329.9330
+</I>&gt;&gt;&gt;&gt;<i>Fax    713.460.4051
+</I>&gt;&gt;&gt;&gt;<i>Mobile 512.789.1962
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>5295 Hollister Road
+</I>&gt;&gt;&gt;&gt;<i>Houston, TX 77040
+</I>&gt;&gt;&gt;&gt;<i>Real Applications using Real Wireless Intelligence(tm)
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>_______________________________________________
+</I>&gt;&gt;&gt;&gt;<i>jadmin mailing list
+</I>&gt;&gt;&gt;&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+</I>&gt;&gt;&gt;&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jadmin">http://mailman.jabber.org/listinfo/jadmin</A>
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>_______________________________________________
+</I>&gt;&gt;&gt;<i>jadmin mailing list
+</I>&gt;&gt;&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+</I>&gt;&gt;&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jadmin">http://mailman.jabber.org/listinfo/jadmin</A>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>-- 
+</I>&gt;&gt;<i>Justin Georgeson
+</I>&gt;&gt;<i>UnBound Technologies, Inc.
+</I>&gt;&gt;<i><A HREF="http://www.unboundtech.com">http://www.unboundtech.com</A>
+</I>&gt;&gt;<i>Main   713.329.9330
+</I>&gt;&gt;<i>Fax    713.460.4051
+</I>&gt;&gt;<i>Mobile 512.789.1962
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>5295 Hollister Road
+</I>&gt;&gt;<i>Houston, TX 77040
+</I>&gt;&gt;<i>Real Applications using Real Wireless Intelligence(tm)
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>_______________________________________________
+</I>&gt;&gt;<i>jdev mailing list
+</I>&gt;&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;&gt;<i>
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+-- 
+Justin Georgeson
+UnBound Technologies, Inc.
+<A HREF="http://www.unboundtech.com">http://www.unboundtech.com</A>
+Main   713.329.9330
+Fax    713.460.4051
+Mobile 512.789.1962
+
+5295 Hollister Road
+Houston, TX 77040
+Real Applications using Real Wireless Intelligence(tm)
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042293.html">[JDEV] Re: [jadmin] [jadmin]Port access below 1024
+</A></li>
+	<LI>Next message: <A HREF="042299.html">[JDEV] File transfers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42312">[ date ]</a>
+              <a href="thread.html#42312">[ thread ]</a>
+              <a href="subject.html#42312">[ subject ]</a>
+              <a href="author.html#42312">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

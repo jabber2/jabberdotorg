@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] namespaces, cont.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20namespaces%2C%20cont.&In-Reply-To=Pine.GSO.4.10.9912211338570.3089-100000%40miris.lcs.mit.edu">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="002362.html">
+   <LINK REL="Next"  HREF="002353.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] namespaces, cont.</H1>
+    <B>C. Scott Ananian</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20namespaces%2C%20cont.&In-Reply-To=Pine.GSO.4.10.9912211338570.3089-100000%40miris.lcs.mit.edu"
+       TITLE="[JDEV] namespaces, cont.">cananian at lesser-magoo.lcs.mit.edu
+       </A><BR>
+    <I>Tue Dec 21 15:16:24 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="002362.html">[JDEV] Re: [Win32-dev] Interface Ad Ins?
+</A></li>
+        <LI>Next message: <A HREF="002353.html">[JDEV] RE: [Win32-dev] Interface Ad Ins?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2364">[ date ]</a>
+              <a href="thread.html#2364">[ thread ]</a>
+              <a href="subject.html#2364">[ subject ]</a>
+              <a href="author.html#2364">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-----BEGIN PGP SIGNED MESSAGE-----
+
+On Tue, 21 Dec 1999, C. Scott Ananian wrote:
+
+&gt;<i> However, *anything* can be included inside the &lt;x&gt; tag, and by convention
+</I>&gt;<i> that anything is a valid XML document in the namespace given by the xmlns
+</I>&gt;<i> attribute.
+</I>
+Thinking about this, I should have said:
+  &quot;by convention that 'anything' is a valid XML document *conforming to
+   the DTD* specified in the xmlns attribute.&quot;
+
+The fact that all interior tags are in a different namespace is important
+when evaluating validity and such, but the key to interpreting the
+contents is to go off and fetch the DTD specified.  The *namespace*
+specification doesn't require that the contents of the xmlns attribute
+point to a DTD; xmlns=&quot;foo&quot; and xmlns=&quot;<A HREF="http://slashdot.org&quot;">http://slashdot.org&quot;</A> are quite
+acceptable from the *namespace validity* standpoint, even though they
+don't give you any information at all about how to interpret the contents
+of the &lt;x&gt; tag.
+
+Also, given a close reading of the name-space spec, it should be understood
+that the namespaces of <A HREF="http://protocol.jabber.org/ns.html">http://protocol.jabber.org/ns.html</A> are ill-defined.
+The real 'namespace's defined should be canonical URL pointing to DTDs for,
+say, the client authorization protocol.  The namespace you want to use,
+according to W3C recommentations, is
+    <A HREF="http://protocol.jabber.org/jabber:iq:auth/auth.dtd">http://protocol.jabber.org/jabber:iq:auth/auth.dtd</A>
+(i.e., a URI), *not*
+    jabber:iq:auth
+
+If I want to refer to an element as
+  &lt;jabber:iq:auth:query&gt;
+I just set the following attribute (in the query tag or any enclosing)
+  xmlns:jabber:iq:auth=&quot;<A HREF="http://protocol.jabber.org/jabber:iq:auth/auth.dtd&quot;">http://protocol.jabber.org/jabber:iq:auth/auth.dtd&quot;</A>
+The actual &quot;universal name&quot; of the tag (using James Clark's syntax) is
+then
+  {<A HREF="http://protocol.jabber.org/jabber:iq:auth/auth.dtd}query">http://protocol.jabber.org/jabber:iq:auth/auth.dtd}query</A>
+
+With all this in mind, we can see how the examples at
+<A HREF="http://protocol.jabber.org/jabber:iq:auth/examples.txt">http://protocol.jabber.org/jabber:iq:auth/examples.txt</A> are
+incorrect.  I'll repeat the first one here:
+
+&lt;iq type=&quot;set&quot;&gt;
+  &lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+    &lt;username&gt;foo&lt;/username&gt;
+    &lt;password&gt;bar&lt;/password&gt;
+    &lt;resource&gt;FooBarGuy&lt;/resource&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+Now, the &lt;iq&gt; tag can only have &lt;query&gt; as a member.  But as written above,
+the &lt;iq&gt; tag has a member called &lt;{jabber:iq:auth}query&gt;, which is *not*
+in the DTD --- only the default-namespace &lt;query&gt; tag is in the DTD.  The
+example is thus not valid XML.  We could rewrite it as:
+
+&lt;iq type=&quot;set&quot;&gt;
+  &lt;query xmlns:auth=&quot;<A HREF="http://protocol.jabber.org/jabber:iq:auth/auth.dtd&quot;">http://protocol.jabber.org/jabber:iq:auth/auth.dtd&quot;</A>&gt;
+    &lt;auth:username&gt;foo&lt;/auth:username&gt;
+    &lt;auth:password&gt;bar&lt;/auth:password&gt;
+    &lt;auth:resource&gt;FooBarGuy&lt;/auth:resource&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+where the desired interpretation of the &lt;query&gt; tag is that the
+contents form a valid XML document using the DTD specified by the xmlns
+attribute.
+
+An alternative is to change the DTD for the server protocol such that
+&lt;iq&gt; just encapsulates #PCDATA (no interior &lt;query&gt; tags) -- but then it
+becomes very difficult to specify precisely how the contents of the &lt;iq&gt;
+tag should be interpreted (the contents don't stand-alone as a valid XML
+document any more, because there's no DTD specified).
+
+It might be mentioned that Bert Bos has made an effort at a formal
+definition for nested XML documents that uses &lt;!doctype&gt; instead of
+relying on namespace hacks.  What detail there is on this is found at
+    <A HREF="http://www.w3.org/XML/simple-XML.html">http://www.w3.org/XML/simple-XML.html</A>
+Work on XML-Schema (the eventual replacement for DTDs) also tries to
+handle extensibility in a cleaner manner.  For example, the XML-Data
+proposal submitted to the XML-Schema working group allows 'open content
+models' (<A HREF="http://www.w3.org/TR/1998/NOTE-XML-data-0105/#OpenClosed">http://www.w3.org/TR/1998/NOTE-XML-data-0105/#OpenClosed</A>).
+But for now standard XML and namespace hacks are the way to go.
+  --s
+                                                         @ @
+ =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-oOO-(_)-OOo-=-=-=-=-=
+ C. Scott Ananian: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cananian at lcs.mit.edu</A>  /  Declare the Truth boldly and
+ Laboratory for Computer Science/Crypto /       without hindrance.
+ Massachusetts Institute of Technology /META-PARRESIAS AKOLUTOS:Acts 28:31
+ -.-. .-.. .. ..-. ..-. --- .-. -..  ... -.-. --- - -  .- -. .- -. .. .- -.
+ PGP key available via finger and from <A HREF="http://www.pdos.lcs.mit.edu/~cananian">http://www.pdos.lcs.mit.edu/~cananian</A>
+
+Flintlock COBRA JANE operation Shoal Bay General Israel planning SEAL Team 6 
+Justice pending insurgent Delta Force fissionable immediate Minister 
+
+-----BEGIN PGP SIGNATURE-----
+Version: 2.6.2
+
+iQCVAwUBOF/uL73Z92aFrZ7tAQFaEgP+MF9N/NTuM33KFaEZEUZYWUQmmULjcs0X
+EpaKenuRCIdTiRLXFB03xt/xvmJ2fl6nXriG+b49D0Lzl4GRPZGTvZtow7C+lASX
+UYphXB427HV6EO8+t33MmrDJ3f7LZeZrif+yxTV1d3qoj9zqWlQmdnvGHtwPfeWz
+hzYVrHvVJ7g=
+=ovxX
+-----END PGP SIGNATURE-----
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="002362.html">[JDEV] Re: [Win32-dev] Interface Ad Ins?
+</A></li>
+	<LI>Next message: <A HREF="002353.html">[JDEV] RE: [Win32-dev] Interface Ad Ins?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2364">[ date ]</a>
+              <a href="thread.html#2364">[ thread ]</a>
+              <a href="subject.html#2364">[ subject ]</a>
+              <a href="author.html#2364">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

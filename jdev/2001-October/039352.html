@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] server to server
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20server%20to%20server&In-Reply-To=%3C5.1.0.14.2.20011030230651.02f29d70%40mail.nanotopia.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] server to server</H1>
+    <B>Ben Schumacher</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20server%20to%20server&In-Reply-To=%3C5.1.0.14.2.20011030230651.02f29d70%40mail.nanotopia.com%3E"
+       TITLE="[JDEV] server to server">ben at nanotopia.com
+       </A><BR>
+    <I>Wed Oct 31 00:18:55 CST 2001</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39352">[ date ]</a>
+              <a href="thread.html#39352">[ thread ]</a>
+              <a href="subject.html#39352">[ subject ]</a>
+              <a href="author.html#39352">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>S2S is needed only if you're trying to connect to any available Jabber 
+servers. For example, if you want your server and users to be able to 
+communicate with the server and users at jabber.org or jabber.com. However, 
+if you're just trying to connect two Jabber server in a closed Jabber 
+network,  you will want to use a base_connect to a base_accept.
+
+So, to answer your questions.
+1) You're combining two possible ways of making connections between two 
+Jabber servers.
+2) Yes, base_connect can be used to establish an S2S connection, but it 
+will only work if the IP, port and secret are configured in a base_accept 
+with those addresses.
+3) Your Jabber server is trying to connect to update.jabber.org to report 
+its current version of the JSM module as an update query. The dnsrv error 
+is because its not resolving update.jabber.org.
+
+You might try setting up services similar to these:
+
+&lt;!-- This is the base_accept for 'server1.jabber.example.com' --&gt;
+&lt;service id=&quot;serverconnect&quot;&gt;
+  &lt;host&gt;server2.jabber.example.com&lt;/host&gt;
+  &lt;accept&gt;
+   &lt;ip&gt;10.0.0.2&lt;/ip&gt;
+   &lt;port&gt;5269&lt;/port&gt;
+   &lt;secret&gt;test&lt;/secret&gt;
+  &lt;/accept&gt;
+&lt;/service&gt;
+
+------
+
+&lt;!-- This is the base_connect for 'server2.jabber.example.com' --&gt;
+&lt;service id='serverconnect'&gt;
+  &lt;host&gt;server1.jabber.example.com&lt;/host&gt;
+  &lt;connect&gt;
+   &lt;ip&gt;10.0.0.1&lt;/ip&gt;
+   &lt;port&gt;5269&lt;/port&gt;
+   &lt;secret&gt;test&lt;/secret&gt;
+  &lt;/connect&gt;
+&lt;/service&gt;
+
+That *SHOULD* work. I'm sure if I got anything wrong somebody will be more 
+than happy to correct me.
+
+Ben
+
+At 12:01 PM 10/31/2001 +0800, Alex She&lt;Wizdomtech - Analyst Programmer&gt; wrote:
+&gt;<i>I do not know if this is right place for this question.
+</I>&gt;<i>I want to test server to server connection , I run two jabber servers, One
+</I>&gt;<i>listen to port 5269 as following :
+</I>&gt;<i>&lt;service id=&quot;s2s&quot;&gt;
+</I>&gt;<i>     &lt;load&gt;
+</I>&gt;<i>       &lt;dialback&gt;./dialback/dialback.so&lt;/dialback&gt;
+</I>&gt;<i>     &lt;/load&gt;
+</I>&gt;<i>     &lt;dialback xmlns='jabber:config:dialback'&gt;
+</I>&gt;<i>       &lt;legacy/&gt;
+</I>&gt;<i>       &lt;ip port=&quot;5269&quot;/&gt;
+</I>&gt;<i>       &lt;karma&gt;
+</I>&gt;<i>         &lt;init&gt;50&lt;/init&gt;
+</I>&gt;<i>         &lt;max&gt;50&lt;/max&gt;
+</I>&gt;<i>         &lt;inc&gt;4&lt;/inc&gt;
+</I>&gt;<i>         &lt;dec&gt;1&lt;/dec&gt;
+</I>&gt;<i>         &lt;penalty&gt;-5&lt;/penalty&gt;
+</I>&gt;<i>         &lt;restore&gt;50&lt;/restore&gt;
+</I>&gt;<i>       &lt;/karma&gt;
+</I>&gt;<i>     &lt;/dialback&gt;
+</I>&gt;<i>   &lt;/service&gt;
+</I>&gt;<i>the other add a base connect service as following:
+</I>&gt;<i>  &lt;service id =&quot;base_connect&quot;&gt;
+</I>&gt;<i>       &lt;connect&gt;
+</I>&gt;<i>        &lt;ip&gt;192.168.90.117&lt;/ip&gt;
+</I>&gt;<i>             &lt;port&gt;5269&lt;/port&gt;
+</I>&gt;<i>             &lt;secret&gt;aaa&lt;/secret&gt; &lt;!-- what about secrect tag --&gt;
+</I>&gt;<i>             &lt;timeout&gt;5&lt;/timeout&gt;
+</I>&gt;<i>        &lt;tries&gt;15&lt;/tries&gt;
+</I>&gt;<i>      &lt;/connect&gt;
+</I>&gt;<i>    &lt;/service&gt;
+</I>&gt;<i>but can not connect server, and print error message &quot;[mio]unlink socket from
+</I>&gt;<i>client&quot;, and listening servere print
+</I>&gt;<i>&quot;20011031T02:41:14: [notice] (update.jabber.org): timed out from dnsrv queue
+</I>&gt;<i>20011031T02:41:14: [notice] (update.jabber.org): bouncing a packet to
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jsm at update.jabber.org</A>/1.4.1 from htgzln117.htgz.com: Hostname
+</I>&gt;<i>Resolution Timeout&quot;
+</I>&gt;<i>Questions:
+</I>&gt;<i>1. how to make a server to server connection?
+</I>&gt;<i>2. base_connect module can do this?
+</I>&gt;<i>3. why listening server report dnsrv timeout ? I can $ping htgzln117.htgz.com
+</I>&gt;<i>in shell.
+</I>&gt;<i>thanks in advance.
+</I>&gt;<i>
+</I>&gt;<i>-------------------------------------------------
+</I>&gt;<i>This mail sent through IMP: mail.wizdomtech.com
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39352">[ date ]</a>
+              <a href="thread.html#39352">[ thread ]</a>
+              <a href="subject.html#39352">[ subject ]</a>
+              <a href="author.html#39352">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Ok, here's my tiny little Perl script
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Ok%2C%20here%27s%20my%20tiny%20little%20Perl%20script&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="023041.html">
+   <LINK REL="Next"  HREF="023042.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Ok, here's my tiny little Perl script</H1>
+    <B>Gaspar, Al (EES)</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Ok%2C%20here%27s%20my%20tiny%20little%20Perl%20script&In-Reply-To="
+       TITLE="[jdev] Ok, here's my tiny little Perl script">Al.Gaspar at lrn.va.gov
+       </A><BR>
+    <I>Fri Sep 30 07:14:42 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="023041.html">[jdev] Trouble sending greek characters (and I guess other	languages) in Jabber messages (with Perl's Net::Jabber)
+</A></li>
+        <LI>Next message: <A HREF="023042.html">[jdev] udp for s2s connection
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23040">[ date ]</a>
+              <a href="thread.html#23040">[ thread ]</a>
+              <a href="subject.html#23040">[ subject ]</a>
+              <a href="author.html#23040">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm kind of at the tail end of this, but I had problems with UTF-8 and some
+Microsoft coding in a perl script that had nothing to do with jabber; it
+sounded like it could help.  I was querying a sql database and writing out
+an RSS feed.  I ended up using the Encode module.  Here are the relevant
+code fragments and comments from that script.  I hope it is useful.
+
+Cheers--
+
+Al
+
+...
+
+use Encode;           # Module to handle Unicode and UTF-8
+
+...
+
+# 
+	# General data--it is possible that the title and description fields
+	# could contain data that is WINDOWS-1252 (Microsoft Code Page
+1252).
+	# decode() translates the WINDOWS-1252 code to the appropriate (Perl
+	# internal) UTF8 code.  By decoding these fields we ensure that the
+	# proper UTF-8 code is used for these characters rather than any
+	# default produced by opening our output files as :utf8 in
+	# write_feeds().
+	# 
+	title	=&gt; decode ('WINDOWS-1252', $title),
+	description =&gt; decode ('WINDOWS-1252', $description),
+	link =&gt;
+&quot;<A HREF="http://vaww.sites.lrn.va.gov/vacatalog/cu_detail.asp?id=$id&quot;,">http://vaww.sites.lrn.va.gov/vacatalog/cu_detail.asp?id=$id&quot;,</A>
+
+...
+
+#
+       # We open the channel to output in UTF-8 encoding.  This eliminates
+       # any &quot;wide character&quot; errors and ensures that our feeds are
+completely
+       # UTF-8 just in case our decode() back in build_feed() missed
+something.
+       #
+       open( CHANNEL,'&gt;:utf8', &quot;Channel$channel.rss&quot;) || die &quot;Cannot open
+file Channel$channel.rss for write: $!&quot;;
+       print CHANNEL ${&quot;rss_&quot;.$channel}-&gt;as_string;
+       close CHANNEL;
+	
+...
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A>] On Behalf
+</I>&gt;<i> Of John Talbot
+</I>&gt;<i> Sent: Thursday, September 29, 2005 1:18 PM
+</I>&gt;<i> To: Jabber software development list
+</I>&gt;<i> Subject: Re: [jdev] Ok, here's my tiny little Perl script
+</I>&gt;<i> 
+</I>&gt;<i> Tijl Houtbeckers wrote:
+</I>&gt;<i> &gt; On Thu, 29 Sep 2005 17:57:04 +0200, John Talbot &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jtalbot at proionta.gr</A>&gt;
+</I>&gt;<i> &gt; wrote:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; That is very surprising. Since Perl probably has nothing to do with the
+</I>&gt;<i> &gt;&gt; unicode here, the culprit has to be jabberd then. I'll try to upgrade
+</I>&gt;<i> &gt;&gt; (though I use the apt-get system for which the most recent versions
+</I>&gt;<i> &gt;&gt; don't always exist).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Back up a second there ;) Perl is notorious for being bad with
+</I>&gt;<i> &gt; unicode, wether that's a repuation still deserved I don't know, but it
+</I>&gt;<i> &gt; was justified in the past. And afaik never in the history of jabberd
+</I>&gt;<i> &gt; has there been such a serious problem with UTF-8 handeling.
+</I>&gt;<i> 
+</I>&gt;<i> You are absolutely right. I tried using another public jabber server,
+</I>&gt;<i> before installing one myself, and same malfunction happened.
+</I>&gt;<i> I even tried Psi, and that didn't make it work either.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; I think you should consider first:
+</I>&gt;<i> &gt; - is the file UTF-8? (you seem to have this covered)
+</I>&gt;<i> 
+</I>&gt;<i> Yes.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; - is your version of Perl configured right to read unicode UTF-8files..
+</I>&gt;<i> 
+</I>&gt;<i> I'm not sure about this... Perl can get configured? During compile time
+</I>&gt;<i> you mean? Also I didn't think that Perl could have anything to do with
+</I>&gt;<i> this, because the libraries (Net::XMPP::etc and Net::Jabber::etc) don't
+</I>&gt;<i> contain the string 'utf8' anywhere, so I was guessing that these
+</I>&gt;<i> libraries were just passing whatever data they found inside the &lt;body&gt;
+</I>&gt;<i> tags without regard for utf8 compliance... but I guess I was wrong?
+</I>&gt;<i> 
+</I>&gt;<i> &gt; - *and* to use unicode for string handeling by default
+</I>&gt;<i> 
+</I>&gt;<i> No, it doesn't have that (and 5.8.6 has that?). It has got to be Perl's
+</I>&gt;<i> fault, but perhaps there's a way to avoid installing a second version of
+</I>&gt;<i> Perl on my system (I've got to keep the old one too, so many .debs are
+</I>&gt;<i> dependent on it in some way) - is this advice you're giving accurate?
+</I>&gt;<i> i.e. are newer versions of Perl handling unicode by default? If so,
+</I>&gt;<i> maybe I can just plug a 'use utf8;' command or type-in some CLI switch
+</I>&gt;<i> and make it all happen...
+</I>&gt;<i> 
+</I>&gt;<i> And what do you mean by Perl being able to read unicode files right?
+</I>&gt;<i> Aren't utf8 files just a series of bytes in Perl's eyes, just like any
+</I>&gt;<i> other file?
+</I>&gt;<i> 
+</I>&gt;<i> &gt; - do you have the most recent Net::Jabber
+</I>&gt;<i> 
+</I>&gt;<i> Yes, and there's only two versions of Net::Jabber (0.1 and 1.0) so all
+</I>&gt;<i> have the same.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Not critizing you or anything, but I'm worried you'll loose a lot of
+</I>&gt;<i> &gt; time accomplishing very little trying to find a UTF-8 bug in jabberd.
+</I>&gt;<i> &gt; Jabberd's unicode handeling is independant of how your system is
+</I>&gt;<i> &gt; setup, how you build it, etc. The same can not be said for Perl. If
+</I>&gt;<i> &gt; you're still not convinced it's not jabberd, try another server (a
+</I>&gt;<i> &gt; public one).
+</I>&gt;<i> 
+</I>&gt;<i> Yes, and thanks, you did save me. Installing jabberd 1.4.4 was the next
+</I>&gt;<i> thing I was going to do... but it's Perl's fault actually :-)
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="023041.html">[jdev] Trouble sending greek characters (and I guess other	languages) in Jabber messages (with Perl's Net::Jabber)
+</A></li>
+	<LI>Next message: <A HREF="023042.html">[jdev] udp for s2s connection
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23040">[ date ]</a>
+              <a href="thread.html#23040">[ thread ]</a>
+              <a href="subject.html#23040">[ subject ]</a>
+              <a href="author.html#23040">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

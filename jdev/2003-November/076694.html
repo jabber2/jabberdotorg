@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] setting a user's vcard from within a component
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20setting%20a%20user%27s%20vcard%20from%20within%20a%20component&In-Reply-To=%3C1069151059.1455.31.camel%40gnurps.zeank.in-berlin.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="076691.html">
+   <LINK REL="Next"  HREF="076695.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] setting a user's vcard from within a component</H1>
+    <B>Stefan Strigler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20setting%20a%20user%27s%20vcard%20from%20within%20a%20component&In-Reply-To=%3C1069151059.1455.31.camel%40gnurps.zeank.in-berlin.de%3E"
+       TITLE="[JDEV] setting a user's vcard from within a component">steve at zeank.in-berlin.de
+       </A><BR>
+    <I>Tue Nov 18 04:24:19 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="076691.html">[JDEV] jabberd tuning
+</A></li>
+        <LI>Next message: <A HREF="076695.html">[JDEV] setting a user's vcard from within a component
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76694">[ date ]</a>
+              <a href="thread.html#76694">[ thread ]</a>
+              <a href="subject.html#76694">[ subject ]</a>
+              <a href="author.html#76694">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+I'm trying to develop a module for the wcs component which should enable
+a user to set his/her vcard. For this I am creating an iq packet like
+this:
+
+  iq = xmlnode_new_tag(&quot;iq&quot;);
+  xmlnode_put_attrib(iq,&quot;type&quot;,&quot;set&quot;);
+
+  vcard = xmlnode_insert_tag(iq,&quot;vcard&quot;);
+  xmlnode_put_attrib(vcard,&quot;xmlns&quot;, NS_VCARD);
+
+  // just one attrib for testing
+  if ((fn = xmlnode_get_attrib(a-&gt;r-&gt;body,&quot;FN&quot;)) != NULL) {
+    xmlnode fnnode = xmlnode_insert_tag(vcard,&quot;FN&quot;);
+    xmlnode_insert_cdata(fnnode,fn,-1);
+  }
+
+So a generated packet looks like this:
+
+ &lt;iq type='set'&gt;&lt;vcard xmlns='vcard-temp'&gt;&lt;FN&gt;bruno&lt;/FN&gt;&lt;/vcard&gt;&lt;/iq&gt;
+
+This one gives my an error (to/from missing):
+
+Tue Nov 18 11:10:31 2003  log.c:116 &lt;log type='warn'
+from='-internal'&gt;Packet Delivery Failed, invalid packet, dropping &amp;lt;iq
+type=&amp;apos;set&amp;apos; from=&amp;apos;wcs&amp;apos;&amp;gt;&amp;lt;vcard
+xmlns=&amp;apos;vcard-temp&amp;apos;&amp;gt;&amp;lt;FN&amp;gt;bruno&amp;lt;/FN&amp;gt;&amp;lt;/vcard&amp;gt;&amp;lt;/iq&amp;gt;&lt;/log&gt;
+Tue Nov 18 11:10:31 2003  deliver.c:474 DELIVER 3:-internal &lt;log
+type='warn' from='-internal'&gt;Packet Delivery Failed, invalid packet,
+dropping &amp;lt;iq type=&amp;apos;set&amp;apos; from=&amp;apos;wcs&amp;apos;&amp;gt;&amp;lt;vcard
+xmlns=&amp;apos;vcard-temp&amp;apos;&amp;gt;&amp;lt;FN&amp;gt;bruno&amp;lt;/FN&amp;gt;&amp;lt;/vcard&amp;gt;&amp;lt;/iq&amp;gt;&lt;/log&gt;
+Tue Nov 18 11:10:31 2003  deliver.c:678 delivering to instance 'elogger'
+20031118T10:10:31: [warn] (-internal): Packet Delivery Failed, invalid
+packet, dropping &lt;iq type='set' from='wcs'&gt;&lt;vcard
+xmlns='vcard-temp'&gt;&lt;FN&gt;bruno&lt;/FN&gt;&lt;/vcard&gt;&lt;/iq&gt;
+
+So I tried to set to/from manually, then the iq packet looks like
+
+&lt;iq type='set' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>/wcs'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>/wcs'&gt;&lt;vcard
+xmlns='vcard-temp'&gt;&lt;FN&gt;bruno&lt;/FN&gt;&lt;/vcard&gt;&lt;/iq&gt;
+
+Result is:
+
+Tue Nov 18 11:15:18 2003  deliver.c:474 DELIVER
+1:jabber.zeank.in-berlin.de &lt;iq type='set'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>/wcs'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>/wcs'&gt;&lt;vcard
+xmlns='vcard-temp'&gt;&lt;FN&gt;bruno&lt;/FN&gt;&lt;/vcard&gt;&lt;/iq&gt;
+Tue Nov 18 11:15:18 2003  deliver.c:678 delivering to instance
+'sessions'
+Tue Nov 18 11:15:18 2003  deliver.c:94 (80CFAB0)incoming packet &lt;iq
+type='set' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>/wcs'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>/wcs'&gt;&lt;vcard
+xmlns='vcard-temp'&gt;&lt;FN&gt;bruno&lt;/FN&gt;&lt;/vcard&gt;&lt;/iq&gt;
+Tue Nov 18 11:15:18 2003  users.c:143
+js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>,8112928)
+Tue Nov 18 11:15:18 2003  deliver.c:55 delivering locally to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>/wcs
+Tue Nov 18 11:15:18 2003  modules.c:135 mapi_call 3
+Tue Nov 18 11:15:18 2003  modules.c:158 MAPI 80D4DB8
+Tue Nov 18 11:15:18 2003  modules.c:158 MAPI 80D5198
+Tue Nov 18 11:15:18 2003  deliver.c:474 DELIVER
+2:jabber.zeank.in-berlin.de &lt;xdb type='get'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>' from='sessions'
+ns='jabber:iq:filter' id='9'/&gt;
+Tue Nov 18 11:15:18 2003  deliver.c:678 delivering to instance 'xdb'
+Tue Nov 18 11:15:18 2003  xdb_file.c:172 handling xdb request &lt;xdb
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>' from='sessions'
+ns='jabber:iq:filter' id='9'/&gt;
+Tue Nov 18 11:15:18 2003  xdb_file.c:109 loading
+./spool/jabber.zeank.in-berlin.de/bruno.xml
+Tue Nov 18 11:15:18 2003  xdb_file.c:129 caching
+./spool/jabber.zeank.in-berlin.de/bruno.xml
+Tue Nov 18 11:15:18 2003  deliver.c:474 DELIVER 1:sessions &lt;xdb
+type='result' to='sessions' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>'
+ns='jabber:iq:filter' id='9'/&gt;
+Tue Nov 18 11:15:18 2003  deliver.c:678 delivering to instance
+'sessions'
+Tue Nov 18 11:15:18 2003  xdb.c:52 xdb_results checking xdb packet &lt;xdb
+type='result' to='sessions' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>'
+ns='jabber:iq:filter' id='9'/&gt;
+Tue Nov 18 11:15:18 2003  xdb_file.c:272 decaching
+./spool/jabber.zeank.in-berlin.de/bruno.xml
+Tue Nov 18 11:15:18 2003  mod_filter.c:364 Looking at rules: &lt;query
+xmlns='jabber:iq:filter'/&gt;
+Tue Nov 18 11:15:18 2003  modules.c:158 MAPI 80D5698
+Tue Nov 18 11:15:18 2003  modules.c:175 mapi_call returning unhandled
+Tue Nov 18 11:15:18 2003  deliver.c:474 DELIVER 4:http &lt;route
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">8112718 at http</A>' from='wcs' type='result'&gt;&lt;http status='200 Ok'&gt;&lt;head
+Content-type='text/html'/&gt;&lt;body&gt;&amp;lt;script&amp;gt;var jabber=new
+Object();&amp;lt;/script&amp;gt;&lt;/body&gt;&lt;/http&gt;&lt;/route&gt;Tue Nov 18 11:15:18 2003 
+deliver.c:678 delivering to instance 'http'
+Tue Nov 18 11:15:18 2003  http_in.c:286 handling http response: &lt;route
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">8112718 at http</A>' from='wcs' type='result'&gt;&lt;http status='200 Ok'&gt;&lt;head
+Content-type='text/html'/&gt;&lt;body&gt;&amp;lt;script&amp;gt;var jabber=new
+Object();&amp;lt;/script&amp;gt;&lt;/body&gt;&lt;/http&gt;&lt;/route&gt;
+
+[ ... http debugging output snipped ... ]
+
+Tue Nov 18 11:15:18 2003  mio.c:366 freed MIO socket
+Tue Nov 18 11:15:18 2003  mtq 8124400 entering from pth
+Tue Nov 18 11:15:18 2003  mtq 8124400 queue call 81C7EA0
+Tue Nov 18 11:15:18 2003  sessions.c:301 THREAD:SESSION:TO received data
+from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>/wcs!
+Tue Nov 18 11:15:18 2003  modules.c:135 mapi_call 0
+Tue Nov 18 11:15:18 2003  modules.c:158 MAPI 81C7240
+Tue Nov 18 11:15:18 2003  deliver.c:257
+deliver(to[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>/wcs],from[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>/wcs],type[4],packet[&lt;iq type='error' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>/wcs' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>/wcs'&gt;&lt;vcard xmlns='vcard-temp'&gt;&lt;FN&gt;bruno&lt;/FN&gt;&lt;/vcard&gt;&lt;error code='405'&gt;Not Allowed&lt;/error&gt;&lt;/iq&gt;])
+Tue Nov 18 11:15:18 2003  users.c:143
+js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>,8112928)
+Tue Nov 18 11:15:18 2003  deliver.c:55 delivering locally to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bruno at jabber.zeank.in-berlin.de</A>/wcs
+
+
+
+Same result if I only set one of to or from. Is there any way to set a
+user's vcard from within a component?
+
+Thanks in advance,
+
+Steve
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="076691.html">[JDEV] jabberd tuning
+</A></li>
+	<LI>Next message: <A HREF="076695.html">[JDEV] setting a user's vcard from within a component
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#76694">[ date ]</a>
+              <a href="thread.html#76694">[ thread ]</a>
+              <a href="subject.html#76694">[ subject ]</a>
+              <a href="author.html#76694">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

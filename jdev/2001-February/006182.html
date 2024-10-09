@@ -1,0 +1,211 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] RE: My first jabber1.4 Crashed
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20RE%3A%20My%20first%20jabber1.4%20Crashed&In-Reply-To=DHEGILEGFFDOEDKIPEAACEMFCHAA.frank.wang%40viant.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006176.html">
+   <LINK REL="Next"  HREF="006180.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] RE: My first jabber1.4 Crashed</H1>
+    <B>Frank Wang</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20RE%3A%20My%20first%20jabber1.4%20Crashed&In-Reply-To=DHEGILEGFFDOEDKIPEAACEMFCHAA.frank.wang%40viant.com"
+       TITLE="[JDEV] RE: My first jabber1.4 Crashed">frank.wang at viant.com
+       </A><BR>
+    <I>Mon Feb 12 15:23:47 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006176.html">[JDEV] My first jabber1.4 Crashed
+</A></li>
+        <LI>Next message: <A HREF="006180.html">[JDEV] IM echo with AIM transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6182">[ date ]</a>
+              <a href="thread.html#6182">[ thread ]</a>
+              <a href="subject.html#6182">[ subject ]</a>
+              <a href="author.html#6182">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I am running the jabberd in a init.d script with all std-out and std-error
+redirect to
+a file called debug.log.
+
+Where is the &quot;xterm&quot; coming from in my debug.log? Is what crashing the
+server? It definitely
+printed out page of xterm before crashing I noticed. A section from my
+debug.log:
+
+____________
+
+xtermxtermxtermMon Feb 12 22:15:38 2001  msntrans.c:152 1 session(s)
+Mon Feb 12 22:15:44 2001  msntrans.c:152 1 session(s)
+Mon Feb 12 22:15:50 2001  msntrans.c:152 1 session(s)
+Mon Feb 12 22:15:56 2001  msntrans.c:152 1 session(s)
+Mon Feb 12 22:16:02 2001  msntrans.c:152 1 session(s)
+Mon Feb 12 22:16:08 2001  msntrans.c:152 1 session(s)
+____________
+
+My /etc/rc.d/init.d/jabberd script:
+
+#! /bin/sh
+#
+# jabberd       Init script to start jabberd and auxiliary transports
+#
+#               Created from Bernd Eckenfels &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ecki at lina.inka.de</A>&gt;
+#
+#               Written by Miquel van Smoorenburg &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">miquels at cistron.nl</A>&gt;.
+#               Modified for Debian GNU/Linux
+#               by Ian Murdock &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">imurdock at gnu.ai.mit.edu</A>&gt;.
+#
+# Version:      @(#)skeleton  1.8  03-Mar-1998  <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">miquels at cistron.nl</A>
+#
+# Modified for my attempt at running jabber-1.1 by Gleef
+# Modified again for jabber-1.4 by Gleef
+# Modified again for jabber-1.4 on RH Linux by AIM:frank3wang
+
+HOST=&quot;mydomain.com&quot;
+JDIR=&quot;/usr/local/jabber-1.4&quot;
+DAEMON=&quot;$JDIR/jabberd/jabberd&quot;
+PIDFILE=&quot;$JDIR/jabber.pid&quot;
+DEBUGFILE=&quot;$JDIR/debug.log&quot;
+CONF=&quot;$JDIR/jabber.xml&quot;
+JABARGS=&quot;-h $HOST&quot;
+NAME=jabberd
+DESC=jabberd
+JUID=&quot;jabber:jabber&quot;
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ ${NETWORKING} = &quot;no&quot; ] &amp;&amp; exit 0
+
+test -f $DAEMON -a -f $CONF || exit 0
+
+set -e
+
+case &quot;$1&quot; in
+  start)
+        # Check if jabberd is already running
+        if [ ! -f $PIDFILE ]; then
+            echo -n &quot;Starting $DESC: &quot;
+            $DAEMON -h $HOST -c $CONF &amp;
+            echo -n &quot;$NAME &quot;
+            echo &quot;.&quot;
+        else
+            echo -n &quot;$DESC is already running &quot;
+        fi
+        ;;
+  stop)
+        echo -n &quot;Stopping $DESC: &quot;
+        pid=`cat $PIDFILE`
+        echo -n &quot;killing $NAME with pid $pid &quot;
+        kill $pid
+        rm -f $PIDFILE
+        echo &quot;.&quot;
+        ;;
+  rundebug)
+        # Check if jabberd is already running
+        if [ ! -f /var/lock/subsys/jabberd ]; then
+            echo -n &quot;Starting $DESC: `date` &quot;
+            $DAEMON -h $HOST -c $CONF -D &gt;&gt; $DEBUGFILE  2&gt;&amp;1 &amp;
+            echo -n &quot;$NAME &quot;
+            echo &quot;.&quot;
+        else
+            echo -n &quot;$DESC is already running &quot;
+        fi
+        ;;
+  *)
+        N=/etc/init.d/$NAME
+        # echo &quot;Usage: $N {start|stop|rundebug}&quot; &gt;&amp;2
+        echo &quot;Usage: $N {start|stop|rundebug}&quot; &gt;&amp;2
+        exit 1
+        ;;
+esac
+
+exit 0
+
+  -----Original Message-----
+  From: Frank Wang [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">frank.wang at viant.com</A>]
+  Sent: 2001?2?12? 18:08
+  To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at mailman.jabber.org</A>; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+  Subject: My first jabber1.4 Crashed
+
+
+  I have started jabber1.4 with ICQ, MSN, AIM and Yahoo transports as user
+jabber apart of daemon group
+  ./jabberd/jabberd -h mydomain.com -D &amp;
+
+  I can't close the xterm window since that will cause jabber crash with
+error &quot;PID change server exiting&quot;
+  so I left it running in xterm window
+
+  ....
+
+  It has crashed after 24 hour with following error just before the
+crashing. I have rename the mydomain name.
+
+  _______________
+
+  20010212T18:33:33: [alert] (s2s): We were told by update.jabber.org that
+our sending name mydomain.com is invalid, either something went wrong on
+their end, we tried using that name improperly, or dns does not resolve to
+us
+  20010212T18:33:33: [notice] (update.jabber.org): bouncing a packet to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">959967039 at update.jabber.org</A>/0.9.3.5 from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">remi at mydomain.com</A>/Laptop: Server
+Connect Failed
+  20010212T18:33:33: [notice] (update.jabber.org): bouncing a packet to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">959967039 at update.jabber.org</A>/0.9.3.5 from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">remi at mydomain.com</A>/Laptop: Server
+Connect Failed
+  ________________
+
+  I restarted the server now and running as user jabber without putting it
+into a backgroup process:
+  ./jabberd/jabberd -h mydomain.com -D
+
+  I will see how long it will take before it crashes again.
+  Anyone has the same problem or know the result for a fix?  Please let me
+know.
+  I'm running
+  Red Hat Linux release 6.0 (Hedwig)
+  Kernel 2.2.5-15 on an i686
+
+  and all jabber src are from jabber1.4/final/
+
+  Hmm.. I start to have doubt on the stability of the current src.  It's
+very much like any servers during first few months of its release.
+
+  FW
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20010212/f937af33/attachment.htm">https://www.jabber.org/jdev/attachments/20010212/f937af33/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006176.html">[JDEV] My first jabber1.4 Crashed
+</A></li>
+	<LI>Next message: <A HREF="006180.html">[JDEV] IM echo with AIM transport
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6182">[ date ]</a>
+              <a href="thread.html#6182">[ thread ]</a>
+              <a href="subject.html#6182">[ subject ]</a>
+              <a href="author.html#6182">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

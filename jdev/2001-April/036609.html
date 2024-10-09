@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] File transfer and Jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfer%20and%20Jabber&In-Reply-To=%3C001e01c0cc1c%24eb629170%241601a8c0%40GRUMBLE%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="036606.html">
+   <LINK REL="Next"  HREF="036610.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] File transfer and Jabber</H1>
+    <B>C Wegrzyn</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfer%20and%20Jabber&In-Reply-To=%3C001e01c0cc1c%24eb629170%241601a8c0%40GRUMBLE%3E"
+       TITLE="[JDEV] File transfer and Jabber">wegrzyn at garbagedump.com
+       </A><BR>
+    <I>Mon Apr 23 12:43:33 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="036606.html">[JDEV] File transfer and Jabber
+</A></li>
+        <LI>Next message: <A HREF="036610.html">[JDEV] File transfer and Jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36609">[ date ]</a>
+              <a href="thread.html#36609">[ thread ]</a>
+              <a href="subject.html#36609">[ subject ]</a>
+              <a href="author.html#36609">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>While I generally lurk on this group, and play around with both the client
+and server side, I've already done what is suggested in Iain's eMail. I find
+OOB is the way to go, and I use WebDav as the standard (Apache does very
+well at WebDav, so it makes a nice, easy way to play).
+
+Here is what I was thinking about when I did it. First, any WebDav server
+could register with Jabber. They would give some sort of &quot;quality&quot; to the
+the service they are going to offer - like max. file size, speed of
+connection, length of time the file could live on the server, etc. The
+client, in sending a file to a WebDav server could pick from any server
+listed. The file is transfered OOB to the server on it's way to the targeted
+client. Both the sender and receiver get a message with the URL in it.
+
+I came up with this model because it seems a cool way to add &quot;value-added&quot;
+services to Jabber (and have a means of making money from the service). For
+instance, one of the services could be for digital rights managed documents,
+etc.
+
+FWIW,
+Chuck Wegrzyn
+
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+Iain Shigeoka
+Sent: Monday, April 23, 2001 10:15 AM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] File transfer and Jabber
+
+
+At 06:46 PM 4/22/2001 -0700, Jens Alfke wrote:
+
+&gt;&gt;<i>Since we already have the whole connection system in jabber I was thinking
+</I>&gt;&gt;<i>of when I want to transfer a file, I'll send it to the server that I am
+</I>&gt;&gt;<i>connected to and send the file as chunks (size and rate depending on
+</I>&gt;&gt;<i>flowcontrol parameters).
+</I>&gt;<i>
+</I>&gt;<i>In-band file transfer seems to be a somewhat controversial topic. I
+</I>&gt;<i>brought it up a few weeks ago and several people objected to sending all
+</I>&gt;<i>that data through the server. It is, however, by far the most
+</I>&gt;<i>straightforward solution to firewall and NAT issues.
+</I>
+I think its perfectly &quot;legit&quot; for client developers to approach this
+problem this way.  However,  I think in terms of scaling Jabber up as an
+overall system, this would severely limit the size of a practical Jabber
+user community.  The traffic through a Jabber server would just be too high
+if file sharing became widespread and took this approach.
+
+I believe that if Jabber client developers want to see Jabber grow to the
+popularity of a system like AIM we need to consider what a Jabber system
+with 1 million users would look like and how to make that
+practical.  In-band file transfers are just not feasible using this
+approach. Oob file transfers must be the solution.  This allows the heavy
+bandwidth usage to be distributed and shared.  Either direct
+client-to-client or client-server-client where the server can be switched
+to some other system.
+
+How about this for a proposal.  Define specifications for a separate oob
+server.  To make it simple to convert any web server into a compliant oob
+server, we define the system using only httpd.  It accepts file uploads
+given authentication, and allows file downloads using temporary URL
+links.  Part of the standard should be incentives to run oob servers by
+people other than Jabber.  For example, perhaps the standard defines that
+clients must download from the oob server an URL, an image file (one of say
+three types defining three standard ad size types), and the requested URL.
+
+Clients transferring files out do the following:
+----------------------------------
+Client hits oob server with a standard HTML form submitted and filled out
+with standardized authentication information.
+
+Server responds with a standard HTML page either defining login success or
+failure.
+Authenticated clients use http file upload to upload the file.
+
+Server responds with a page with the temporary URL the file obtain be
+obtained, a one time key to access the file, and a timeout value specifying
+the amount of time the URL will be valid.
+
+Client uses Jabber to send a message to client transferring file in with
+the URL, one time key, and timeout value.
+
+
+Clients transferring files in do the following
+----------------------------------
+Client receives jabber message with file URL, one time key, and timeout.
+Client hits the oob server at the URL given, specifying the one time key as
+a cookie.  It must actually perform three downloads to be compliant:
+
+         URL - Contains the ad html link, FILE_URL, and ad image options or
+html indicating no ad required
+
+         AD_URL/ad_size.png or ad_size.svg - Contains the Ad image.  The
+entire and exact URL was specified in the ad image options list.
+
+         FILE_URL/file.x - A direct link to the desired file (also obtained
+from the original URL)
+
+The client is then required to display the ad and link it to the ad
+HTML.  The commercial aspect (ads) is there to encourage third parties to
+host oob servers.  People generous enough to donate free oob servers will
+of course have the option of not turning on ads.  The client transferring
+information out is the one that has created an account with a given oob
+server (and agreed to whatever ad system they run).  The client getting
+files doesn't need to have any oob server accounts to participate.  If you
+want to encourage file sharing, then you could reverse that so that the
+client getting files must have the oob server account, and that initial
+login is reversed (the downloading client logs in, gets the one time key,
+the uploading client uses the key as a cookie to perform the upload, then
+the downloading client uses the key and the url info to get the file).
+
+I think its easier to envision some system like this scaling and being more
+practical from a &quot;who's going to pay for the bandwidth&quot; point of view.
+
+Comments?
+
+-iain
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="036606.html">[JDEV] File transfer and Jabber
+</A></li>
+	<LI>Next message: <A HREF="036610.html">[JDEV] File transfer and Jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36609">[ date ]</a>
+              <a href="thread.html#36609">[ thread ]</a>
+              <a href="subject.html#36609">[ subject ]</a>
+              <a href="author.html#36609">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Local proxy for multiple applications
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Re%3A%20Local%20proxy%20for%20multiple%20applications&In-Reply-To=200604212026.25174.michal.vaner%40kdemail.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="024478.html">
+   <LINK REL="Next"  HREF="024483.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Local proxy for multiple applications</H1>
+    <B>Robert McQueen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Re%3A%20Local%20proxy%20for%20multiple%20applications&In-Reply-To=200604212026.25174.michal.vaner%40kdemail.net"
+       TITLE="[jdev] Re: Local proxy for multiple applications">robert.mcqueen at collabora.co.uk
+       </A><BR>
+    <I>Fri Apr 21 15:20:41 CDT 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="024478.html">[jdev] Re: Local proxy for multiple applications
+</A></li>
+        <LI>Next message: <A HREF="024483.html">[jdev] Re: Local proxy for multiple applications
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24481">[ date ]</a>
+              <a href="thread.html#24481">[ thread ]</a>
+              <a href="subject.html#24481">[ subject ]</a>
+              <a href="author.html#24481">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Michal Vaner (Vorner) wrote:
+&gt;<i> Dne p&#225;tek 21 duben 2006 19:49 Magnus Henoch napsal(a):
+</I>&gt;&gt;<i> I haven't looked at it myself but Telepathy might be a place to start:
+</I>&gt;&gt;<i> <A HREF="http://telepathy.freedesktop.org/wiki/">http://telepathy.freedesktop.org/wiki/</A>
+</I>
+I was about to make a pointer to our project. I'm one of the lead
+developers on the Telepathy project, and although slightly off-topic for
+this list, I thought I'd at least answer this seemingly unfaor appraisal
+of our efforts to date.
+
+&gt;<i> Why do simple things in complicated way?
+</I>
+Because it's not a simple thing. If you want to create a protocol which
+can act as proxy for any arbitrary real-time communication protocol you
+care to name, trying expose less complexity to client authors who don't
+care about the perculiar features of a given protocol, but not
+restricting the extensibility of those who do, it's absolutely not a
+trivial problem.
+
+It's similar in form to the problem which XMPP itself aims to solve
+(making a protocol which is extensible enough to gateway on to other
+protocols and extend with new features), and you can hardly say the
+overall result of that is simple, but we've decided to use D-Bus as our
+basic transport because it has bindings to most popular object systems
+(glib, qt, python, perl, c#...) that make coding against it pretty easy
+to get going.
+
+If you want something which *is* simple, and discards all of the
+features of different networks, perhaps Bitlbee would be what you
+wanted. Everything then becomes just an IRC network where you can only
+send/receive plain text, but it's just not what the goal of the
+Telepathy project is.
+
+&gt;<i> And why the hell not separate different things as much as possible?
+</I>
+We are all in favour of this. Our goal is that protocol code is
+seperated into backend D-Bus services. Front-end clients which implement
+particular functionality like managing your contacts, text chats, voice
+calls, file transfers, etc, interact with different objects provided by
+these backend services. Different communication types are split out into
+different objects - we have a Connection object which represents your
+server connection, from which you can request or be given Channels to
+perform communications over, of the various types I've mentioned.
+
+&gt;<i> Why not use sime pipe or network socket directly?
+</I>
+Because then client authors would have to write their own
+marshalling/demarshalling code. That's about all libdbus does, and a
+daemon to route messages based on what people have said they do and
+don't want to receive.
+
+&gt;<i> I wanted to provide just a proxy, that would be able to filter the 
+</I>&gt;<i> stanzas out, send them to server and allow some more control using some other 
+</I>&gt;<i> XML. But not move all the ways of comunication to some daemon and not be able 
+</I>&gt;<i> to send custom data that are not supported by the procedure of RPC for sure?
+</I>
+What on earth are you talking about? D-Bus has a completely recursive
+arbitrary type system. You can send arbitrary structures, arrays, maps,
+primitive types or any combination of those in any method call, reply,
+signal or error. So you can send strings, integers, byte arrays, hash
+tables of strings to arbitrary types, whatever. There is no limitation
+in the type system I've run into so far, it's pretty elegant.
+
+&gt;<i> Why does all the freedesktop projects seem to me as an attempt to make linux 
+</I>&gt;<i> as bad as windows? :-(
+</I>
+Ignoring this.
+
+&gt;<i> Sorry if I may seem as an extremist here, but this seems to me as a bad thing. 
+</I>&gt;<i> This would disallow the extensibility of the protocol, if used.
+</I>
+Nonsense. Telepathy is created from the ground up to allow extra types
+of communication channel to be added, extra interfaces added to existing
+channel or connection objects. Our XMPP backend is our main focus at the
+moment, and it's a very good chance to show how we can expose the power
+and flexibility of the XMPP protocol within the Telepathy interface,
+splitting out different tasks like file transfer, audio calls, MUC
+chats, etc, into the respective channel types within our specification.
+
+As I've just posted to our (admittedly rather quiet) mailing list, we
+think it's going reasonably well at the moment:
+ <A HREF="http://lists.freedesktop.org/archives/telepathy/2006-April/000026.html">http://lists.freedesktop.org/archives/telepathy/2006-April/000026.html</A>
+
+We're aware of three frontend projects currently on the go, and nobody
+has come back to us to say the concept is entirely broken and our
+approach overcomplicated. It's still possible to write something like 10
+lines of Python and send messages to someone, but by adding more
+functionality you can take part in a Jabber MUC and manage the room
+members and settings, place voice calls, manage your roster, etc.
+
+We're definitely receptive to feedback about how our approach can be
+improved, and would love to discuss how we can make Telepathy serve your
+needs better. It is, after all, intended as a standardisation effort.
+
+Regards,
+Rob
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="024478.html">[jdev] Re: Local proxy for multiple applications
+</A></li>
+	<LI>Next message: <A HREF="024483.html">[jdev] Re: Local proxy for multiple applications
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24481">[ date ]</a>
+              <a href="thread.html#24481">[ thread ]</a>
+              <a href="subject.html#24481">[ subject ]</a>
+              <a href="author.html#24481">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

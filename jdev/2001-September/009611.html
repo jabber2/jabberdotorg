@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Conference messages cut off
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Conference%20messages%20cut%20off&In-Reply-To=3BB1DFC3.2FA6D4D9%40morganstanley.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="009609.html">
+   <LINK REL="Next"  HREF="009613.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Conference messages cut off</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Conference%20messages%20cut%20off&In-Reply-To=3BB1DFC3.2FA6D4D9%40morganstanley.com"
+       TITLE="[JDEV] Conference messages cut off">jeremie at jabber.org
+       </A><BR>
+    <I>Wed Sep 26 11:23:01 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="009609.html">[JDEV] Conference messages cut off
+</A></li>
+        <LI>Next message: <A HREF="009613.html">[JDEV] Conference messages cut off
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9611">[ date ]</a>
+              <a href="thread.html#9611">[ thread ]</a>
+              <a href="subject.html#9611">[ subject ]</a>
+              <a href="author.html#9611">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Excellent catch!  I'm not sure I would have ever found this and sincerely
+appreciate the amount of time you put into tracking it down.
+
+I just checked in a patch which does something similiar to below, and I'll
+be testing it on a solaris box this afternoon.  I'm going to have to
+re-read the xmlnode cdata code over again to make sure I understand why it
+makes a difference in this one case, but I'll make sure any argument order
+assumptions get fixed (I hope I haven't done this anywhere else as well
+:<i>).
+</I>
+Many thanks from myself and others bitten by this bug,
+
+Jer
+
+On Wed, 26 Sep 2001, Horace Sequeira wrote:
+
+&gt;<i> 
+</I>&gt;<i> We have had the same problem running on Solaris 8 using Jabber 1.4.1 and
+</I>&gt;<i> Conference 0.4.1
+</I>&gt;<i> We have tracked the problem to the function xmlnode_insert_node()  in the
+</I>&gt;<i> file xmlnode.c of the
+</I>&gt;<i> Jabber server.
+</I>&gt;<i> 
+</I>&gt;<i> The fix to the problem is to change the following statement in the
+</I>&gt;<i> function xmlnode_insert_data() :
+</I>&gt;<i> 
+</I>&gt;<i> xmlnode_insert_cdata(parent, xmlnode_get_data(node),
+</I>&gt;<i> xmlnode_get_datasz(node));
+</I>&gt;<i> 
+</I>&gt;<i> This statement will work if the function xmlnode_get_datasz() is evaluated
+</I>&gt;<i> before
+</I>&gt;<i> xmlnode_get_data(). This is clearly not the case on my version of the
+</I>&gt;<i> jabber server compiled on Solaris with gcc. The 'C' standard does not
+</I>&gt;<i> specify the order of evaluation of functions/expresssions that are passed
+</I>&gt;<i> as parameters to a function, it only says that they will be evaluated -
+</I>&gt;<i> the order of which  is implementation  dependent (which explains why it
+</I>&gt;<i> works on some systems).
+</I>&gt;<i> 
+</I>&gt;<i> To fix the problem we changed the statement to the following:
+</I>&gt;<i> 
+</I>&gt;<i>    int dataSize
+</I>&gt;<i>    ...
+</I>&gt;<i>     dataSize = xmlnode_get_datasz(node);
+</I>&gt;<i>     xmlnode_insert_cdata(parent, xmlnode_get_data(node), dataSize);
+</I>&gt;<i> 
+</I>&gt;<i> to ensures that xmlnode_get_datasz() is evaluated first.
+</I>&gt;<i> 
+</I>&gt;<i> This works for us; if there is another fix for this please let us know.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Jens Alfke wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; On Thursday, September 20, 2001, at 10:35 PM, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber at msg.net</A> wrote:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; I am also  getting conference messages truncated, often at the first
+</I>&gt;<i> &gt; &gt; byte
+</I>&gt;<i> &gt; &gt; of a one-liner. Using JabberIM I will type something like:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;       I see this problem too, looks like it is a bug in the server?
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; And what the participants see and what I get echoed back is just:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;       I
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I haven't seen this exact behavior. What I see is that messages get
+</I>&gt;<i> &gt; truncated at XML metacharacters ( &lt;, &gt;, ', &quot;, &amp;). In my client I
+</I>&gt;<i> &gt; preprocess messages to convert these to more innocuous characters such
+</I>&gt;<i> &gt; as curly quotes.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; --Jens
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="009609.html">[JDEV] Conference messages cut off
+</A></li>
+	<LI>Next message: <A HREF="009613.html">[JDEV] Conference messages cut off
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9611">[ date ]</a>
+              <a href="thread.html#9611">[ thread ]</a>
+              <a href="subject.html#9611">[ subject ]</a>
+              <a href="author.html#9611">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

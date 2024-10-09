@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Signed &amp; encrypted messages
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Signed%20%26%20encrypted%20messages&In-Reply-To=%3Cp05100c02b7380563cfd8%40%5B217.80.77.53%5D%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="066676.html">
+   <LINK REL="Next"  HREF="066699.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Signed &amp; encrypted messages</H1>
+    <B>Max Horn</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Signed%20%26%20encrypted%20messages&In-Reply-To=%3Cp05100c02b7380563cfd8%40%5B217.80.77.53%5D%3E"
+       TITLE="[JDEV] Signed &amp; encrypted messages">max at quendi.de
+       </A><BR>
+    <I>Mon May 28 08:47:34 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="066676.html">[JDEV] Signed &amp; encrypted messages
+</A></li>
+        <LI>Next message: <A HREF="066699.html">[JDEV] Signed &amp; encrypted messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66689">[ date ]</a>
+              <a href="thread.html#66689">[ thread ]</a>
+              <a href="subject.html#66689">[ subject ]</a>
+              <a href="author.html#66689">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>At 17:49 Uhr -0400 27.05.2001, Mathew Johnston wrote:
+&gt;<i>I see what you mean now. I am not entirely convinced, however,
+</I>&gt;<i>that this is necessary when using X509 certificates since
+</I>&gt;<i>you are concerned with the integrety of the certificate, and the
+</I>&gt;<i>trustworthyness of the certificate authority, not where the particular
+</I>&gt;<i>copy of the certificate came from.
+</I>
+Exactly. Knowing where the key was stored is not at all helping to 
+discover how &quot;trustworthy&quot; that key is. If I'd made a key/certificate 
+for myself and labeled it &quot;Bill Clinton&quot;, then put it to some key 
+server, then the key/cert is still fraud, regerdless of how much you 
+trust the key server.
+
+The only way to be able to trust/cert if is it is signed/certified. 
+In PGP, you use the web of trust or CAs for this; and with X509, you 
+usually only use CAs (although there are attempts to do something 
+like the Web of Trust with X509, too; IIRC Thawte is/was working on 
+this).
+
+Anyway, this also means it is not really a problem to request keys 
+directly from other clients. Or to store them on the jabber server. 
+Or to get them from any location. The security is for all the same. 
+That's not the problem; the security is achieved by checking for the 
+signers of the key, and if we know one or more of them to be valid &amp; 
+trustworthy, we can decide to trust the validity of the key; if we 
+don't know any of the signers (or the signer is not trustworthy), 
+then we simply can't trust the remote key. Point!
+(For PGP keys, there is also the possibilty to use keyprints and 
+transfer those over phone or via snail mail, this can be used as a 
+different way to verify a PGP key - and to mark a key as &quot;trusted&quot; 
+with PGP, you have to sign it manually anyway).
+
+
+
+&gt;<i>Personally, I think x509 certificates
+</I>&gt;<i>are a good choice since there is already a lot of x509 infrastructure out
+</I>&gt;<i>there, and x509 provides us with specification of encryption algorithms,
+</I>&gt;<i>third party signing, key management, etc. I'd like to hear arguements for
+</I>&gt;<i>or against different key exchange schemes. I think we need the following
+</I>&gt;<i>key exchange properties:
+</I>&gt;<i>
+</I>&gt;<i>- ability to access users public key when user is not online
+</I>
+Both X509 and PGP offer this.
+
+
+&gt;<i>- ability to verify authenticity of the key
+</I>
+Both X509 and PGP offer this.
+
+
+&gt;<i>- ability to request key for use with particular algorithms
+</I>
+I don't see what this is good for. If I use OpenSSL to validate X509 
+certs, I would support most algorithms anyway, and it will pick a 
+supported one. If you use PGP, well, that supports all its 
+algorithms, too, and gpg should support most, too.
+
+Different algorithms also mean different keys... basically, what you 
+mean is that a user should have multiple keys using different 
+algorithms, but &quot;tarned&quot; as a single key. But the encrypted data I 
+get is signed with exactly one of those keys; unless you want to send 
+the encrypted data several time, for each key seperatedly... or maybe 
+i misundertand you here?
+
+
+
+&gt;<i>- ability to manually exchange keys (write down on paper and type
+</I>&gt;<i>   them back in, etc)
+</I>
+I am not sure this is very practical; PGP at least offers 
+Fingerprints, which (as mentioned above) can be transported on a 
+piece of paper or via voice. I don't know about X509; but I think 
+this feature is not that critical (I might be wrong of course).
+
+
+&gt;<i>
+</I>&gt;<i>I think x509 can fulfil the first three properties.
+</I>
+Same for PGP. The current clients all use gpg/PGP AFAIK (I might be 
+wrong, never used any of the ones that support it, and mine all don't 
+support encryption yet :( )
+Anyway, there have been arguments about this before, and I must admit 
+I am less sure than ever which one should be prefered. I don't see 
+anything that would really make one more fit than the other; but OTOH 
+keeping both at parallel seems like a possible future problem; i.e. 
+if I use PGP keys, and you use X509, can we communicate? Of course, 
+if all clients can at least decode/verify both, this would be no 
+problem...
+
+Hm, I want to use OpenSSL anyway for SSL support... and gpg is 
+available for MacOS X, too, so i propably could stea... err, borrow 
+from Gabber and Jarl ;)
+
+
+
+&gt;<i>The fourth
+</I>&gt;<i>property would be up to clients. Since there may be more than
+</I>&gt;<i>one certificate (for each different algorithm) we can't really
+</I>&gt;<i>put them all into a user's vcard, since that would be too big.
+</I>
+I agree. I'd prefer if vCards would stay small. But maybe vCards 
+should be signable? So we can verify they are real ;)
+
+
+&gt;<i>However, someone mentioned that there is a way for clients to
+</I>&gt;<i>store data on a jabber server, to be querried for by other clients;
+</I>&gt;<i>this could be used to store the certificates. (can anyone comment
+</I>&gt;<i>on this further?)
+</I>
+You are talking about iq:private. Yes, this could be used, we could 
+agree on one or two namespaces to store PGP keys and/or X509 certs.
+
+
+
+
+&gt;<i>I'm not sure if this method allows for the naming
+</I>&gt;<i>of chunks of data, but if it does we can allow querrying for
+</I>&gt;<i>particular algorithms by using naming rules for each 509 certificate
+</I>&gt;<i>resource. When the querry is returned, a name should be given to the
+</I>&gt;<i>certificate so that it can be referenced when using it (so that
+</I>&gt;<i>the recipient knows which certificate is being used)
+</I>&gt;<i>
+</I>&gt;<i>In the end, this is all up to the Jabber Foundation to decide upon,
+</I>&gt;<i>of course.
+</I>
+Yup, but we can already collect data ;)
+
+
+Max
+-- 
+-----------------------------------------------
+Max Horn
+C++/ObjC/Java Developer
+
+email: &lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">max at quendi.de</A>&gt;
+phone: (+49) 6151-494890
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="066676.html">[JDEV] Signed &amp; encrypted messages
+</A></li>
+	<LI>Next message: <A HREF="066699.html">[JDEV] Signed &amp; encrypted messages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66689">[ date ]</a>
+              <a href="thread.html#66689">[ thread ]</a>
+              <a href="subject.html#66689">[ subject ]</a>
+              <a href="author.html#66689">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

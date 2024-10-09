@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] How to handle multiple clients 
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20How%20to%20handle%20multiple%20clients%20&In-Reply-To=%3CPine.OSF.4.02.9901121732560.3452-100000%40worf.netins.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058677.html">
+   <LINK REL="Next"  HREF="058691.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] How to handle multiple clients </H1>
+    <B>Jeremie Miller</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20How%20to%20handle%20multiple%20clients%20&In-Reply-To=%3CPine.OSF.4.02.9901121732560.3452-100000%40worf.netins.net%3E"
+       TITLE="[JDEV] How to handle multiple clients ">jeremie at netins.net
+       </A><BR>
+    <I>Tue Jan 12 17:56:09 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058677.html">[JDEV] How to handle multiple clients 
+</A></li>
+        <LI>Next message: <A HREF="058691.html">[JDEV] How to handle multiple clients
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58679">[ date ]</a>
+              <a href="thread.html#58679">[ thread ]</a>
+              <a href="subject.html#58679">[ subject ]</a>
+              <a href="author.html#58679">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>This is good, I like these kind of discussions :)
+
+&gt;<i> i think this is a bad mode of operation. if the server stores the message,
+</I>&gt;<i> then we move away from having the server simply be in charge of funneling
+</I>&gt;<i> messages. make jabber ( &amp; its protocol ) simple by design and by intent.
+</I>&gt;<i> client sends message. server pushes message to proper receiver. if there
+</I>&gt;<i> is no receiver or if the receiver denies the message, then server sends
+</I>&gt;<i> a message back to the client announcing the denial. the client is responsible
+</I>&gt;<i> for handling all types of errors. we'll avoid quite a few problems in the
+</I>&gt;<i> future if we make as little as possible happen at the server.
+</I>
+Well, let me stress one of the biggest features of the entire platform...
+adaptability and configurability :)  There's no reason Jabber can't make
+everyone happy.
+
+Right now the server behaves exactly as you describe, bounces messages
+back to the sender if the recipient isn't online.  BUT, it's just a matter
+of adding a module on the server side and you could have support to store
+offline messages for your account... defaults to bounces, but can be
+configured to use this as a &quot;feature&quot;.  I've tried to design *everything*
+to operate this way, absolutely simplistic but anyone can plug in features
+and new behaviors at any time, while still working with the same protocol,
+servers, and clients :)
+
+&gt;<i> it seems we have to make a decision -- jabber is just another implementation
+</I>&gt;<i> of ICQ and has to behave according to spec OR we improve on some of the parts
+</I>&gt;<i> of ICQ we don't like.
+</I>
+I think the answer is obvious, both :)  It should be able to operate like
+ICQ if you want, or you should be able to add new features if you so
+desire w/o having to change the entire system.
+
+I don't think theres any reason to &quot;force&quot; a mode of operation on anyone.
+The defaults should be reasonable, but clients/modules/transports should
+be available to allow a user to configure their own way of doing things.
+
+&gt;<i> if you have the client receive a deny request from the server, the client
+</I>&gt;<i> can then do whatever you want. the deny types could be:
+</I>&gt;<i>   . no such user
+</I>&gt;<i>   . user not logged into jabber server (no receiving client)
+</I>&gt;<i>   . user denied message
+</I>
+Yup... 
+
+&gt;<i> in all of the three cases, you can call the same module / external email
+</I>&gt;<i> sender to send a mail message to the recepient.
+</I>
+Sure, but this is a client-authors decision, not something I would think
+we could reccommend for/against.
+
+&gt;<i> &gt; Probably also the best... BUT, I think it would be cool/good if the mail
+</I>&gt;<i> &gt; clients added direct support for Jabber :)
+</I>&gt;<i> 
+</I>&gt;<i> this gets into a chicken-egg contest. i don't think we'll _ever_ convince
+</I>&gt;<i> mail clients to add direct support for jabber. we _can_, however, design
+</I>&gt;<i> jabber to be extendable so we can plug-in or interface with whatever
+</I>&gt;<i> mail reader we want to.
+</I>
+Yes, it could work as a plugin, or the open-source mail clients might
+adopt it and integrate it too... 
+
+&gt;<i> i guess i'm still unchanged in my opinion:
+</I>&gt;<i>  . servers should do minimal work.
+</I>
+*Everyone* should do minimal work, but yes, the server should be able to
+run and not have it expected to do much work, BUT if the server operator
+so decided, they should be able to add any of the features they so desire.
+
+Jabber can support the most insanely simple clients(shell scripts) all the
+way up to full blown large interactive applications, and the server has to
+be able to help all of them out.
+
+&gt;<i>  . handling messages for resend or sending as an email message
+</I>&gt;<i>    should be done by the client.
+</I>
+Optionally, of course.
+
+&gt;<i>  . jabber (client or server) should not perform email operations,
+</I>&gt;<i>    but dispatch then to some user-configurable program for sending
+</I>&gt;<i>    email.
+</I>
+Yes, but if someone wants to write/use a module to do so, we can't stop
+them.
+
+&gt;<i> another advantage to the first point is that if we maintain that servers
+</I>&gt;<i> will do minimal work, it will be easier for us to convince people to 
+</I>&gt;<i> install servers at their sites. if jabber is complicated (with either
+</I>&gt;<i> setup, security, or other issues), people will not be willing to install
+</I>&gt;<i> it so easily.
+</I>
+Yes, this is a very important point.  I'm planning on as the server
+progresses to step out and create an insanely simple &quot;ISP&quot; server that is
+just one executable that can be downloaded and requires no configuration
+file or any other setup, just run it on boot and all of your users can use
+Jabber!  But, they would be sacrificing any of the optional features that
+some users might want, but that just means they can at their own pace
+upgrade to gain access to more features.
+
+I really like the one-executable idea for ISP's, and there's nothing in
+Jabber that precludes this from happening...
+
+There's no reason Jabber can't be everything everyone wanted :)
+
+Jer
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058677.html">[JDEV] How to handle multiple clients 
+</A></li>
+	<LI>Next message: <A HREF="058691.html">[JDEV] How to handle multiple clients
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58679">[ date ]</a>
+              <a href="thread.html#58679">[ thread ]</a>
+              <a href="subject.html#58679">[ subject ]</a>
+              <a href="author.html#58679">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] JUD having problems loading global.xdb info after server restart. ..
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JUD%20having%20problems%20loading%20global.xdb%20info%20after%20server%20restart.%0A%20..&In-Reply-To=%3C8A5088D4530AD511870E00D0B7AF539A0562D4FE%40xcor03.cv.hp.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="043123.html">
+   <LINK REL="Next"  HREF="043119.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] JUD having problems loading global.xdb info after server restart. ..</H1>
+    <B>CROSSWHITE,JOHN (Non-HP-Corvallis,ex1)</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JUD%20having%20problems%20loading%20global.xdb%20info%20after%20server%20restart.%0A%20..&In-Reply-To=%3C8A5088D4530AD511870E00D0B7AF539A0562D4FE%40xcor03.cv.hp.com%3E"
+       TITLE="[JDEV] JUD having problems loading global.xdb info after server restart. ..">john_crosswhite at non.hp.com
+       </A><BR>
+    <I>Wed Aug  7 15:40:24 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="043123.html">[JDEV] RE: JUD having problems loading global.xdb file upon server resta rt...
+</A></li>
+        <LI>Next message: <A HREF="043119.html">[JDEV] JUD having problems loading global.xdb info after server restart. ..
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43116">[ date ]</a>
+              <a href="thread.html#43116">[ thread ]</a>
+              <a href="subject.html#43116">[ subject ]</a>
+              <a href="author.html#43116">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello everyone.  I'm running jabber1.4.2 and jud0.4 on redhat 7.2.
+
+ 
+
+Here is the behavior I'm experiencing:
+
+ 
+
+Start jabberd.
+
+Start a client and connect.
+
+Register with the jud.
+
+Perform a search and my jud entry can be found.
+
+Restart server.
+
+Start a client and connect.
+
+Perform a search and my jud entry cannot be found.
+
+ 
+
+If I reregister, the ./spool/jud/global.xdb file is updated correctly
+without being overwritten.  However, if I perform a search, I can only find
+users that have registered since the last server restart.  Even though their
+entries are still in the global.xdb file.
+
+ 
+
+So, I went digging into the code.  I think the culprit may be xdb_get and I
+wanted to see what you guys thought.  In the file xdb.c find the function
+xdb_get.  It would appear that this function ALWAYS returns null.  And this
+may be the reason why the information in global.xdb isn't being loaded
+correctly.
+
+ 
+
+Here is a copy of what I think the offending code is:
+
+ 
+
+    /* return the xmlnode inside &lt;xdb&gt;...&lt;/xdb&gt; */
+
+    for(x = xmlnode_get_firstchild(newx.data); x != NULL &amp;&amp;
+xmlnode_get_type(x) != NTYPE_TAG; x = xmlnode_get_nextsibling(x));
+
+ 
+
+    /* there were no children (results) to the xdb request, free the packet
+*/
+
+    if(x == NULL)
+
+        xmlnode_free(newx.data);
+
+ 
+
+    return x;
+
+ 
+
+The for loop will always ensure that x is NULL after it has run.  Therefore,
+the return x statement is always going to return NULL.  Am I incorrect in my
+interpretation?  Wouldn't this break loading of the global.xdb file?
+
+ 
+
+Thanks for any information you might be able to provide.  I've been banging
+my head against this for a few days now.
+
+ 
+
+John Crosswhite
+
+ 
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20020807/3b2f9428/attachment-0001.htm">https://www.jabber.org/jdev/attachments/20020807/3b2f9428/attachment-0001.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="043123.html">[JDEV] RE: JUD having problems loading global.xdb file upon server resta rt...
+</A></li>
+	<LI>Next message: <A HREF="043119.html">[JDEV] JUD having problems loading global.xdb info after server restart. ..
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43116">[ date ]</a>
+              <a href="thread.html#43116">[ thread ]</a>
+              <a href="subject.html#43116">[ subject ]</a>
+              <a href="author.html#43116">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

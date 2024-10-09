@@ -1,0 +1,257 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] SSL with Jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20SSL%20with%20Jabber&In-Reply-To=F70NvrHGxlayRpT0mQs0001a039%40hotmail.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="014501.html">
+   <LINK REL="Next"  HREF="014503.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] SSL with Jabber</H1>
+    <B>Matt Tucker</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20SSL%20with%20Jabber&In-Reply-To=F70NvrHGxlayRpT0mQs0001a039%40hotmail.com"
+       TITLE="[JDEV] SSL with Jabber">matt at jivesoftware.com
+       </A><BR>
+    <I>Mon Oct 14 10:47:11 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="014501.html">[JDEV] SSL with Jabber
+</A></li>
+        <LI>Next message: <A HREF="014503.html">[JDEV] blocking user
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14506">[ date ]</a>
+              <a href="thread.html#14506">[ thread ]</a>
+              <a href="subject.html#14506">[ subject ]</a>
+              <a href="author.html#14506">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>John,
+
+Here's some code you can use that bypasses all certificate validation.
+:<i>)
+</I>
+SSLSocketFactory sslFactory = new DummySSLSocketFactory(); 
+Socket socket = (SSLSocket)sslFactory.createSocket(host, port);
+
+The implementation of DummySSLSocketFactory is below. It's pretty easy
+to modify the classes so that they don't require a root CA, but still
+require a non-expired certificate.
+
+Regards,
+Matt
+-------------------------------
+
+    private static class DummySSLSocketFactory extends SSLSocketFactory
+{
+
+        private SSLSocketFactory factory;
+
+        public DummySSLSocketFactory() {
+
+            try {
+                SSLContext sslcontent = SSLContext.getInstance(&quot;TLS&quot;);
+                sslcontent.init(null, // KeyManager not required
+                                new TrustManager[] { new
+DummyTrustManager() },
+                                new java.security.SecureRandom());
+                factory = sslcontent.getSocketFactory();
+            }
+            catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+            catch (KeyManagementException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public static SocketFactory getDefault() {
+            return new DummySSLSocketFactory();
+        }
+
+        public Socket createSocket(Socket socket, String s, int i,
+boolean flag)
+                throws IOException
+        {
+            return factory.createSocket(socket, s, i, flag);
+        }
+
+        public Socket createSocket(InetAddress inaddr, int i,
+InetAddress inaddr2, int j)
+                throws IOException
+        {
+            return factory.createSocket(inaddr, i, inaddr2, j);
+        }
+
+        public Socket createSocket(InetAddress inaddr, int i)
+                throws IOException
+        {
+            return factory.createSocket(inaddr, i);
+        }
+
+        public Socket createSocket(String s, int i, InetAddress inaddr,
+int j)
+                throws IOException
+        {
+            return factory.createSocket(s, i, inaddr, j);
+        }
+
+        public Socket createSocket(String s, int i)
+                throws IOException
+        {
+            return factory.createSocket(s, i);
+        }
+
+        public String[] getDefaultCipherSuites() {
+            return factory.getSupportedCipherSuites();
+        }
+
+        public String[] getSupportedCipherSuites() {
+            return factory.getSupportedCipherSuites();
+        }
+    }
+
+    /**
+     * Trust manager which accepts certificates without any validation
+     * except date validation.
+     */
+    private static class DummyTrustManager implements X509TrustManager {
+
+        public void checkClientTrusted(X509Certificate[] chain, String
+authType) {
+
+        }
+
+        public void checkServerTrusted(X509Certificate[] chain, String
+authType)  {
+             try {
+                chain[0].checkValidity();
+            }
+            catch (CertificateExpiredException e) {
+            }
+            catch (CertificateNotYetValidException e) {
+            }
+        }
+
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+    }
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>] On 
+</I>&gt;<i> Behalf Of John Goalby
+</I>&gt;<i> Sent: Saturday, October 12, 2002 7:22 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] SSL with Jabber
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Thanks!  I am trying to use the native Java SSL support in 
+</I>&gt;<i> 1.4.1 and having 
+</I>&gt;<i> a problem.
+</I>&gt;<i> 
+</I>&gt;<i> I am trying to connect to the jabber.org server on port 5223.
+</I>&gt;<i> 
+</I>&gt;<i> I get a certificate_unknown error.  I haven't imported the 
+</I>&gt;<i> certificate from 
+</I>&gt;<i> jabber.org as I cannot find it.  Should I be able to download 
+</I>&gt;<i> this and 
+</I>&gt;<i> import it by hand?
+</I>&gt;<i> 
+</I>&gt;<i> Or should there be someway to import it automatically?
+</I>&gt;<i> 
+</I>&gt;<i> I assume I am having problems due to the jabber.org cert not 
+</I>&gt;<i> being trusted 
+</I>&gt;<i> by a CA.
+</I>&gt;<i> 
+</I>&gt;<i> Any help would be appreciated.
+</I>&gt;<i> 
+</I>&gt;<i> Thanks!
+</I>&gt;<i> 
+</I>&gt;<i> John.
+</I>&gt;<i> 
+</I>&gt;<i> &gt;There is nothing special about it.
+</I>&gt;<i> &gt;5223 is the standard ssl port. It is plain SSL/TLS on server 
+</I>&gt;<i> side based 
+</I>&gt;<i> &gt;on i.e. OpenSSL. Java's native SSL or PureTLS will work fine.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;I can't remember if jabber.org supports SSL, but jabber.com propably 
+</I>&gt;<i> &gt;will.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;ulrich
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;John Goalby wrote:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; I am looking to write a Jabber client in Java and would like to 
+</I>&gt;<i> &gt; &gt; support
+</I>&gt;<i> &gt;the
+</I>&gt;<i> &gt; &gt; SSL connection.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Is there somewhere I can look for more information on how to do 
+</I>&gt;<i> &gt; &gt; this?
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Is there anything specific to Jabber, or is it some kind 
+</I>&gt;<i> of standard 
+</I>&gt;<i> &gt; &gt; SSL connection.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Can anyone point to some sample code for this?
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Any help appreciated.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Thanks in advance!
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; John.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; _________________________________________________________________
+</I>&gt;<i> &gt; &gt; Chat with friends online, try MSN Messenger: 
+</I>&gt;<i> &gt; &gt; <A HREF="http://messenger.msn.com">http://messenger.msn.com</A>
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;_______________________________________________
+</I>&gt;<i> &gt;jdev mailing list
+</I>&gt;<i> &gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt;<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _________________________________________________________________
+</I>&gt;<i> Chat with friends online, try MSN Messenger: <A HREF="http://messenger.msn.com">http://messenger.msn.com</A>
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="014501.html">[JDEV] SSL with Jabber
+</A></li>
+	<LI>Next message: <A HREF="014503.html">[JDEV] blocking user
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14506">[ date ]</a>
+              <a href="thread.html#14506">[ thread ]</a>
+              <a href="subject.html#14506">[ subject ]</a>
+              <a href="author.html#14506">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

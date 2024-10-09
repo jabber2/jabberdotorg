@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Auto restarting jabberd
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Auto%20restarting%20jabberd&In-Reply-To=%3C7798100.981059667523.JavaMail.buckrogers1965%40gomailjtp05%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="064522.html">
+   <LINK REL="Next"  HREF="064518.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Auto restarting jabberd</H1>
+    <B>james rogers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Auto%20restarting%20jabberd&In-Reply-To=%3C7798100.981059667523.JavaMail.buckrogers1965%40gomailjtp05%3E"
+       TITLE="[JDEV] Auto restarting jabberd">buckrogers1965 at go.com
+       </A><BR>
+    <I>Thu Feb  1 14:34:27 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="064522.html">[JDEV] IRC transport
+</A></li>
+        <LI>Next message: <A HREF="064518.html">[JDEV] Jabber Client for PalmOS
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64517">[ date ]</a>
+              <a href="thread.html#64517">[ thread ]</a>
+              <a href="subject.html#64517">[ subject ]</a>
+              <a href="author.html#64517">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>We were having a problem keeping the jabberd server running this week so I wrote a script to start jabberd and then login to the server every so often to make sure that it is responding.  If it isn't responding, the script kills jabberd and waits for four minutes to let everything settle down and then restarts jabberd...
+
+This script is released under the GNU GPL and is released as is with no warrenty or implied functionallity.  It will not work unless you change some of the paths and user names to correspond to how you have jabber installed on your system.
+
+run the script with the command:
+
+nohup &lt;scriptname&gt; &amp;
+
+and the log will be saved to the nohup file in the current directory.
+
+If you normally need to have any arguments to the script, add them after the jabberd command in the start_jabber function.
+
+Good Luck!
+
+---------Cut Here------------------
+
+#!/PATH_TO_PERL/perl
+
+use Socket;
+
+while(1) {
+    start_jabberd();
+    sleep(60);
+    while (connected()){
+        sleep(60);
+    }
+    kill_jabberd();
+    sleep(250);
+}
+
+sub start_jabberd {
+    printf (&quot;starting jabberd\n&quot;);
+
+    # execute the command to run jabberd
+    open(JAB, &quot;cd /PATH_TO_EXECUTABLE; LD_LIBRARY_PATH=/PATH_TO_LIBARARY; ./jabberd |&quot;);
+     close(JAB);
+
+    return 0;
+}
+
+sub connected {
+
+    # open a connection to jabber on the local server
+    # if this fails then we return a 0
+
+    $remote  = shift || 'localhost';
+    $port    = shift || 5222;  # jabberd port
+    $iaddr   = inet_aton($remote)               || return 0;
+    $paddr   = sockaddr_in($port, $iaddr);
+
+    $proto   = getprotobyname('tcp');
+    socket(SOCK, PF_INET, SOCK_STREAM, $proto)  || return 0;
+    connect(SOCK, $paddr)    || return 0;
+
+    # send a bogus stream string to server 
+    # if this fails then we return a 0
+
+    print SOCK &quot;&lt;stream:stream to='localhost' xmlns='jabber:client' xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;&quot; || (close SOCK &amp;&amp; return 0);
+
+    # read stream responce from server
+    $line = &lt;SOCK&gt;;
+
+    # if response doesn't have a stream:steam in it, return a 0
+    # Didn't seem to be needed, will implement latter only if required.
+
+    # send a &lt;/stream:stream&gt; sequence to close connection to jabberd server
+    print SOCK &quot;&lt;/stream:stream&gt;&quot; || (close SOCK &amp;&amp; return 0);
+
+    # close socket
+    close (SOCK);
+
+    return 1;
+}
+
+sub kill_jabberd {
+    printf(&quot;stopping jabberd\n&quot;);
+
+    # find PIDs of running jabberd servers owned by self
+    open(JAB, &quot;for i in `ps -ef|grep jabberd|grep foo | grep -v grep|awk '{print $2}'`; do echo $i; done |&quot;);
+    close(JAB);
+
+    return 0;
+}
+
+___________________________________________________
+GO.com Mail                                    
+Get Your Free, Private E-mail at <A HREF="http://mail.go.com">http://mail.go.com</A>
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="064522.html">[JDEV] IRC transport
+</A></li>
+	<LI>Next message: <A HREF="064518.html">[JDEV] Jabber Client for PalmOS
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64517">[ date ]</a>
+              <a href="thread.html#64517">[ thread ]</a>
+              <a href="subject.html#64517">[ subject ]</a>
+              <a href="author.html#64517">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [patch client.c]
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5Bpatch%20client.c%5D&In-Reply-To=%3C3A928259.90BC7C8C%40idealx.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="064896.html">
+   <LINK REL="Next"  HREF="064892.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [patch client.c]</H1>
+    <B>Rodolphe Duge de Bernonville</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5Bpatch%20client.c%5D&In-Reply-To=%3C3A928259.90BC7C8C%40idealx.com%3E"
+       TITLE="[JDEV] [patch client.c]">rod at idealx.com
+       </A><BR>
+    <I>Tue Feb 20 08:42:33 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="064896.html">[JDEV] Bug in base_accpet?
+</A></li>
+        <LI>Next message: <A HREF="064892.html">[JDEV] JabberCOM in C#
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64891">[ date ]</a>
+              <a href="thread.html#64891">[ thread ]</a>
+              <a href="subject.html#64891">[ subject ]</a>
+              <a href="author.html#64891">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>In pthsock/client.c
+
+The jabber server may be overloaded by a user who
+send big xml tag or data.
+
+Furthermore when a user has not sent his username/password,
+he can send request that are bufferized inside client.c.
+This should be limited to 10 requests before being disconnected
+(auth, presence, roster, filter, agents ...). This would 
+avoid high intensive memory and cpu (when the user send his
+user/password)
+usage.
+
+Patch for the first part : 
+
+--- jabber2/jabberd/lib/lib.h	Thu Feb  1 22:21:43 2001
++++ ../MODIF/jabber2/jabberd/lib/lib.h	Tue Feb 20 15:10:57 2001
+@@ -557,6 +557,7 @@
+                             KARMA_HEARTBEAT seconds */
+ #define KARMA_PENALTY -5 /* where you go when you hit 0 karma */
+ #define KARMA_RESTORE 5  /* where you go when you payed your penelty or
+INIT */
++#define MAXNODESIZE 8192
+ 
+ struct karma
+ {
+@@ -566,6 +567,8 @@
+     int inc,dec; /* how much to increment/decrement */
+     int penalty,restore; /* what penalty (&lt;0) or restore (&gt;0) */
+     time_t last_update; /* time this was last incremented */
++    int maxnodesize;
++    int conf_maxnodesize;
+ };
+ 
+ struct karma *karma_new(pool p); /* creates a new karma object, with
+default values */
+
+--- jabber2/jabberd/mio_xml.c	Thu Jan 18 08:43:40 2001
++++ ../MODIF/jabber2/jabberd/mio_xml.c	Tue Feb 20 15:17:06 2001
+@@ -29,6 +29,8 @@
+  *
+--------------------------------------------------------------------------*/
+ 
+ #include &lt;jabberd.h&gt;
++extern xmlnode greymatter__;
++
+ 
+ /* *******************************************
+  * Internal Expat Callbacks
+@@ -83,6 +85,8 @@
+ 	    }
+ 	    m-&gt;stacknode = parent;
+     }
++
++    m-&gt;k.maxnodesize = 0;
+ }
+ 
+ void _mio_xstream_CDATA(mio m, const char* cdata, int len)
+@@ -118,8 +122,26 @@
+ void _mio_xml_parser(mio m, const void *buf, size_t bufsz)
+ {
+     /* init the parser if this is the first read call */
+-    if(m-&gt;parser == NULL)
+-        _mio_xstream_init(m);
++    if(m-&gt;parser == NULL){
++	xmlnode io = xmlnode_get_tag(greymatter__, &quot;io&quot;);
++
++	m-&gt;k.maxnodesize = 0;
++	m-&gt;k.conf_maxnodesize =  j_atoi(xmlnode_get_data(xmlnode_get_tag(io,
+&quot;maxnodesize&quot;)), MAXNODESIZE);
++	_mio_xstream_init(m);
++    }
++
++    if ( (m-&gt;k.maxnodesize += bufsz) &gt; m-&gt;k.conf_maxnodesize){
++        if(m-&gt;cb != NULL)
++        {
++            (*(mio_std_cb)m-&gt;cb)(m, MIO_ERROR, m-&gt;cb_arg);
++            mio_write(m, NULL, &quot;&lt;stream:error&gt;Invalid
+XML&lt;/stream:error&gt;&quot;, -1);
++            mio_close(m);
++        }
++	
++	return;
++    }
++
++    fprintf(stderr, &quot;_mio_xml_parser : m-&gt;k.maxnodesize : %d\n&quot;,
+m-&gt;k.maxnodesize  );
+ 
+     if(XML_Parse(m-&gt;parser, buf, bufsz, 0) == 0)
+         if(m-&gt;cb != NULL)
+@@ -129,3 +151,4 @@
+             mio_close(m);
+         }
+ }
++
+
+
+--- jabber2/pthsock/client.c	Sat Feb  3 23:46:57 2001
++++ ../MODIF/jabber2/pthsock/client.c	Tue Feb 20 15:32:41 2001
+@@ -44,6 +44,7 @@
+ 
+ #include &lt;jabberd.h&gt;
+ #define DEFAULT_AUTH_TIMEOUT 0
++#define MAX_REQ_BEFORE_AUTH 10
+ 
+ /* socket manager instance */
+ typedef struct smi_st
+@@ -54,6 +55,7 @@
+     HASHTABLE users;
+     xmlnode cfg;
+     char *host;
++    int nreqbeforeauth;
+ } *smi, _smi;
+ 
+ typedef enum { state_UNKNOWN, state_AUTHD } user_state;
+@@ -303,6 +305,10 @@
+                 q = pmalloco(xmlnode_pool(x), sizeof(_mio_wbq));
+                 q-&gt;x = x;
+                 pth_msgport_put(cd-&gt;pre_auth_mp, (void*)q);
++		if (pth_msgport_pending(cd-&gt;pre_auth_mp) &gt; cd-&gt;si-&gt;nreqbeforeauth){
++		    mio_write(m, NULL, &quot;&lt;stream:error&gt;Too many
+requests&lt;/stream:error&gt;&lt;/stream:stream&gt;&quot;, -1);
++		    mio_close(m);
++		}
+                 return;
+             }
+             else if (NSCHECK(q, NS_AUTH))
+@@ -434,6 +440,8 @@
+     s__i-&gt;cfg = xdb_get(xc, jid_new(xmlnode_pool(x),
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>&quot;), &quot;jabber:config:pth-csock&quot;);
+ 
+     s__i-&gt;host = host = i-&gt;id;
++    s__i-&gt;nreqbeforeauth = 
+j_atoi(xmlnode_get_data(xmlnode_get_tag(s__i-&gt;cfg, &quot;nreqbeforeauth&quot;)),
+MAX_REQ_BEFORE_AUTH);
++
+ 
+     k.val     =KARMA_INIT;
+     k.bytes   = 0;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="064896.html">[JDEV] Bug in base_accpet?
+</A></li>
+	<LI>Next message: <A HREF="064892.html">[JDEV] JabberCOM in C#
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64891">[ date ]</a>
+              <a href="thread.html#64891">[ thread ]</a>
+              <a href="subject.html#64891">[ subject ]</a>
+              <a href="author.html#64891">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

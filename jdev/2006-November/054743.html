@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: XMPP Ping method?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20XMPP%20Ping%20method%3F&In-Reply-To=%3C877iyf2bop.fsf%40freemail.hu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="054761.html">
+   <LINK REL="Next"  HREF="054757.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: XMPP Ping method?</H1>
+    <B>Magnus Henoch</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20XMPP%20Ping%20method%3F&In-Reply-To=%3C877iyf2bop.fsf%40freemail.hu%3E"
+       TITLE="[jdev] Re: XMPP Ping method?">mange at freemail.hu
+       </A><BR>
+    <I>Wed Nov  1 13:45:26 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="054761.html">[jdev] XMPP Ping method?
+</A></li>
+        <LI>Next message: <A HREF="054757.html">[jdev] Re: XMPP Ping method?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54743">[ date ]</a>
+              <a href="thread.html#54743">[ thread ]</a>
+              <a href="subject.html#54743">[ subject ]</a>
+              <a href="author.html#54743">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&quot;Michal 'vorner' Vaner&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">michal.vaner at kdemail.net</A>&gt; writes:
+
+&gt;<i> Well, it is partly implementation problem, many OSes (as I heard) are
+</I>&gt;<i> able to tell you how much was already delivered and if you remember what
+</I>&gt;<i> part of data was what stanza, you can resend it after reconnection.
+</I>&gt;<i>
+</I>&gt;<i> But that is bit more work, of course, and alot more data.
+</I>
+I'm in no way an expert in network programming, so what I'm about to
+write might qualify as disinformation; please write corrections or
+completions.
+
+We want to know if the remote side has ACKed receipt of all the bytes
+in a stanza.  In Linux, there is a way to get the size of the TCP send
+queue:
+<A HREF="https://www.jabber.org/standards-jig/2003-December/004570.html">https://www.jabber.org/standards-jig/2003-December/004570.html</A>
+But it seems to me that using that method would be cumbersome:
+
+1. Send stanza A to connection.  Save copy of A and size(A).
+2. Prepare to send stanza B.  If send queue is 0, forget A and goto 1.
+   Else save B and size(B), and increase size(A) with size(B).
+3. If send queue size is less than (the modified) size(A), consider A
+   to be acked.  Likewise for B.
+4. If connection fails, queue or bounce all stanzas sent but not
+   acked.
+
+Or something like that.  I probably got it wrong somewhere, and I
+would probably make more errors if I tried to convert that into code.
+
+So it would be nice if sending a piece of data returned the sequence
+number of the last byte sent.  Then you could just compare it to the
+sequence number of the last byte ACKed, and then you immediately know
+if the stanza was received.
+
+Thus, we should try to convince makers of socket APIs to include
+functions to do just that.  Or did I miss anything?
+
+-- 
+Magnus
+JID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">legoscia at jabber.cd.chalmers.se</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="054761.html">[jdev] XMPP Ping method?
+</A></li>
+	<LI>Next message: <A HREF="054757.html">[jdev] Re: XMPP Ping method?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54743">[ date ]</a>
+              <a href="thread.html#54743">[ thread ]</a>
+              <a href="subject.html#54743">[ subject ]</a>
+              <a href="author.html#54743">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

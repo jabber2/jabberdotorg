@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: jdev digest, Vol 1 #1423 - 8 msgs
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20jdev%20digest%2C%20Vol%201%20%231423%20-%208%20msgs&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="012729.html">
+   <LINK REL="Next"  HREF="012733.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: jdev digest, Vol 1 #1423 - 8 msgs</H1>
+    <B>Jean-Louis Seguineau /EXC/TEC</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Re%3A%20jdev%20digest%2C%20Vol%201%20%231423%20-%208%20msgs&In-Reply-To="
+       TITLE="[JDEV] Re: jdev digest, Vol 1 #1423 - 8 msgs">jean-louis.seguineau at antepo.com
+       </A><BR>
+    <I>Mon May 13 14:31:33 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="012729.html">[JDEV] Packet delivery failed
+</A></li>
+        <LI>Next message: <A HREF="012733.html">[JDEV] File transfer v's URL sending [+ports]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12726">[ date ]</a>
+              <a href="thread.html#12726">[ thread ]</a>
+              <a href="subject.html#12726">[ subject ]</a>
+              <a href="author.html#12726">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Laurent,
+
+This is a simple one:) but not very well documented!
+When you require authentication through a &lt;route&gt; packet you have to send it
+to the user, not the server. In your case it will be:
+
+component --&gt; jabber
+&lt;route to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lschweiz at 10.192.72.61</A>'  from='sip.10.192.72.61' type='auth'&gt;
+&lt;iq type='get' id='Sip1'&gt;
+&lt;query
+xmlns='jabber:iq:auth'&gt;&lt;username&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lschweiz at 10.192.72.61</A>&lt;/username&gt;&lt;/query&gt;
+&lt;/iq&gt;
+&lt;/route&gt;
+
+then the server will answer with whatever the authentication protocoles are
+in an &lt;iq&gt; result. Note that you use the generic user name without resource.
+You should then send a set to the user address including the resource this
+time.
+
+component --&gt; jabber
+&lt;route to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lschweiz at 10.192.72.61</A>/resource'  from='sip.10.192.72.61'
+type='auth'&gt;
+&lt;iq type='set' id='Sip2'&gt;
+&lt;query
+xmlns='jabber:iq:auth'&gt;&lt;username&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lschweiz at 10.192.72.61</A>&lt;/username&gt;&lt;password&gt;y
+ourpassword&lt;/password&gt;&lt;resource&gt;resource&lt;/resource&gt;&lt;/query&gt;
+&lt;/iq&gt;
+&lt;/route&gt;
+
+Happy component building
+
+____________________________
+Jean-Louis Seguineau
+Chief Technology Officer
+Antepo, Inc.
+
+
+----- Original Message -----
+&gt;<i> From: &quot;Schweizer Laurent&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">schweizerl at hotmail.com</A>&gt;
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Date: Sat, 11 May 2002 14:15:13 +0200
+</I>&gt;<i> Subject: [JDEV] error 406 when i try to auth a user with a component
+</I>&gt;<i> Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i> Hello,
+</I>&gt;<i>
+</I>&gt;<i> I want to auth a user with a component, but i receive a error 406 Not
+</I>&gt;<i> Acceptable
+</I>&gt;<i>
+</I>&gt;<i> I have make the registration of the user (lschweiz) with a jabber client
+</I>&gt;<i> (Exodus)
+</I>&gt;<i>
+</I>&gt;<i> Laurent Schweizer
+</I>&gt;<i>
+</I>&gt;<i> component --&gt; jabber server
+</I>&gt;<i> &lt;stream:stream xmlns='jabber:component:accept'
+</I>&gt;<i> xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> to='10.192.72.61'&gt;
+</I>&gt;<i>
+</I>&gt;<i> jabber server --&gt; component
+</I>&gt;<i>
+</I>&gt;<i> &lt;?xml version='1.0'?&gt;&lt;stream:stream
+</I>&gt;<i> xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='3CD92A23'
+</I>&gt;<i> xmlns='jabber:component:accept' from='sip.10.192.72.61'&gt;
+</I>&gt;<i>
+</I>&gt;<i> component --&gt; jabber server
+</I>&gt;<i> &lt;handshake&gt;c27a76bc0817418caf7260d5016ef8b6c29d02b6&lt;/handshake&gt;
+</I>&gt;<i>
+</I>&gt;<i> jabber server --&gt; component
+</I>&gt;<i> &lt;handshake/&gt;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> component --&gt; jabber
+</I>&gt;<i> &lt;route to='10.192.72.61' from='sip.10.192.72.61' type='auth'&gt;&lt;iq
+</I>type='get'
+&gt;<i> id='Sip1'&gt;&lt;query xmlns=
+</I>&gt;<i>
+</I>'jabber:iq:auth'&gt;&lt;username&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lschweiz at 10.192.72.61</A>&lt;/username&gt;&lt;/query&gt;&lt;/iq&gt;&lt;/ro
+ute&gt;
+&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> jabber --&gt; component
+</I>&gt;<i> &lt;route from='10.192.72.61' to='sip.10.192.72.61' type='auth'&gt;&lt;iq
+</I>&gt;<i> type='error' id='Sip1'&gt;&lt;query
+</I>&gt;<i>
+</I>xmlns='jabber:iq:auth'&gt;&lt;username&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lschweiz at 10.192.72.61</A>&lt;/username&gt;&lt;/query&gt;&lt;er
+ror
+&gt;<i> code='406'&gt;Not Acceptable&lt;/error&gt;&lt;/iq&gt;&lt;/route&gt;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _________________________________________________________________
+</I>&gt;<i> Discutez en ligne avec vos amis, essayez MSN Messenger :
+</I>&gt;<i> <A HREF="http://messenger.msn.com">http://messenger.msn.com</A>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="012729.html">[JDEV] Packet delivery failed
+</A></li>
+	<LI>Next message: <A HREF="012733.html">[JDEV] File transfer v's URL sending [+ports]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12726">[ date ]</a>
+              <a href="thread.html#12726">[ thread ]</a>
+              <a href="subject.html#12726">[ subject ]</a>
+              <a href="author.html#12726">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Observations about server architecture
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Observations%20about%20server%20architecture&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="003609.html">
+   <LINK REL="Next"  HREF="003611.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Observations about server architecture</H1>
+    <B>Paul Goh</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Observations%20about%20server%20architecture&In-Reply-To="
+       TITLE="[JDEV] Observations about server architecture">paulgoh at alibaba-inc.com
+       </A><BR>
+    <I>Mon Aug  7 17:09:47 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="003609.html">[JDEV] JabberCOM w/VC++?
+</A></li>
+        <LI>Next message: <A HREF="003611.html">[JDEV] Segmentation Fault problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3610">[ date ]</a>
+              <a href="thread.html#3610">[ thread ]</a>
+              <a href="subject.html#3610">[ subject ]</a>
+              <a href="author.html#3610">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>After going through the server code, here are my observations about the
+server architecture (the client request handling part):
+
+1. There are a list of modules to handle client requests.
+2. The server socket services requests in an event based manner, and for a
+specific type of request (there are 4 types), there is only a single thread
+to service it.
+3. The servicing thread, once it receives a request, will look through the
+list of modules (callback functions), to see if the function services the
+request.
+4. For a specific type of requests, since there is only one single thread,
+the requests will be serviced one by one rather than concurrently.
+5. There are serveral services of the server that spawns its own thread.
+
+Please correct my understanding in any area that you think I'm wrong.
+
+Question:
+1. Isn't the responsiveness of the server pretty slow for a certain type of
+request due to the lack of concurrency, which is due to only a single thread
+servicing the requests?
+2. Anyone can recommend a server configuration for best performance? Is SCSI
+or RAID configuration needed for improved performance in this case? Since
+the server does not even have a lot of running threads?
+3. Please enlighten me on any thoughts or comments that you guys have...
+
+Thank you very much.
+
+Paul
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="003609.html">[JDEV] JabberCOM w/VC++?
+</A></li>
+	<LI>Next message: <A HREF="003611.html">[JDEV] Segmentation Fault problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3610">[ date ]</a>
+              <a href="thread.html#3610">[ thread ]</a>
+              <a href="subject.html#3610">[ subject ]</a>
+              <a href="author.html#3610">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

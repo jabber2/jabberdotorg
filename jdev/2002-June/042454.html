@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Compiling aim-transport under cygwin (jud too)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Compiling%20aim-transport%20under%20cygwin%20%28jud%20too%29&In-Reply-To=%3C003f01c216f6%24c4725bb0%247101a8c0%40alphavirtual.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042452.html">
+   <LINK REL="Next"  HREF="042455.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Compiling aim-transport under cygwin (jud too)</H1>
+    <B>Robert Cadena</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Compiling%20aim-transport%20under%20cygwin%20%28jud%20too%29&In-Reply-To=%3C003f01c216f6%24c4725bb0%247101a8c0%40alphavirtual.com%3E"
+       TITLE="[JDEV] Compiling aim-transport under cygwin (jud too)">robert at factorysouth.com
+       </A><BR>
+    <I>Tue Jun 18 13:33:52 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042452.html">[JDEV] Problems with Win32 JabberD (v1.4.2 &amp; v1.4.2CVS)
+</A></li>
+        <LI>Next message: <A HREF="042455.html">[JDEV] Help?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42454">[ date ]</a>
+              <a href="thread.html#42454">[ thread ]</a>
+              <a href="subject.html#42454">[ subject ]</a>
+              <a href="author.html#42454">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+
+i've been messing around with jabber and cygwin, and stubbornly refuse to go
+the linux route (mainly because i don't have a linux box i can dedicate and
+running vmware is just plain sloooow).
+
+I've noticed people are having problems compiling transports and other
+components of jabber under cygwin, and i ran into these too.  in particular,
+lots of people getting a ton of &quot;undefined references to XXX&quot;    i came up
+with a temporary solution and  I'm posting it here for archival purposes:
+
+Note that these have only been tested with
+    jabber 1.4.2
+    aim-transport 0.9.25 (CVS)
+    jud - 0.4
+    cygwin 1.3.10-1
+    gcc 2.95.3-5 (cygwin special)
+    pth 1.4.1
+
+- The main problem is, I think, that cygwin's gcc can't find the *.o's in
+the directories specified with -L ... i don't know why.  if anyone does
+please enlighten me.
+
+Compiling AIM
+
+    * Decompress and read the README file
+    * Run ./autogen.sh to build the makefiles
+    * open src/Makefile
+    * add this variable to the Makefile
+            jabberd_EXOBJECTS = ../../jabberd/lib/xml*.o \
+                              ../../jabberd/lib/hashtable.o \
+                              ../../jabberd/lib/pool.o \
+                              ../../jabberd/lib/xstream.o \
+                              ../../jabberd/lib/str.o \
+                              ../../jabberd/lib/expat.o \
+                              ../../jabberd/lib/snprintf.o \
+                              ../../jabberd/lib/genhash.o \
+                              ../../jabberd/lib/xhash.o \
+                              ../../jabberd/jabberd.a
+    * go to the aimtrans.so$(EXEEXT) target and append to the line that
+starts with $(LINK) the variable.  It should read like this:
+
+
+        $(LINK) $(aimtrans_so_LDFLAGS) $(aimtrans_so_OBJECTS) \
+                        $(aimtrans_so_LDADD) $(LIBS) $(jabberd_EXOBJECTS)
+
+        minus the &quot;\&quot;, that's just to break the line.
+
+    * now go up one directory, to aim-transport.  And run &quot;make&quot;
+    * I renamed my output file (which is in src) from aimtrans.so.exe to
+aimtrans.so
+    * follow the instructions in the README file for installing the
+transport into jabberd.
+
+Also, i could not find the AIM binary 3.5.1670 so i downloaded the latest
+(4.8.2790) and used it as by aimbinarydir and it works fine :)
+
+Compiling the JUD
+
+    * Read the README!!! run ./configure
+    * Open the Makefile
+    * add the jabberd_EXOBJECTS specified above to this Makefile
+    * go to the jud target and add the jabberd_EXOBJECTS variable between
+$(jud_OBJECTS) and $(LDFLAGS).  It should end up like this:
+
+        $(CC) $(CFLAGS) $(MCFLAGS) -o jud.so \
+        $(jud_OBJECTS) $(jabberd_EXOBJECTS) $(LDFLAGS) $(LIBS) -lpth
+
+    * append -lpth to that line too (notice it's already there).  This links
+to the pthreads library which you should have already installed.
+
+
+PThreads 1.4.1
+
+    * I had originally had some problems compiling the pthreads source.
+This was due to the fact that I specified use &quot;unix&quot; linebreaks during my
+cygwin setup.  I changed it to DOS.  compiled, then changed it back to UNIX.
+
+
+if anyone has more experience with Make and cygwin and can include these
+changes when running configure, please do so.  it would help out a ton! :)
+
+thanks.
+
+/r
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042452.html">[JDEV] Problems with Win32 JabberD (v1.4.2 &amp; v1.4.2CVS)
+</A></li>
+	<LI>Next message: <A HREF="042455.html">[JDEV] Help?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42454">[ date ]</a>
+              <a href="thread.html#42454">[ thread ]</a>
+              <a href="subject.html#42454">[ subject ]</a>
+              <a href="author.html#42454">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

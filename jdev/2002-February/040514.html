@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] File transfer ideas
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfer%20ideas&In-Reply-To=%3C1013807511.7091.0.camel%40pere-mobile.sys.legend.net.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="040513.html">
+   <LINK REL="Next"  HREF="040516.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] File transfer ideas</H1>
+    <B>David Sutton</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfer%20ideas&In-Reply-To=%3C1013807511.7091.0.camel%40pere-mobile.sys.legend.net.uk%3E"
+       TITLE="[JDEV] File transfer ideas">dsutton at legend.co.uk
+       </A><BR>
+    <I>Fri Feb 15 15:11:49 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="040513.html">[JDEV] Problem with Net::Jabber
+</A></li>
+        <LI>Next message: <A HREF="040516.html">[JDEV] File transfer ideas
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40514">[ date ]</a>
+              <a href="thread.html#40514">[ thread ]</a>
+              <a href="subject.html#40514">[ subject ]</a>
+              <a href="author.html#40514">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+  I'm just doing my 2 hour journey back to the house, and have got thinking
+  about file transfer. I'm basically sending this email for thoughts on
+  the idea i'm working on. It takes some of the existing views, just
+  expanding on a few ideas, concepts and concerns I have.
+
+  Protocol:
+
+    HTTP is fine for this purpose. It was designed as a protocol to
+    transfer files from a server to a client, which is all that we want.
+    I would, however, suggest a slightly modified http server, which can
+    basically measure how much of a file has been transfered to and from
+    the server. I'll explain this later. HTTP v1.1 has partial file
+    transfer in the specification, useful to resume connections which
+    have failed. It also would make it easy to have requests served by
+    multiple servers, simply by returning a redirection message to the
+    requesting client.
+
+  Client-side:
+  
+    All that is required is a client able of talking the HTTP protocol.
+    
+  Server-side:
+
+    As previously stated, this is just a http server, able to determine
+    the amount of data transfered. Every file stored on the server would
+    have a record associated with it, containing the following pieces of
+    information:
+
+      Filename
+      Size
+      MD5 checksum
+      List of users able to access the file, along with expiry details
+      (ACL)
+
+   Transaction:
+
+     - Upload -
+     The sender first sends a 'request to transfer', which consists of
+     the filename, size and md5. The server checks against the database
+     to see if any file already exists which matches those details. 
+     
+     If the file already exists, there is no need to upload the file again,
+     the user is simply added to the ACL, and given an expiry time. This
+     value basically controls the amount of time the user is allowed to
+     collect the file before it is deleted. Once all the users listed on
+     the record had either timed out or been deleted, the file would
+     then be removed automatically. The sender is also informed that
+     there is no need to upload.
+
+     If the file doesn't already exist, the server checks that the size
+     value does not exceed the limit placed on the server. This value is
+     not trusted, only used as a guideline. The user then starts to
+     upload the file. The server monitors this, and will terminate and
+     destroy the partial upload if its exceeds the size it reported.
+     
+     If the transfer is interrupted, one of two actions could be taken:
+     either remove the partial upload, or keep it for a short amount of
+     time, allowing the sender to resume the upload and complete it.
+
+     In either case, a message is send to the receiver with the details
+     needed to retrieve the file: filename, size and md5.
+     
+     - Download -
+     The receiver sends a 'request to download', consisting of the
+     filename, size and md5. This, along with the ACL stored in the
+     files database record, help form a basic protection against files
+     being downloaded by the wrong person. Its not perfect, but it is
+     functional without requiring unstandard extensions. 
+
+     The server would then respond either with a 'file not found', 'ok',
+     or 'redirection'. A 'not authorised' would also be a possible
+     option, however this could be used to try and find files in a
+     bruteforce attack, so I personally would settle for simply a 'file
+     not found' response.
+
+     Once the client is requesting from the right server and passes the
+     tests, the file is available for download. The server would monitor
+     the download, and would remove the user from the ACL once the
+     download was successful. If the download was not successful, this
+     allows the receiver to resume, or the file will simply timeout.
+
+     - Housekeeping -
+     This is simply a case of going through every record and counting
+     down every user until they expire, and removing files once there is
+     no user left on the database record for the file.
+
+   Notes:
+
+     The above solution is easily possible using a standard http server
+     and CGI scripts, the only problems are controlling the size of
+     uploads and detecting if a file transfer failed before completion.
+
+ This is all based previous discussions and idea, all i've tried to do
+ is bring them together into one reference. File transfer seems to be
+ becoming an increasingly requested feature, especially in regards to
+ transports. My personal belief is that peer-to-peer connections open up
+ a whole world of problems, such as firewalls and interconnectivity
+ between different clients. The HTTP protocol works, its documented, and
+ implemented in all major OS's (and quite a few others too) I understand
+ that this increases the bandwidth required by a hosting service, but
+ such load could be distributed by clusters of file stores. Any thoughts?
+
+ Regards, 
+
+   David
+
+---
+David Sutton
+jid: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">peregrine at jabber.sys.legend.net.uk</A>
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="040513.html">[JDEV] Problem with Net::Jabber
+</A></li>
+	<LI>Next message: <A HREF="040516.html">[JDEV] File transfer ideas
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40514">[ date ]</a>
+              <a href="thread.html#40514">[ thread ]</a>
+              <a href="subject.html#40514">[ subject ]</a>
+              <a href="author.html#40514">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

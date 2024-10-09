@@ -1,0 +1,238 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabberd behind NAT fails s2s interoperation
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%20behind%20NAT%20fails%20s2s%20interoperation&In-Reply-To=%3C3D9B5EAC.20801%40unboundtech.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="043629.html">
+   <LINK REL="Next"  HREF="043634.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabberd behind NAT fails s2s interoperation</H1>
+    <B>Justin Georgeson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabberd%20behind%20NAT%20fails%20s2s%20interoperation&In-Reply-To=%3C3D9B5EAC.20801%40unboundtech.com%3E"
+       TITLE="[JDEV] jabberd behind NAT fails s2s interoperation">jgeorgeson at unboundtech.com
+       </A><BR>
+    <I>Wed Oct  2 16:01:32 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="043629.html">[JDEV] jabberd behind NAT fails s2s interoperation
+</A></li>
+        <LI>Next message: <A HREF="043634.html">[JDEV] jabberd behind NAT fails s2s interoperation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43631">[ date ]</a>
+              <a href="thread.html#43631">[ thread ]</a>
+              <a href="subject.html#43631">[ subject ]</a>
+              <a href="author.html#43631">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>yes, using the setup below, on a machine behind a NAT firewall, I can 
+talk to another jabberd I have outside the NAT firewall. I don't have 
+any special statis routes or anything like that. In fact, I have even 
+had two jabberd's each behind a NAT firewall, in different data centers, 
+talk via s2s. The setup below is what I use on all my jabberd server's, 
+some are behind a NAT and some are not. The ones that are have a &lt;host&gt; 
+tag which resolves to the public IP of the NAT. The ones that aren't 
+have a &lt;host&gt; tag that resolves to the IP address of the server itself. 
+I've never had problems, and I can't think of anything else to suggest 
+other than verifying the NAT. Have you run tcpdump (or any sniffer) on 
+the jabberd to see if packets are being forwarded? Or on the NAT to see 
+that packets are reaching it which should go to the NAT? I once (well, 
+more than once, truth be told) forgot to enable ipv4 forwarding in the 
+kernel, so packets were reaching a box behind a NAT, but they couldn't 
+get back out.
+
+Trent Melcher wrote:
+&gt;<i> yes c2s behind a NAT firewall works fine, but have you gotten a s2s
+</I>&gt;<i> connection to work from behind a NAT firewall??
+</I>&gt;<i> 
+</I>&gt;<i> Trent
+</I>&gt;<i> 
+</I>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+</I>&gt;<i> Justin Georgeson
+</I>&gt;<i> Sent: Wednesday, October 02, 2002 2:59 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] jabberd behind NAT fails s2s interoperation
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> My server behind a NAT is configured with the public FQDN in the &lt;host&gt;
+</I>&gt;<i> tag, and has &lt;alias to='name'&gt; in the c2s section. I don't ever bind to
+</I>&gt;<i> a specific IP address (&lt;ip port='5222'/&gt;  binds to all available
+</I>&gt;<i> interfaces). The FQDN resolves to the public IP address, and I have port
+</I>&gt;<i> 5222, 5223, and 5269 forwarded to the jabber server. I guess the only
+</I>&gt;<i> thinkg left I can think of to check is if the NATis actually working.
+</I>&gt;<i> For example, try to telnet to goof.com on port 5269 from outside the
+</I>&gt;<i> NAT. Also, you can see the public internet form the jabberd box (like
+</I>&gt;<i> browse the web and such)?
+</I>&gt;<i> 
+</I>&gt;<i> matthew c. mead wrote:
+</I>&gt;<i> 
+</I>&gt;&gt;<i>I've still not been able to get this going.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Is anyone else out there running a jabber server behind a nat
+</I>&gt;&gt;<i>firewall and getting s2s to work with success?
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>Thanks.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>-matt
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>On Thu, Sep 26, 2002 at 01:55:20PM -0400, matthew c. mead wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>I do not use the -h switch.  I do have the following in
+</I>&gt;&gt;&gt;<i>jabber.xml as an element in the &lt;service id=&quot;sessions&quot;&gt; element:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>&lt;host&gt;goof.com&lt;/host&gt;
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>-matt
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>On Thu, Sep 26, 2002 at 12:07:28PM -0500, Justin Georgeson wrote:
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>No, the receiving server does a dns lookup of the hostname given to find
+</I>&gt;&gt;&gt;&gt;<i>the ip address to contact for verification. When you start jabber, do
+</I>&gt;&gt;&gt;&gt;<i>you give it a -h flag? If so that value needs to resolve, via DNS to the
+</I>&gt;&gt;&gt;&gt;<i>ip of your nat. If not, use the value of the &lt;host&gt; tag right after the
+</I>&gt;&gt;&gt;&gt;<i>start of the &lt;service id=&quot;sessions&quot;&gt; tag in jabber.xml. From what you
+</I>&gt;&gt;&gt;&gt;<i>have said so far, you should be using goof.com as the &lt;host&gt;/-h value.
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>matthew c. mead wrote:
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>On Thu, Sep 26, 2002 at 04:58:51PM +0100, Richard Dobson wrote:
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>Yeah, I found that one out by trying.  I still don't see what's
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>going wrong.
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>Does dialback require that the ip address specified by the A
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>record for the server name have a PTR which points back to the
+</I>&gt;&gt;&gt;&gt;&gt;&gt;&gt;<i>server name?
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>No you do not need a PTR but the domain your server is claiming to be
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;<i> needs
+</I>&gt;<i> 
+</I>&gt;&gt;&gt;&gt;&gt;&gt;<i>to point to the machine you are trying to use.
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>I have an A record for goof.com that points to a NAT box.  That
+</I>&gt;&gt;&gt;&gt;&gt;<i>box forwards packets on the jabber ports to a box on my internal
+</I>&gt;&gt;&gt;&gt;&gt;<i>network that runs the jabber server.
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>I do not have a PTR record for the ip address that points to the
+</I>&gt;&gt;&gt;&gt;&gt;<i>canonical name &quot;goof.com.&quot;
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>Given this, I can't figure out what's wrong.  Does the dialback
+</I>&gt;&gt;&gt;&gt;&gt;<i>code pass the IP address of the interface to which it is bound to
+</I>&gt;&gt;&gt;&gt;&gt;<i>the remote server?  If so, this could be the problem - in my
+</I>&gt;&gt;&gt;&gt;&gt;<i>case, it would be passing the internal ip address, rather than
+</I>&gt;&gt;&gt;&gt;&gt;<i>the external.
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>Thanks for helping me eliminate the worry of needing a PTR
+</I>&gt;&gt;&gt;&gt;&gt;<i>record.  My guess is what I've described above is happening.
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;&gt;<i>-matt
+</I>&gt;&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>--
+</I>&gt;&gt;&gt;&gt;<i>Justin Georgeson
+</I>&gt;&gt;&gt;&gt;<i>UnBound Technologies, Inc.
+</I>&gt;&gt;&gt;&gt;<i><A HREF="http://www.unboundtech.com">http://www.unboundtech.com</A>
+</I>&gt;&gt;&gt;&gt;<i>Main   713.329.9330
+</I>&gt;&gt;&gt;&gt;<i>Fax    713.460.4051
+</I>&gt;&gt;&gt;&gt;<i>Mobile 512.789.1962
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>5295 Hollister Road
+</I>&gt;&gt;&gt;&gt;<i>Houston, TX 77040
+</I>&gt;&gt;&gt;&gt;<i>Real Applications using Real Wireless Intelligence(tm)
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;&gt;<i>_______________________________________________
+</I>&gt;&gt;&gt;&gt;<i>jdev mailing list
+</I>&gt;&gt;&gt;&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;&gt;&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i>--
+</I>&gt;&gt;&gt;<i>matthew c. mead
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;&gt;<i><A HREF="http://www.goof.com/~mmead/">http://www.goof.com/~mmead/</A>
+</I>&gt;&gt;&gt;<i>_______________________________________________
+</I>&gt;&gt;&gt;<i>jdev mailing list
+</I>&gt;&gt;&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;&gt;<i><A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i>
+</I>&gt;<i> 
+</I>&gt;<i> --
+</I>&gt;<i> Justin Georgeson
+</I>&gt;<i> UnBound Technologies, Inc.
+</I>&gt;<i> <A HREF="http://www.unboundtech.com">http://www.unboundtech.com</A>
+</I>&gt;<i> Main   713.329.9330
+</I>&gt;<i> Fax    713.460.4051
+</I>&gt;<i> Mobile 512.789.1962
+</I>&gt;<i> 
+</I>&gt;<i> 5295 Hollister Road
+</I>&gt;<i> Houston, TX 77040
+</I>&gt;<i> Real Applications using Real Wireless Intelligence(tm)
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+-- 
+Justin Georgeson
+UnBound Technologies, Inc.
+<A HREF="http://www.unboundtech.com">http://www.unboundtech.com</A>
+Main   713.329.9330
+Fax    713.460.4051
+Mobile 512.789.1962
+
+5295 Hollister Road
+Houston, TX 77040
+Real Applications using Real Wireless Intelligence(tm)
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="043629.html">[JDEV] jabberd behind NAT fails s2s interoperation
+</A></li>
+	<LI>Next message: <A HREF="043634.html">[JDEV] jabberd behind NAT fails s2s interoperation
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43631">[ date ]</a>
+              <a href="thread.html#43631">[ thread ]</a>
+              <a href="subject.html#43631">[ subject ]</a>
+              <a href="author.html#43631">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,177 @@
+diff -ur msn-transport-cvs/configure.in msn-transport-new/configure.in
+--- msn-transport-cvs/configure.in	2003-09-26 18:29:40.000000000 +1000
++++ msn-transport-new/configure.in	2003-09-26 22:44:43.000000000 +1000
+@@ -18,7 +18,6 @@
+ AC_MSG_CHECKING(for jabberd.h)
+ if test -f "$JABBERD_PATH/jabberd.h"; then
+     AC_MSG_RESULT(Found);
+-    LIBS="$LIBS -lcurl"
+ else
+     AC_MSG_RESULT(Error);
+     AC_MSG_ERROR([
+@@ -51,6 +50,7 @@
+ AC_MSG_CHECKING(for curl.h)
+ if test -f "$CURL_PATH/curl.h"; then
+     AC_MSG_RESULT(Found);
++    LIBS="$LIBS -lcurl"
+ else
+     AC_MSG_RESULT(Error);
+     AC_MSG_ERROR([
+diff -ur msn-transport-cvs/include/session.h msn-transport-new/include/session.h
+--- msn-transport-cvs/include/session.h	2003-09-26 18:29:40.000000000 +1000
++++ msn-transport-new/include/session.h	2003-09-26 21:59:59.000000000 +1000
+@@ -59,7 +59,7 @@
+     xht rooms;
+     xht chats;
+     xht invites;
+-    char *user, *nick, *status_msg;
++    char *user, *nick/*, *status_msg*/;
+     char *pass;
+     int exit_flag, attemps, connected, ref;
+ 		unsigned long int currentcontact, numcontacts;
+diff -ur msn-transport-cvs/src/chat.c msn-transport-new/src/chat.c
+--- msn-transport-cvs/src/chat.c	2003-09-19 16:35:22.000000000 +1000
++++ msn-transport-new/src/chat.c	2003-09-26 22:29:27.000000000 +1000
+@@ -542,6 +542,7 @@
+     if (jp->to->user != NULL)
+     {
+         char *to = mt_jid2mid(jp->p,jp->to);
++        lowercase(to);
+         if (to == NULL || strcmp(to,s->user) == 0)
+         {
+             jutil_error(jp->x,TERROR_BAD);
+Binary files msn-transport-cvs/src/chat.o and msn-transport-new/src/chat.o differ
+diff -ur msn-transport-cvs/src/conf_room.c msn-transport-new/src/conf_room.c
+--- msn-transport-cvs/src/conf_room.c	2003-09-19 16:35:22.000000000 +1000
++++ msn-transport-new/src/conf_room.c	2003-09-26 22:33:58.000000000 +1000
+@@ -49,6 +49,7 @@
+     mti ti = s->ti;
+     sbroom r;
+ 
++    lowercase(jp->to->user);
+     r = (sbroom) xhash_get(s->rooms,jp->to->user);
+ 
+     if (r != NULL && r->state == sb_READY)
+Binary files msn-transport-cvs/src/conf_room.o and msn-transport-new/src/conf_room.o differ
+Binary files msn-transport-cvs/src/msntrans.so and msn-transport-new/src/msntrans.so differ
+Binary files msn-transport-cvs/src/ns.o and msn-transport-new/src/ns.o differ
+diff -ur msn-transport-cvs/src/presence.c msn-transport-new/src/presence.c
+--- msn-transport-cvs/src/presence.c	2003-09-26 18:29:40.000000000 +1000
++++ msn-transport-new/src/presence.c	2003-09-26 22:03:19.000000000 +1000
+@@ -41,7 +41,7 @@
+ 
+     lowercase(jp->from->user);
+     lowercase(jp->from->server);
+-    mt_update_nick(s, jp);
++//    mt_update_nick(s, jp);
+ 
+     switch (jpacket_subtype(jp))
+     {
+@@ -55,11 +55,11 @@
+             s->p_db = ppdb_insert(s->p_db,jp->from,jp->x);
+             state = mt_show2state(xmlnode_get_tag_data(jp->x,"show"));
+ 
+-            if (s->connected /* && state != s->state */)
++            if (s->connected && state != s->state) // NICK_STATUS
+             {
+                 mt_stream_register(s->st,&mt_presence_chg,(void *) s);
+                 mt_cmd_chg(s->st,mt_state2char(state));
+-                mt_cmd_rea(s->st,s->user,s->status_msg);
++//                mt_cmd_rea(s->st,s->user,s->status_msg);
+             }
+ 
+             s->state = state;
+Binary files msn-transport-cvs/src/presence.o and msn-transport-new/src/presence.o differ
+Binary files msn-transport-cvs/src/receive.o and msn-transport-new/src/receive.o differ
+diff -ur msn-transport-cvs/src/register.c msn-transport-new/src/register.c
+--- msn-transport-cvs/src/register.c	2003-09-26 18:29:42.000000000 +1000
++++ msn-transport-new/src/register.c	2003-09-26 22:02:06.000000000 +1000
+@@ -184,9 +184,10 @@
+                 mt_free(s->nick);
+             s->nick = mt_strdup(tmp);
+             if (rcon == 0) {
+-                log_debug(ZONE,"Sending nickname & status for session %s ---- %s",s->user,s->status_msg);
+-                mt_update_nick(s, jp);
+-                mt_cmd_rea(s->st,s->user,s->status_msg);
++//                log_debug(ZONE,"Sending nickname & status for session %s ---- %s",s->user,s->status_msg);
++//                mt_update_nick(s, jp);
++//                mt_cmd_rea(s->st,s->user,s->status_msg);
++                mt_cmd_rea(s->st,s->user,s->nick);
+             }
+         }
+         else
+Binary files msn-transport-cvs/src/register.o and msn-transport-new/src/register.o differ
+Binary files msn-transport-cvs/src/s10n.o and msn-transport-new/src/s10n.o differ
+diff -ur msn-transport-cvs/src/session.c msn-transport-new/src/session.c
+--- msn-transport-cvs/src/session.c	2003-09-26 18:29:42.000000000 +1000
++++ msn-transport-new/src/session.c	2003-09-26 22:03:55.000000000 +1000
+@@ -52,7 +52,7 @@
+     s->user = pstrdup(p,user);
+     s->pass = pstrdup(p,pass);
+     s->nick = nick ? mt_strdup(mt_encode(jp->p,nick)) : NULL;
+-    s->status_msg = 0;
++//    s->status_msg = 0;
+     s->exit_flag = s->attemps = s->connected = 0;
+     s->ref = 1;
+ 
+@@ -64,13 +64,14 @@
+ 
+     ++ti->sessions_count;
+ 
+-    mt_update_nick(s, jp);
++//    mt_update_nick(s, jp);
+ 
+-    log_debug(ZONE,"Created session for %s with nick %s",jid_full(s->id),s->status_msg);
++//    log_debug(ZONE,"Created session for %s with nick %s",jid_full(s->id),s->status_msg);
++    log_debug(ZONE,"Created session for %s",jid_full(s->id));
+ 
+     return s;
+ }
+-
++/*
+ void mt_update_nick(session s, jpacket jp)
+ {
+     char *msg = 0;
+@@ -91,7 +92,7 @@
+     s->status_msg = malloc(strlen(msg));
+     strcpy(s->status_msg, msg);
+ }
+-
++*/
+ session mt_session_find(mti ti, jid id)
+ {
+     char *full = jid_full(id);
+Binary files msn-transport-cvs/src/session.o and msn-transport-new/src/session.o differ
+diff -ur msn-transport-cvs/src/sync.c msn-transport-new/src/sync.c
+--- msn-transport-cvs/src/sync.c	2003-09-26 18:29:45.000000000 +1000
++++ msn-transport-new/src/sync.c	2003-09-26 22:14:02.000000000 +1000
+@@ -176,10 +176,11 @@
+     {
+         /* send our initial status */
+         mt_stream_register(s->st,&mt_sync_chg,(void *) s);
+-        log_debug(ZONE,"Sending nickname & status for session %s ---- %s",s->user,s->status_msg);
++//        log_debug(ZONE,"Sending nickname & status for session %s ---- %s",s->user,s->status_msg);
+         mt_cmd_chg(s->st,mt_state2char(s->state));
+-        if(s->status_msg != 0)
+-            mt_cmd_rea(s->st,s->user,s->status_msg);
++        mt_cmd_rea(s->st,s->user,s->nick);
++//        if(s->status_msg != 0)
++//            mt_cmd_rea(s->st,s->user,s->status_msg);
+ 
+     }
+ }
+@@ -312,10 +313,10 @@
+         {
+             // No LST commands will be received because the Seq number is zero
+             mt_stream_register(s->st,&mt_sync_chg,(void *) s);
+-            log_debug(ZONE,"Sending nickname & status for session %s ---- %s",s->user,s->status_msg);
++//            log_debug(ZONE,"Sending nickname & status for session %s ---- %s",s->user,s->status_msg);
+             mt_cmd_chg(s->st,mt_state2char(s->state));
+-            if(s->status_msg != 0)
+-                mt_cmd_rea(s->st,s->user,s->status_msg);
++//            if(s->status_msg != 0)
++//                mt_cmd_rea(s->st,s->user,s->status_msg);
+             return r_DONE;
+         }
+     }
+Binary files msn-transport-cvs/src/sync.o and msn-transport-new/src/sync.o differ

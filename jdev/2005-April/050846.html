@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Cipher suite availability
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Cipher%20suite%20availability&In-Reply-To=%3CE1F190DAC247C64FAA46B38316FA151DED24F7%40EX-101.mail.navisite.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="050865.html">
+   <LINK REL="Next"  HREF="050847.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Cipher suite availability</H1>
+    <B>Matt Tucker</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Cipher%20suite%20availability&In-Reply-To=%3CE1F190DAC247C64FAA46B38316FA151DED24F7%40EX-101.mail.navisite.com%3E"
+       TITLE="[jdev] Cipher suite availability">matt at jivesoftware.com
+       </A><BR>
+    <I>Tue Apr  5 12:17:04 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="050865.html">ILE (was: Re: [jdev] Real-world data forms?)
+</A></li>
+        <LI>Next message: <A HREF="050847.html">[jdev] Serverless (peer2peer) jabber sessions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50846">[ date ]</a>
+              <a href="thread.html#50846">[ thread ]</a>
+              <a href="subject.html#50846">[ subject ]</a>
+              <a href="author.html#50846">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey guys,
+
+&gt;<i> &gt; Basically i'm trying to create an xmpp implementation.  The 
+</I>&gt;<i> &gt; TLS cipher suite required is specified in the RFC as 
+</I>&gt;<i> &gt; TLS_RSA_WITH_3DES_EDE_CBC_SHA.
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; The Sun JSSE/Sun JCE security providers (JDK 1.5) sadly dont provide
+</I>
+&gt;<i> &gt; this cipher suite.  Are there alternatives that can be used such as 
+</I>&gt;<i> &gt; SSL_RSA_WITH_3DES_EDE_CBC_SHA?
+</I>
+JDK 1.5 does appear to support this cipher suite. The following code:
+
+SSLContext context = SSLContext.getInstance(&quot;TLS&quot;);
+context.init(null, null, null);
+SSLEngine engine = context.createSSLEngine();
+System.out.println(&quot;Supported: &quot; +
+Arrays.asList(engine.getSupportedCipherSuites()));
+System.out.println(&quot;Enabled:&quot; +
+Arrays.asList(engine.getEnabledCipherSuites()));
+
+Yields:
+
+Supported: [SSL_RSA_WITH_RC4_128_MD5, SSL_RSA_WITH_RC4_128_SHA,
+TLS_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_CBC_SHA,
+TLS_DHE_DSS_WITH_AES_128_CBC_SHA, SSL_RSA_WITH_3DES_EDE_CBC_SHA,
+SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA, SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,
+SSL_RSA_WITH_DES_CBC_SHA, SSL_DHE_RSA_WITH_DES_CBC_SHA,
+SSL_DHE_DSS_WITH_DES_CBC_SHA, SSL_RSA_EXPORT_WITH_RC4_40_MD5,
+SSL_RSA_EXPORT_WITH_DES40_CBC_SHA,
+SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA,
+SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA, SSL_RSA_WITH_NULL_MD5,
+SSL_RSA_WITH_NULL_SHA, SSL_DH_anon_WITH_RC4_128_MD5,
+TLS_DH_anon_WITH_AES_128_CBC_SHA, SSL_DH_anon_WITH_3DES_EDE_CBC_SHA,
+SSL_DH_anon_WITH_DES_CBC_SHA, SSL_DH_anon_EXPORT_WITH_RC4_40_MD5,
+SSL_DH_anon_EXPORT_WITH_DES40_CBC_SHA, TLS_KRB5_WITH_RC4_128_SHA,
+TLS_KRB5_WITH_RC4_128_MD5, TLS_KRB5_WITH_3DES_EDE_CBC_SHA,
+TLS_KRB5_WITH_3DES_EDE_CBC_MD5, TLS_KRB5_WITH_DES_CBC_SHA,
+TLS_KRB5_WITH_DES_CBC_MD5, TLS_KRB5_EXPORT_WITH_RC4_40_SHA,
+TLS_KRB5_EXPORT_WITH_RC4_40_MD5, TLS_KRB5_EXPORT_WITH_DES_CBC_40_SHA,
+TLS_KRB5_EXPORT_WITH_DES_CBC_40_MD5]
+
+Enabled:[SSL_RSA_WITH_RC4_128_MD5, SSL_RSA_WITH_RC4_128_SHA,
+TLS_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_CBC_SHA,
+TLS_DHE_DSS_WITH_AES_128_CBC_SHA, SSL_RSA_WITH_3DES_EDE_CBC_SHA,
+SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA, SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,
+SSL_RSA_WITH_DES_CBC_SHA, SSL_DHE_RSA_WITH_DES_CBC_SHA,
+SSL_DHE_DSS_WITH_DES_CBC_SHA, SSL_RSA_EXPORT_WITH_RC4_40_MD5,
+SSL_RSA_EXPORT_WITH_DES40_CBC_SHA,
+SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA,
+SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA]
+
+SSL_RSA_WITH_3DES_EDE_CBC_SHA is definitely in both lists. I did this
+test using JDK 1.5. AES also appears to be supported.
+
+Regards,
+Matt
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="050865.html">ILE (was: Re: [jdev] Real-world data forms?)
+</A></li>
+	<LI>Next message: <A HREF="050847.html">[jdev] Serverless (peer2peer) jabber sessions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50846">[ date ]</a>
+              <a href="thread.html#50846">[ thread ]</a>
+              <a href="subject.html#50846">[ subject ]</a>
+              <a href="author.html#50846">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] features stanza on a s2s dialback connection
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20features%20stanza%20on%20a%20s2s%20dialback%20connection&In-Reply-To=%3CCAFXQ3PGa_0gL3cnBRkwY_Js9rXOw%3DZjLkjUtq-uc3yip8bu11w%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088845.html">
+   <LINK REL="Next"  HREF="088852.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] features stanza on a s2s dialback connection</H1>
+    <B>Nobuo Ogashiwa</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20features%20stanza%20on%20a%20s2s%20dialback%20connection&In-Reply-To=%3CCAFXQ3PGa_0gL3cnBRkwY_Js9rXOw%3DZjLkjUtq-uc3yip8bu11w%40mail.gmail.com%3E"
+       TITLE="[jdev] features stanza on a s2s dialback connection">ogashiwa at c.kyoai.ac.jp
+       </A><BR>
+    <I>Fri Jan  6 04:30:43 UTC 2012</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088845.html">[jdev] features stanza on a s2s dialback connection
+</A></li>
+        <LI>Next message: <A HREF="088852.html">[jdev] features stanza on a s2s dialback connection
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88847">[ date ]</a>
+              <a href="thread.html#88847">[ thread ]</a>
+              <a href="subject.html#88847">[ subject ]</a>
+              <a href="author.html#88847">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dear Matthew,
+
+Thank you for your reply.
+As you pointed out, the initial stream header stanza from google talk
+server didn't include a 'version' attribute.
+
+And I found this in RFC6120:
+&gt;<i>4.  If either entity receives a stream header with no 'version'
+</I>&gt;<i>       attribute, the entity MUST consider the version supported by the
+</I>&gt;<i>       other entity to be &quot;0.9&quot; and SHOULD NOT include a 'version'
+</I>&gt;<i>       attribute in the response stream header.
+</I>I'll fix my implementation.
+And then, by switching the server's behavior after confirming exist of
+a version attribute (or is whether 0.9 or 1.0),
+my server will be able to support both google talk server and jabber.org server.
+
+However, how can I support the other server which will send initial
+stream header
+without the 'version' attribute (or with the version='0.9') and
+require the features stanza.
+I didn't see such server for now but I think it meets the requirements
+of current RFC and XEP so
+there is a possibility of such server would appear in the future.
+
+
+According to the XEP-220,
+&gt;<i> Although this method of advertising protocol support has been superseded by
+</I>&gt;<i> the use of stream features as originally defined in RFC 3920, the server dialback
+</I>&gt;<i> protocol predates the existence of stream features and therefore the namespace
+</I>&gt;<i> declaration method is still used in this instance.
+</I>
+Is this imply &quot; if 'version=0.9' then MUST NOT send features stanza,
+if 'version=1.0' or higher then MUST send features stanza&quot; ?
+
+If such rules or restriction is not yet clearly described in any RFCs or XEPs,
+I think it should be clearly described in RFC or XEP for future developers.
+
+By restricting to develop a new server which says version=0.9 and
+require features stanza,
+I think we can avoid a inconsistency problem in the future.
+
+
+
+Anyway, my implementation will employ the method which switch a
+behavior by checking exist of version attribute.
+
+Regards,
+
+Nobuo Ogashiwa &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ogashiwa at c.kyoai.ac.jp</A>&gt;
+JID: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ogashiwa at c.kyoai.ac.jp</A>, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ogashiwa at nlab.im</A>
+Web: <A HREF="http://nlab.jp/xmpp/">http://nlab.jp/xmpp/</A>
+
+
+
+2012/1/6 Matthew Wild &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mwild1 at gmail.com</A>&gt;:
+&gt;<i> Hi,
+</I>&gt;<i>
+</I>&gt;<i> On 5 January 2012 14:42, Nobuo Ogashiwa &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ogashiwa at c.kyoai.ac.jp</A>&gt; wrote:
+</I>&gt;&gt;<i> Dear all,
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Now I'm developing a XMPP server software which supports s2s connection,
+</I>&gt;&gt;<i> and now I faced a problem of features stanza on a s2s dialback connection.
+</I>&gt;&gt;<i> If someone knows a right solution, please let me know. The problem is following:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> In a case of s2s dialback connection from google talk server,
+</I>&gt;&gt;<i> If it send a &lt;stream:features&gt; stanza to the google talk server,
+</I>&gt;&gt;<i> then the google talk server replies a 'not yet authorized' error.
+</I>&gt;&gt;<i> If it don't send &lt;stream:features&gt; stanza,
+</I>&gt;&gt;<i> the google talk server replies a &lt;db:verify&gt; stanza and it can
+</I>&gt;&gt;<i> continue a dial back sequence.
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Perhaps Google's stream did not have version='1.0' in the header? If
+</I>&gt;<i> not, I don't think you should send &lt;stream:features&gt;.
+</I>&gt;<i>
+</I>&gt;<i> I would also make sure you have xmlns:db correctly set in your stream header.
+</I>&gt;<i>
+</I>&gt;&gt;<i> If someone knows the right solution, standard sequence, or pointer to
+</I>&gt;&gt;<i> standards of this,
+</I>&gt;&gt;<i> please let me know.
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Double-check the things I suggested above. Existing server
+</I>&gt;<i> implementations do not have any problems, so you're definitely missing
+</I>&gt;<i> something.
+</I>&gt;<i>
+</I>&gt;&gt;<i> Anyway, we have temporarily implemented a following two workarounds :
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> (1) 50% send features stanza, 50% don't send a features stanza,
+</I>&gt;&gt;<i> &#160;it is just like following code:
+</I>&gt;&gt;<i> &#160;if (rand()%2==0) { send_features_stanza(); return; }
+</I>&gt;&gt;<i> &#160;else { return; }
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Ick.
+</I>&gt;<i>
+</I>&gt;&gt;<i> (2) wait &lt;db:verify&gt; stanza to receive for 5 seconds, if nothing
+</I>&gt;&gt;<i> received, then send &lt;stream:features&gt; stanza
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Ick.
+</I>&gt;<i>
+</I>&gt;&gt;<i> Both of these workarounds works well for now.
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> If you say so :)
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i> Matthew
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> JDev mailing list
+</I>&gt;<i> Info: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+</I>&gt;<i> Unsubscribe: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">JDev-unsubscribe at jabber.org</A>
+</I>&gt;<i> _______________________________________________
+</I></PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088845.html">[jdev] features stanza on a s2s dialback connection
+</A></li>
+	<LI>Next message: <A HREF="088852.html">[jdev] features stanza on a s2s dialback connection
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88847">[ date ]</a>
+              <a href="thread.html#88847">[ thread ]</a>
+              <a href="subject.html#88847">[ subject ]</a>
+              <a href="author.html#88847">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

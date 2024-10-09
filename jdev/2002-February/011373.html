@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] XDB / ODBC
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20XDB%20/%20ODBC&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="011331.html">
+   <LINK REL="Next"  HREF="011374.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] XDB / ODBC</H1>
+    <B>Michel Oosterbeek</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20XDB%20/%20ODBC&In-Reply-To="
+       TITLE="[JDEV] XDB / ODBC">oosterbeek.mah at stu.hsbrabant.nl
+       </A><BR>
+    <I>Thu Feb 21 06:41:08 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="011331.html">[JDEV] XDB / ODBC
+</A></li>
+        <LI>Next message: <A HREF="011374.html">[JDEV] XDB / ODBC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11373">[ date ]</a>
+              <a href="thread.html#11373">[ thread ]</a>
+              <a href="subject.html#11373">[ subject ]</a>
+              <a href="author.html#11373">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+Still having problems here. Right now I'm using:
+- Red Hat 7.2
+- Jabber 1.4.1
+- xdb_sql
+- db2 (I connect through ODBC)
+
+All settings seem to be correct (jabber.xml and xdb_sql.xml), all info is
+inserted correctly (hostname, user, pw - checked and double checked), but
+the connection seems to fail somehow. I have included some debug-info below.
+I've kept everything 'basic' (no changes), and the odbc-connection has also
+been tested and proved working with other c-programs, so that can't be it.
+
+Any idea what this could be?
+
+Thanks,
+
+Michel.
+
+
+-= Debug Output =-
+
+Thu Feb 21 13:07:25 2002  xdb.c:41 xdb_results checking xdb packet &lt;xdb
+type='result' to='xdb' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' ns='jabberd:xdb_sql:config'
+id='0'&gt;&lt;xdb_sql xmlns='jabberd:xdb_sql:config'&gt;
+    &lt;backend&gt;odbc&lt;/backend&gt;
+    &lt;connection&gt;
+      &lt;host&gt;dbpc&lt;/host&gt;
+      &lt;db&gt;testdb&lt;/db&gt;
+      &lt;user&gt;testuser&lt;/user&gt;
+      &lt;pass&gt;testpw&lt;/pass&gt;
+    &lt;/connection&gt;
+    &lt;queries&gt;
+      &lt;querydef name='auth-get'&gt;
+        &lt;text&gt;
+          SELECT password FROM users WHERE username =
+&amp;apos;$$username$$&amp;apos;
+        &lt;/text&gt;
+        &lt;bindvar name='user'&gt;$$username$$&lt;/bindvar&gt;
+        &lt;bindcol name='password' offset='0'/&gt;
+      &lt;/querydef&gt;
+      &lt;querydef name='auth-set'&gt;
+        &lt;text&gt;
+          UPDATE users SET password = &amp;apos;$$p$$&amp;apos; WHERE username =
+&amp;apos;$$username$$&amp;apos;
+        &lt;/text&gt;
+        &lt;bindvar name='user'&gt;$$username$$&lt;/bindvar&gt;
+        &lt;bindvar name='password'&gt;$$p$$&lt;/bindvar&gt;
+      &lt;/querydef&gt;
+    &lt;querydef name
+Thu Feb 21 13:07:25 2002  log.c:105 &lt;log type='alert'
+from='-internal'&gt;[xdbsql_config_init] cannot connect database :
+&lt;/log&gt;
+Thu Feb 21 13:07:25 2002  log.c:105 &lt;log type='alert'
+from='-internal'&gt;[xdb_sql] configuration failed&lt;/log&gt;
+Thu Feb 21 13:07:25 2002  deliver.c:277 Registering c2s with instance c2s
+Thu Feb 21 13:07:25 2002  client.c:440 pthsock_client loading
+Thu Feb 21 13:07:25 2002  deliver.c:235 @-internal processing &lt;xdb
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' from='c2s' ns='jabber:config:pth-csock'
+id='0'/&gt;
+Thu Feb 21 13:07:25 2002  deliver.c:649 delivering to instance 'c2s'
+
+................
+
+Thu Feb 21 13:07:25 2002  mio.c:1115 io_select to listen on 5269 [(null)]
+Thu Feb 21 13:07:25 2002  dnsrv.c:132 DNSRV CHILD: starting
+Thu Feb 21 13:07:25 2002  mio.c:1139 io_select starting to listen on 5269
+[(null)]Thu Feb 21 13:07:25 2002  dnsrv.c:147 DNSRV CHILD: Read from buffer:
+&lt;stream&gt;
+
+Thu Feb 21 13:07:25 2002  deliver.c:460 DELIVER 3:-internal &lt;log
+type='alert' from='-internal'&gt;[xdbsql_config_init] cannot connect database :
+&lt;/log&gt;
+Thu Feb 21 13:07:25 2002  deliver.c:649 delivering to instance 'elogger'
+20020221T12:07:25: [alert] (-internal): [xdbsql_config_init] cannot connect
+database :
+
+Thu Feb 21 13:07:25 2002  deliver.c:460 DELIVER 3:-internal &lt;log
+type='alert' from='-internal'&gt;[xdb_sql] configuration failed&lt;/log&gt;
+Thu Feb 21 13:07:25 2002  deliver.c:649 delivering to instance 'elogger'
+20020221T12:07:25: [alert] (-internal): [xdb_sql] configuration failed
+Thu Feb 21 13:07:25 2002  mio.c:624 socket 9 has restore karma -100 -=&gt; 50
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="011331.html">[JDEV] XDB / ODBC
+</A></li>
+	<LI>Next message: <A HREF="011374.html">[JDEV] XDB / ODBC
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11373">[ date ]</a>
+              <a href="thread.html#11373">[ thread ]</a>
+              <a href="subject.html#11373">[ subject ]</a>
+              <a href="author.html#11373">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: Large scale Jabber bots
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Large%20scale%20Jabber%20bots&In-Reply-To=%3CC96FB9D4-512E-11D5-8B8C-000A27946A32%40apple.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="066631.html">
+   <LINK REL="Next"  HREF="066627.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: Large scale Jabber bots</H1>
+    <B>Jens Alfke</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Large%20scale%20Jabber%20bots&In-Reply-To=%3CC96FB9D4-512E-11D5-8B8C-000A27946A32%40apple.com%3E"
+       TITLE="[JDEV] Re: Large scale Jabber bots">jens at mac.com
+       </A><BR>
+    <I>Fri May 25 11:55:45 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="066631.html">[JDEV] Request for comments on system using jabber
+</A></li>
+        <LI>Next message: <A HREF="066627.html">[JDEV] Re: Large scale Jabber bots
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66625">[ date ]</a>
+              <a href="thread.html#66625">[ thread ]</a>
+              <a href="subject.html#66625">[ subject ]</a>
+              <a href="author.html#66625">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>[I've retitled this thread...]
+
+On Friday, May 25, 2001, at 08:50 AM, David Waite wrote:
+
+&gt;<i> IMO, mailservers should break if you try to send to more than ~20 people
+</I>&gt;<i> at a time. Not crash, but refuse to send.
+</I>
+What, all mailservers?! What about the ones that run mailing lists or 
+[voluntary] announcements? I've been on music mailing lists with 
+thousands of subscribers, and I get very useful &quot;what's new&quot; mailings 
+from Amazon that must have tens of thousands of readers.
+
+&gt;<i> Jabber should probably work
+</I>&gt;<i> the same way in this case (200 users max in a roster or something
+</I>&gt;<i> configurable like that)
+</I>
+Why on earth should that be a requirement? First off, it penalizes 
+people for something that's not their fault. What happens when I can't 
+add a new buddy because I happen to be on 195 people's rosters already?
+
+Secondly, it ignores very useful aspects of Jabber for information 
+delivery. Stock price agents, auction agents, news agents, etc. Like I 
+said before, companies are slavering over the potential of this and 
+having a viable open IM network would make it much easier to do. These 
+things are not spam, they're voluntary since you have to subscribe to 
+them. And they could scale to zillions of users. Just read this article:
+
+<A HREF="http://biz.yahoo.com/prnews/010424/nytu114.html">http://biz.yahoo.com/prnews/010424/nytu114.html</A>
+&quot;Capitol Records and Radiohead Create First Instant Message 'Buddy' in 
+Music History&quot;
+&quot;... The Radiohead agent will reside on a user's Instant Messenger buddy 
+contact list. The agent will be able to recognize and respond to natural 
+language questions and requests for information about the band and 
+Amnesiac. Tour dates, song lists, artists' bios, album credits, 
+purchasing information, contact information, current web site 
+information, and other album related material will be available.&quot;
+
+So how many Radiohead fans do you think are going to subscribe to this 
+bot? What happens when ActiveBuddy builds ones for N'Sync or Eminem? Are 
+you saying this kind of thing is inherently wrong and should not be 
+supported?
+
+&gt;<i> Hypothetically, if you had a 10,000 user roster, that would generate
+</I>&gt;<i> about 5 MB of XML traffic through the server it was running on everytime
+</I>&gt;<i> the bot came online.
+</I>
+5MB is not really a lot of traffic for any site with a decent size pipe. 
+It won't be happening that often since bots by design tend to stay 
+online all the time.
+
+&gt;<i> Even if all of those users are on the same machine, that
+</I>&gt;<i> would be 10,000 user rosters it would have to load up via XDB and parsed
+</I>&gt;<i> (since the roster is also basically the presence ACL).
+</I>
+Yes, but you're talking about a machine hosting 10,000 users, which is 
+going to be hellaciously busy no matter what. Presumably if a user is 
+online their roster is already parsed, and if they're not online you 
+don't need to do anything (since presence packets are not 
+stored/forwarded.)
+
+&gt;<i> Now imagine this is a portal with a quarter of a million users, and the
+</I>&gt;<i> bot is added by default to everyone's roster. Not only would that roster
+</I>&gt;<i> be about 25MB, there would be at least a 35MB memory image for the DOM
+</I>&gt;<i> tree created.
+</I>
+Those numbers aren't specific to having a bot, only to the size of the 
+portal itself. It makes no difference whether all 250,000 users have the 
+same bot in their rosters, or if their rosters all have different jids 
+in them. In other words, you're saying that for a portal of this size, 
+there is an average 35MB memory hit per roster entry per user -- so if 
+the average portal user has 20 people in their roster, that's 700MB just 
+for rosters.
+
+(That's a scary number but on the other hand 700MB of RAM is chump 
+change for a company big enough to run a portal this size. Something 
+like $400? And anyway, wouldn't the load be spread across a whole farm 
+of servers, not just one?)
+
+If you're saying is that the present Jabber server is not scalable to 
+this size portal, that's sort of bad news for Jabber, it sounds like, 
+since no large scale provider would adopt it.
+
+In any case, this is a bogus scenario. Everyone seems to keep forgetting 
+that Jabber is supposed to be a distributed system; while there will be 
+large portals with large numbers of users, there will be large numbers 
+of smaller servers, as well as special purpose servers for bots. The 
+likely scenario is that a major bot would run on its own server (or 
+perhaps there would be a small number of bots) hosted by the company 
+that owns it. There would not be any appreciable number of actual users 
+on this server. So there's 25MB for the bot's roster; that's about $20 
+worth of RAM I think. The other side of the overhead is distributed 
+among the host servers of all the subscribers, and has the same effect 
+as of all the subscribers adding one more friend to their buddy list.
+
+&gt;<i> Moral of the story: if you try to solve every problem with a hammer and
+</I>&gt;<i> a crowbar, you just end up breaking a lot of things ;-)
+</I>
+To be blunt, the real &quot;hammer and crowbar&quot; here seems to be the server's 
+usage of in-memory DOM structures rather than some kind of actual 
+database engine. Commercial databases like Oracle have no problem with 
+the kinds of scale you're saying is impossible. (And for someone from 
+jabber.com to be saying this sort of thing is impractical is sort of 
+damning for the claims made about your server, btw.)
+
+&#8212;Jens
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: text/enriched
+Size: 5650 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010525/62ec2ddf/attachment-0002.bin">https://www.jabber.org/jdev/attachments/20010525/62ec2ddf/attachment-0002.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="066631.html">[JDEV] Request for comments on system using jabber
+</A></li>
+	<LI>Next message: <A HREF="066627.html">[JDEV] Re: Large scale Jabber bots
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66625">[ date ]</a>
+              <a href="thread.html#66625">[ thread ]</a>
+              <a href="subject.html#66625">[ subject ]</a>
+              <a href="author.html#66625">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Collaboration on BOSH servlet?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Collaboration%20on%20BOSH%20servlet%3F&In-Reply-To=%3C47854339.80608%40mortbay.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="056200.html">
+   <LINK REL="Next"  HREF="056204.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Collaboration on BOSH servlet?</H1>
+    <B>Greg Wilkins</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Collaboration%20on%20BOSH%20servlet%3F&In-Reply-To=%3C47854339.80608%40mortbay.com%3E"
+       TITLE="[jdev] Collaboration on BOSH servlet?">gregw at mortbay.com
+       </A><BR>
+    <I>Wed Jan  9 15:57:13 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="056200.html">[jdev] Collaboration on BOSH servlet?
+</A></li>
+        <LI>Next message: <A HREF="056204.html">[jdev] Collaboration on BOSH servlet?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#56202">[ date ]</a>
+              <a href="thread.html#56202">[ thread ]</a>
+              <a href="subject.html#56202">[ subject ]</a>
+              <a href="author.html#56202">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Stefan Strigler wrote:
+
+&gt;&gt;<i> What is the state of the art with regards to XMPP/BOSH servlets.
+</I>&gt;&gt;<i> Googling reveals a somewhat
+</I>&gt;&gt;<i> confused and perhaps dated picture?
+</I>&gt;<i> 
+</I>&gt;<i> AFAIK there's only my 'JabberHTTPBind' servlet. It's hosted at
+</I>&gt;<i> <A HREF="http://zeank.in-berlin.de/jhb/.">http://zeank.in-berlin.de/jhb/.</A> It implements most of the BOSH spec but
+</I>&gt;<i> not all IIRC. But I'm pretty sure it won't scale up to 20.000 users :D 
+</I>
+
+Hi Stefan,
+
+It's a pity that JabberHTTPBind is GPL, as I do most of my work under
+apache-2.0 and there are some issues mixing and matching.   So eventually
+it would be good to have an apache 2 licensed version of the same thing.
+
+However, I'd be happy to work with you to make JabberHTTPBind asynchronous
+(and thus scale better) while I get around to re-inventing the wheel under
+a different license (dang I hate legal stuff).
+
+The key thing to change with your servlet is the sess.sock.wait();
+waiting in servlets is expensive as it holds a thread, buffers and other
+resources.   The idea is to replace the wait with suspend/resume semantics.
+
+We have suspend/resume in Jetty now and there is a proposal to include
+it in Servlet 3.0.  Actually, it is probably worthwhile waiting a month
+so JSR-315 has time to make some progress in deciding if suspend/resume
+will be support... then you can move towards the future standard.
+
+My other concern with scalability is the use of a DocumentBuilder that
+will create lots of Dom objects on each and every request that will need
+to be garbage collected.  Specially as it looks like it may parse the
+message bodies as well, even though they are simply forwarded on.
+
+I think the creation of a special purpose parser that can go over
+&lt;body ...&gt;...&lt;/body&gt; and extract just the bits needed for the protocol
+would be well worth the effort.  Ideally this could work asynchronously
+on partial content.  Perhaps this is what I can start work on, because
+if I write this as apache-2 licensed, then you could use it (if you
+wanted to) in GPL code.
+
+cheers
+
+
+
+
+
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="056200.html">[jdev] Collaboration on BOSH servlet?
+</A></li>
+	<LI>Next message: <A HREF="056204.html">[jdev] Collaboration on BOSH servlet?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#56202">[ date ]</a>
+              <a href="thread.html#56202">[ thread ]</a>
+              <a href="subject.html#56202">[ subject ]</a>
+              <a href="author.html#56202">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

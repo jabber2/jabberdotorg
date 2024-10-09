@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] registering component with jabber server
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20registering%20component%20with%20jabber%20server&In-Reply-To=000a01c0c5f7%242c3775c0%240100a8c0%40tpsa.pl">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007183.html">
+   <LINK REL="Next"  HREF="007175.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] registering component with jabber server</H1>
+    <B>Schuyler Heath</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20registering%20component%20with%20jabber%20server&In-Reply-To=000a01c0c5f7%242c3775c0%240100a8c0%40tpsa.pl"
+       TITLE="[JDEV] registering component with jabber server">sheath at jabber.org
+       </A><BR>
+    <I>Sun Apr 15 17:42:13 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007183.html">[JDEV] registering component with jabber server
+</A></li>
+        <LI>Next message: <A HREF="007175.html">[JDEV] Net::Jabber problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7184">[ date ]</a>
+              <a href="thread.html#7184">[ thread ]</a>
+              <a href="subject.html#7184">[ subject ]</a>
+              <a href="author.html#7184">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>From looking at your debug output below it seems to me that it
+did work.
+
+&gt;<i> Sun Apr 15 22:53:21 2001  mio.c:698 MIO read from socket 12: &lt;?xml
+</I>&gt;<i> version=&quot;1.0&quot;
+</I>&gt;<i> ?&gt;&lt;stream:stream xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> id=&quot;1234&quot;
+</I>&gt;<i> xmlns
+</I>&gt;<i> =&quot;jabber:component:accept&quot; from=&quot;winauth&quot;&gt;
+</I>
+This is the header you wrote to base_accept.  Strictly speaking, it should be
+a to=&quot;winauth&quot; not from=&quot;&quot;, but it doesn't actually effect anything.
+
+&gt;<i> Sun Apr 15 22:53:21 2001  base_accept.c:100 process XML: m:80DEC68 state:2,
+</I>&gt;<i> arg:
+</I>&gt;<i> 8109A90, x:81F6178
+</I>&gt;<i> Sun Apr 15 22:53:21 2001  mio.c:908 mio_write called on x: 0 buffer:
+</I>&gt;<i> Sun Apr 15 22:53:21 2001  mio.c:268 write_dump writing data: &lt;?xml
+</I>&gt;<i> version='1.0'
+</I>&gt;<i> ?&gt;&lt;stream:stream xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>
+</I>&gt;<i> id='3ADA0A41' x
+</I>&gt;<i> mlns='jabber:component:accept' from='winauth'&gt;
+</I>
+Here is the header base_accept wrote back.  After you receive this,
+you need to start the handshake.  Take the id=&quot;&quot; attribute,
+in this case 3ADA0A41, and concatenate it with the password:
+3ADA0A41secret
+SHA it and send the result back to base_accept in a &lt;handshake/&gt; tag.
+
+base_accept only sends you a &lt;handshake/&gt; tag in acknowledgement to your &lt;handshake/&gt;
+with the hash, not before.
+
+Schuyler
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20010415/7000c1c2/attachment.pgp">https://www.jabber.org/jdev/attachments/20010415/7000c1c2/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007183.html">[JDEV] registering component with jabber server
+</A></li>
+	<LI>Next message: <A HREF="007175.html">[JDEV] Net::Jabber problem
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7184">[ date ]</a>
+              <a href="thread.html#7184">[ thread ]</a>
+              <a href="subject.html#7184">[ subject ]</a>
+              <a href="author.html#7184">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

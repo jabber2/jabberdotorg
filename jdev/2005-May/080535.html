@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Hints about the resolver
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Hints%20about%20the%20resolver&In-Reply-To=%3Cspamdrop%2Bm37jhwc1bh.fsf%40abbeden.bunk.cc%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="080523.html">
+   <LINK REL="Next"  HREF="080541.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Hints about the resolver</H1>
+    <B>Jacob Bunk Nielsen</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Hints%20about%20the%20resolver&In-Reply-To=%3Cspamdrop%2Bm37jhwc1bh.fsf%40abbeden.bunk.cc%3E"
+       TITLE="[jdev] Hints about the resolver">jbnliste at bunk.cc
+       </A><BR>
+    <I>Wed May 18 04:48:02 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="080523.html">[jdev] Hints about the resolver
+</A></li>
+        <LI>Next message: <A HREF="080541.html">[jdev] Re: Hints about the resolver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80535">[ date ]</a>
+              <a href="thread.html#80535">[ thread ]</a>
+              <a href="subject.html#80535">[ subject ]</a>
+              <a href="author.html#80535">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Ivan Santarelli &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ivan.santarelli at students.cefriel.it</A>&gt; writes:
+
+&gt;&gt;<i> Maybe you want to do that elsewhere, or maybe you even want to write
+</I>&gt;&gt;<i> your own component that can connect to the router and be default route
+</I>&gt;&gt;<i> before it sends stuff back to the s2s component?
+</I>&gt;<i>
+</I>&gt;<i> This seems to be interesting, do you know where can I find some
+</I>&gt;<i> documentation about writing components?
+</I>
+No, sorry.
+
+I'm writing something not too different from the s2s component, so I
+grabbed a copy of that, and stripped away all the code that wasn't
+used for communicating with the router component and started from
+there. It seems to work well for me so far.
+
+&gt;&gt;<i> If you explain a bit more about what you want to do the answers you
+</I>&gt;&gt;<i> get might be better.
+</I>&gt;&gt;<i> 
+</I>&gt;<i>
+</I>&gt;<i> The resolution must be take in mind the jid, not only the domain part. I
+</I>&gt;<i> thought it could be hacked in the s2s component, because the pkt
+</I>&gt;<i> structure defined in pkt.c has many fields like rto, rfrom, to and from.
+</I>&gt;<i> Unfortunally I saw that s2s.h redefined that structure and that only the
+</I>&gt;<i>  domain field is passed to s2s component.
+</I>
+It has:
+
+    jid_t      from;
+    jid_t      to;
+
+The problem is that from is set to be the server, e.g.
+jabber.example.com because route stanzas should bounce back to the
+server in case of an error. You probably want to and from from the
+message part of the nad.
+
+&gt;<i> Perhaps I can navigate through the nad to extract the to and from
+</I>&gt;<i> fields... going to investigate...
+</I>
+Yes you can. Get them from the message part of the nad by first
+finding the message element (with nad_find_elem()) and the finding the
+to and from attributes (with nad_find_attr()).
+
+-- 
+Jacob
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="080523.html">[jdev] Hints about the resolver
+</A></li>
+	<LI>Next message: <A HREF="080541.html">[jdev] Re: Hints about the resolver
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80535">[ date ]</a>
+              <a href="thread.html#80535">[ thread ]</a>
+              <a href="subject.html#80535">[ subject ]</a>
+              <a href="author.html#80535">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

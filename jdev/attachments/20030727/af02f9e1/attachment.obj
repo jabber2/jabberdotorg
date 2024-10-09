@@ -1,0 +1,13 @@
+--- cygwin/dnsrv/dnsrv.c	2002-02-07 23:39:20.000000000 -0800
++++ dnsrv/dnsrv.c	2003-07-27 20:05:42.000000000 -0700
+@@ -665,6 +665,10 @@
+      /* Start IO thread */
+      pth_spawn(PTH_ATTR_DEFAULT, dnsrv_process_io, di);
+ 
++     // XXX Give it time to start.  There's a race between dnsrv_process_io
++     // and the first dnsrv_deliver.  What's the pth way to do this right?
++     pth_sleep(1);
++
+      /* Register an incoming packet handler */
+      register_phandler(i, o_DELIVER, dnsrv_deliver, (void*)di);
+      /* register a cleanup function */

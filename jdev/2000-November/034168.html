@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Question...
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Question...&In-Reply-To=%3C20001127073517.A1370%40jabber.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034156.html">
+   <LINK REL="Next"  HREF="034179.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Question...</H1>
+    <B>Schuyler Heath</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Question...&In-Reply-To=%3C20001127073517.A1370%40jabber.org%3E"
+       TITLE="[JDEV] Question...">sheath at jabber.org
+       </A><BR>
+    <I>Mon Nov 27 08:35:17 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034156.html">[JDEV] Question...
+</A></li>
+        <LI>Next message: <A HREF="034179.html">[JDEV] Question...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34168">[ date ]</a>
+              <a href="thread.html#34168">[ thread ]</a>
+              <a href="subject.html#34168">[ subject ]</a>
+              <a href="author.html#34168">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+auth components are not written as xdb components, they are services or jsm
+modules.
+
+Here is what the configuration could look like:
+
+&lt;service id=&quot;perlauth&quot;&gt;
+  &lt;accept&gt;
+    &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+    &lt;port&gt;2233&lt;/ip&gt;
+    &lt;secret&gt;secret&lt;/secret&gt;
+  &lt;/accept&gt;
+&lt;/service&gt;
+
+There is no need to have a &lt;host/&gt;, auth packets will be routed to your component
+with the id.  You will also need to add this to your jsm config.
+
+&lt;service id=&quot;sessions&quot;&gt;
+...
+  &lt;jsm xmlns=&quot;jabber:jsm:config&quot;&gt;
+    ..
+    &lt;auth&gt;perlauth&lt;/auth&gt;
+  &lt;/jsm&gt;
+&lt;/service&gt;
+
+You then will receive the following when a user attempts to authenticate:
+
+&lt;route type='auth' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">2 at jpolld.localhost</A>/134566776' to='perlauth' oto='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test at localhost</A>'&gt;
+  &lt;iq type='set' id='0'&gt;
+    &lt;query xmlns='jabber:iq:auth'&gt;
+      &lt;username&gt;test&lt;/username&gt;
+      &lt;password&gt;foo&lt;/password&gt;
+      &lt;resource&gt;home&lt;/resource&gt;
+    &lt;/query&gt;
+  &lt;/iq&gt;
+&lt;/route&gt;
+
+A successful result would look like this:
+
+&lt;route type='auth' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">2 at jpolld.localhost</A>/134566776' from='perlauth' oto='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test at localhost</A>'&gt;
+  &lt;iq type=&quot;result&quot; id=&quot;0&quot;/&gt;
+&lt;/route&gt;
+
+Schuyler
+
+On Mon, Nov 27, 2000 at 06:35:58PM +0200, Dennis Noordsij wrote:
+&gt;<i> Hi,
+</I>&gt;<i> 
+</I>&gt;<i> I am a little stuck here :-)
+</I>&gt;<i> 
+</I>&gt;<i> I am trying to write a custom xdb auth module in Perl, and have it connect to 
+</I>&gt;<i> jabber via &lt;accept&gt;
+</I>&gt;<i> 
+</I>&gt;<i> My jabber.xml section:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;xdb id=&quot;auth.mydomain&quot;&gt;
+</I>&gt;<i>  &lt;ns&gt;jabber:iq:auth&lt;/ns&gt;
+</I>&gt;<i>  &lt;host/&gt;
+</I>&gt;<i>   &lt;accept&gt;
+</I>&gt;<i>    &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+</I>&gt;<i>    &lt;port&gt;2233&lt;/ip&gt;
+</I>&gt;<i>    &lt;secret&gt;secret&lt;/secret&gt;
+</I>&gt;<i>   &lt;/accept&gt;
+</I>&gt;<i> &lt;/xdb&gt;
+</I>&gt;<i> 
+</I>&gt;<i> I then write a small Perl script using Net::Jabber, connect to the Jabber 
+</I>&gt;<i> server using Net::Jabber::Component (which works, jabberd also reports the 
+</I>&gt;<i> connection, and from now on xdb requests are -according to jabberd -D output- 
+</I>&gt;<i> sent to both xdb_file and my auth.mydomain module.
+</I>&gt;<i> 
+</I>&gt;<i> I have registered an xdb callback in my perl script, and I do get an xdb 
+</I>&gt;<i> packet when I expect one (ie when someone logs in), but it is simply &lt;xdb/&gt; 
+</I>&gt;<i> .. no other information.
+</I>&gt;<i> 
+</I>&gt;<i> Is it because I am also still using xdb_file ? 
+</I>&gt;<i> 
+</I>&gt;<i> Gotta go now, but looking forward to any suggestions!!
+</I>&gt;<i> 
+</I>&gt;<i> Kind regards,
+</I>&gt;<i> Dennis
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034156.html">[JDEV] Question...
+</A></li>
+	<LI>Next message: <A HREF="034179.html">[JDEV] Question...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34168">[ date ]</a>
+              <a href="thread.html#34168">[ thread ]</a>
+              <a href="subject.html#34168">[ subject ]</a>
+              <a href="author.html#34168">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

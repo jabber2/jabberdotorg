@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] File transfers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfers&In-Reply-To=%3C06B823D16FE8C14DB1F06CCBE6A6F3D21517AF%40BELL.mimesweeper.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="071615.html">
+   <LINK REL="Next"  HREF="071618.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] File transfers</H1>
+    <B>Andy Beetz</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20File%20transfers&In-Reply-To=%3C06B823D16FE8C14DB1F06CCBE6A6F3D21517AF%40BELL.mimesweeper.com%3E"
+       TITLE="[JDEV] File transfers">andy.beetz at clearswift.com
+       </A><BR>
+    <I>Fri Jun  7 01:13:25 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="071615.html">[JDEV] Re: jdev digest, Vol 1 #1470 - 4 msgs
+</A></li>
+        <LI>Next message: <A HREF="071618.html">[JDEV] Possible Denial of Service in mio_ssl.c
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71617">[ date ]</a>
+              <a href="thread.html#71617">[ thread ]</a>
+              <a href="subject.html#71617">[ subject ]</a>
+              <a href="author.html#71617">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Quote &quot;I'm not sure I'd want to do anything to encourage this just so some
+client developer can be lazy about implementing things the right way.&quot;
+
+There is no right way. At least not yet. Client to client 'data' transfers
+are fine, no problem as long as a single or range of ports can be agreed
+upon. As long as everyone uses the same protocol again everything should be
+cool. Which I think it needs to be specced out.
+
+Standardizing a client port or ports and protocol would be beneficial to
+everyone.
+
+Corporate network admins, if company policy is to block data transfers into
+and out of the company, there is a nice and easy target for the firewall
+rules, the clients should not be able to bypass the firewall. If they want
+to do content filtering, there could be a component on the jabber server
+which intercepts the oob packet (if this were the way it was done), waits to
+see if the receiver wants to accept, if so download the file from the sender
+scan, and action as appropriate.
+
+Jabber Server Admins, there world obviously doesn't change much if at all.
+Clients will go direct no more traffic than normal.
+
+Client Developers, they would be happy (I'm sure) because their products
+will work together (without crashing each other), if the 'standard' is not
+ambiguous or open to interpretation.
+
+End users, they would surely get a system that is reliable, the lack of
+needing to worry what client their friend is using before sending or
+receiving some data. For corporate users, they would not be allowed to step
+outside the company policy (which could get them in trouble anyway). For
+home users, especially those behind NAT routers, they also benefit from the
+agreed ports, because it makes it very easy for them to have the
+file-sharing.
+
+How about this?
+
+
+-----Original Message-----
+From: Max Metral [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Max.Metral at peoplepchq.com</A>] 
+Sent: 07 June 2002 03:23
+To: '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>'
+Subject: RE: [JDEV] File transfers
+
+
+I don't understand the arbitrary port comment... They are arbitrary.
+Marshall and others picked em, and that was that.  When I hit the send
+button in my email client (Outlook) it connects to exchange on some god
+awful port with some god awful protocol that is most definitely not 110 and
+is most definitely not SMTP (SMTP is 25 by the way, not 110).  Now there's a
+connector that plugs into exchange and sends my message out to the
+appropriate SMTP server via port 25, but that has nothing to do with POP
+unless the other end HAPPENS to be using POP as the mailbox access
+mechanism.  That POP server on the other end in some ways acts as a client
+to the SMTP server, although not via networked protocols but via file system
+semantics or whatever the particular package has decided the right way to
+communicate between components is (e.g. on Win2k simple SMTP server, I would
+just look in the mailroot\Mailbox directory, or use the CDO &quot;client&quot; objects
+to access the mail store from a POP server I could write).
+
+POP, HTTP, SMTP and most modern protocols are really nothing special.  I
+could implement a POP &quot;server&quot; on my &quot;client machine&quot; pretty damn easily,
+and could pretty much reuse the same code for an HTTP &quot;server&quot; on my client.
+This would blur the lines in the case where, for example, I wrote a local
+POP proxy.  From the point of view of Outlook Express, my POP proxy is the
+server, but from the distant POP server it is the client. The fact that all
+of these protocols are text based, fixed command set protocols blurs the
+importance of clients and servers because of exactly what you say, that a
+client asks and a server answers.  This is not a component-wide or &quot;process&quot;
+wide distinction necessarily, it is a REQUEST wide decision, and any or all
+components can make requests of each other.  This is why it is generally a
+good idea to implement file transfer by having the client act like an HTTP
+&quot;server&quot;.  #1, it's easy, and #2, if it really IS a full blown web server
+(i.e. for a firewall workaround) everything still works just the same.
+
+This is all turning into a conceptual argument, and clearly you're not going
+for the analogy/metaphor, which is fine.  I can't speak for Mike, but I
+certainly don't need any lessons in Internet protocols, I've been here since
+there weren't any.  In one paragraph I think you're saying you want to make
+client-server into peer-to-peer/client-client.  If I'm understanding you
+right, I totally agree.  And what I understand that to mean is that these
+labels of distinction really aren't relevant.  So the question comes down to
+what components are well suited to doing what tasks.  The Jabber server is
+not well suited architecturally to act as a byte repeater for client
+non-messaging data transfer.  I'm not sure I'd want to do anything to
+encourage this just so some client developer can be lazy about implementing
+things the right way.  (Not to mention that this is actually complex to
+implement in ADDITION to a proper file transfer mechanism, and in the end
+costs our poor client developers more time, not less)
+
+I trust the maturity and experience of the members of this list to be able
+to understand conceptual discussions of this nature, this isn't developer
+school.  The original discussion was about whether the Jabber &quot;server&quot;
+should be used to shuttle packets on behalf of clients and whether that
+should be part of the protocol, at this point I'm confused reading your mail
+whether you advocate this or don't.  I'll be clear, I do not advocate
+creating protocol elements to allow the concept of a &quot;file&quot; to be routed,
+split, encoded, and reassembled by Jabber servers.  I advocate a mechanism
+for negotiating protocol based multi-party &quot;connections&quot; (i.e. clients
+providing endpoints) for things like file transfer, video conferencing,
+networked full-motion-video Parcheesi, and whatever the heck else the
+developer community thinks up.  Whatever mechanism is used should not use
+the words &quot;file transfer&quot; in anything but string literals in my opinion.
+
+
+---------------------------------------------------------------------------------------------------------------
+Clearswift monitors, controls and protects all its messaging traffic in 
+compliance with its corporate email policy using Clearswift products. 
+Find out more about Clearswift, its solutions and services at 
+www.clearswift.com.
+***********************************************************************************
+This communication is confidential and may contain privileged 
+information intended solely for the named addressee(s). It may not 
+be used or disclosed except for the purpose for which it has been 
+sent. If you are not the intended recipient, you must not copy, 
+distribute or take any action in reliance on it. Unless expressly stated, 
+opinions in this message are those of the individual sender and not of 
+Clearswift. If you have received this communication in error, please 
+notify Clearswift by emailing <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">support at clearswift.com</A> quoting the 
+sender and delete the message and any attached documents. Clearswift 
+accepts no liability or responsibility for any onward transmission or use of
+emails and attachments having left the Clearswift domain.
+
+This footnote confirms that this email message has been swept by 
+MIMEsweeper for Content Security threats, including computer viruses.
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="071615.html">[JDEV] Re: jdev digest, Vol 1 #1470 - 4 msgs
+</A></li>
+	<LI>Next message: <A HREF="071618.html">[JDEV] Possible Denial of Service in mio_ssl.c
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71617">[ date ]</a>
+              <a href="thread.html#71617">[ thread ]</a>
+              <a href="subject.html#71617">[ subject ]</a>
+              <a href="author.html#71617">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

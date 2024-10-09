@@ -1,0 +1,424 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] MUC problems
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20MUC%20problems&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C148002B9D3D6%40ossex1.corp.webb.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="074421.html">
+   <LINK REL="Next"  HREF="074420.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] MUC problems</H1>
+    <B>Constantin Nickonov</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20MUC%20problems&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C148002B9D3D6%40ossex1.corp.webb.net%3E"
+       TITLE="[JDEV] MUC problems">Nickonov at jabber.com
+       </A><BR>
+    <I>Fri Feb 14 09:26:05 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="074421.html">[JDEV] Re: MU-Conference changes
+</A></li>
+        <LI>Next message: <A HREF="074420.html">[JDEV] MUC problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74419">[ date ]</a>
+              <a href="thread.html#74419">[ thread ]</a>
+              <a href="subject.html#74419">[ subject ]</a>
+              <a href="author.html#74419">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>OK, I'll try one more time to make the point that SHA-hashes are useless and
+counter-productive...
+
+1. Useless
+
+If a room is not (semi)anonymous, participants have access -- via either
+browse or disco -- to the other participants' real JID's. So why not just
+use that to &quot;track&quot; nick changes? After all, the SHA-hash is a direct
+derivative of the JID.
+
+If a room is (semi)anonymous, noting the SHA-hash of an offensive person's
+JID doesn't do a whole lot of good -- not for the person doing the noting,
+and not for an administrator who receives the complaint. SHA-hashing is a
+one way street, so there's no good way to deduce the real JID and take
+action. Sending complaints through the service (like invites), however, is
+an option that allows the real JID to be added to the complaint (by the
+service) and passed on to the admin.
+
+2. Counter-productive
+
+If a room is (semi)anonymous, the SHA-hash reveals the identity of everyone.
+Sure, it doesn't give away their true JID so that people can send spam to
+them, etc. But it allows context to be established, where none is desired.
+The resource portion of a SHA-hashed version of a user's JID may be (unless
+you're concatenating the room JID to the user's JID prior to hashing) the
+same in every room, which opens a can of worms. Also, ordinary, non-abusive
+people cannot change their nicknames and avoid being tracked -- contrary to
+the definition of &quot;anonymous&quot;.
+
+If a room isn't (semi)anonymous, then... see section &quot;1. Useless&quot;.
+
+---
+
+There's nothing wrong with a MUC implementation supporting both disco and
+browse, even though the latter may be removed from the JEP at some point.
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: David Sutton [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber at dsutton.legend.uk.com</A>]
+</I>&gt;<i> Sent: Thursday, February 13, 2003 10:40 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: Re: [JDEV] MUC problems
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Hello all,
+</I>&gt;<i> 
+</I>&gt;<i>   I've spent some time thinking about this over the evening.
+</I>&gt;<i>   
+</I>&gt;<i> On Thu, Feb 13, 2003 at 03:01:33PM -0600, Peter Saint-Andre wrote:
+</I>&gt;<i> &gt; First of all, the question here is related more to browse 
+</I>&gt;<i> implementation
+</I>&gt;<i> &gt; than MUC implementation. Unfortunately, the browse 
+</I>&gt;<i> specification is not
+</I>&gt;<i> &gt; consistent with usage such as this:
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &lt;iq
+</I>&gt;<i> &gt;     type='result'
+</I>&gt;<i> &gt;     id='1011'
+</I>&gt;<i> &gt;     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">xxx at localhost</A>/coccinella'
+</I>&gt;<i> &gt;     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">girls at conference.localhost</A>'&gt;
+</I>&gt;<i> &gt;   &lt;conference xmlns='jabber:iq:browse' name='girls' type='public'&gt;
+</I>&gt;<i> &gt;     &lt;ns&gt;<A HREF="http://jabber.org/protocol/muc&lt;/ns">http://jabber.org/protocol/muc&lt;/ns</A>&gt;
+</I>&gt;<i> &gt;     &lt;user name='mats'
+</I>&gt;<i> &gt; 
+</I>&gt;<i> jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">girls at conference.localhost</A>/13c6a01dc31309e331c2b018640b9c
+</I>&gt;<i> 03b8534327'/&gt;
+</I>&gt;<i> &gt;   &lt;/conference&gt;
+</I>&gt;<i> &gt; &lt;/iq&gt;
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; The browse JEP (which is incomplete) does not seem to allow 
+</I>&gt;<i> &lt;conference/&gt;
+</I>&gt;<i> &gt; as a root element for the jabber:iq:browse namespace (there 
+</I>&gt;<i> is no DTD or
+</I>&gt;<i> &gt; schema so we can't be sure, but it appears that &lt;item/&gt; is the root
+</I>&gt;<i> &gt; element and as we know only one root element should be allowed). In
+</I>&gt;<i> &gt; addition, it does not define &lt;user/&gt; as a child element of the root
+</I>&gt;<i> &gt; element. So I would say that the above stanza is 
+</I>&gt;<i> questionable from the
+</I>&gt;<i> &gt; perspective of browse.
+</I>&gt;<i> &gt;
+</I>&gt;<i> I will review the browse and see if it is possible to return with a
+</I>&gt;<i> result which follows the meaning of the JEP. The existing method was
+</I>&gt;<i> used to provide compatability to the existing conference 
+</I>&gt;<i> system running
+</I>&gt;<i> on jabber.org.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Second, given the ambiguities involved in browse, it may behoove the
+</I>&gt;<i> &gt; author of JEP-0045 to remove all references to browse and 
+</I>&gt;<i> require support
+</I>&gt;<i> &gt; for disco only. However, I am loath to do so until disco 
+</I>&gt;<i> goes to Draft, so
+</I>&gt;<i> &gt; it is possible I will hold off on submitting JEP-0045 to 
+</I>&gt;<i> the Council until
+</I>&gt;<i> &gt; disco is advanced to Draft.
+</I>&gt;<i> &gt;
+</I>&gt;<i> Until the debate on browse reaches some stability, i've removed the
+</I>&gt;<i> browse code from the MU-Conference cvs. I've already heard from people
+</I>&gt;<i> who feel that it is a bad idea to remove browse, as it 
+</I>&gt;<i> already has place
+</I>&gt;<i> in many of the existing clients. Another expressed concern that disco
+</I>&gt;<i> made it more complicated to retrieve the data necessary. What I may do
+</I>&gt;<i> is make browse an optional extra which can be enabled or 
+</I>&gt;<i> disabled at the
+</I>&gt;<i> service admins choice. If I do this, then the SHA hash idea (for
+</I>&gt;<i> representing a users true jid, not roster entry) may also be 
+</I>&gt;<i> an option.
+</I>&gt;<i> I really perceive this being of use in certain situations, even if
+</I>&gt;<i> others may not yet.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Third, I would agree with Constantin that the hashed 
+</I>&gt;<i> resource in the 'jid'
+</I>&gt;<i> &gt; attribute in the stanza shown above is inconsistent with 
+</I>&gt;<i> the spirit of
+</I>&gt;<i> &gt; MUC. Note example 10 in version 1.3 of JEP-0045:
+</I>&gt;<i> &gt;
+</I>&gt;<i> I think that the issue is being slightly missed here. the response to
+</I>&gt;<i> disco#items already does report in the syntax given below. The current
+</I>&gt;<i> debate about SHA hash jids is in relation to browsing for a users real
+</I>&gt;<i> jid, not for a room roster. I had already rewritten browse (and disco
+</I>&gt;<i> iirc) so that for the room listings, it reported them in the format
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">roomname at service</A>/nick. Only browsing a user for their true jid in 
+</I>&gt;<i> semi-anonymous rooms returned a hash, to provide a form of
+</I>&gt;<i> accountability. Does this make the point I am trying to make clearer?
+</I>&gt;<i> 
+</I>&gt;<i> On the issue of disco, I also recall a debate going on 
+</I>&gt;<i> because the exact
+</I>&gt;<i> details of what items were to be returned was not defined. There are
+</I>&gt;<i> several possibilities, such as room roster, member list, 
+</I>&gt;<i> moderator list,
+</I>&gt;<i> admin list and so on. Was a decision made on which data should be
+</I>&gt;<i> returned, and if there was a way to return any of the other 
+</I>&gt;<i> information
+</I>&gt;<i> via the disco interface?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Example 10. Room Returns Disco Item Results (Items are Public)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &lt;iq 
+</I>&gt;<i> &gt;     type='result'
+</I>&gt;<i> &gt;     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>'
+</I>&gt;<i> &gt;     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+</I>&gt;<i> &gt;     id='disco4'&gt;
+</I>&gt;<i> &gt;   &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#items'">http://jabber.org/protocol/disco#items'</A>&gt;
+</I>&gt;<i> &gt;     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/firstwitch'/&gt;
+</I>&gt;<i> &gt;     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>/secondwitch'/&gt;
+</I>&gt;<i> &gt;   &lt;/query&gt;
+</I>&gt;<i> &gt; &lt;/iq&gt;
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; In this instance, the user information is public and the 
+</I>&gt;<i> implementation
+</I>&gt;<i> &gt; returns each user's room JID (not a hash).
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; If user information is *not* public, then the 
+</I>&gt;<i> implementation SHOULD return
+</I>&gt;<i> &gt; empty results, not hashed information, as in Example 11:
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Example 11. Room Returns Empty Disco Item Results (Items 
+</I>&gt;<i> are Private)
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &lt;iq 
+</I>&gt;<i> &gt;     type='result'
+</I>&gt;<i> &gt;     from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">darkcave at macbeth.shakespeare.lit</A>'
+</I>&gt;<i> &gt;     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hag66 at shakespeare.lit</A>/pda'
+</I>&gt;<i> &gt;     id='disco4'&gt;
+</I>&gt;<i> &gt;   &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#items'/">http://jabber.org/protocol/disco#items'/</A>&gt;
+</I>&gt;<i> &gt; &lt;/iq&gt;
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; Or at least so it seems to me. Thoughts?
+</I>&gt;<i> &gt; 
+</I>&gt;<i> Disco returning an empty list makes sense, although it was this that
+</I>&gt;<i> reminded me of the point I made above regarding different lists.
+</I>&gt;<i> 
+</I>&gt;<i> Hope this makes my point a little clearer.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Peter
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; --
+</I>&gt;<i> &gt; Peter Saint-Andre
+</I>&gt;<i> &gt; Jabber Software Foundation
+</I>&gt;<i> &gt; <A HREF="http://www.jabber.org/people/stpeter.php">http://www.jabber.org/people/stpeter.php</A>
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; On Tue, 11 Feb 2003, Constantin Nickonov wrote:
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &gt; I understand what you're trying to do. The problem is 
+</I>&gt;<i> that your methods
+</I>&gt;<i> &gt; &gt; conflict with the intent of JEP-0045, which will 
+</I>&gt;<i> eventually result in
+</I>&gt;<i> &gt; &gt; fragmentation of the standard, i.e., when two or more 
+</I>&gt;<i> implementations of MUC
+</I>&gt;<i> &gt; &gt; accomplish the same thing in incompatible ways. Perhaps 
+</I>&gt;<i> the JEP should be
+</I>&gt;<i> &gt; &gt; more specific when it comes to laying out the 'jabber:iq:browse'
+</I>&gt;<i> &gt; &gt; capabilities (which are being phased out in favor of 
+</I>&gt;<i> disco), but it seems to
+</I>&gt;<i> &gt; &gt; me the re-introduction of SHA-hashing for this purpose is 
+</I>&gt;<i> not a good thing.
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; Sure, you can talk about race conditions, like when I 
+</I>&gt;<i> browse to get a list
+</I>&gt;<i> &gt; &gt; of users and one of them chooses that moment to change 
+</I>&gt;<i> his nick, making my
+</I>&gt;<i> &gt; &gt; subsequent user-level browse requests invalid. But why 
+</I>&gt;<i> not just return the
+</I>&gt;<i> &gt; &gt; real JID (if it's allowed by the room) in the room-level 
+</I>&gt;<i> browse result?
+</I>&gt;<i> &gt; &gt; Something like this:
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; SENT: &lt;iq type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">room at muc.server</A>'&gt;
+</I>&gt;<i> &gt; &gt;         &lt;query xmlns='jabber:iq:browse'/&gt;
+</I>&gt;<i> &gt; &gt;       &lt;/iq&gt;
+</I>&gt;<i> &gt; &gt; READ: &lt;iq type='result' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/resource' 
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">room at muc.server</A>'&gt;
+</I>&gt;<i> &gt; &gt;         &lt;conference xmlns='jabber:iq:browse' name='room' 
+</I>&gt;<i> type='public'&gt;
+</I>&gt;<i> &gt; &gt;           &lt;ns&gt;<A HREF="http://jabber.org/protocol/muc&lt;/ns">http://jabber.org/protocol/muc&lt;/ns</A>&gt;
+</I>&gt;<i> &gt; &gt;           &lt;user name='nick1' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user2 at server</A>/resource'/&gt;
+</I>&gt;<i> &gt; &gt;         &lt;/conference&gt;
+</I>&gt;<i> &gt; &gt;       &lt;/iq&gt;
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; In the case of an anonymous room, the 'jid' attribute 
+</I>&gt;<i> could be omitted (or
+</I>&gt;<i> &gt; &gt; contain the in-room JID for that user, i.e., 
+</I>&gt;<i> '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">room at muc.server</A>/nick2').
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; -----Original Message-----
+</I>&gt;<i> &gt; &gt; &gt; From: David Sutton [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber at dsutton.legend.uk.com</A>]
+</I>&gt;<i> &gt; &gt; &gt; Sent: Tuesday, February 11, 2003 8:59 AM
+</I>&gt;<i> &gt; &gt; &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt; Subject: Re: [JDEV] MUC problems
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; Hello there,
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt;   We are both correct in this situation. The JEP does define 
+</I>&gt;<i> &gt; &gt; &gt; how the jid
+</I>&gt;<i> &gt; &gt; &gt;   is to be handled for a presence packet, and 
+</I>&gt;<i> MU-Conference follows
+</I>&gt;<i> &gt; &gt; &gt;   that. You will never see the SHA1 string in a 
+</I>&gt;<i> presence packet. 
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt;   On the other hand, the system of using an iq request, xmlns
+</I>&gt;<i> &gt; &gt; &gt;   jabber:iq:browse, to discover the room roster is not 
+</I>&gt;<i> covered by the 
+</I>&gt;<i> &gt; &gt; &gt;   JEP. In order to maintain sanity, I have opted to 
+</I>&gt;<i> continue using the
+</I>&gt;<i> &gt; &gt; &gt;   existing methods. If you require to see the real jid, 
+</I>&gt;<i> and you are
+</I>&gt;<i> &gt; &gt; &gt;   allowed, then browsing the SHA1 resource will reveal 
+</I>&gt;<i> the true jid. I
+</I>&gt;<i> &gt; &gt; &gt;   have to use the sha1, since it allows you to track 
+</I>&gt;<i> the user more
+</I>&gt;<i> &gt; &gt; &gt;   consistantly - as I tried to explain before, I could use
+</I>&gt;<i> &gt; &gt; &gt;   '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">girls at conference.localhost</A>/NICK' for the nickname reported 
+</I>&gt;<i> &gt; &gt; &gt; by browse,
+</I>&gt;<i> &gt; &gt; &gt;   the problem is that if users swap nicknames, I have no way 
+</I>&gt;<i> &gt; &gt; &gt; of knowing
+</I>&gt;<i> &gt; &gt; &gt;   that is what happened. The SHA1 string is unique to that user.
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; Regards,
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt;   David
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; On Tue, Feb 11, 2003 at 08:12:16AM -0700, Constantin 
+</I>&gt;<i> Nickonov wrote:
+</I>&gt;<i> &gt; &gt; &gt; &gt; see below
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; -----Original Message-----
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; From: David Sutton [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber at dsutton.legend.uk.com</A>]
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; Sent: Monday, February 10, 2003 8:51 PM
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; Subject: Re: [JDEV] MUC problems
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &lt;snip&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; The hex string is actually a SHA1 hash of the users real 
+</I>&gt;<i> &gt; &gt; &gt; jid. Its used
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; to reference a user, but not reveal the true jid. 
+</I>&gt;<i> If the room 
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; is set up to allow people to see the real jid, then 
+</I>&gt;<i> just browse
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">girls at conference.localhost</A>/13c6a01dc31309e331c2b018640b9c03b85
+</I>&gt;<i> &gt; &gt; &gt; 34327 and
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; it will show you the true jid. This also helps to keep 
+</I>&gt;<i> &gt; &gt; &gt; compatability to
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; existing clients that are used to this form with the
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; groupchat/conferencing module. The real jid is used as 
+</I>&gt;<i> &gt; &gt; &gt; the reference, as
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; a person can keep changing their nick throughout a 
+</I>&gt;<i> &gt; &gt; &gt; session, but they
+</I>&gt;<i> &gt; &gt; &gt; &gt; &gt; can't change their real jid
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; The problem with this is that the MUC standard (JEP-0045) 
+</I>&gt;<i> &gt; &gt; &gt; specifies how
+</I>&gt;<i> &gt; &gt; &gt; &gt; nicknames are passed along with presence information, and 
+</I>&gt;<i> &gt; &gt; &gt; how they are
+</I>&gt;<i> &gt; &gt; &gt; &gt; changed -- and SHA-hashing isn't the way.
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; Entering a room (JEP-0045, section 6.2):
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt;   SENT: &lt;presence to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at muc.server</A>/nick1'&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;           &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc'/">http://jabber.org/protocol/muc'/</A>&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;         &lt;/presence&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;   READ: &lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at muc.server</A>/nick1' 
+</I>&gt;<i> &gt; &gt; &gt; to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/resource'&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;           &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;             &lt;item affiliation='owner' 
+</I>&gt;<i> jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/resource'
+</I>&gt;<i> &gt; &gt; &gt; &gt; role='moderator'/&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;           &lt;/x&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;         &lt;/presence&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; Changing the nick (JEP-0045, section 6.4):
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt;   SENT: &lt;presence to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at muc.server</A>/nick2'/&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;   READ: &lt;presence type='unavailable' 
+</I>&gt;<i> from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at muc.server</A>/nick1'
+</I>&gt;<i> &gt; &gt; &gt; &gt; to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/resource'&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;           &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;             &lt;item nick='nick2' affiliation='owner'
+</I>&gt;<i> &gt; &gt; &gt; &gt; jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/resource' role='moderator'/&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;             &lt;status code='303'/&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;           &lt;/x&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;         &lt;/presence&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;         &lt;presence from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at muc.server</A>/nick2' 
+</I>&gt;<i> &gt; &gt; &gt; to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/resource'&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;           &lt;x xmlns='<A HREF="http://jabber.org/protocol/muc#user'">http://jabber.org/protocol/muc#user'</A>&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;             &lt;item affiliation='owner' 
+</I>&gt;<i> jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/resource'
+</I>&gt;<i> &gt; &gt; &gt; &gt; role='moderator'/&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;           &lt;/x&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt;         &lt;/presence&gt;
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; The MUC protocol wasn't designed to be fully 
+</I>&gt;<i> &gt; &gt; &gt; backward-compatible with the
+</I>&gt;<i> &gt; &gt; &gt; &gt; JCF draft.
+</I>&gt;<i> &gt; &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; &gt; Constantin
+</I>&gt;<i> &gt; &gt; &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; &gt; -- 
+</I>&gt;<i> &gt; &gt; &gt; David Sutton
+</I>&gt;<i> &gt; &gt; &gt; Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dsutton at legend.co.uk</A>
+</I>&gt;<i> &gt; &gt; &gt; Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">peregrine at legend.net.uk</A>
+</I>&gt;<i> &gt; &gt; &gt; 
+</I>&gt;<i> &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> -- 
+</I>&gt;<i> David Sutton
+</I>&gt;<i> Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dsutton at legend.co.uk</A>
+</I>&gt;<i> Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">peregrine at legend.net.uk</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="074421.html">[JDEV] Re: MU-Conference changes
+</A></li>
+	<LI>Next message: <A HREF="074420.html">[JDEV] MUC problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74419">[ date ]</a>
+              <a href="thread.html#74419">[ thread ]</a>
+              <a href="subject.html#74419">[ subject ]</a>
+              <a href="author.html#74419">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

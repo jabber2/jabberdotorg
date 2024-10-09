@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] performance numbers.. questions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20performance%20numbers..%20questions&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007609.html">
+   <LINK REL="Next"  HREF="007900.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] performance numbers.. questions</H1>
+    <B>Dustin Puryear</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20performance%20numbers..%20questions&In-Reply-To="
+       TITLE="[JDEV] performance numbers.. questions">dpuryear at usa.net
+       </A><BR>
+    <I>Thu May 10 09:18:46 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007609.html">[JDEV] performance numbers.. questions
+</A></li>
+        <LI>Next message: <A HREF="007900.html">[JDEV] [jadmin] performance numbers.. questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7624">[ date ]</a>
+              <a href="thread.html#7624">[ thread ]</a>
+              <a href="subject.html#7624">[ subject ]</a>
+              <a href="author.html#7624">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Oliver Jones wrote:
+&gt;<i> If I understand you, the sequence of events is this, for each user:
+</I>&gt;<i> 
+</I>&gt;<i> a. connect
+</I>&gt;<i> b. log in.
+</I>&gt;<i> c. send x messages as fast as possible.
+</I>&gt;<i> d. stay connected, but stop sending messages.
+</I>
+Yes.
+
+&gt;<i> When you run the test, you run these steps for each virtual user in
+</I>&gt;<i> turn.  Right?
+</I>
+Yes.
+
+&gt;<i> Some questions about your test sequence:
+</I>&gt;<i> --Does the log-in step also create an account for the virtual user?
+</I>
+No. I built a tool named reg_users that creates users test_0..test_n-1.
+I didn't want to build account creation code into each test module.
+reg_users would be another good place to time jabberd. Specifically, how
+fast can new users be created?
+
+&gt;<i> --What kind of authentication are you using?
+</I>
+Plaintext. However, I could easily extend the test clients to use one of
+several methods.
+
+&gt;<i> --To what user do the x messages get sent?
+</I>
+Self. 
+
+&gt;<i> --Is the recipient online or are the messages getting stashed in jspool?
+</I>
+Online. Again, I could easily extend the test client to NOT set presence
+information, which would cause jabberd to store messages offline.
+
+&gt;<i> --Does the volume of the x messages sent cross the karma threshold?
+</I>
+I have disabled (or tried to) karma in jabber.xml and rate-limiting in
+jabberd/lib/rate.c. Naturally, you could alter jabber.xml and note
+differences in the numbers returned (min-message-delivery,
+max-message-delivery, average-message-delivery, and
+total-message-delivery).
+
+&gt;<i> You proposed this scenario:
+</I>&gt;<i> 
+</I>&gt;<i> &gt;for user 1..n do
+</I>&gt;<i> &gt;   connect user to jabber
+</I>&gt;<i> &gt;   send x messages and track delivery times
+</I>&gt;<i> &gt;done
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;for user 1..n do
+</I>&gt;<i> &gt;   disconnect user from jabber
+</I>&gt;<i> &gt;done
+</I>&gt;<i> 
+</I>&gt;<i> I'd like to see tests that figure out the load that comes on when many
+</I>&gt;<i> users connect and authenticate at once.  The question to ask might be,
+</I>
+Easily accomplished. Simply run multiple instances of the test client
+concurrently! You can then merge the client output, and naturally you
+still only need a single set of server performance numbers. I have
+considered creating a network heartbeat so that my clients can sync up
+when running multiple instances concurrently, but I don't think that's
+really required at this point. Plus, if you want to max out jabberd then
+the network heartbeat would have to be *fast*, and that would introduce
+network issues that may alter your results. 
+
+By using the UNIX join tool you can just graft the output files together
+and the graphs come out nice.
+
+&gt;<i>   -- when 500 users are already connected to jabber but not doing much,
+</I>&gt;<i>      how many new user connections can jabber accept each second?
+</I>
+Good question.
+
+&gt;<i> A subsidiary question might be how the choice of authentication method
+</I>&gt;<i> affects this, and how the choice of xdb_file or other jspool module affects it.
+</I>
+Another good question. The authentication method was addressed above. As
+far as xdb_file and jspool, that is simply a matter of the client NOT
+setting presence, and forcing jabberd to store offline messages. I
+suppose I could create a  command-line flag to specify presence
+information.
+
+&gt;<i> Another subsidiary question might be how many NEW user accounts can be
+</I>&gt;<i> created in a second.
+</I>
+Refer to reg_users.
+
+&gt;<i> I'd like to see tests that figure out the load that comes on when many
+</I>&gt;<i> connected users send lots of messages.  The question to ask might be,
+</I>&gt;<i> 
+</I>&gt;<i>    -- when 1000 users are already connected, how many messages a second
+</I>&gt;<i>        can each user send to some other user -- what's the message throughput?
+</I>
+Good test. To me this is partially addressed by active_jab already. The
+real issue is how many concurrent users can send messages, and at what
+rate? This can be tested using multiple instances of active_jab, but at
+some point that may become a hassle. Ideas are welcome.
+
+&gt;<i> &gt;CPU=======
+</I>&gt;<i> &gt;Big surprise here. Jabber seems to *quickly* begin eating CPU cycles as
+</I>&gt;<i> &gt;the number of connected users increases. Here is some data:
+</I>&gt;<i> 
+</I>&gt;<i> Our jabberd and jpollds take very little CPU time, but our users stay
+</I>&gt;<i> connected for long periods and typically don't send huge numbers of
+</I>&gt;<i> messages -- dozens a day.
+</I>&gt;<i> 
+</I>&gt;<i> Your high CPU usage may be due to overhead on new connections, or overhead
+</I>&gt;<i> on karma-throttling virtual users who are sending big bursts of data.
+</I>
+I am pretty sure karma should NOT be affecting my test as I have &lt;dec&gt;
+and &lt;penalty&gt; set to 0. I may be wrong though.
+
+So, the following tests are in order:
+1 logon times based on authentication method
+2 message delivery times for 1 user
+3 message delivery times for n users
+
+Any other tests?
+
+2 and 3 differ in that 2 will test how fast I can pump messages across
+jabberd period. Test 3 will test how fast I can pump messages for n
+concurrent users. This differs from active_jab since active_jab connects
+and test user message delivery in a serial fashion. Test 3 may be a bit
+more work.
+
+Naturally, what test I create will depend on what numbers my work needs.
+However, I absolutely welcome additions to my code and test modules.
+
+Regards, Dustin
+
+-- 
+Dustin Puryear &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dpuryear at usa.net</A>&gt;
+<A HREF="http://members.telocity.com/~dpuryear">http://members.telocity.com/~dpuryear</A>
+In the beginning the Universe was created. 
+This has been widely regarded as a bad move. - Douglas Adams
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007609.html">[JDEV] performance numbers.. questions
+</A></li>
+	<LI>Next message: <A HREF="007900.html">[JDEV] [jadmin] performance numbers.. questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7624">[ date ]</a>
+              <a href="thread.html#7624">[ thread ]</a>
+              <a href="subject.html#7624">[ subject ]</a>
+              <a href="author.html#7624">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [help] socket write failing...server is accepting connection now!
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5Bhelp%5D%20socket%20write%20failing...server%20is%20accepting%20connection%20now%21&In-Reply-To=%3C200105090108.SAA01525%40scaup.mail.pas.earthlink.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="066153.html">
+   <LINK REL="Next"  HREF="066155.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [help] socket write failing...server is accepting connection now!</H1>
+    <B>Stephane Lunati</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5Bhelp%5D%20socket%20write%20failing...server%20is%20accepting%20connection%20now%21&In-Reply-To=%3C200105090108.SAA01525%40scaup.mail.pas.earthlink.net%3E"
+       TITLE="[JDEV] [help] socket write failing...server is accepting connection now!">slunati at earthlink.net
+       </A><BR>
+    <I>Tue May  8 18:04:20 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="066153.html">[JDEV] Re: foundation meeting
+</A></li>
+        <LI>Next message: <A HREF="066155.html">[JDEV] how can i download groupchat?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66154">[ date ]</a>
+              <a href="thread.html#66154">[ thread ]</a>
+              <a href="subject.html#66154">[ subject ]</a>
+              <a href="author.html#66154">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi again!
+I investigate a little bit further my problem where the server was dying while client were sending an authentification.
+It seems that the problem is linked to the pthlib and in fact when jabber try to write the outcoming response to the newly authenticated client, the mio thread is still processing the different socket. So it means that  in _mio_main jabber is not waiting at :
+retval = pth_select_ev(maxfd+1, &amp;rfds, &amp;wfds, NULL, NULL, wevt);
+
+but still working in the loop ;
+for(cur = mio__data-&gt;master__list; cur != NULL;) ...
+
+My first workaround was to put add a pthsleep() before doing a pth_raise(). And it seems to works a lot better; but still crashing apparently while sending some packet to users.jabber.org (why by the way)?
+
+Anyway how can I solve the problem where the pth_raise() to write informatoin to the socket happen before the mio_main is waiting for an event?? 
+
+Thanks for any help!
+
+Stephane
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="066153.html">[JDEV] Re: foundation meeting
+</A></li>
+	<LI>Next message: <A HREF="066155.html">[JDEV] how can i download groupchat?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66154">[ date ]</a>
+              <a href="thread.html#66154">[ thread ]</a>
+              <a href="subject.html#66154">[ subject ]</a>
+              <a href="author.html#66154">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

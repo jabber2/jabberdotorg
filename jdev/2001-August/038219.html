@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jsm mod_example entry point question
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jsm%20mod_example%20entry%20point%20question&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C1480031AC7B1%40ossex1.webb.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="038265.html">
+   <LINK REL="Next"  HREF="038220.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jsm mod_example entry point question</H1>
+    <B>Michael Bauer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jsm%20mod_example%20entry%20point%20question&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C1480031AC7B1%40ossex1.webb.net%3E"
+       TITLE="[JDEV] jsm mod_example entry point question">bauer at jabber.com
+       </A><BR>
+    <I>Thu Aug  2 11:11:13 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="038265.html">[JDEV] Changes to server code
+</A></li>
+        <LI>Next message: <A HREF="038220.html">[JDEV] Sparse considerations about server status
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38219">[ date ]</a>
+              <a href="thread.html#38219">[ thread ]</a>
+              <a href="subject.html#38219">[ subject ]</a>
+              <a href="author.html#38219">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Anyone done anything with Jabber and Video?
+
+-----Original Message-----
+From: Alexander N. Spitzer [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aspitzer at 3plex.com</A>]
+Sent: Thursday, August 02, 2001 9:33 AM
+To: Thomas Charron
+Cc: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] jsm mod_example entry point question
+
+
+thanks a lot!!!! I looked at the bunch of the documentation on jabber.org,
+but most of it was long winded, and useless...
+
+Great, thanks again!!!
+
+
+					-alex
+
+-----------------------------------------------------------------
+Alexander N. Spitzer			Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aspitzer at 3plex.com</A>
+Unix Systems Engineer			Phone: 617.349.9361
+<A HREF="http://www.3plex.com">http://www.3plex.com</A>			eFax : 509.752.4680
+
+On Thu, 2 Aug 2001, Thomas Charron wrote:
+
+&gt;<i> Quoting &quot;Alexander N. Spitzer&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aspitzer at 3plex.com</A>&gt;:
+</I>&gt;<i> &gt; void mod_transcript(jsmi si)
+</I>&gt;<i> &gt; {
+</I>&gt;<i> &gt;   printf(&quot;----&gt; TEST: in mod_transcript\n&quot;);
+</I>&gt;<i> &gt;   js_mapi_register(si,e_SERVER,mod_transcript_server,NULL);
+</I>&gt;<i> &gt; }
+</I>&gt;<i> &gt; QUESTION:
+</I>&gt;<i> &gt; How do I get it so that mod_transcript is instantiated upon all
+</I>&gt;<i> &gt; message
+</I>&gt;<i> &gt; arrivals... I thought (and CLEARLY I AM WRONG) that all messages pass
+</I>&gt;<i> &gt; through all the jsm modules, and each module decides whether or not to
+</I>&gt;<i> &gt; act
+</I>&gt;<i> &gt; on it... This does not appear to be the case, because I never see
+</I>&gt;<i> &gt; &quot;----&gt; TEST: in mod_transcript_server&quot; in any transactions...
+</I>&gt;<i> &gt; What do I have to do to register mod_transcript with all traffic (or
+</I>&gt;<i> &gt; at
+</I>&gt;<i> &gt; least &quot;chat&quot; traffic?)
+</I>&gt;<i>
+</I>&gt;<i>   Registering with e_SERVER will mean you will only get messages
+</I>specifically
+&gt;<i> targeted AT the server, aka, jabber.org/something, or just plain
+</I>jabber.org.
+&gt;<i> To test it, go ahead and send a message to yourserver/something, and sure
+</I>&gt;<i> enough, you'll see it.  I belive, IIRC, that two others are needed to do
+</I>what
+&gt;<i> you need to do:
+</I>&gt;<i>
+</I>&gt;<i>     js_mapi_register(si,e_DELIVER, mod_filter_handler, NULL);
+</I>&gt;<i>
+</I>&gt;<i>   Will be called before message delivery (Incoming)
+</I>&gt;<i>
+</I>&gt;<i>     js_mapi_register(si,e_OFFLINE, mod_filter_handler, NULL);
+</I>&gt;<i>
+</I>&gt;<i>   Will be called when user is offline.  Offline equiv to e_DELIVER
+</I>(Incoming)
+&gt;<i>
+</I>&gt;<i>     js_mapi_register(si,e_SESSION, mod_filter_session, NULL);
+</I>&gt;<i>
+</I>&gt;<i>   Will be called when logical sessions are created.  In this case,
+</I>mod_filter
+&gt;<i> session then does this:
+</I>&gt;<i>
+</I>&gt;<i>     js_mapi_session(es_OUT,m-&gt;s,mod_filter_out,NULL);
+</I>&gt;<i>
+</I>&gt;<i>   This will then call the mod_filter_out function when that session sends
+</I>an
+&gt;<i> outgoing message.
+</I>&gt;<i>
+</I>&gt;<i>   These examples are taken from mod_filter, simply becouse its the first
+</I>one I
+&gt;<i> saw that I knew related to your question.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> ---
+</I>&gt;<i> Thomas Charron
+</I>&gt;<i> &lt;&lt; Wanted: One decent sig &gt;&gt;
+</I>&gt;<i> &lt;&lt; Preferably litle used  &gt;&gt;
+</I>&gt;<i>
+</I>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="038265.html">[JDEV] Changes to server code
+</A></li>
+	<LI>Next message: <A HREF="038220.html">[JDEV] Sparse considerations about server status
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38219">[ date ]</a>
+              <a href="thread.html#38219">[ thread ]</a>
+              <a href="subject.html#38219">[ subject ]</a>
+              <a href="author.html#38219">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

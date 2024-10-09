@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] gmainloop and listening on a port
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20gmainloop%20and%20listening%20on%20a%20port&In-Reply-To=%3C004801c5976a%2418468710%246501a8c0%40tim%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="051671.html">
+   <LINK REL="Next"  HREF="051673.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] gmainloop and listening on a port</H1>
+    <B>Tim Fulcher - Clickatell</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20gmainloop%20and%20listening%20on%20a%20port&In-Reply-To=%3C004801c5976a%2418468710%246501a8c0%40tim%3E"
+       TITLE="[jdev] gmainloop and listening on a port">tim.fulcher at clickatell.com
+       </A><BR>
+    <I>Tue Aug  2 08:57:17 CDT 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="051671.html">[jdev] ejabberd 0.9.8 released
+</A></li>
+        <LI>Next message: <A HREF="051673.html">[jdev] gmainloop and listening on a port
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51672">[ date ]</a>
+              <a href="thread.html#51672">[ thread ]</a>
+              <a href="subject.html#51672">[ subject ]</a>
+              <a href="author.html#51672">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all
+ 
+I've been at this a few days now and getting frustrated with gmainloop.
+I'm by no means an gcc expert but I'm trying to integrate a socket
+listener into a component that I've hacked out of yahoo-transport. This
+component needs to perform an http post (which I've gotten right using
+Curl) and needs to listen on an another port for a callback.
+ 
+Much googling and I managed to get an app that would listen going using
+gmainloop and g_io_add_watch, but when this app was intgrated into my
+hacked main() of yahoo-transport it would either post or listen but not
+both.
+ 
+Here's the abridged main() code:
+ 
+int main(int argc, char *argv[]) {
+  extern char *optarg;
+  extern int optind, opterr, optopt;
+  int inBackground = 0;
+  int rc, pid, c, childpid;
+  int message_mask_set = 0;
+  int message_stderr_set = 0;
+  int fd = 0, fdlimit = 0;
+  struct sigaction act;
+  FILE *pid_stream;
+  struct stat st;
+  char *config_file = NULL;
+  pool p;
+  GMainLoop     *gmain;   /* the receive packet event loop */
+    
+  jcr = (jcr_instance)malloc(sizeof(_jcr_instance));
+ 
+  g_thread_init(NULL);
+  
+  ///////////////////////////////////////
+    //Lots of stuff cut out here//
+    ///////////////////////////////////////
+ 
+  sigemptyset(&amp;act.sa_mask);
+  sigaddset(&amp;act.sa_mask, SIGTERM);
+  sigaddset(&amp;act.sa_mask, SIGINT);
+  sigaddset(&amp;act.sa_mask, SIGKILL);
+  act.sa_handler = jcr_server_shutdown;
+//act.sa_restorer = NULL;
+  act.sa_flags = 0;
+ 
+  sigaction(SIGINT, &amp;act, NULL);
+  sigaction(SIGTERM, &amp;act, NULL);
+  sigaction(SIGKILL, &amp;act, NULL);
+ 
+  p = pool_new();
+  jcr-&gt;jcr_i = (instance)pmalloc(p, sizeof(instance));
+  jcr-&gt;jcr_i-&gt;p = p;
+  jcr-&gt;jcr_i-&gt;id = pstrdup(p,
+xmlnode_get_data(xmlnode_get_tag(jcr-&gt;config,&quot;host&quot;)));
+ 
+  /* The component call */
+  yahoo_transport(jcr-&gt;jcr_i, NULL);
+ 
+  jcr-&gt;fd = -1;
+  
+  while(jcr_socket_connect()) {
+    sleep(2);
+  }
+  
+  Set_Up_Listener();
+  
+  listen_sock = g_io_channel_unix_new(sock);
+  g_io_add_watch(listen_sock, G_IO_IN, read_sock, NULL);
+  
+  log_warn(JDBG, &quot;Main loop starting.&quot;);
+  jcr_main_new_stream();
+  g_main_loop_run(gmain);
+  log_warn(JDBG, &quot;Main loop exiting.&quot;);
+ 
+  return 0;
+}
+ 
+Here's The code for Set_Up_Listener:
+ 
+void Set_Up_Listener()
+{
+ printf(&quot;Setting up listener\n&quot;);
+ 
+ //get a socket
+  if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
+    perror(&quot;socket&quot;);
+    exit(1);
+  }
+ 
+  //make it reusable
+  if (setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,&amp;sockopt_on,sizeof(int))
+== -1) {
+    perror(&quot;setsockopt&quot;);
+    exit(1);
+  }
+ 
+  //first zero the struct
+  memset((char *) &amp;my_addr, 0, sa_in_size);
+ 
+  //now fill in the fields we need
+  my_addr.sin_family = PF_INET;
+  my_addr.sin_port = htons(LISTENPORT);
+  my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+ 
+  //bind our socket to the port
+  if (bind(sock,(struct sockaddr *)&amp;my_addr, sa_in_size) == -1) {
+    perror(&quot;bind&quot;);
+    exit(1);
+  }
+ 
+  //start listening for incoming connections
+  if (listen(sock,BACKLOG) == -1) {
+    perror(&quot;listen&quot;);
+    exit(1);
+  }
+}
+ 
+and finally the code for read_sock():
+ 
+static void read_sock(gpointer data)
+{
+ char *servername;
+ char  response[80];
+ 
+ conn = accept(sock, (struct sockaddr *)&amp;client_addr, &amp;sa_in_size);
+        
+ if (conn == -1) {
+  perror(&quot;accept&quot;);
+  exit(1);
+ }
+ 
+ //log the connecter
+ servername = (char*)inet_ntoa(client_addr.sin_addr);
+ 
+ //get the reply
+ if (recv(conn, &amp;response, 80, 0) == -1) {
+   perror(&quot;recv&quot;);
+ }
+  
+ printf(&quot;The client [%s] says \&quot;%s\&quot;\n&quot;,servername, &amp;response);
+  
+ close(conn);
+}
+ 
+So if anybody has the slightest inkling of how I can get this going I
+would be most appreciative.
+ 
+Kind Regards
+
+Tim Fulcher
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="051671.html">[jdev] ejabberd 0.9.8 released
+</A></li>
+	<LI>Next message: <A HREF="051673.html">[jdev] gmainloop and listening on a port
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51672">[ date ]</a>
+              <a href="thread.html#51672">[ thread ]</a>
+              <a href="subject.html#51672">[ subject ]</a>
+              <a href="author.html#51672">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

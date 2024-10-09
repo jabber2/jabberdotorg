@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Q: oob and direct P2P communications
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Q%3A%20oob%20and%20direct%20P2P%20communications&In-Reply-To=%3CAFAFD7CD011BD41196F400B0D020D6A02A967B%40exchgbtr%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="065451.html">
+   <LINK REL="Next"  HREF="065446.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Q: oob and direct P2P communications</H1>
+    <B>Colin Madere</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Q%3A%20oob%20and%20direct%20P2P%20communications&In-Reply-To=%3CAFAFD7CD011BD41196F400B0D020D6A02A967B%40exchgbtr%3E"
+       TITLE="[JDEV] Q: oob and direct P2P communications">colin at vedalabs.com
+       </A><BR>
+    <I>Wed Mar 28 19:14:42 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="065451.html">[JDEV] usercount=?
+</A></li>
+        <LI>Next message: <A HREF="065446.html">[JDEV] Q: oob and direct P2P communications
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65445">[ date ]</a>
+              <a href="thread.html#65445">[ thread ]</a>
+              <a href="subject.html#65445">[ subject ]</a>
+              <a href="author.html#65445">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>My group is about to embark on just this task (transferring files P2P).  I
+haven't recently looked through the existing specs but I don't remember
+there being anything specific besides the &quot;use OOB messages&quot; bit.
+ 
+I agree that it would be useful to have a standard refusal/cancel message so
+the sender can be sure to kill the listen... what else is missing.
+ 
+The whole firewall/NAT thing is a pain too, but normal HTTP requests get
+through all these so maybe making this tranfer look like one of those would
+do the trick... only catch is (like I believe you said) if both users are
+behind a firewall/NAT, then we get into talking about modifying the server
+which I want to avoid if possible.  Another possible solution is to have a
+&quot;temporary storage&quot; app on a server which would accept files with a randomly
+generated name which you pass to the receiver client so that they can make
+that request of the server.  Would work, but means more server load and more
+to manage.
+ 
+I'm currently not concerned about security, but this may change.
+ 
+I'm sure I will hitting on some needs and ideas soon enough, post more if
+you have any ideas and I will do the same.
+ 
+Colin
+
+-----Original Message-----
+From: Jens Alfke [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jens at mac.com</A>]
+Sent: Wednesday, March 28, 2001 12:03 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: [JDEV] Q: oob and direct P2P communications
+
+
+
+(I brought this up within an earlier message but I think it's worth raising
+to a separate thread, esp. since I got no answers / comments.) 
+
+
+The 'oob' namespace seems to be Jabber's current answer for direct
+peer-to-peer communications, particularly file transfer. However, the
+documentation I've seen is really vague and leaves me with worries about its
+reliability and security. Let me list the problems I see, together with some
+possible solutions. 
+
+
+Also, have any clients implemented file transfer or other oob communications
+yet? 
+
+
+As I understand it the flow of control looks like this: 
+
+* Sender opens a TCP port on its host and listens for HTTP connections on
+it. 
+
+* Sender sends a Jabber message to receiver with an 'oob'-namespace element
+containing an HTTP URL pointing to its own IP address and the opened port. 
+
+* Receiver initiates an HTTP download via the URL. 
+
+* Sender gets the HTTP connection on the port it opened and sends the file
+data. 
+
+* Both sides close the connection, and the sender stops listening on that
+port. 
+
+
+Major concern. 
+
+This does not work if the sender is behind any sort of a firewall and/or a
+NAT (network address translation) service. This applies to me personally
+both at home and at work. It does however support the receiver being behind
+any sort of firewall that allows HTTP connections (though the receiver's
+client may need to go through an HTTP proxy server.) 
+
+It also relies on the sender giving out its IP address, which many people
+are loath to do for security reasons. 
+
+
+This can be addressed by allowing the sender's Jabber server to act as a
+proxy: the message is rewritten to include a URL pointing to the server, and
+the server then proxies the incoming request through to the sender. This
+does of course require additional smarts on the part of the server, as well
+as placing additional bandwidth demands on it (but no more than the kinds of
+demands that are currently made on HTTP proxies, for instance.) 
+
+
+Secondary concern. 
+
+I'm unsure how a secure association can be made on the sender between the
+outgoing file transfer offer and the incoming HTTP request. The sender
+generally wants to be sure that only the specific entity the message was
+sent to can download the file, not some random other entity that may be
+probing the sender's machine for open ports. 
+
+
+This can be addressed in a weak way by using a random port number, but since
+only 64536 numbers are generally available, that's not very secure. 
+
+
+Stronger security could be obtained via regular HTTP authentication, by
+adding a username and (randomly generated) password to the URL. 
+
+
+Of course, for greatest security, the entire message containing the URL
+would have to be encrypted to guard against interception. 
+
+
+Third (tertiary?) concern. 
+
+The receiver may well decide not to download the file at all (especially if
+it's named something like &quot;sexy_babes.exe&quot;.) There doesn't seem to be any
+defined mechanism for the receiver's client to indicate to the sender that
+this has occurred. 
+
+This means that the sender's client has to keep listening on that port until
+some kind of time-out occurs, and the sender him/herself may get confused
+wondering when the receiver is going to get around to receiving the file. 
+
+
+Looks like there ought to be some kind of standard reply message type
+indicating a refusal to download the file, so the sender's client can close
+the port and present a GUI notification. 
+
+
+--Jens Alfke
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010328/f9d77a2c/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20010328/f9d77a2c/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="065451.html">[JDEV] usercount=?
+</A></li>
+	<LI>Next message: <A HREF="065446.html">[JDEV] Q: oob and direct P2P communications
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65445">[ date ]</a>
+              <a href="thread.html#65445">[ thread ]</a>
+              <a href="subject.html#65445">[ subject ]</a>
+              <a href="author.html#65445">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

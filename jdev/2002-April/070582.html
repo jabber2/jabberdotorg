@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] js_user problem/leak
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20js_user%20problem/leak&In-Reply-To=%3C005a01c1db22%2420193b20%244d00a8c0%40catamount%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="070618.html">
+   <LINK REL="Next"  HREF="070584.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] js_user problem/leak</H1>
+    <B>Glenn MacGregor</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20js_user%20problem/leak&In-Reply-To=%3C005a01c1db22%2420193b20%244d00a8c0%40catamount%3E"
+       TITLE="[JDEV] js_user problem/leak">gtm at oracom.com
+       </A><BR>
+    <I>Wed Apr  3 09:13:35 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="070618.html">[JDEV] ANNOUNCE: SashXB 0.9.9 with Jabber Extension
+</A></li>
+        <LI>Next message: <A HREF="070584.html">[JDEV] jabberd cvs changelog
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#70582">[ date ]</a>
+              <a href="thread.html#70582">[ thread ]</a>
+              <a href="subject.html#70582">[ subject ]</a>
+              <a href="author.html#70582">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Jer,
+
+Looking into the jid_user problem further, it seems that another major
+problem is the js_user function, which gets called twice for each message
+(sending user and receiving user).  This function allocates off the jid
+parameter pool (id), which is the session pool.
+
+The main problem is that there in no concept of a local variable, if you
+need a jid it has to be taken from a pool, in this case the only pool is the
+session pool.  An analogous set of functions which I can pass a pool in may
+be an option. Create a local pool to use for all local variables.
+
+Problem Code:
+
+This mallocs off of id's pool (session pool) twice, once for the jid_user
+call and once for the jid_new.  Guaranteed to fail after a while.
+uid = jid_new(id-&gt;p, jid_full(jid_user(id)));
+
+
+
+Any suggestions on a clean fix would be great.  I don't want to implement a
+cache system like jid_full because we are still wasting memory in my
+opinion.
+
+    Thanks
+
+            Glenn
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="070618.html">[JDEV] ANNOUNCE: SashXB 0.9.9 with Jabber Extension
+</A></li>
+	<LI>Next message: <A HREF="070584.html">[JDEV] jabberd cvs changelog
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#70582">[ date ]</a>
+              <a href="thread.html#70582">[ thread ]</a>
+              <a href="subject.html#70582">[ subject ]</a>
+              <a href="author.html#70582">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

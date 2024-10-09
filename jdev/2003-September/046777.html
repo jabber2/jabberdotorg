@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Howto add middleware!
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Howto%20add%20middleware%21&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C148007DAD9DC%40ossex1.corp.webb.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="046790.html">
+   <LINK REL="Next"  HREF="046778.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Howto add middleware!</H1>
+    <B>Joe Hildebrand</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Howto%20add%20middleware%21&In-Reply-To=%3C8D96EDA0AC04D31197B400A0C96C148007DAD9DC%40ossex1.corp.webb.net%3E"
+       TITLE="[JDEV] Howto add middleware!">JHildebrand at jabber.com
+       </A><BR>
+    <I>Mon Sep  8 10:56:09 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="046790.html">[JDEV] Cannot register on jabberd2
+</A></li>
+        <LI>Next message: <A HREF="046778.html">[JDEV] JEP-0022 MMmm whats that type again?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46777">[ date ]</a>
+              <a href="thread.html#46777">[ thread ]</a>
+              <a href="subject.html#46777">[ subject ]</a>
+              <a href="author.html#46777">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE><A HREF="http://www.jabber.org/jeps/jep-0004.html">http://www.jabber.org/jeps/jep-0004.html</A>
+
+-- 
+Joe Hildebrand
+
+ 
+
+&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Bernino Lind [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lind at hlgroup.dk</A>] 
+</I>&gt;<i> Sent: Saturday, September 06, 2003 9:03 AM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: [JDEV] Howto add middleware!
+</I>&gt;<i> Importance: High
+</I>&gt;<i> 
+</I>&gt;<i> Dear sirs,
+</I>&gt;<i> 
+</I>&gt;<i> During the last couple of months I have been doing a game 
+</I>&gt;<i> utilizing jabber as the stream infrastructure.
+</I>&gt;<i> 
+</I>&gt;<i> I have repeatedly asked questions with respect to xdb_sql 
+</I>&gt;<i> (Benoit has been very helpfull!), since storing, selecting 
+</I>&gt;<i> and manipulating is a big part of any project.
+</I>&gt;<i> 
+</I>&gt;<i> In these questions I have repeatedly seen how I miss a 
+</I>&gt;<i> middleware method, in the terms of som sort of programming 
+</I>&gt;<i> language/logical layer between the data storage and the jabber server.
+</I>&gt;<i> 
+</I>&gt;<i> First I have been using PL/SQL via PostgreSQL by the usage of 
+</I>&gt;<i> xdb_sql (xdb_sql needs a lot of tweaking before it runs 
+</I>&gt;<i> smoothly on FreeBSD/PostgreSQL).
+</I>&gt;<i> 
+</I>&gt;<i> xdb_sql has many problems which relates to a) configuration 
+</I>&gt;<i> file in XML (eliminates the possibility to use &gt; &lt; operators) 
+</I>&gt;<i> and b) no way of post processing data.
+</I>&gt;<i> 
+</I>&gt;<i> In a way PL/SQL gives you exactly that post processing thingy 
+</I>&gt;<i> - in relation to a rescent INSERT/DELETE vs UPDATE discussion 
+</I>&gt;<i> one could for example define a function in PL/SQL and let 
+</I>&gt;<i> PL/SQL handle it all...
+</I>&gt;<i> 
+</I>&gt;<i> However PL/SQL is not really that nice to work with even 
+</I>&gt;<i> though it has C and Perl and more at its disposal. So I didnt 
+</I>&gt;<i> like it and wanted the complete Perl artellery at my disposal 
+</I>&gt;<i> due to scalability issues: I want to be able to tweak any 
+</I>&gt;<i> foreseen and unforeseen data possibly and impossibly existing 
+</I>&gt;<i> (definition of Perl ;-)).
+</I>&gt;<i> 
+</I>&gt;<i> Then I thought, ah bugger what the hell I must write a new 
+</I>&gt;<i> component and have it connected under the XDB method, just 
+</I>&gt;<i> like the xdb_perl project does.
+</I>&gt;<i> 
+</I>&gt;<i> I quickly hit the wall of IQ-GET and SET packets.
+</I>&gt;<i> 
+</I>&gt;<i> The jabber protocol people have appearently defined IQ-GET 
+</I>&gt;<i> packets as packets which can only contain one subelement, 
+</I>&gt;<i> namely a query with some xmlns attribute.
+</I>&gt;<i> 
+</I>&gt;<i> The set packet can contain any subelements holding data for 
+</I>&gt;<i> the set at hand.
+</I>&gt;<i> 
+</I>&gt;<i> WHAT THE FUCK!?!!!
+</I>&gt;<i> 
+</I>&gt;<i> This means that if one takes DJ Adams words in his book 
+</I>&gt;<i> Programming Jabber seriously and uses jabber as an XML socket 
+</I>&gt;<i> streaming infrastructure, which I do, one must make a 
+</I>&gt;<i> namespace with static coded variables in each and every namespace.
+</I>&gt;<i> 
+</I>&gt;<i> EXAMPLE:
+</I>&gt;<i> I have four games I service. I want to find out the highscore 
+</I>&gt;<i> for game #3.
+</I>&gt;<i> 
+</I>&gt;<i> &lt;iq type=&quot;get&quot;&gt;
+</I>&gt;<i>   &lt;query xmlns=&quot;highscore&quot;&gt;
+</I>&gt;<i>     &lt;gameid&gt;3&lt;/gameid&gt;
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> Then my idea was to catch the variable gameid and do a SELECT 
+</I>&gt;<i> with this data aka SELECT bla bla FROM TABLE WHERE gameid=$gameid.
+</I>&gt;<i> 
+</I>&gt;<i> This will not work as jabber will simply just wipe out 
+</I>&gt;<i> anything below xmlns...
+</I>&gt;<i> 
+</I>&gt;<i> So I need to do 4 namespaces which staticly have the gameid set:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;iq type=&quot;get&quot;&gt;
+</I>&gt;<i>   &lt;query xmlns=&quot;highscore:3&quot;/&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> AKA SELECT bla bla FROM TABLE WHERE gameid=3
+</I>&gt;<i> 
+</I>&gt;<i> WHY NOT ALLOW FOR DATA TO BE CARRIED BY IQ-GET????
+</I>&gt;<i> 
+</I>&gt;<i> Any way I figured that if IQ-SET packets are allowed to carry 
+</I>&gt;<i> as much data as I like I might as well use the SET packet as 
+</I>&gt;<i> a data carrier for my
+</I>&gt;<i> query...so:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;iq type=&quot;set&quot;&gt;
+</I>&gt;<i>   &lt;query xmlns=&quot;highscore&quot;&gt;
+</I>&gt;<i>     &lt;gameid&gt;3&lt;/gameid&gt;
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> Which works in the backend, I can see the data being 
+</I>&gt;<i> outputted to jabber for resend to the jid who asked.
+</I>&gt;<i> 
+</I>&gt;<i> But since this is a SET packet jabber simply deletes all data 
+</I>&gt;<i> after the &quot;type='result'&quot; and I see nothing!!!
+</I>&gt;<i> 
+</I>&gt;<i> IT DOESNT WORK! Only GET packets allows for data sets to be 
+</I>&gt;<i> resend...Ok, I could of course construct with Nodefactory a 
+</I>&gt;<i> message with all the data etc. - but hey, thats not the way 
+</I>&gt;<i> to do it properly seen from the backend:
+</I>&gt;<i> the problem is that GET packets cant carry data!
+</I>&gt;<i> 
+</I>&gt;<i> So back to static hardcoding...?!?!?
+</I>&gt;<i> 
+</I>&gt;<i> To me it seems that Jabber is a good IM system but to claim 
+</I>&gt;<i> that it can be used as scalable XML socket infrastructure is 
+</I>&gt;<i> perhaps a bit exaggerated.
+</I>&gt;<i> 
+</I>&gt;<i> There are so many unchangeable defaults in the protocol that 
+</I>&gt;<i> jabber cant be used for anything but IM systems.
+</I>&gt;<i> 
+</I>&gt;<i> I have added a middleware component via XDB - but due to 
+</I>&gt;<i> limitations in the jabber protocol it doesnt really change a 
+</I>&gt;<i> goddamn thing.
+</I>&gt;<i> 
+</I>&gt;<i> If its true that its actually not possible to extent jabber 
+</I>&gt;<i> in this way, then be carefull if you think of choosing jabber 
+</I>&gt;<i> as your XML infrastructure - if you think this attitude is 
+</I>&gt;<i> wrong, then please solve my problem before actually 
+</I>&gt;<i> discussing anything so I can be proven wrong.
+</I>&gt;<i> 
+</I>&gt;<i> Howto add data to an IQ-GET packet via XDB?
+</I>&gt;<i> 
+</I>&gt;<i> Best regards, Bernino Lind
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="046790.html">[JDEV] Cannot register on jabberd2
+</A></li>
+	<LI>Next message: <A HREF="046778.html">[JDEV] JEP-0022 MMmm whats that type again?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46777">[ date ]</a>
+              <a href="thread.html#46777">[ thread ]</a>
+              <a href="subject.html#46777">[ subject ]</a>
+              <a href="author.html#46777">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

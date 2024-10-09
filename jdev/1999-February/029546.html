@@ -1,0 +1,229 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: Jabber sigs/crypto
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Jabber%20sigs/crypto&In-Reply-To=%3C000a01be5a95%2410349120%24cfea7fce%40sculdheizo%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="029551.html">
+   <LINK REL="Next"  HREF="029553.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: Jabber sigs/crypto</H1>
+    <B>Donovan Schulteis</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Jabber%20sigs/crypto&In-Reply-To=%3C000a01be5a95%2410349120%24cfea7fce%40sculdheizo%3E"
+       TITLE="[JDEV] Re: Jabber sigs/crypto">sculdheizo at mindless.com
+       </A><BR>
+    <I>Wed Feb 17 10:45:54 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="029551.html">[JDEV] Re: Jabber sigs/crypto
+</A></li>
+        <LI>Next message: <A HREF="029553.html">[JDEV] Re: Jabber sigs/crypto
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29546">[ date ]</a>
+              <a href="thread.html#29546">[ thread ]</a>
+              <a href="subject.html#29546">[ subject ]</a>
+              <a href="author.html#29546">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+&gt;&gt;<i> - What's the best way for me to figure out how I'll plug this
+</I>&gt;&gt;<i> stuff into the Jabber architecture?  Should I just start sifting through
+</I>&gt;&gt;<i> the protocol or something?
+</I>
+    I would think that having the client programs implement this in full,
+without the knowledge of the server programs (with the exception of doing a
+user authentication thing) would be relatively simple to implement without
+disrupting the current protocols.  You could just have the client program
+grab the string (actual message) prior to transmiting and encrypt it,
+throwing a begin encrypt/ end encrypt string at the ends, and send the
+entire phrase as the string (message).  When the recieving client program
+sees the proper begin phrase, it will decrypt the message and display that
+message to the screen (probably with some code to indicate that the message
+was sent encrypted, ie, red text or the words: secure message, or the like).
+A &quot;lock/unlock&quot; button on the client program could toggle secure and
+non-secure modes.
+    Backlashes:
+        A user would have to be careful not to use the exact same phrase at
+the beginning of an instant message that the encryption function places to
+denote encrypted text (ie, ---begin encrypted text here --- ; or whatever)
+or else the recieving client program will try to decipher the plain text.
+        Users would have to have the same client program, or compatible
+programs (which could be easily accomplished by releasing the lib and code
+to developers.  Users without client programs would be unable to decrypt
+secure messages, and should have a intercepting routine that would stop the
+message from appearing, and send a return message stating so.  This would
+have to be included in all clients to ensure there is no confusion.  Another
+thing for the enabled clients would be to not allow encryption to
+Jabber-only &quot;buddies&quot;, I don't think ICQ or AIM would work   :)    And
+remember to code for the least common denominator machine, the PC's little
+endian, to ensure platform portability.
+        As with any uses of keys, this could seriously hamper &quot;roaming&quot;
+capabilities of the user (for secure modes, that is).  Unless the keys were
+stored on the server, which would kinda disrupt the whole idea of the thing
+:<i>)
+</I>
+&gt;<i>Well, there are different things that can(need to) be done and each of
+</I>&gt;<i>them may need to be done differently.  IMHO, here are the needs:
+</I>&gt;<i>--Identity
+</I>&gt;<i> Verifying that the user you received a message from is really them
+</I>&gt;<i> (and that the message hasn't been modified)
+</I>
+
+    Digital signatures attached automatically to the end of message strings
+that are not displayed to the users (or displayed in some subtle form - like
+the word &quot;Authenticated&quot;).  These could easily be added in the same way to
+the end of a message string (using ---begin sig here ---  ; or the like).
+Once again, not displayed to the unenabled user.
+    Better yet, make an &quot;aware&quot; client program disable the encryption and
+sigs for &quot;buddies&quot; that are not tagged with &quot;encryption aware&quot; options (like
+a check-box within a &quot;buddy config&quot; menu).  This would allow unaware clients
+to not be &quot;readied&quot; for encryption tags.  Aware clients would just alert
+&quot;their own user&quot; that they cannot send sigs or encrypted text to that
+particular buddy.
+
+&gt;<i>--Privacy
+</I>&gt;<i> Encrypting a message so that only the recipient can decode it
+</I>
+
+    As above (my first paragraph of babble).
+
+&gt;<i>--Authentication
+</I>&gt;<i> Validating a login to the server and granting access to resources
+</I>
+
+    This would require changes to the Jabber server program, to accept and
+verify users as they log on, but the program would have to be flexible
+enough to allow non-enabled clients to logon without.  But if implemented,
+could be done by just verifying the digital signature.
+
+&gt;&gt;<i> Make a 40-bit weak version and a 128-bit one (a la the browsers)?
+</I>
+I would think that 40-bit would be quite suffencient for just one or two
+line messages between friends.  To go the 128-bit route, is to open a whole
+can of legal worms in distribution and all that.  Although, I think it would
+be cool if we went one step further, to say 512-bit, and became the de-facto
+standard for transmitting credit card numbers and the like through the
+internet, but then again, that's just dreaming.
+
+&gt;<i>Here's my take, since as I understand it we'll get into a mess if we even
+</I>&gt;<i>think about including crypto stuff or even making special &quot;hooks&quot; for it
+</I>&gt;<i>in the code:
+</I>
+
+Should be planned for in the code, but not tailored for it.  I think that,
+with the exception of authentication, it should be a client to client thing,
+that the Jabber servers and transports would pass without knowledge of, or
+even being able to tell, the encryption.
+
+&gt;<i>--&gt; Jabber.org can point all security/crypto/encryption inquiries and
+</I>&gt;<i>pages/links to the other server, as a separate project(similar to SSL for
+</I>&gt;<i>Apache)
+</I>
+As soon as my server comes up (should be a month or so, life, you know), I
+would be glad to host it, if no other host is found by then.
+
+&gt;<i>--&gt; All crypto solutions can piggyback ontop of the protocol and
+</I>&gt;<i>modularization of the server, and provide libs or assist client authors in
+</I>&gt;<i>including crypto
+</I>
+
+Yes, exactly.
+
+&gt;&gt;<i> - Patent issues...I'm starting to look into this...I think the
+</I>&gt;&gt;<i> strong frontrunner is the El Gamal public key cryptosystem...
+</I>&gt;&gt;<i> [...] I think it's been free since some time in 97). [...]
+</I>
+It has been freed up since Apr 97.  El Gamal sounds good (although I think I
+read somewhere that it is &quot;relatively easy&quot; to break, ie, the NSA would have
+no problems at all).  The only other non-patented system I can think of
+off-hand would be the Blowfish algorithm, by Bruce Schneier, which he
+distributes freely.  It can handle up to, I think, 448-bit encryption, but
+has a larger memory footprint.  Either would work, I would guess.
+
+&gt;&gt;<i> - Architecture changes/extensions?  If a public-key based
+</I>&gt;&gt;<i> cryptosystem is in place, there will have to be some kind of
+</I>&gt;&gt;<i> infrastructure to deal with key distribution/management.  This is not
+</I>&gt;&gt;<i> really too nasty, I think...but the one nasty thing I haven't thought of
+</I>&gt;&gt;<i> how to handle yet is how to totally avoid (or keep to a BARE minimum) the
+</I>&gt;&gt;<i> authentication between client and server...I'd like to keep pretty much
+</I>&gt;&gt;<i> all authentication between client-&gt;client (with the server just acting as
+</I>&gt;&gt;<i> an intermediary)
+</I>
+That would do it.  And key distribution could be done on a special server
+somewhere, or done through file transfers with buddies.  Say you're talking
+with someone and decide to go secure for one reason or another, do a public
+key transfer via the client program, and get his public key by doing an IP
+to IP transfer (hey, you trust the guy enough to talk secure with him, so
+you can trust him with your IP).  The key management should be part of the
+same interface as everything else.  After the keys have been transferred,
+then secure talking can begin.
+
+&gt;&gt;<i> ...but I fear that you'll need server-client authetication
+</I>&gt;&gt;<i> at each step to prevent a man-in-the-middle attack...
+</I>
+Not necessarily, because you'll be going client to client, and your digital
+sig will be at the end of each message to verify it's you.  And as far as
+sniffing your key transfers - they're PUBLIC keys, so anyone can have them
+anyways.  The only way someone is going to attack is to spoof as you by
+logging on to a your server with your digital sig, and then talking securely
+with your private keys.  If they have gotten all this, the game is done
+already.
+
+&gt;<i>The best way to start adding crypto in, is going to be via the &lt;ext&gt;
+</I>&gt;<i>mechanisms built into the protocol.  For identity, public keys could be
+</I>&gt;<i>sent in the &lt;ext&gt;&lt;/ext&gt; tags.  For privacy the actual message content
+</I>&gt;<i>could be encrypted and the keys again could be in the ext tags to help
+</I>&gt;<i>decode the message.  But for authentication(since it's client&lt;-&gt;server
+</I>&gt;<i>instead of client&lt;-&gt;client like the others) the &lt;user&gt;&lt;/user&gt;&lt;pass&gt;&lt;/pass&gt;
+</I>&gt;<i>tags could contain any of the needed char data to validate the incoming
+</I>&gt;<i>connection, and would be passed on to a special crypto module to actually
+</I>&gt;<i>handle the authentication for that user.
+</I>
+
+That sounds really good, I think that this is a do-able plan, and should be
+implemented as such.
+
+&gt;<i>I'm really excited about this!  I definately want crypto/mondo-security,
+</I>&gt;<i>but don't know enough about it so I just tried to make sure Jabber is
+</I>&gt;<i>extensable enough so that someone who _does_ know can add it easily :)
+</I>
+
+I am too!!!  I don't think that any of the other IM's offer encryption
+options, and we could go so far as to include functions to encrypt files for
+transfer as well.  I really don't think it would be too hard to implement at
+all, with the way Jabber is already set up, so it just becomes an issue of
+choosing how and doing it.  If any help is needed, I would gladly TRY to be
+of some assistance.
+
+Deej
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="029551.html">[JDEV] Re: Jabber sigs/crypto
+</A></li>
+	<LI>Next message: <A HREF="029553.html">[JDEV] Re: Jabber sigs/crypto
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29546">[ date ]</a>
+              <a href="thread.html#29546">[ thread ]</a>
+              <a href="subject.html#29546">[ subject ]</a>
+              <a href="author.html#29546">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Possible bug with ask='subscribe'
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Possible%20bug%20with%20ask%3D%27subscribe%27&In-Reply-To=%3C20010521081016.A22837%40gnu%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="066469.html">
+   <LINK REL="Next"  HREF="066481.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Possible bug with ask='subscribe'</H1>
+    <B>DJ Adams</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Possible%20bug%20with%20ask%3D%27subscribe%27&In-Reply-To=%3C20010521081016.A22837%40gnu%3E"
+       TITLE="[JDEV] Possible bug with ask='subscribe'">dj.adams at pobox.com
+       </A><BR>
+    <I>Mon May 21 02:10:16 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="066469.html">[JDEV] Possible bug with ask='subscribe'
+</A></li>
+        <LI>Next message: <A HREF="066481.html">[JDEV] Possible bug with ask='subscribe'
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66471">[ date ]</a>
+              <a href="thread.html#66471">[ thread ]</a>
+              <a href="subject.html#66471">[ subject ]</a>
+              <a href="author.html#66471">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Sun, May 20, 2001 at 06:39:58PM -0400, Julian Missig wrote:
+&gt;<i> When I do:
+</I>&gt;<i> &lt;iq type='set'&gt;&lt;query xmlns='jabber:iq:roster'&gt;&lt;item
+</I>&gt;<i> jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">julian at jabber.com</A>' name='julian-test'/&gt;&lt;/query&gt;&lt;/iq&gt;
+</I>
+...
+
+&gt;<i> No more ask='subscribe' ... It should not be the client's responsibility
+</I>
+Hi Julian
+
+Is this against a ver 1.4 Jabber server? 
+
+I suspect so because the 1.4 version of jsm/modules/mod_roster.c
+has, in the place relevant to what you're doing, this:
+
+/* copy the old stuff into the new one and insert it into the roster */
+xmlnode_put_attrib(cur,&quot;subscription&quot;,xmlnode_get_attrib(item,&quot;subscription&quot;));
+xmlnode_put_attrib(cur,&quot;subscribe&quot;,xmlnode_get_attrib(item,&quot;subscribe&quot;)); 
+ 
+which is slightly wrong as &quot;subscribe&quot; isn't a valid attribute of &lt;item&gt;, and
+more importantly, the &quot;ask&quot; attribute isn't getting copied. 
+
+It is fixed in 1.4.1 though:
+
+/* copy the old stuff into the new one and insert it into the roster */
+xmlnode_put_attrib(cur,&quot;subscription&quot;,xmlnode_get_attrib(item,&quot;subscription&quot;));
+xmlnode_put_attrib(cur,&quot;ask&quot;,xmlnode_get_attrib(item,&quot;ask&quot;)); 
+
+Anyway, that's what I suspect it is. 
+
+You never know though, I'm probably talking rubbish.
+
+dj
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="066469.html">[JDEV] Possible bug with ask='subscribe'
+</A></li>
+	<LI>Next message: <A HREF="066481.html">[JDEV] Possible bug with ask='subscribe'
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66471">[ date ]</a>
+              <a href="thread.html#66471">[ thread ]</a>
+              <a href="subject.html#66471">[ subject ]</a>
+              <a href="author.html#66471">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

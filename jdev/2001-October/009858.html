@@ -1,0 +1,249 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] help, using jabber to transmit custom xml
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20help%2C%20using%20jabber%20to%20transmit%20custom%20xml&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="009857.html">
+   <LINK REL="Next"  HREF="009871.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] help, using jabber to transmit custom xml</H1>
+    <B>Mike Snitzer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20help%2C%20using%20jabber%20to%20transmit%20custom%20xml&In-Reply-To="
+       TITLE="[JDEV] help, using jabber to transmit custom xml">msnitzer at plogic.com
+       </A><BR>
+    <I>Thu Oct 11 16:58:54 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="009857.html">[JDEV] Yahoo Gateway 'Offline' without presence indication
+</A></li>
+        <LI>Next message: <A HREF="009871.html">[JDEV] help, using jabber to transmit custom xml
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9858">[ date ]</a>
+              <a href="thread.html#9858">[ thread ]</a>
+              <a href="subject.html#9858">[ subject ]</a>
+              <a href="author.html#9858">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>-
+-------------- next part --------------
+Preface =)
+This email is long; but asks many questions that I'm sure others may
+have. I want to use jabber to transmit my custom xml to other jabber
+clients that will decide what to do with the custom xml, I need to know if
+I'm trying to make a square peg fit in a circular hole.  If you have a
+keen understanding of how to extend/customize jabber for sending and
+receiving any type of xml please read this message and provide your
+incite.
+
+I would like to extend jabber to have the ability to transport messages,
+over the jabber xml framework, that describe the state of any number of 
+nodes (computers) within a given computing cluster. And have the clients
+that get these messages act according to their designed task, i.e. display
+the data in a gui; or trigger an alarm (page someone) based on the
+supplied cluster data.
+
+First and foremost, I need to know the _right_ way to implement this type
+of extension. I'm thinking I'd use an extension namespace but could be
+horribly wrong.  Regardless, the following is an attempt at explaining
+what I'd like to be able to do:
+
+jabber:x:cluster namespace:
+This jabber extension namespace will enable a message to transport
+cluster specific xml to any client, the client would then need to
+be jabber:x:cluster aware.
+
+Any client should be able to subscribe to these cluster status messages,
+whereby they will receive notification (in realtime) of the various states
+that each computer within the larger cluster is in.  That is, any message
+that contains xml from the jabber:x:cluster namespace would describe the
+state(s) of a given computer within the cluster. States reported with an
+jabber:x:cluster message could include: the current load on the
+processors, memory utilization, processor(s) temperature, network traffic,
+filesystem usage, uptime, linux kernel version, etc.
+
+The grunt work required to collect these states has already been done;
+what I am looking to do is adapt my collection program (written in C) to
+become a jabber client that will report cluster states to other
+jabber:x:cluster aware jabber clients that have subscribed to receive this
+cluster state xml data.
+
+Each message can contain subsets of the full xml state data, that is; one
+message can contain info about 3 nodes, each with varying contents
+(i.e. 1 node just contains cpu data; while other nodes have cpu, memory,
+and network data) while another message can contain cluster data for 10
+nodes. I would like to be &quot;push&quot;ing this data to all subscribed clients;
+effectively this would be streaming cluster xml in jabber messages.
+Similar to a stock ticker but different =).  Can the jabber framework
+handle such load? 
+
+here's a hypothetical message sent by the client that harvests data off
+the nodes in the cluster:
+
+&lt;message type=&quot;cluster&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gui at cluster</A>&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">data at cluster</A>&quot;&gt;
+     &lt;subject/&gt;
+     &lt;body/&gt;
+     &lt;x xmlns=&quot;jabber:x:cluster&quot;&gt;
+	&lt;node name=&quot;node1&quot;&gt;
+	      &lt;cpu_load one=&quot;0.03&quot; five=&quot;0.10&quot; fteen=&quot;0.32&quot;/&gt;
+	      &lt;net device=&quot;eth0&quot; ip=&quot;192.168.0.1&quot; rx_kBps=&quot;1.0&quot; rx_errs=&quot;0&quot; tx_kBps=&quot;12.0&quot; tx_errs=&quot;0&quot;/&gt;
+	      &lt;version kernel=&quot;2.4.11-plogic-01smp&quot;&gt;
+	      &lt;lm_sensors&gt;
+			&lt;cpu num=&quot;0&quot; temp=&quot;65.0&quot; fan=&quot;4753&quot;&gt;
+			&lt;cpu num=&quot;1&quot; temp=&quot;64.0&quot; fan=&quot;4802&quot;&gt;
+	      &lt;/lm_sensors&gt;
+	&lt;/node&gt;
+        &lt;node name=&quot;node9&quot;&gt;
+	      &lt;net device=&quot;eth0&quot; ip=&quot;192.168.0.9&quot; rx_kBps=&quot;12.0&quot; rx_errs=&quot;0&quot; tx_kBps=&quot;65.0&quot; tx_errs=&quot;0&quot;/&gt;
+	      &lt;version kernel=&quot;2.4.10-plogic-03smp&quot;&gt;
+	&lt;/node&gt;
+     &lt;/x&gt;
+&lt;/message&gt;
+
+when the <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gui at cluster</A> client gets this message it will parse the custom
+cluster xml and display the data accordingly.
+
+This same message (with the exception of the 'to' attribute) could also be
+sent to an alarm client that checks the data to see if certain user
+defined thresholds have been exceeded. An example might be that both
+processors in node1 have exceeded a user defined threshold of 60 degrees
+celsius. The monitor client could then contact an administrator via the
+contact methods that user has configured (i.e. pager, email, @jabber, aim,
+cell phone)
+
+jabber:x:cluster:alarm namespace:
+There also may be a need for the alarm client to send the alarm state
+change to another client (i.e. the gui) so that it too may display the
+alarm condition.
+
+hypothetical message sent by alarm client to gui:
+
+&lt;message type=&quot;alarm&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gui at cluster</A>&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">alarm at cluster</A>&quot;&gt;
+     &lt;subject&gt;ALARM: lm_sensors&lt;/subject&gt;
+     &lt;body&gt;cpu0, cpu1 has overheated&lt;/body&gt;
+     &lt;x xmlns=&quot;jabber:x:cluster:alarm&quot;&gt;
+	&lt;node name=&quot;node1&quot;&gt;
+	      &lt;lm_sensors&gt;
+			&lt;cpu num=&quot;0&quot; temp=&quot;ALARM&quot; fan=&quot;4753&quot;&gt;
+			&lt;cpu num=&quot;1  temp=&quot;ALARM&quot; fan=&quot;4802&quot;&gt;
+	      &lt;/lm_sensors&gt;
+	&lt;/node&gt;     
+     &lt;/x&gt;
+&lt;/message&gt;
+
+
+the gui would then take some action to display the alarm to the gui user,
+i.e. make node1's message box blink red.
+
+----------
+
+All this said, I am extremely new to jabber; and know very little about
+the underlying protocols, extensibility of jabberd via extension messages,
+subscription procedures to get <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">data at cluster</A> to send to both <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">gui at cluster</A>,
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">alarm at cluster</A>, and any other clients that I will cook up in the future.  
+So here are some of the questions I have:
+
+- If you were tasked with making jabber perform the tasks that I've
+loosely outlined, how would you do it?  
+
+- Exactly what needs to be added to jabberd server to handle the addition
+of jabber:x:cluster and jabber:x:cluster:alarm?
+
+- It would appear that jabber seems to have an extensibility crisis;
+people say that it is possible; the extensibility I need seems to be in 
+Jabber, but there's A LOT that one needs to wade through in order to
+figure out how this might be accomplished.
+       - Is there a cut and dry method(s) to use for extending jabber to
+       transmit non-IM specific data.  It would appear that jabber needs
+       to allow for use as a general purpose communications protocol; I
+       have stumbled onto one such protocol draft:
+       <A HREF="http://jabberfox.sourceforge.net/jabber.html">http://jabberfox.sourceforge.net/jabber.html</A>  Is there any work 
+       currently in place that would enable me to easily make use of
+       jabber for my needs?  Granted this could all be very easy with
+       jabber as is; I probably haven't found the right
+       resources/explanation(s). 
+
+- I intend to transmit anywhere from 12MB to 50MB of data an hour, to
+multiple jabber clients, at intervals as quick as every second;
+effectively creating a contiguous stream of data, does jabberd v1.4.X
+allow for such excessive data transmition?  Or will I hit throttling
+heuristics that have been put in place in jabberd?  
+
+- I want the <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">data at cluster</A> client to essentially &quot;push&quot; the cluster xml to
+all subscribed clients that have the required subscription presence (I
+think? =) What is the best way to do this?  Start a &lt;stream&gt; and close it
+only when the jabber client exits?
+
+- Are there any docs available that address the task of extending jabber
+for use with transmitting custom xml to other jabber clients?
+
+    as Jeremie Miller explained in an XML magazine interview:
+    <A HREF="http://www.xmlmag.com/upload/free/features/xml/2000/05win00/sg0005/sg0005.asp">http://www.xmlmag.com/upload/free/features/xml/2000/05win00/sg0005/sg0005.asp</A>
+
+    Gallagher: How easily can you adapt Jabber as a transport for other
+    XML-formatted data? 
+    
+    Miller:  What we decided to do was simply call this TCP socket an XML
+document, so that at the beginning of the relationship, you send a
+fragment of XML down-the root tag of the document. You parse that on the
+fly on the other side, such as any SAX-based parser can do.  On top of
+this XML stream, we defined three protocol types: messages, presence, and
+InfoQuery (IQ). InfoQuery is a generic wrapper around any other XML-a
+Buddy List or a V-Card-a way of saying this is some extraneous data that
+is not a message or presence. You can insert your own custom XML inside of
+a message, or inside a presence, and you put that in your own name space. 
+    
+- COULD SOMEONE GO INTO MORE DETAIL ABOUT WHAT JEREMIE IS HINTING AT WITH
+REGARD TO EXTENDING JABBER FOR TRANSPORTING CUSTOM XML?
+
+- Is the use of jabber:x:&lt;foo&gt; what I should be doing to send custom
+cluster xml to jabber clients?  Or should I be using the &lt;iq&gt; portion of
+the jabber protocol?
+
+I understand the insertion of my own XML into a message, what about IQ and
+presence?  He seems to elude to the fact that IQ is a place that
+&quot;extraneous data&quot; should go.  If that's the case how should I
+realistically be using the jabber framework, I want to do this the _right_
+way!
+
+I AM LOOKING FOR ANY ONE WHO MIGHT LIKE TO CONTRIBUTE TO THIS PROJECT,
+I could very easily see this project being useful to all system
+administrators, not just high performance computing clusters.  If you
+would like to join the cause, send me email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">msnitzer at plogic.com</A>
+
+As you can see, I have A LOT to learn with regard to jabber, please help
+=) Any urls, code snippets, communication through the jdev list, or
+directly would be appreciated. 
+
+Thanks.
+
+Mike
+  
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="009857.html">[JDEV] Yahoo Gateway 'Offline' without presence indication
+</A></li>
+	<LI>Next message: <A HREF="009871.html">[JDEV] help, using jabber to transmit custom xml
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9858">[ date ]</a>
+              <a href="thread.html#9858">[ thread ]</a>
+              <a href="subject.html#9858">[ subject ]</a>
+              <a href="author.html#9858">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

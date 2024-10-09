@@ -1,0 +1,257 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] possible defect in RosterList behavior
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20possible%20defect%20in%20RosterList%20behavior&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006215.html">
+   <LINK REL="Next"  HREF="006218.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] possible defect in RosterList behavior</H1>
+    <B>Jay Chalfant</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20possible%20defect%20in%20RosterList%20behavior&In-Reply-To="
+       TITLE="[JDEV] possible defect in RosterList behavior">jchalfan at outbackinc.com
+       </A><BR>
+    <I>Tue Feb 13 16:44:27 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006215.html">[JDEV] possible defect in RosterList behavior
+</A></li>
+        <LI>Next message: <A HREF="006218.html">[JDEV] does aim transport support privacy?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6217">[ date ]</a>
+              <a href="thread.html#6217">[ thread ]</a>
+              <a href="subject.html#6217">[ subject ]</a>
+              <a href="author.html#6217">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Keith,
+
+Thanks for the follow up.
+
+I understand your justification and mostly agree with it. The only minor
+issue I would point out is that it is possible (in a single client
+environment) for the client to know the roster list without requesting it.
+Out client maintains its own list which is populated by watching the roster
+items downstream after it issues roster updates. (It holds updates as
+pending until confirmation is received from the server.) Following this
+strategy, the client should never have to request the whole list.
+
+That said, I do see benefit for other clients in the behavior you have
+spec'ed. We will continue to use our workaround which is to request the
+roster list even though we don't use it.
+
+thanks again,
+
+-J
+
+-----Original Message-----
+From: Keith Minkler [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kminkler at jabber.com</A>]
+Sent: Tuesday, February 13, 2001 2:13 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] possible defect in RosterList behavior
+
+
+Jay,
+
+    This behavior is definitly by design.  The Roster updates come in the
+form of roster &quot;pushes&quot;.  You must first request the roster, so that you
+have a working copy of the roster, in order to recieve any changes.  since
+pushes only represent a *change* to the roster, that is of no use to a
+client, unless they have the full roster to change.  
+
+    This behavior is also due to the fact that if a simple client (i.e. one
+that does not even have a roster) does not request the roster from the
+server, that means that they do not wish to have any thing to do with the
+roster.. therefore, the server should not be sending it roster updates, as
+the simple client does not even display the roster. (i.e. when another
+client changes the roster, it gets sent to all connected clients that have
+requested roster updates).
+
+    NOTE also, that a similar effect is true for subscription(s10n)
+notices.. you will not get any s10n requests if you have not sent you
+presence, due to the same logic.. If a simple client, or an &quot;invisible&quot;
+client does not send their presence, then they want nothing to do with
+presence based notifications at all.
+
+    It will be possible in the future for clients to also tell the server
+what kinds of messages they wish to handle.. i.e. a client can notify the
+server that they can *ONLY* handle headlines, all other messages will be
+routed to another client, or stored offline.
+
+    Hope this helps,
+        Keith Minkler
+
+
+On Tue, Feb 13, 2001 at 02:03:03PM -0800, Jay Chalfant wrote:
+&gt;<i> I noticed today that I won't get any roster item updates from Jabber
+</I>server
+&gt;<i> until I request the entire roster list. Specifically, unless I first do a 
+</I>&gt;<i> 
+</I>&gt;<i> &lt;iq id=&quot;doroster_4&quot; type=&quot;get&quot;&gt;
+</I>&gt;<i>   &lt;query xmlns=&quot;jabber:iq:roster&quot; /&gt; 
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i> I won't get roster updates as I make changes to the roster. I don't see
+</I>any
+&gt;<i> documentation that justifies this behavior so I assume it is a defect. I
+</I>&gt;<i> believe it should be considered a defect because the protocol should not
+</I>&gt;<i> require a client to retrieve the roster list every time it connects just
+</I>to
+&gt;<i> be able to use the roster list. (We have a specific justification for not
+</I>&gt;<i> receiving the roster list on every request.)
+</I>&gt;<i> 
+</I>&gt;<i> Here is a sample sequence (ignore the xml annotation):
+</I>&gt;<i> 
+</I>&gt;<i> - &lt;jabberproxy_add_buddy&gt;
+</I>&gt;<i> - &lt;SEND&gt;
+</I>&gt;<i>   &lt;presence type=&quot;subscribe&quot;
+</I>to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot;
+&gt;<i> /&gt; 
+</I>&gt;<i>   &lt;/SEND&gt;
+</I>&gt;<i> - &lt;SEND&gt;
+</I>&gt;<i> - &lt;iq id=&quot;982087708&quot; type=&quot;set&quot;&gt;
+</I>&gt;<i> - &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+</I>&gt;<i>   &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; name=&quot;_jchalfan&quot;
+</I>/&gt; 
+&gt;<i>   &lt;/query&gt;
+</I>&gt;<i>   &lt;/iq&gt;
+</I>&gt;<i>   &lt;/SEND&gt;
+</I>&gt;<i> - &lt;RECV&gt;
+</I>&gt;<i>   &lt;iq id=&quot;982087708&quot; type=&quot;result&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>/<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">I at P</A>&quot;
+</I>&gt;<i> to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>/<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">I at P</A>&quot; /&gt; 
+</I>&gt;<i>   &lt;/RECV&gt;
+</I>&gt;<i> - &lt;RECV&gt;
+</I>&gt;<i> - &lt;presence to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>&quot;
+</I>&gt;<i> from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot;&gt;
+</I>&gt;<i>   &lt;status&gt;Idle 0 Minutes&lt;/status&gt; 
+</I>&gt;<i>   &lt;/presence&gt;
+</I>&gt;<i>   &lt;/RECV&gt;
+</I>&gt;<i>   &lt;/jabberproxy_add_buddy&gt;
+</I>&gt;<i> 
+</I>&gt;<i> This sequence occured in a session in which I had not requested the whole
+</I>&gt;<i> roster list. If I do request the roster list first, I get what I consider
+</I>is
+&gt;<i> a &quot;normal&quot; protocol behavior which includes the 4 (!) roster updates and
+</I>the
+&gt;<i> reverse subscribe request as shown below.
+</I>&gt;<i> 
+</I>&gt;<i> - &lt;winjab_add_buddy&gt;
+</I>&gt;<i> - &lt;SENT&gt;
+</I>&gt;<i> - &lt;iq id=&quot;JCOM_34&quot; type=&quot;set&quot;&gt;
+</I>&gt;<i> - &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+</I>&gt;<i> - &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; name=&quot;jchalfan&quot;&gt;
+</I>&gt;<i>   &lt;group /&gt; 
+</I>&gt;<i>   &lt;/item&gt;
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i>   &lt;/iq&gt;
+</I>&gt;<i>   &lt;/SENT&gt;
+</I>&gt;<i> - &lt;SENT&gt;
+</I>&gt;<i> - &lt;presence to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot;
+</I>type=&quot;subscribe&quot;&gt;
+&gt;<i>   &lt;status&gt;Normal Subscription Request&lt;/status&gt; 
+</I>&gt;<i>   &lt;/presence&gt;
+</I>&gt;<i>   &lt;/SENT&gt;
+</I>&gt;<i> - &lt;RECV&gt;
+</I>&gt;<i> - &lt;iq type=&quot;set&quot;&gt;
+</I>&gt;<i> - &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+</I>&gt;<i> - &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; name=&quot;jchalfan&quot;
+</I>&gt;<i> subscription=&quot;none&quot;&gt;
+</I>&gt;<i>   &lt;group /&gt; 
+</I>&gt;<i>   &lt;/item&gt;
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i>   &lt;/iq&gt;
+</I>&gt;<i>   &lt;/RECV&gt;
+</I>&gt;<i> - &lt;RECV&gt;
+</I>&gt;<i>   &lt;iq id=&quot;JCOM_34&quot; type=&quot;result&quot; from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>/a_310&quot;
+</I>&gt;<i> to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>/a_310&quot; /&gt; 
+</I>&gt;<i> - &lt;iq type=&quot;set&quot;&gt;
+</I>&gt;<i> - &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+</I>&gt;<i> - &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; name=&quot;jchalfan&quot;
+</I>&gt;<i> subscription=&quot;none&quot; ask=&quot;subscribe&quot;&gt;
+</I>&gt;<i>   &lt;group /&gt; 
+</I>&gt;<i>   &lt;/item&gt;
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i>   &lt;/iq&gt;
+</I>&gt;<i> - &lt;presence to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>&quot; type=&quot;subscribed&quot;
+</I>&gt;<i> from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot;&gt;
+</I>&gt;<i>   &lt;status&gt;Normal Subscription Request&lt;/status&gt; 
+</I>&gt;<i>   &lt;/presence&gt;
+</I>&gt;<i> - &lt;iq type=&quot;set&quot;&gt;
+</I>&gt;<i> - &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+</I>&gt;<i> - &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; name=&quot;jchalfan&quot;
+</I>&gt;<i> subscription=&quot;to&quot;&gt;
+</I>&gt;<i>   &lt;group /&gt; 
+</I>&gt;<i>   &lt;/item&gt;
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i>   &lt;/iq&gt;
+</I>&gt;<i> - &lt;presence to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>&quot; type=&quot;subscribe&quot;
+</I>&gt;<i> from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot;&gt;
+</I>&gt;<i>   &lt;status&gt;Normal Subscription Request&lt;/status&gt; 
+</I>&gt;<i>   &lt;/presence&gt;
+</I>&gt;<i> - &lt;presence to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">a at billabong</A>&quot;
+</I>&gt;<i> from=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot;&gt;
+</I>&gt;<i>   &lt;status&gt;Idle 0 Minutes&lt;/status&gt; 
+</I>&gt;<i>   &lt;/presence&gt;
+</I>&gt;<i>   &lt;/RECV&gt;
+</I>&gt;<i> - &lt;SENT&gt;
+</I>&gt;<i>   &lt;presence to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot;
+</I>type=&quot;subscribed&quot;
+&gt;<i> /&gt; 
+</I>&gt;<i>   &lt;/SENT&gt;
+</I>&gt;<i> - &lt;RECV&gt;
+</I>&gt;<i> - &lt;iq type=&quot;set&quot;&gt;
+</I>&gt;<i> - &lt;query xmlns=&quot;jabber:iq:roster&quot;&gt;
+</I>&gt;<i> - &lt;item jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jchalfan at aimtrans.internal.outbackinc.com</A>&quot; name=&quot;jchalfan&quot;
+</I>&gt;<i> subscription=&quot;both&quot;&gt;
+</I>&gt;<i>   &lt;group /&gt; 
+</I>&gt;<i>   &lt;/item&gt;
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i>   &lt;/iq&gt;
+</I>&gt;<i>   &lt;/RECV&gt;
+</I>&gt;<i>   &lt;/winjab_add_buddy&gt;
+</I>&gt;<i> 
+</I>&gt;<i> Can someone please clarify if this is a bug or a &quot;feature&quot;.
+</I>&gt;<i> 
+</I>&gt;<i> thanks,
+</I>&gt;<i> 
+</I>&gt;<i> -J
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006215.html">[JDEV] possible defect in RosterList behavior
+</A></li>
+	<LI>Next message: <A HREF="006218.html">[JDEV] does aim transport support privacy?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6217">[ date ]</a>
+              <a href="thread.html#6217">[ thread ]</a>
+              <a href="subject.html#6217">[ subject ]</a>
+              <a href="author.html#6217">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

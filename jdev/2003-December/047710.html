@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Problems with binding
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Problems%20with%20binding&In-Reply-To=%3C3FDD35F7.9090108%40penza-gsm.ru%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="047708.html">
+   <LINK REL="Next"  HREF="047705.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Problems with binding</H1>
+    <B>Alexey Nezhdanov</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Problems%20with%20binding&In-Reply-To=%3C3FDD35F7.9090108%40penza-gsm.ru%3E"
+       TITLE="[JDEV] Problems with binding">snake at penza-gsm.ru
+       </A><BR>
+    <I>Sun Dec 14 22:17:59 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="047708.html">[JDEV] Problems with binding
+</A></li>
+        <LI>Next message: <A HREF="047705.html">[JDEV] xdb_sql vcard problem with PSI
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47710">[ date ]</a>
+              <a href="thread.html#47710">[ thread ]</a>
+              <a href="subject.html#47710">[ subject ]</a>
+              <a href="author.html#47710">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Robert Norris wrote:
+
+&gt;<i>On Sat, Dec 13, 2003 at 05:30:21PM +0300, Alexey Nezhdanov wrote:
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>Found strange behaiveour: server binds only &quot;host/resource&quot; and ignores 
+</I>&gt;&gt;<i>the node part.
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>DEBUG: socket       sent  &lt;auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' 
+</I>&gt;&gt;<i>mechanism='PLAIN'&gt;d29vZHk4LnBlbnphLWdzbS5ydQB0ZXN0AHRlc3Q=\n&lt;/auth&gt;
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>When decoded, this has an authzid of 'woody8.penza-gsm.ru' (no node
+</I>&gt;<i>part).
+</I>&gt;<i>
+</I>&gt;<i>However, jabberd2 should have thrown you off at this time. I'll add some
+</I>&gt;<i>extra checks to make sure it does.
+</I>&gt;<i>
+</I>Ok. Maked the change:
+-            
+sasl_data='%s\x00%s\x00%s'%(self._owner.Server,self.username,self.password)
++            
+sasl_data='%s\x00%s\x00%s'%(self.username+'@'+self._owner.Server,self.username,self.password)
+And fast-tested to view if binding corrected:
+================================
+DEBUG: socket       got   &lt;stream:features 
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;&lt;mechanisms 
+xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;/stream:features&gt;
+DEBUG: socket       sent  &lt;auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' 
+mechanism='PLAIN'&gt;dGVzdEB3b29keTgucGVuemEtZ3NtLnJ1AHRlc3QAdGVzdA==\n&lt;/auth&gt;
+DEBUG: socket       got   &lt;success 
+xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/&gt;
+DEBUG: socket       sent  &lt;?xml version='1.0'?&gt;&lt;stream:stream 
+version='1.0' xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> 
+to='woody8.penza-gsm.ru' xmlns='jabber:client'&gt;
+DEBUG: socket       got   &lt;?xml version='1.0'?&gt;&lt;stream:stream 
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> xmlns='jabber:client' 
+from='woody8.penza-gsm.ru' version='1.0' 
+id='rhy9t7csywfox353rspqqp0en1xbzn5q440ybcqa'&gt;
+DEBUG: socket       got   &lt;stream:features 
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;&lt;bind 
+xmlns='urn:ietf:params:xml:ns:xmpp-bind'/&gt;&lt;session 
+xmlns='<A HREF="http://jabberd.jabberstudio.org/ns/session/1.0'/">http://jabberd.jabberstudio.org/ns/session/1.0'/</A>&gt;&lt;/stream:features&gt;
+DEBUG: socket       sent  &lt;iq id='1' type='set'&gt;&lt;bind 
+xmlns='urn:ietf:params:xml:ns:xmpp-bind' /&gt;&lt;/iq&gt;
+DEBUG: socket       got   &lt;iq xmlns='jabber:client' id='1' 
+type='result'&gt;&lt;bind 
+xmlns='urn:ietf:params:xml:ns:xmpp-bind'&gt;&lt;jid&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test at woody8.penza-gsm.ru</A>/219e900d0e8d92752040bcab4c71835e3884dd69&lt;/jid&gt;&lt;/bind&gt;&lt;/iq&gt;
+DEBUG: socket       sent  &lt;iq id='2' type='get'&gt;&lt;query 
+xmlns='jabber:iq:roster' /&gt;&lt;/iq&gt;
+DEBUG: socket       sent  &lt;presence id='3' /&gt;
+DEBUG: socket       got   &lt;stream:error 
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;&lt;not-authorized 
+xmlns='urn:ietf:params:xml:ns:xmpp-streams'/&gt;&lt;/stream:error&gt;
+================================
+It seems that I got another sort of error from now on. Subsequent run 
+(with wrong password):
+================================
+DEBUG: socket       sent  &lt;?xml version='1.0'?&gt;&lt;stream:stream 
+version='1.0' xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> 
+to='woody8.penza-gsm.ru' xmlns='jabber:client'&gt;
+DEBUG: socket       got   &lt;?xml version='1.0'?&gt;&lt;stream:stream 
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> xmlns='jabber:client' 
+from='woody8.penza-gsm.ru' version='1.0' 
+id='7oymrciubfrsd0dstfcww7eucqnlp94wy3jpf2kq'&gt;
+DEBUG: socket       got   &lt;stream:features 
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;&lt;starttls 
+xmlns='urn:ietf:params:xml:ns:xmpp-tls'/&gt;&lt;mechanisms 
+xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;/stream:features&gt;
+DEBUG: socket       sent  &lt;starttls 
+xmlns=&quot;urn:ietf:params:xml:ns:xmpp-tls&quot;/&gt;
+DEBUG: socket       got   &lt;proceed xmlns='urn:ietf:params:xml:ns:xmpp-tls'/&gt;
+DEBUG: socket       sent  &lt;?xml version='1.0'?&gt;&lt;stream:stream 
+version='1.0' xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> 
+to='woody8.penza-gsm.ru' xmlns='jabber:client'&gt;
+DEBUG: socket       got   &lt;?xml version='1.0'?&gt;&lt;stream:stream 
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> xmlns='jabber:client' 
+from='woody8.penza-gsm.ru' version='1.0' 
+id='hbjucxn5cz287g3k7r5w0atydcose8jwk2qw0e2c'&gt;
+DEBUG: socket       got   &lt;stream:features 
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;&lt;mechanisms 
+xmlns='urn:ietf:params:xml:ns:xmpp-sasl'&gt;&lt;mechanism&gt;DIGEST-MD5&lt;/mechanism&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;/stream:features&gt;
+DEBUG: socket       sent  &lt;auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' 
+mechanism='PLAIN'&gt;dGVzdEB3b29keTgucGVuemEtZ3NtLnJ1AHRlc3QAdGVzdHJmZ3JlZw==\n&lt;/auth&gt;
+DEBUG: socket       error Socket error while receiving data
+DEBUG: socket       error Socket operation failed
+================================
+When I returned password to the correct one the output still the same. 
+Jabberd2 just closes the stream now without any notice. I will restart 
+jabberd2 today and see if it will correct the error.
+
+--
+Respectively
+Alexey Nezhdanov.
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20031215/8532675c/attachment-0001.htm">https://www.jabber.org/jdev/attachments/20031215/8532675c/attachment-0001.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="047708.html">[JDEV] Problems with binding
+</A></li>
+	<LI>Next message: <A HREF="047705.html">[JDEV] xdb_sql vcard problem with PSI
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47710">[ date ]</a>
+              <a href="thread.html#47710">[ thread ]</a>
+              <a href="subject.html#47710">[ subject ]</a>
+              <a href="author.html#47710">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

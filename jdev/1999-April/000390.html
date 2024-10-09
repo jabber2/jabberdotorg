@@ -1,0 +1,236 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Information Querying/Storage Proposal
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Information%20Querying/Storage%20Proposal&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000392.html">
+   <LINK REL="Next"  HREF="000394.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Information Querying/Storage Proposal</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Information%20Querying/Storage%20Proposal&In-Reply-To="
+       TITLE="[JDEV] Information Querying/Storage Proposal">jeremie at jabber.org
+       </A><BR>
+    <I>Mon Apr  5 10:31:51 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000392.html">[JDEV] About server2client roster messages...
+</A></li>
+        <LI>Next message: <A HREF="000394.html">[JDEV] About transports...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#390">[ date ]</a>
+              <a href="thread.html#390">[ thread ]</a>
+              <a href="subject.html#390">[ subject ]</a>
+              <a href="author.html#390">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Information Querying/Storage Proposal
+
+This is a proposal to add an simple data storage and retrieval to Jabber
+that will function in a general purpose way.
+
+Goals: Handle the following
+	User Information(Name/Address/etc)
+	User Preferences(Common Client Prefs, colors, sorting, etc)
+	Public Server Data(Online users, simple stats, site/help URL, etc)
+	Private Server Data(Admins only, full stats, errors, security, perf)
+	Private Client Data(Special purpose client-level queries)
+
+Here is a possible simple protocol snippet to show how it might work:
+
+&lt;info&gt;
+	&lt;to&gt;jeremie&lt;/to&gt;
+	&lt;target&gt;user&lt;/target&gt;
+	&lt;id&gt;public&lt;/id&gt;
+	&lt;query&gt;&lt;name/&gt;&lt;address/&gt;&lt;email/&gt;&lt;/query&gt;
+&lt;/info&gt;
+
+This &quot;info&quot; packet would be sent from the client to the server, asking the
+server for the name/address/email of the user &quot;Jeremie&quot;.  It would be up
+to the server/users privacy settings to decide, but a possible responce
+might be:
+
+&lt;info&gt;
+	&lt;target&gt;client&lt;/target&gt;
+	&lt;type&gt;public&lt;/type&gt;
+	&lt;result&gt;
+		&lt;name&gt;Jeremie Miller&lt;/name&gt;
+		&lt;address&gt;Some Street, City, State, 55555&lt;/address&gt;
+		&lt;email&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jeremie at jabber.org</A>&lt;/email&gt;
+	&lt;/result&gt;
+&lt;/info&gt;
+
+The server would basically just &quot;fill in&quot; the query terms sent by the
+client.
+
+
+&lt;target&gt;***&lt;/target&gt;
+ -- Contains characters identifying what &quot;area&quot; this info is related to
+ -- Possible Values:
+	user: User specific level information, addresses, preferences, etc
+	client: Delivered directly to the client software, responses and
+		special queries
+	server: Server specific information
+
+&lt;type&gt;***&lt;/type&gt;
+ -- This is the specific item that the query/result is directed at
+ -- Possibilities:
+	public: Usually public information
+	admin: Administrative protected tasks
+	feature: Feature Negotiation
+	private: Priavte only data
+
+&lt;query&gt;***&lt;/query&gt;
+ -- Contains empty XML tags detailing the specifics of the data requested
+
+&lt;result&gt;***&lt;/result&gt;
+ -- Should contain the queried XML tags filled in with the correct data,
+which might itself be XML
+
+
+This takes care of a simple data query/result situation, let's add in the
+ability to change data also.
+
+&lt;info&gt;
+	&lt;target&gt;user&lt;/target&gt;
+	&lt;type&gt;public&lt;/type&gt;
+	&lt;set&gt;&lt;email&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jer at jeremie.com</A>&lt;/email&gt;&lt;/set&gt;
+&lt;/info&gt;
+
+By simply changing the &lt;query&gt; to a &lt;set&gt;, the data can be updated/stored.
+This would of course only be allowed by an authenticated session from the
+correct user account.
+
+
+This appears to take care of most cases, and also allow for more
+functionality in the use of Jabber.
+
+Possibilities include:
+
+ -- Using to store general client prefs:
+	Create a list of standard client preferences, &lt;audio&gt;yes&lt;/audio&gt;,
+etc, that a client can optionally support
+
+ -- Using to store client specific prefs:
+	Clients can use a specific query such as &lt;ClientSoftName&gt;
+&lt;theme&gt;asdf&lt;/theme&gt; &lt;startup&gt;max&lt;/startup&gt; &lt;/ClientSoftName&gt; and the
+server should store this and return it when asked.  This should only be
+_client_specific_ data stored with a &quot;priavte&quot; type, all general
+preferences that might apply to multiple clients should be turned into a
+general list and posted in the client development requirements/guidelines.
+
+ -- Using to query server variables:
+	Special public server queries might include &lt;help/&gt; &lt;info/&gt;
+&lt;admin/&gt; that any transport/server should respond to appropriately, with a
+URL or other data. 
+
+ -- Using to admin a server:
+	Special administrative accounts might be able to query errors,
+performance, connected users, etc.  They might also be able to set certian
+items an change variables in the server on the fly or disconnect users. 
+
+ -- Using for special client-level purposes:
+	Queries can also be delivered to clients, although they are not
+required to respond.  But special clients might be able to send back
+transient data.  This would be a special purpose only client&lt;-&gt;client
+communication, where it is NON-USER-LEVEL data.  Anything user level or
+that might interact with the user in any way should be done via the
+&lt;ext&gt;&lt;/ext&gt; tags in a message.  There is the possibility for abuse here,
+just note that the &lt;info/&gt; packets are for simple data/variable
+querying/storage that is not user-level. Example: Temperature sensor!  A
+small computer could be set up as a miniature weather lab with a few
+sensors connected.  It could connect to a Jabber server as a client, and
+it would update it's status regularly with the current temperature so
+everyone with it on their roster would have the current temp.  But special
+info queries could be sent to it to retrieve wind speed or to set update
+intervals, etc. 
+
+ -- Feature Negotiation!!!
+	Every digital communication medium needs decent &quot;feature
+negotiation&quot; to allow growth and upgrades, so that newer nodes can use
+newer features without breaking older ones.  This is especially important
+in Jabber since it's a completely open architecture, so special
+transports, modules, and clients will be written with unique and special
+feature sets.  All of these need to be able to negotiate with each other
+what they all can/can't do.  Info queries with a &lt;type&gt;feature&lt;/type&gt; can
+be used everywhere to ask if the other side can do a certian feature or
+ask for information about that feature.  Example: client to client file
+transfer query might look like &lt;info&gt; &lt;to&gt;user&lt;/to&gt;
+&lt;target&gt;client&lt;/target&gt; &lt;type&gt;feature&lt;/type&gt;
+&lt;query&gt;&lt;c2c_file_ssl/&gt;&lt;/query&gt; &lt;/info&gt; would ask the other client if they
+can do SSL file transfers directly, and the client might(definately
+optionally) respond with a
+&lt;result&gt;&lt;c2c_file_ssl&gt;123.23.12.231:8453&lt;/c2c_file_ssl&gt;&lt;/result&gt;
+signifying where to put the file. 
+
+
+
+Obviously, this is a fairly important piece of Jabber.  I expect some
+discussion on these subjects, but please, let's try to remember that we
+want to keep the base protocol simple and any of these items as optional
+as possible.  This won't be in 0.6 but will be added in shortly after.
+Much of it needs to be fleshed out yet, primarily exactly what the common
+public, admin, and feature queries are going to be.
+
+
+Jer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000392.html">[JDEV] About server2client roster messages...
+</A></li>
+	<LI>Next message: <A HREF="000394.html">[JDEV] About transports...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#390">[ date ]</a>
+              <a href="thread.html#390">[ thread ]</a>
+              <a href="subject.html#390">[ subject ]</a>
+              <a href="author.html#390">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

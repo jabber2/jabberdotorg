@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Avatar images are per-resource
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Avatar%20images%20are%20per-resource&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="009318.html">
+   <LINK REL="Next"  HREF="009322.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Avatar images are per-resource</H1>
+    <B>Jens Alfke</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Avatar%20images%20are%20per-resource&In-Reply-To="
+       TITLE="[JDEV] Avatar images are per-resource">jens at mac.com
+       </A><BR>
+    <I>Wed Sep  5 12:05:10 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="009318.html">[JDEV] patch to fix presence problem
+</A></li>
+        <LI>Next message: <A HREF="009322.html">[JDEV] Avatar images are per-resource
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9319">[ date ]</a>
+              <a href="thread.html#9319">[ thread ]</a>
+              <a href="subject.html#9319">[ subject ]</a>
+              <a href="author.html#9319">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>One more note on the avatar spec. I realized while in the shower this 
+morning that it's important that the image be stored in the public XML 
+associated with the resource, not in the XML for the user itself. 
+Otherwise multiple logins trying to set different images will stomp over 
+the image stored on the server.
+
+I was unsure at the time (this was about while I was lathering my 
+armpits) whether the public-XML thingy supported per-resource storage, 
+but on looking at the very vague description 
+&lt;<A HREF="http://docs.jabber.org/draft-proto/html/xml.html">http://docs.jabber.org/draft-proto/html/xml.html</A>&gt; it appears that it 
+does. The trick is to include your resource when sending the IQ 'set' to 
+yourself.
+
+So to use an example, the provider of the image would store it on the 
+server as follows:
+
+&lt;iq id=&quot;1&quot; type=&quot;set&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">me at myserver</A>/myresource&quot;&gt;
+	&lt;query xmlns=&quot;jabber-storage:iq:avatar&gt;
+		&lt;data mimetype=&quot;image/jpeg&quot;&gt; ...Base64 image data goes here.. &lt;/data&gt;
+	&lt;/query&gt;
+&lt;/iq&gt;
+
+The important thing to note is that the &quot;to&quot; address contains the 
+sender's resource. The requester would also need to include the resource 
+(as is already shown in the current avatar proposal.)
+
+An additional thing I've done in the example is include a &quot;mimetype&quot; 
+attribute on the &lt;data&gt; element. I know I said earlier that the common 
+graphics formats are self-describing, but I think it's still safer to 
+tag the data. Not all OS's may have support for auto-detecting the image 
+type, and future image types may be harder to detect, and also this way 
+we could in the future include multiple &lt;data&gt; elements with different 
+MIME types and let the receiver easily pick out the best one.
+
+--Jens
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="009318.html">[JDEV] patch to fix presence problem
+</A></li>
+	<LI>Next message: <A HREF="009322.html">[JDEV] Avatar images are per-resource
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9319">[ date ]</a>
+              <a href="thread.html#9319">[ thread ]</a>
+              <a href="subject.html#9319">[ subject ]</a>
+              <a href="author.html#9319">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

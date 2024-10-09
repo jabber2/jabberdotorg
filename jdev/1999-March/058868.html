@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] ECONNRESET check
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20ECONNRESET%20check&In-Reply-To=%3C039301be64e2%24b71955f0%248ed7c0d0%40devnull.bip.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058867.html">
+   <LINK REL="Next"  HREF="058869.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] ECONNRESET check</H1>
+    <B>Scott Perrine</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20ECONNRESET%20check&In-Reply-To=%3C039301be64e2%24b71955f0%248ed7c0d0%40devnull.bip.com%3E"
+       TITLE="[JDEV] ECONNRESET check">sperrine at xuma.com
+       </A><BR>
+    <I>Tue Mar  2 13:27:30 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058867.html">[JDEV] Progress, CVS and Expat
+</A></li>
+        <LI>Next message: <A HREF="058869.html">[JDEV] ECONNRESET check
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58868">[ date ]</a>
+              <a href="thread.html#58868">[ thread ]</a>
+              <a href="subject.html#58868">[ subject ]</a>
+              <a href="author.html#58868">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hey there Jabber-folks ...
+
+I have had a problem with my transport server crashing when a client is killed without cleanly disconnecting from the socket first ... i.e. I control-c the rug out from underneath the carpet of my client app, so it doesn't get to send its logout message &amp; do a socket close.  The read() call in io.c fails and h_err() kills my transport.
+
+A small little fix takes care of this for me ... so I thought I'd mail it in &amp; see if it helped out anyone else as well.
+
+io.c:
+diff io.c io.c.new
+1a2
+&gt;<i> #include &lt;errno.h&gt;
+</I>83c84,85
+&lt;                                               h_err(nbytes,&quot;read&quot;);
+---
+&gt;<i>                                               if(errno != ECONNRESET)
+</I>&gt;<i>                                                       h_err(nbytes,&quot;read&quot;);
+</I>
+
+This way if the connection was killed, then read() failing &amp; returning -1 lets us &quot;drop the connection&quot; (and the user session) cleanly on our side.
+
+---------------------------------------------------------------------------------------------------------
+Scott Perrine                                         ph: 415.777.9641
+Xuma Technologies LLC                       <A HREF="http://www.xuma.com">http://www.xuma.com</A>
+World Class Engineering For E-Business
+---------------------------------------------------------------------------------------------------------
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/19990302/aeb1ff18/attachment-0002.htm">https://www.jabber.org/jdev/attachments/19990302/aeb1ff18/attachment-0002.htm</A>&gt;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: Scott Perrine.vcf
+Type: text/x-vcard
+Size: 359 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/19990302/aeb1ff18/attachment-0002.vcf">https://www.jabber.org/jdev/attachments/19990302/aeb1ff18/attachment-0002.vcf</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058867.html">[JDEV] Progress, CVS and Expat
+</A></li>
+	<LI>Next message: <A HREF="058869.html">[JDEV] ECONNRESET check
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58868">[ date ]</a>
+              <a href="thread.html#58868">[ thread ]</a>
+              <a href="subject.html#58868">[ subject ]</a>
+              <a href="author.html#58868">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

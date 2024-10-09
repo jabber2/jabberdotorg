@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> (offline component/server support) Re: [JDEV] Using jabber as a central server for an Intranet
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%28offline%20component/server%20support%29%20Re%3A%20%5BJDEV%5D%20Using%20jabber%20as%20a%0A%20central%20server%20for%20an%20Intranet&In-Reply-To=20020104053134.85FCF13DF2%40uucp3.netcore.co.in">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="010552.html">
+   <LINK REL="Next"  HREF="010526.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>(offline component/server support) Re: [JDEV] Using jabber as a central server for an Intranet</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%28offline%20component/server%20support%29%20Re%3A%20%5BJDEV%5D%20Using%20jabber%20as%20a%0A%20central%20server%20for%20an%20Intranet&In-Reply-To=20020104053134.85FCF13DF2%40uucp3.netcore.co.in"
+       TITLE="(offline component/server support) Re: [JDEV] Using jabber as a central server for an Intranet">jeremie at jabber.org
+       </A><BR>
+    <I>Mon Jan  7 06:47:57 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="010552.html">[JDEV] Please help Problem with connecting to Yahoo Transport
+</A></li>
+        <LI>Next message: <A HREF="010526.html">[JDEV] Using jabber as a central server for an Intranet
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10597">[ date ]</a>
+              <a href="thread.html#10597">[ thread ]</a>
+              <a href="subject.html#10597">[ subject ]</a>
+              <a href="author.html#10597">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Your lucky day :)
+
+I've been wanting to support this for quite some time, and got a little
+ambitions in the wee hours of the morning.  I just checked it into cvs and
+it'll be in 1.4.2 as well.  
+
+It's pretty simple at this point, any &lt;accept&gt;...&lt;/accept&gt; block (allowing
+remote components/servers to link up to a parent) now supports an
+&lt;offline/&gt; flag.  This means that when there is nothing connected, and the
+packets go through their normal short timeout (configured with
+&lt;timeout&gt;seconds&lt;/timeout&gt;) waiting for a connection, they are then sent
+through an offline filter which stores all message and presence
+subscriptions in xdb.  When the socket is reestablished, any waiting
+offline packets are flushed to it first.  
+
+This should work fine for the situation described.  It would also enable
+someone to run a server on a dialup or transient connection if they had
+the offline-ip map to a suitable permanent host willing to store the
+offline data (it might not be to hard to even build a service that does
+this automatically, such as *.public.jabber.org or such).
+
+Of course, the next logical problem is that you don't want to allow full
+internal-server component access (to logging, xdb, route packets, etc)
+just to store offline messages for another server.  So I also added a
+&lt;restrict/&gt; flag to the accept block.  This does two things, requires that
+every packet be only valid message/presence/iq's, and second it enforces
+that the sending from=&quot;&quot; jid is valid for that service.  Essentialy, it
+makes the accept act like a hard-wired s2s connection.
+
+Enjoy :)
+
+Jer
+
+PS: sorry about the hiatus on finishing up 1.4.2, it's just a few more
+misc little things to clean up and then another quick test build,
+hopefully this week.
+
+On Fri, 4 Jan 2002, Ritu Khetan wrote:
+
+&gt;<i> Thanks for all the info friends.
+</I>&gt;<i> 
+</I>&gt;<i> Regards,
+</I>&gt;<i> Ritu
+</I>&gt;<i> 
+</I>&gt;<i> Quoting DJ Adams &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dj.adams at pobox.com</A>&gt;:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; On Thu, Jan 03, 2002 at 11:06:51AM +0530, Ritu Khetan wrote:
+</I>&gt;<i> &gt; &gt; Hi Dj,
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;   You are certainly missing the point here.Let me explain it again:
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;   I want to have a central jabber server[exposed to the Internet] which
+</I>&gt;<i> &gt; would take care of
+</I>&gt;<i> &gt; &gt; offline messages,etc for other locations which are offline, as I had
+</I>&gt;<i> &gt; mentioned earlier,
+</I>&gt;<i> &gt; &gt; these servers do not have dedicated connections, so they might be
+</I>&gt;<i> &gt; available online off
+</I>&gt;<i> &gt; &gt; and on.THis central server would therefore forward messages to a
+</I>&gt;<i> &gt; particular location
+</I>&gt;<i> &gt; &gt; whenever it is online.
+</I>&gt;<i> &gt; &gt; So, in short, I dont want any of the locations to interact directly, but
+</I>&gt;<i> &gt; to send messages via
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Ah, ok, I get you now. I thought you meant that all the
+</I>&gt;<i> &gt; servers were on the same physical internal network. If
+</I>&gt;<i> &gt; they\'re on different transient connections, there\'s nothing
+</I>&gt;<i> &gt; out of the box on the open source server (there may be
+</I>&gt;<i> &gt; something in the Jabber Inc version, I dunno) that will
+</I>&gt;<i> &gt; enable you to use a Jabber server as an intermediate
+</I>&gt;<i> &gt; \'hop\' and have it retry (like email). (It\'s a different story
+</I>&gt;<i> &gt; if the different locations are just client connections, of
+</I>&gt;<i> &gt; course). Then again, there\'s nothing stopping you writing
+</I>&gt;<i> &gt; a component to do this, sort of a \'delivery\' component...
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; dj
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="010552.html">[JDEV] Please help Problem with connecting to Yahoo Transport
+</A></li>
+	<LI>Next message: <A HREF="010526.html">[JDEV] Using jabber as a central server for an Intranet
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10597">[ date ]</a>
+              <a href="thread.html#10597">[ thread ]</a>
+              <a href="subject.html#10597">[ subject ]</a>
+              <a href="author.html#10597">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

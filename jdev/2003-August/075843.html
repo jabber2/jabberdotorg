@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Net::Jabber - XDB-&gt;GetData() returns undef?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Net%3A%3AJabber%20-%20XDB-%3EGetData%28%29%20returns%20undef%3F&In-Reply-To=%3C3F302122.1050300%40jabberstudio.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="075842.html">
+   <LINK REL="Next"  HREF="075844.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Net::Jabber - XDB-&gt;GetData() returns undef?</H1>
+    <B>Nicholas Perez</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Net%3A%3AJabber%20-%20XDB-%3EGetData%28%29%20returns%20undef%3F&In-Reply-To=%3C3F302122.1050300%40jabberstudio.org%3E"
+       TITLE="[JDEV] Net::Jabber - XDB-&gt;GetData() returns undef?">nick at jabberstudio.org
+       </A><BR>
+    <I>Tue Aug  5 16:26:58 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="075842.html">[JDEV] Net::Jabber - XDB-&gt;GetData() returns undef?
+</A></li>
+        <LI>Next message: <A HREF="075844.html">[JDEV] Re: Conference component for win32 
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75843">[ date ]</a>
+              <a href="thread.html#75843">[ thread ]</a>
+              <a href="subject.html#75843">[ subject ]</a>
+              <a href="author.html#75843">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>You should contact the author of the library rather than bothering the 
+list with this.
+
+
+Chris Searle wrote:
+
+&gt;<i>Net::Jabber 1.0024 on debian stable.
+</I>&gt;<i>
+</I>&gt;<i>Just starting in on XDB.
+</I>&gt;<i>
+</I>&gt;<i>OK - I have jabberd sending jabber:iq:auth through to my perl
+</I>&gt;<i>script. If I dump the incoming xdb object thus (the rest of the script
+</I>&gt;<i>is cribbed almost directly from component_accept.pl):
+</I>&gt;<i>
+</I>&gt;<i>sub xdbCB {
+</I>&gt;<i>  my $sid = shift;
+</I>&gt;<i>  my $xdb = shift;
+</I>&gt;<i>
+</I>&gt;<i>  print Dumper($xdb);
+</I>&gt;<i>}
+</I>&gt;<i>
+</I>&gt;<i>I get:
+</I>&gt;<i>
+</I>&gt;<i>$VAR1 = bless( {
+</I>&gt;<i>                 'CHILDREN' =&gt; {},
+</I>&gt;<i>                 'TAG' =&gt; 'xdb',
+</I>&gt;<i>                 'DATA' =&gt; {
+</I>&gt;<i>                             'id' =&gt; '62',
+</I>&gt;<i>                             'type' =&gt; 'get',
+</I>&gt;<i>                             'to' =&gt; bless( {
+</I>&gt;<i>                                              'RESOURCE' =&gt; '',
+</I>&gt;<i>                                              'JID' =&gt; '<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chris at jabber.longship.org</A>',
+</I>&gt;<i>                                              'USERID' =&gt; 'chris',
+</I>&gt;<i>                                              'VERSION' =&gt; '1.0024',
+</I>&gt;<i>                                              'SERVER' =&gt; 'jabber.longship.org'
+</I>&gt;<i>                                            }, 'Net::Jabber::JID' ),
+</I>&gt;<i>                             'from' =&gt; bless( {
+</I>&gt;<i>                                                'RESOURCE' =&gt; '',
+</I>&gt;<i>                                                'JID' =&gt; 'sessions',
+</I>&gt;<i>                                                'USERID' =&gt; '',
+</I>&gt;<i>                                                'VERSION' =&gt; '1.0024',
+</I>&gt;<i>                                                'SERVER' =&gt; 'sessions'
+</I>&gt;<i>                                              }, 'Net::Jabber::JID' ),
+</I>&gt;<i>                             'ns' =&gt; 'jabber:iq:auth'
+</I>&gt;<i>                           },
+</I>&gt;<i>                 'DEBUGHEADER' =&gt; 'XDB',
+</I>&gt;<i>                 'VERSION' =&gt; '1.0024'
+</I>&gt;<i>               }, 'Net::Jabber::XDB' );
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>So - it looks like data is there.
+</I>&gt;<i>
+</I>&gt;<i>But - add the line:
+</I>&gt;<i>  my $reply = $xdb-&gt;Reply(type=&gt;&quot;result&quot;);
+</I>&gt;<i>
+</I>&gt;<i>and you get:
+</I>&gt;<i>
+</I>&gt;<i>Can't call method &quot;GetXMLNS&quot; on an undefined value at /usr/share/perl5/Net/Jabber/XDB.pm line 392.
+</I>&gt;<i>
+</I>&gt;<i>(the same happens if you call -&gt;Reply() also).
+</I>&gt;<i>
+</I>&gt;<i>line 392 is trying to call:
+</I>&gt;<i>
+</I>&gt;<i>$reply-&gt;NewData($selfData-&gt;GetXMLNS());
+</I>&gt;<i>
+</I>&gt;<i>where $selfData is the return from $self-&gt;GetData();
+</I>&gt;<i>
+</I>&gt;<i>I also get undef if I try to access $xdb-&gt;GetData().
+</I>&gt;<i>
+</I>&gt;<i>What have I missed? 
+</I>&gt;<i>
+</I>&gt;<i>Thanks in advance
+</I>&gt;<i>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="075842.html">[JDEV] Net::Jabber - XDB-&gt;GetData() returns undef?
+</A></li>
+	<LI>Next message: <A HREF="075844.html">[JDEV] Re: Conference component for win32 
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75843">[ date ]</a>
+              <a href="thread.html#75843">[ thread ]</a>
+              <a href="subject.html#75843">[ subject ]</a>
+              <a href="author.html#75843">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

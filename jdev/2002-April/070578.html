@@ -1,0 +1,872 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Summary: registration and authentication problems
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Summary%3A%20registration%20and%20authentication%20problems&In-Reply-To=%3C20020402211251.D23220%40blank.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="070576.html">
+   <LINK REL="Next"  HREF="070580.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Summary: registration and authentication problems</H1>
+    <B>Nathan J. Mehl</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Summary%3A%20registration%20and%20authentication%20problems&In-Reply-To=%3C20020402211251.D23220%40blank.org%3E"
+       TITLE="[JDEV] Summary: registration and authentication problems">memory-jabber at blank.org
+       </A><BR>
+    <I>Tue Apr  2 20:12:51 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="070576.html">Publishing Stats (was Re: [JDEV] Concurrent Users)
+</A></li>
+        <LI>Next message: <A HREF="070580.html">[JDEV] ANNOUNCE: SashXB 0.9.9 with Jabber Extension
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#70578">[ date ]</a>
+              <a href="thread.html#70578">[ thread ]</a>
+              <a href="subject.html#70578">[ subject ]</a>
+              <a href="author.html#70578">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Okay, after running myself in circles for several hours, I finally sat 
+down and started trying to work through this methodically.
+
+Summary: I am having a number of problems with new user registration
+in jabberd.  The problems are repeatable, but vary widely based on
+which server and client environment is used.  
+
+The high points:
+
+	- Jabberd 1.4.2's native registration (mod_register) is broken
+	  on non-linux platforms. 
+	- mod_auth_radius will _only_ work on jabberd 1.4.2 on OpenBSD
+	  with WinJab and Exodus
+
+The key players: 
+
+	OpenBSD 2.8; gcc 2.95.3; pth 1.3.7
+	RedHat Linux 7.2; gcc 2.96-98; pth 1.3.7; glibc 2.2.4-19.3, kernel 2.4.9-17
+	Solaris 8; gcc 2.95.3; pth 1.3.7
+
+	jabberd-1.4.2
+	jabberd-1.4.1
+
+	Jabber Instant Messenger (JIM) 2.4.2.1
+	WinJab 1.1.0.1
+	Exodus 0.5.0.3
+
+	mod_auth_radius.c from download.jabber.org/contrib/
+
+(Note that I re-ran a few of the failed tests below with pth 1.4.0 in place of
+1.3.7; the results were no different, so I opted not to make that a criterion.)
+
+I would be extremely interested to know if anyone else can duplicate
+these failures, or even better can produce successes in cases where I
+cannot.  (If the latter, I'd very much like to see your configs!)
+
+-n, with apologies in advance for the length of this
+
+--------------------------------------------------------------------------------
+
+The tests:
+
+OS	Server	Reg		Client	Result
+==	======	===		======	======
+
+obsd2.8	1.4.2	mod_register	JIM	RF: &quot;406 Not Acceptable&quot;
+obsd2.8	1.4.2	mod_register	WinJab	RS, LF: &quot;409 Username Not Available&quot;
+obsd2.8	1.4.2	mod_register	Exodus	RS, LF: &quot;401 Unauthorized&quot;
+obsd2.8	1.4.2	mod_auth_radius	JIM	RF: &quot;406 Not Acceptable&quot;
+obsd2.8	1.4.2	mod_auth_radius	WinJab	SUCCESS
+obsd2.8	1.4.2	mod_auth_radius	Exodus	SUCCESS
+
+rh7.2	1.4.2	mod_register	JIM	SUCCESS
+rh7.2	1.4.2	mod_register	WinJab	SUCCESS
+rh7.2	1.4.2	mod_register	Exodus	SUCCESS
+rh7.2	1.4.2	mod_auth_radius	JIM	RF; segfault in xmlnode_get_firstchild [4]
+rh7.2	1.4.2	mod_auth_radius	WinJab	RS, LF: segfault in xmlnode_get_attrib [5]
+rh7.2	1.4.2	mod_auth_radius	Exodus	RS, LF: segfault in xmlnode_get_attrib [6]
+
+sol8	1.4.2	mod_register	JIM	RF: &quot;406 Not Acceptable&quot;
+sol8	1.4.2	mod_register	WinJab	RS, LF: &quot;409 Username Not Available&quot;
+sol8	1.4.2	mod_register	Exodus	RS, LF: &quot;401 Unauthorized&quot;
+sol8	1.4.2	mod_auth_radius	JIM	RF: segfault in xmlnode_get_type [10]
+sol8	1.4.2	mod_auth_radius	WinJab	RS, LF: segfault in _xmlnode_search [11]
+sol8	1.4.2	mod_auth_radius	Exodus	RS, LF: segfault in _xmlnode_search [12]
+
+obsd2.8	1.4.1	mod_register	JIM	SUCCESS
+obsd2.8	1.4.1	mod_register	WinJab	SUCCESS
+obsd2.8	1.4.1	mod_register	Exodus	SUCCESS
+obsd2.8	1.4.1	mod_auth_radius	JIM	RF: segfault in xmlnode_get_type [1]
+obsd2.8	1.4.1	mod_auth_radius	WinJab	RS, LF: segfault in _xmlnode_search [2]
+obsd2.8	1.4.1	mod_auth_radius	Exodus	RS, LF: segfault in _xmlnode_search [3]
+
+rh7.2	1.4.1	mod_register	JIM	SUCCESS
+rh7.2	1.4.1	mod_register	WinJab	SUCCESS
+rh7.2	1.4.1	mod_register	Exodus	SUCCESS
+rh7.2	1.4.1	mod_auth_radius	JIM	RF; segfault in xmlnode_get_firstchild [7]
+rh7.2	1.4.1	mod_auth_radius	WinJab	RS, LF: segfault in xmlnode_get_attrib [8]
+rh7.2	1.4.1	mod_auth_radius	Exodus	RS, LF: segfault in xmlnode_get_attrib [9]
+
+-------------------------------------------------------------------------------
+
+Results legend:
+
+RF - Registration Failure: No user.xml file was written to the spool dir
+RS - Registration Success: A user.xml file was created
+LF - Login Failure: Client could not authenticate and attach
+
+Error code are taken from the server debug output and are condensed.  Full
+debug logs happily provided on request.
+
+&quot;mod_register&quot; actual jsm config:
+
+    &lt;load main=&quot;jsm&quot;&gt;
+      &lt;jsm&gt;./jsm/jsm.so&lt;/jsm&gt;
+      &lt;mod_echo&gt;./jsm/jsm.so&lt;/mod_echo&gt;
+      &lt;mod_roster&gt;./jsm/jsm.so&lt;/mod_roster&gt;
+      &lt;mod_time&gt;./jsm/jsm.so&lt;/mod_time&gt;
+      &lt;mod_vcard&gt;./jsm/jsm.so&lt;/mod_vcard&gt;
+      &lt;mod_last&gt;./jsm/jsm.so&lt;/mod_last&gt;
+      &lt;mod_version&gt;./jsm/jsm.so&lt;/mod_version&gt;
+      &lt;mod_announce&gt;./jsm/jsm.so&lt;/mod_announce&gt;
+      &lt;mod_agents&gt;./jsm/jsm.so&lt;/mod_agents&gt;
+      &lt;mod_browse&gt;./jsm/jsm.so&lt;/mod_browse&gt;
+      &lt;mod_admin&gt;./jsm/jsm.so&lt;/mod_admin&gt;
+      &lt;mod_filter&gt;./jsm/jsm.so&lt;/mod_filter&gt;
+      &lt;mod_offline&gt;./jsm/jsm.so&lt;/mod_offline&gt;
+      &lt;mod_presence&gt;./jsm/jsm.so&lt;/mod_presence&gt;
+      &lt;mod_auth_plain&gt;./jsm/jsm.so&lt;/mod_auth_plain&gt;
+      &lt;mod_auth_digest&gt;./jsm/jsm.so&lt;/mod_auth_digest&gt;
+      &lt;mod_auth_0k&gt;./jsm/jsm.so&lt;/mod_auth_0k&gt;
+      &lt;mod_log&gt;./jsm/jsm.so&lt;/mod_log&gt;
+      &lt;mod_register&gt;./jsm/jsm.so&lt;/mod_register&gt;
+      &lt;mod_xml&gt;./jsm/jsm.so&lt;/mod_xml&gt;
+    &lt;/load&gt;
+
+&quot;mod_auth_radius&quot; actual jsm config:
+
+    &lt;load main=&quot;jsm&quot;&gt;
+      &lt;jsm&gt;./jsm/jsm.so&lt;/jsm&gt;
+      &lt;mod_echo&gt;./jsm/jsm.so&lt;/mod_echo&gt;
+      &lt;mod_roster&gt;./jsm/jsm.so&lt;/mod_roster&gt;
+      &lt;mod_time&gt;./jsm/jsm.so&lt;/mod_time&gt;
+      &lt;mod_vcard&gt;./jsm/jsm.so&lt;/mod_vcard&gt;
+      &lt;mod_version&gt;./jsm/jsm.so&lt;/mod_version&gt;
+      &lt;mod_announce&gt;./jsm/jsm.so&lt;/mod_announce&gt;
+      &lt;mod_agents&gt;./jsm/jsm.so&lt;/mod_agents&gt;
+      &lt;mod_browse&gt;./jsm/jsm.so&lt;/mod_browse&gt;
+      &lt;mod_admin&gt;./jsm/jsm.so&lt;/mod_admin&gt;
+      &lt;mod_filter&gt;./jsm/jsm.so&lt;/mod_filter&gt;
+      &lt;mod_offline&gt;./jsm/jsm.so&lt;/mod_offline&gt;
+      &lt;mod_presence&gt;./jsm/jsm.so&lt;/mod_presence&gt;
+      &lt;mod_auth_radius&gt;./jsm/jsm.so&lt;/mod_auth_radius&gt;
+      &lt;mod_last&gt;./jsm/jsm.so&lt;/mod_last&gt;
+      &lt;mod_log&gt;./jsm/jsm.so&lt;/mod_log&gt;
+      &lt;mod_xml&gt;./jsm/jsm.so&lt;/mod_xml&gt;
+    &lt;/load&gt;
+
+-------------------------------------------------------------------------------
+
+Coredump backtraces:
+
+[1]
+GNU gdb 4.16.1
+This GDB was configured as &quot;i386-unknown-openbsd2.8&quot;...
+Core was generated by `jabberd'.
+Program terminated with signal 11, Segmentation fault.
+Reading symbols from /usr/libexec/ld.so...done.
+Reading symbols from /usr/local/lib/libpth.so.13.27...done.
+Reading symbols from /usr/local/lib/libradiusclient.so.0.1...done.
+Reading symbols from /usr/local/lib/liblber.so.2.4...done.
+Reading symbols from /usr/lib/libc.so.25.2...done.
+Reading symbols from /usr/local/jabber-1.4.1/./jsm/jsm.so...done.
+Reading symbols from /usr/local/jabber-1.4.1/./xdb_file/xdb_file.so...done.
+Reading symbols from /usr/local/jabber-1.4.1/./pthsock/pthsock_client.so...done.
+Reading symbols from /usr/local/jabber-1.4.1/./dnsrv/dnsrv.so...done.
+Reading symbols from /usr/local/jabber-1.4.1/./dialback/dialback.so...done.
+#0  0x13d10 in xmlnode_get_type (node=0x6465746e) at xmlnode.c:607
+607             return node-&gt;type;
+(gdb) bt
+#0  0x13d10 in xmlnode_get_type (node=0x6465746e) at xmlnode.c:607
+#1  0x142cc in xmlnode_insert_node (parent=0x1a8bb0, node=0x6465746e) at xmlnode.c:777
+#2  0x401d3e73 in mod_auth_radius_reg (m=0x1cbe00, arg=0x0) at mod_auth_radius.c:152
+#3  0x401cc940 in js_mapi_call (si=0xf9200, e=6, packet=0x1a89f8, user=0x0, s=0x0)
+    at modules.c:149
+#4  0x401cd184 in js_authreg (arg=0x1a89f8) at authreg.c:75
+#5  0xb7b6 in mtq_main (arg=0x1a72e0) at mtq.c:140
+#6  0x400fbe54 in pth_spawn_trampoline ()
+#7  0x400f9da1 in pth_mctx_set_bootstrap ()
+#8  0x400f9d19 in pth_mctx_set_trampoline ()
+#9  0x1cbf30 in ?? ()
+#10 0x1f in ?? ()
+#11 0x1020200 in ?? ()
+Cannot access memory at address 0x13d1000.
+
+
+[2]
+GNU gdb 4.16.1
+This GDB was configured as &quot;i386-unknown-openbsd2.8&quot;...
+Core was generated by `jabberd'.
+Program terminated with signal 11, Segmentation fault.
+Reading symbols from /usr/libexec/ld.so...done.
+Reading symbols from /usr/local/lib/libpth.so.13.27...done.
+Reading symbols from /usr/local/lib/libradiusclient.so.0.1...done.
+Reading symbols from /usr/local/lib/liblber.so.2.4...done.
+Reading symbols from /usr/lib/libc.so.25.2...done.
+Reading symbols from /usr/local/jabber-1.4.1/./jsm/jsm.so...done.
+Reading symbols from /usr/local/jabber-1.4.1/./xdb_file/xdb_file.so...done.
+Reading symbols from /usr/local/jabber-1.4.1/./pthsock/pthsock_client.so...done.
+Reading symbols from /usr/local/jabber-1.4.1/./dnsrv/dnsrv.so...done.
+Reading symbols from /usr/local/jabber-1.4.1/./dialback/dialback.so...done.
+#0  0x12e27 in _xmlnode_search (firstsibling=0x401ccebc, name=0x401d3d05 &quot;notify&quot;,
+    type=1) at xmlnode.c:105
+105             if ((current-&gt;type == type) &amp;&amp; (j_strcmp(current-&gt;name, name) == 0))
+(gdb) bt
+#0  0x12e27 in _xmlnode_search (firstsibling=0x401ccebc, name=0x401d3d05 &quot;notify&quot;,
+    type=1) at xmlnode.c:105
+#1  0x13a03 in xmlnode_get_attrib (owner=0x1cbe18, name=0x401d3d05 &quot;notify&quot;)
+    at xmlnode.c:482
+#2  0x401d40d0 in mod_auth_radius_reg (m=0x1cbe00, arg=0x0) at mod_auth_radius.c:192
+#3  0x401cc940 in js_mapi_call (si=0xf9200, e=6, packet=0x1a8fd0, user=0x0, s=0x0)
+    at modules.c:149
+#4  0x401cd2f2 in js_authreg (arg=0x1a8fd0) at authreg.c:90
+#5  0xb7b6 in mtq_main (arg=0x1a7320) at mtq.c:140
+#6  0x400fbe54 in pth_spawn_trampoline ()
+#7  0x400f9da1 in pth_mctx_set_bootstrap ()
+#8  0x400f9d19 in pth_mctx_set_trampoline ()
+#9  0x1cbf30 in ?? ()
+#10 0x1f in ?? ()
+#11 0x1020600 in ?? ()
+Cannot access memory at address 0x12e2700.
+
+[3]
+GNU gdb 4.16.1
+This GDB was configured as &quot;i386-unknown-openbsd2.8&quot;...
+Core was generated by `jabberd'.
+Program terminated with signal 11, Segmentation fault.
+Reading symbols from /usr/libexec/ld.so...done.
+Reading symbols from /usr/local/lib/libpth.so.13.27...done.
+Reading symbols from /usr/local/lib/libradiusclient.so.0.1...done.
+Reading symbols from /usr/local/lib/liblber.so.2.4...done.
+Reading symbols from /usr/lib/libc.so.25.2...done.
+Reading symbols from /usr/local/jabber-1.4.1/./jsm/jsm.so...done.
+Reading symbols from /usr/local/jabber-1.4.1/./xdb_file/xdb_file.so...done.
+Reading symbols from /usr/local/jabber-1.4.1/./pthsock/pthsock_client.so...done.
+Reading symbols from /usr/local/jabber-1.4.1/./dnsrv/dnsrv.so...done.
+Reading symbols from /usr/local/jabber-1.4.1/./dialback/dialback.so...done.
+#0  0x12e27 in _xmlnode_search (firstsibling=0x401ccebc, name=0x401d3d05 &quot;notify&quot;,
+    type=1) at xmlnode.c:105
+105             if ((current-&gt;type == type) &amp;&amp; (j_strcmp(current-&gt;name, name) == 0))
+(gdb) bt
+#0  0x12e27 in _xmlnode_search (firstsibling=0x401ccebc, name=0x401d3d05 &quot;notify&quot;,
+    type=1) at xmlnode.c:105
+#1  0x13a03 in xmlnode_get_attrib (owner=0x1cbe18, name=0x401d3d05 &quot;notify&quot;)
+    at xmlnode.c:482
+#2  0x401d40d0 in mod_auth_radius_reg (m=0x1cbe00, arg=0x0) at mod_auth_radius.c:192
+#3  0x401cc940 in js_mapi_call (si=0xf9200, e=6, packet=0x1a8e08, user=0x0, s=0x0)
+    at modules.c:149
+#4  0x401cd2f2 in js_authreg (arg=0x1a8e08) at authreg.c:90
+#5  0xb7b6 in mtq_main (arg=0x1a7320) at mtq.c:140
+#6  0x400fbe54 in pth_spawn_trampoline ()
+#7  0x400f9da1 in pth_mctx_set_bootstrap ()
+#8  0x400f9d19 in pth_mctx_set_trampoline ()
+#9  0x1cbf30 in ?? ()
+#10 0x1f in ?? ()
+#11 0x1020600 in ?? ()
+Cannot access memory at address 0x12e2700.
+
+[4]
+GNU gdb Red Hat Linux (5.1-1)
+This GDB was configured as &quot;i386-redhat-linux&quot;...
+Core was generated by `./jabberd/jabberd -D'.
+Program terminated with signal 11, Segmentation fault.
+Reading symbols from /lib/libssl.so.2...done.
+Loaded symbols for /lib/libssl.so.2
+Reading symbols from /lib/libcrypto.so.2...done.
+Loaded symbols for /lib/libcrypto.so.2
+Reading symbols from /usr/local/lib/libpth.so.13...done.
+Loaded symbols for /usr/local/lib/libpth.so.13
+Reading symbols from /lib/libdl.so.2...done.
+Loaded symbols for /lib/libdl.so.2
+Reading symbols from /lib/libresolv.so.2...done.
+Loaded symbols for /lib/libresolv.so.2
+Reading symbols from /usr/local/lib/libradiusclient.so.0...done.
+Loaded symbols for /usr/local/lib/libradiusclient.so.0
+Reading symbols from /lib/i686/libc.so.6...done.
+Loaded symbols for /lib/i686/libc.so.6
+Reading symbols from /lib/ld-linux.so.2...done.
+Loaded symbols for /lib/ld-linux.so.2
+Reading symbols from ./jsm/jsm.so...done.
+Loaded symbols for ./jsm/jsm.so
+Reading symbols from ./xdb_file/xdb_file.so...done.
+Loaded symbols for ./xdb_file/xdb_file.so
+Reading symbols from ./pthsock/pthsock_client.so...done.
+Loaded symbols for ./pthsock/pthsock_client.so
+Reading symbols from ./dnsrv/dnsrv.so...done.
+Loaded symbols for ./dnsrv/dnsrv.so
+Reading symbols from ./dialback/dialback.so...done.
+Loaded symbols for ./dialback/dialback.so
+Reading symbols from /lib/libnss_files.so.2...done.
+Loaded symbols for /lib/libnss_files.so.2
+#0  0x0805e84c in xmlnode_get_firstchild (parent=0xd) at xmlnode.c:540
+540             return parent-&gt;firstchild;
+(gdb) bt
+#0  0x0805e84c in xmlnode_get_firstchild (parent=0xd) at xmlnode.c:540
+#1  0x4028664e in mod_auth_radius_reg (m=0x814b518, arg=0x0) at mod_auth_radius.c:152
+#2  0x40281256 in js_mapi_call (si=0x80d03c8, e=6, packet=0x81289c8, user=0x0, s=0x0)
+    at modules.c:160
+#3  0x40281760 in js_authreg (arg=0x81289c8) at authreg.c:86
+#4  0x08056acf in mtq_main (arg=0x81297c0) at mtq.c:151
+#5  0x40114c08 in pth_spawn_trampoline () from /usr/local/lib/libpth.so.13
+#6  0x40192184 in __makecontext () from /lib/i686/libc.so.6
+#7  0x401bfff4 in __libc_free (mem=0x8129800) at malloc.c:3154
+#8  0x401164f3 in pth_msgport_put () from /usr/local/lib/libpth.so.13
+#9  0x08056d93 in mtq_send (q=0x0, p=0x81295b8, f=0x402814c0 &lt;js_authreg&gt;, arg=0x81289c8)
+    at mtq.c:238
+#10 0x4028046b in js_packet (i=0x808c820, p=0x8128250, arg=0x80d03c8) at deliver.c:152
+#11 0x080549ec in deliver_instance (i=0x808c820, p=0x8128250) at deliver.c:689
+#12 0x0805415c in deliver (p=0x8128250, i=0x80d9960) at deliver.c:482
+#13 0x4029d068 in pthsock_client_read (m=0x80e5f88, flag=3, arg=0x8103290, x=0x8128128)
+    at client.c:423
+#14 0x0806af04 in normal_contentTok (enc=0x8084a00, ptr=0x80c6fba &quot;&quot;, end=0x80c6fba &quot;&quot;,
+    nextTokPtr=0x80c6e70) at xmltok_impl.c:798
+#15 0x08060843 in doContent (parser=0x81033d0, startTagLevel=0, enc=0x8084a00,
+    s=0x80c6fba &quot;&quot;, end=0x80c6fba &quot;&quot;, nextPtr=0x80c6ee0) at xmlparse.c:1058
+#16 0x080604fe in contentProcessor (parser=0x8084a00, start=0x80c6fba &quot;&quot;,
+    end=0x80c6fba &quot;&quot;, endPtr=0x8103564) at xmlparse.c:943
+#17 0x0805fede in XML_Parse (parser=0x80889dc, s=0x80894a4 &quot;&quot;, len=74,
+    isFinal=1074877130) at xmlparse.c:776
+#18 0x4011535d in pth_yield () from /usr/local/lib/libpth.so.13
+#19 0x40017588 in ?? ()
+Cannot access memory at address 0xb668
+
+
+[5]
+GNU gdb Red Hat Linux (5.1-1)
+This GDB was configured as &quot;i386-redhat-linux&quot;...
+Core was generated by `./jabberd/jabberd -D'.
+Program terminated with signal 11, Segmentation fault.
+Reading symbols from /lib/libssl.so.2...done.
+Loaded symbols for /lib/libssl.so.2
+Reading symbols from /lib/libcrypto.so.2...done.
+Loaded symbols for /lib/libcrypto.so.2
+Reading symbols from /usr/local/lib/libpth.so.13...done.
+Loaded symbols for /usr/local/lib/libpth.so.13
+Reading symbols from /lib/libdl.so.2...done.
+Loaded symbols for /lib/libdl.so.2
+Reading symbols from /lib/libresolv.so.2...done.
+Loaded symbols for /lib/libresolv.so.2
+Reading symbols from /usr/local/lib/libradiusclient.so.0...done.
+Loaded symbols for /usr/local/lib/libradiusclient.so.0
+Reading symbols from /lib/i686/libc.so.6...done.
+Loaded symbols for /lib/i686/libc.so.6
+Reading symbols from /lib/ld-linux.so.2...done.
+Loaded symbols for /lib/ld-linux.so.2
+Reading symbols from ./jsm/jsm.so...done.
+Loaded symbols for ./jsm/jsm.so
+Reading symbols from ./xdb_file/xdb_file.so...done.
+Loaded symbols for ./xdb_file/xdb_file.so
+Reading symbols from ./pthsock/pthsock_client.so...done.
+Loaded symbols for ./pthsock/pthsock_client.so
+Reading symbols from ./dnsrv/dnsrv.so...done.
+Loaded symbols for ./dnsrv/dnsrv.so
+Reading symbols from ./dialback/dialback.so...done.
+Loaded symbols for ./dialback/dialback.so
+Reading symbols from /lib/libnss_files.so.2...done.
+Loaded symbols for /lib/libnss_files.so.2
+Reading symbols from /lib/libnss_nisplus.so.2...done.
+Loaded symbols for /lib/libnss_nisplus.so.2
+Reading symbols from /lib/libnsl.so.1...done.
+Loaded symbols for /lib/libnsl.so.1
+Reading symbols from /lib/libnss_dns.so.2...done.
+Loaded symbols for /lib/libnss_dns.so.2
+#0  0x0805e71f in xmlnode_get_attrib (owner=0xd, name=0x40295330 &quot;notify&quot;)
+    at xmlnode.c:491
+491         if (owner != NULL &amp;&amp; owner-&gt;firstattrib != NULL)
+(gdb) bt
+#0  0x0805e71f in xmlnode_get_attrib (owner=0xd, name=0x40295330 &quot;notify&quot;)
+    at xmlnode.c:491
+#1  0x4028688d in mod_auth_radius_reg (m=0x814b560, arg=0x0) at mod_auth_radius.c:192
+#2  0x40281256 in js_mapi_call (si=0x80d03c8, e=6, packet=0x8128750, user=0x0, s=0x0)
+    at modules.c:160
+#3  0x402818c4 in js_authreg (arg=0x8128750) at authreg.c:101
+#4  0x08056acf in mtq_main (arg=0x81298f8) at mtq.c:151
+#5  0x40114c08 in pth_spawn_trampoline () from /usr/local/lib/libpth.so.13
+#6  0x40192184 in __makecontext () from /lib/i686/libc.so.6
+#7  0x0805834f in jid_safe (id=0x8129938) at jid.c:59
+#8  0x401164f3 in pth_msgport_put () from /usr/local/lib/libpth.so.13
+#9  0x08056d93 in mtq_send (q=0x0, p=0x81291e0, f=0x402814c0 &lt;js_authreg&gt;, arg=0x8128750)
+    at mtq.c:238
+#10 0x4028046b in js_packet (i=0x808c820, p=0x8127bc8, arg=0x80d03c8) at deliver.c:152
+#11 0x080549ec in deliver_instance (i=0x808c820, p=0x8127bc8) at deliver.c:689
+#12 0x0805415c in deliver (p=0x8127bc8, i=0x80d9960) at deliver.c:482
+#13 0x4029d068 in pthsock_client_read (m=0x80e5f50, flag=3, arg=0x8103258, x=0x8127aa0)
+    at client.c:423
+#14 0x0806af04 in normal_contentTok (enc=0x8084a00, ptr=0x80c700a &quot;&quot;, end=0x80c700a &quot;&quot;,
+    nextTokPtr=0x80c6e70) at xmltok_impl.c:798
+#15 0x08060843 in doContent (parser=0x8103398, startTagLevel=0, enc=0x8084a00,
+    s=0x80c700a &quot;&quot;, end=0x80c700a &quot;&quot;, nextPtr=0x80c6ee0) at xmlparse.c:1058
+#16 0x080604fe in contentProcessor (parser=0x8084a00, start=0x80c700a &quot;&quot;,
+    end=0x80c700a &quot;&quot;, endPtr=0x810352c) at xmlparse.c:943
+#17 0x0805fede in XML_Parse (parser=0x80889dc, s=0x80894a4 &quot;&quot;, len=154,
+    isFinal=1074877130) at xmlparse.c:776
+#18 0x4011535d in pth_yield () from /usr/local/lib/libpth.so.13
+#19 0x40017588 in ?? ()
+Cannot access memory at address 0xb668
+
+
+[6]
+GNU gdb Red Hat Linux (5.1-1)
+This GDB was configured as &quot;i386-redhat-linux&quot;...
+Core was generated by `./jabberd/jabberd -D'.
+Program terminated with signal 11, Segmentation fault.
+Reading symbols from /lib/libssl.so.2...done.
+Loaded symbols for /lib/libssl.so.2
+Reading symbols from /lib/libcrypto.so.2...done.
+Loaded symbols for /lib/libcrypto.so.2
+Reading symbols from /usr/local/lib/libpth.so.13...done.
+Loaded symbols for /usr/local/lib/libpth.so.13
+Reading symbols from /lib/libdl.so.2...done.
+Loaded symbols for /lib/libdl.so.2
+Reading symbols from /lib/libresolv.so.2...done.
+Loaded symbols for /lib/libresolv.so.2
+Reading symbols from /usr/local/lib/libradiusclient.so.0...done.
+Loaded symbols for /usr/local/lib/libradiusclient.so.0
+Reading symbols from /lib/i686/libc.so.6...done.
+Loaded symbols for /lib/i686/libc.so.6
+Reading symbols from /lib/ld-linux.so.2...done.
+Loaded symbols for /lib/ld-linux.so.2
+Reading symbols from ./jsm/jsm.so...done.
+Loaded symbols for ./jsm/jsm.so
+Reading symbols from ./xdb_file/xdb_file.so...done.
+Loaded symbols for ./xdb_file/xdb_file.so
+Reading symbols from ./pthsock/pthsock_client.so...done.
+Loaded symbols for ./pthsock/pthsock_client.so
+Reading symbols from ./dnsrv/dnsrv.so...done.
+Loaded symbols for ./dnsrv/dnsrv.so
+Reading symbols from ./dialback/dialback.so...done.
+Loaded symbols for ./dialback/dialback.so
+Reading symbols from /lib/libnss_files.so.2...done.
+Loaded symbols for /lib/libnss_files.so.2
+Reading symbols from /lib/libnss_nisplus.so.2...done.
+Loaded symbols for /lib/libnss_nisplus.so.2
+Reading symbols from /lib/libnsl.so.1...done.
+Loaded symbols for /lib/libnsl.so.1
+Reading symbols from /lib/libnss_dns.so.2...done.
+Loaded symbols for /lib/libnss_dns.so.2
+#0  0x0805e71f in xmlnode_get_attrib (owner=0xd, name=0x40295330 &quot;notify&quot;)
+    at xmlnode.c:491
+491         if (owner != NULL &amp;&amp; owner-&gt;firstattrib != NULL)
+(gdb) bt
+#0  0x0805e71f in xmlnode_get_attrib (owner=0xd, name=0x40295330 &quot;notify&quot;)
+    at xmlnode.c:491
+#1  0x4028688d in mod_auth_radius_reg (m=0x814b560, arg=0x0) at mod_auth_radius.c:192
+#2  0x40281256 in js_mapi_call (si=0x80d03c8, e=6, packet=0x8128db8, user=0x0, s=0x0)
+    at modules.c:160
+#3  0x402818c4 in js_authreg (arg=0x8128db8) at authreg.c:101
+#4  0x08056acf in mtq_main (arg=0x81298f8) at mtq.c:151
+#5  0x40114c08 in pth_spawn_trampoline () from /usr/local/lib/libpth.so.13
+#6  0x40192184 in __makecontext () from /lib/i686/libc.so.6
+#7  0x0805834f in jid_safe (id=0x8129938) at jid.c:59
+#8  0x401164f3 in pth_msgport_put () from /usr/local/lib/libpth.so.13
+#9  0x08056d93 in mtq_send (q=0x0, p=0x81cd168, f=0x402814c0 &lt;js_authreg&gt;, arg=0x8128db8)
+    at mtq.c:238
+#10 0x4028046b in js_packet (i=0x808c820, p=0x8128360, arg=0x80d03c8) at deliver.c:152
+#11 0x080549ec in deliver_instance (i=0x808c820, p=0x8128360) at deliver.c:689
+#12 0x0805415c in deliver (p=0x8128360, i=0x80d9960) at deliver.c:482
+#13 0x4029d068 in pthsock_client_read (m=0x80e5f88, flag=3, arg=0x8103290, x=0x8128238)
+    at client.c:423
+#14 0x0806af04 in normal_contentTok (enc=0x8084a00, ptr=0x80c6fee &quot;&quot;, end=0x80c6fee &quot;&quot;,
+    nextTokPtr=0x80c6e70) at xmltok_impl.c:798
+#15 0x08060843 in doContent (parser=0x81033d0, startTagLevel=0, enc=0x8084a00,
+    s=0x80c6fee &quot;&quot;, end=0x80c6fee &quot;&quot;, nextPtr=0x80c6ee0) at xmlparse.c:1058
+#16 0x080604fe in contentProcessor (parser=0x8084a00, start=0x80c6fee &quot;&quot;,
+    end=0x80c6fee &quot;&quot;, endPtr=0x8103564) at xmlparse.c:943
+#17 0x0805fede in XML_Parse (parser=0x80889dc, s=0x80894a4 &quot;&quot;, len=126,
+    isFinal=1074877130) at xmlparse.c:776
+#18 0x4011535d in pth_yield () from /usr/local/lib/libpth.so.13
+#19 0x40017588 in ?? ()
+Cannot access memory at address 0xb668
+
+
+[7]
+This GDB was configured as &quot;i386-redhat-linux&quot;...
+Core was generated by `./jabberd/jabberd -D'.
+Program terminated with signal 11, Segmentation fault.
+Reading symbols from /usr/local/lib/libpth.so.13...done.
+Loaded symbols for /usr/local/lib/libpth.so.13
+Reading symbols from /lib/libdl.so.2...done.
+Loaded symbols for /lib/libdl.so.2
+Reading symbols from /lib/libresolv.so.2...done.
+Loaded symbols for /lib/libresolv.so.2
+Reading symbols from /usr/local/lib/libradiusclient.so.0...done.
+Loaded symbols for /usr/local/lib/libradiusclient.so.0
+Reading symbols from /lib/i686/libc.so.6...done.
+Loaded symbols for /lib/i686/libc.so.6
+Reading symbols from /lib/ld-linux.so.2...done.
+Loaded symbols for /lib/ld-linux.so.2
+Reading symbols from ./jsm/jsm.so...done.
+Loaded symbols for ./jsm/jsm.so
+Reading symbols from ./xdb_file/xdb_file.so...done.
+Loaded symbols for ./xdb_file/xdb_file.so
+Reading symbols from ./pthsock/pthsock_client.so...done.
+Loaded symbols for ./pthsock/pthsock_client.so
+Reading symbols from ./dnsrv/dnsrv.so...done.
+Loaded symbols for ./dnsrv/dnsrv.so
+Reading symbols from ./dialback/dialback.so...done.
+Loaded symbols for ./dialback/dialback.so
+Reading symbols from /lib/libnss_files.so.2...done.
+Loaded symbols for /lib/libnss_files.so.2
+#0  0x0805c4e8 in xmlnode_get_firstchild (parent=0xd) at xmlnode.c:529
+529             return parent-&gt;firstchild;
+(gdb) bt
+#0  0x0805c4e8 in xmlnode_get_firstchild (parent=0xd) at xmlnode.c:529
+#1  0x40196166 in mod_auth_radius_reg (m=0x81594d8, arg=0x0) at mod_auth_radius.c:152
+#2  0x40190e4e in js_mapi_call (si=0x80cc658, e=6, packet=0x81ec3e0, user=0x0, s=0x0)
+    at modules.c:149
+#3  0x40191358 in js_authreg (arg=0x81ec3e0) at authreg.c:75
+#4  0x08054ab7 in mtq_main (arg=0x8149238) at mtq.c:140
+#5  0x40024c08 in pth_spawn_trampoline () from /usr/local/lib/libpth.so.13
+#6  0x400a1184 in __makecontext () from /lib/i686/libc.so.6
+#7  0x400ceff4 in __libc_free (mem=0x8149278) at malloc.c:3154
+#8  0x400264f3 in pth_msgport_put () from /usr/local/lib/libpth.so.13
+#9  0x08054d97 in mtq_send (q=0x0, p=0x80d19d0, f=0x40190fb4 &lt;js_server_main&gt;,
+    arg=0x8137758) at mtq.c:228
+#10 0x401906cc in js_psend (si=0x80cc658, p=0x8137680, f=0x40190fb4 &lt;js_server_main&gt;)
+    at deliver.c:265
+#11 0x4018fc69 in js_deliver_local (si=0x80cc658, p=0x8137680, ht=0x8137850)
+    at deliver.c:51
+#12 0x40190481 in js_packet (i=0x8088ed8, p=0x8137040, arg=0x80cc658) at deliver.c:212
+#13 0x08052808 in deliver_instance (i=0x8088ed8, p=0x8137040) at deliver.c:660
+#14 0x08051fd8 in deliver (p=0x8137040, i=0x0) at deliver.c:468
+#15 0x08052730 in deliver_fail (p=0x4002ddd4, err=0x8090488 &quot;\210\004\t\b\210\004\t\b&quot;)
+    at deliver.c:629
+#16 0x4002a3f0 in __DTOR_END__ () from /usr/local/lib/libpth.so.13
+#17 0x4002748f in pth_sleep () from /usr/local/lib/libpth.so.13
+#18 0x08052c86 in heartbeat (arg=0x0) at heartbeat.c:54
+#19 0x40024c08 in pth_spawn_trampoline () from /usr/local/lib/libpth.so.13
+#20 0x400a1184 in __makecontext () from /lib/i686/libc.so.6
+#21 0x40021006 in object.2 () from /usr/local/lib/libpth.so.13
+#22 0x40021d3e in _init () from /usr/local/lib/libpth.so.13
+#23 0xec815356 in ?? ()
+Cannot access memory at address 0x57e58955
+
+
+[8]
+This GDB was configured as &quot;i386-redhat-linux&quot;...
+Core was generated by `./jabberd/jabberd -D'.
+Program terminated with signal 11, Segmentation fault.
+Reading symbols from /usr/local/lib/libpth.so.13...done.
+Loaded symbols for /usr/local/lib/libpth.so.13
+Reading symbols from /lib/libdl.so.2...done.
+Loaded symbols for /lib/libdl.so.2
+Reading symbols from /lib/libresolv.so.2...done.
+Loaded symbols for /lib/libresolv.so.2
+Reading symbols from /usr/local/lib/libradiusclient.so.0...done.
+Loaded symbols for /usr/local/lib/libradiusclient.so.0
+Reading symbols from /lib/i686/libc.so.6...done.
+Loaded symbols for /lib/i686/libc.so.6
+Reading symbols from /lib/ld-linux.so.2...done.
+Loaded symbols for /lib/ld-linux.so.2
+Reading symbols from ./jsm/jsm.so...done.
+Loaded symbols for ./jsm/jsm.so
+Reading symbols from ./xdb_file/xdb_file.so...done.
+Loaded symbols for ./xdb_file/xdb_file.so
+Reading symbols from ./pthsock/pthsock_client.so...done.
+Loaded symbols for ./pthsock/pthsock_client.so
+Reading symbols from ./dnsrv/dnsrv.so...done.
+Loaded symbols for ./dnsrv/dnsrv.so
+Reading symbols from ./dialback/dialback.so...done.
+Loaded symbols for ./dialback/dialback.so
+Reading symbols from /lib/libnss_files.so.2...done.
+Loaded symbols for /lib/libnss_files.so.2
+Reading symbols from /lib/libnss_nisplus.so.2...done.
+Loaded symbols for /lib/libnss_nisplus.so.2
+Reading symbols from /lib/libnsl.so.1...done.
+Loaded symbols for /lib/libnsl.so.1
+Reading symbols from /lib/libnss_dns.so.2...done.
+Loaded symbols for /lib/libnss_dns.so.2
+#0  0x0805c3bb in xmlnode_get_attrib (owner=0xd, name=0x401a3d90 &quot;notify&quot;)
+    at xmlnode.c:480
+480         if (owner != NULL &amp;&amp; owner-&gt;firstattrib != NULL)
+(gdb) bt
+#0  0x0805c3bb in xmlnode_get_attrib (owner=0xd, name=0x401a3d90 &quot;notify&quot;)
+    at xmlnode.c:480
+#1  0x401963a5 in mod_auth_radius_reg (m=0x815ba30, arg=0x0) at mod_auth_radius.c:192
+#2  0x40190e4e in js_mapi_call (si=0x80cc658, e=6, packet=0x8138ee0, user=0x0, s=0x0)
+    at modules.c:149
+#3  0x401914b0 in js_authreg (arg=0x8138ee0) at authreg.c:90
+#4  0x08054ab7 in mtq_main (arg=0x8139dc8) at mtq.c:140
+#5  0x40024c08 in pth_spawn_trampoline () from /usr/local/lib/libpth.so.13
+#6  0x400a1184 in __makecontext () from /lib/i686/libc.so.6
+#7  0x080560ff in jid_safe (id=0x8139e08) at jid.c:48
+#8  0x400264f3 in pth_msgport_put () from /usr/local/lib/libpth.so.13
+#9  0x08054d97 in mtq_send (q=0x0, p=0x81ee088, f=0x401910b8 &lt;js_authreg&gt;, arg=0x8138ee0)
+    at mtq.c:228
+#10 0x4019018b in js_packet (i=0x8088ed8, p=0x8138358, arg=0x80cc658) at deliver.c:141
+#11 0x08052808 in deliver_instance (i=0x8088ed8, p=0x8138358) at deliver.c:660
+#12 0x08051fd8 in deliver (p=0x8138358, i=0x80d59f0) at deliver.c:468
+#13 0x401aabd0 in pthsock_client_read (m=0x81edb40, flag=3, arg=0x80e1f38, x=0x8138230)
+    at client.c:353
+#14 0x08068ba4 in normal_contentTok (enc=0x8081ea0, ptr=0x80c3aea &quot;&quot;, end=0x80c3aea &quot;&quot;,
+    nextTokPtr=0x80c3970) at xmltok_impl.c:798
+#15 0x0805e4e3 in doContent (parser=0x81edd20, startTagLevel=0, enc=0x8081ea0,
+    s=0x80c3aea &quot;&quot;, end=0x80c3aea &quot;&quot;, nextPtr=0x80c39e0) at xmlparse.c:1058
+#16 0x0805e19e in contentProcessor (parser=0x8081ea0, start=0x80c3aea &quot;&quot;,
+    end=0x80c3aea &quot;&quot;, endPtr=0x81edeb4) at xmlparse.c:943
+#17 0x0805db7e in XML_Parse (parser=0x808568c, s=0x80916b4 &quot;&quot;, len=154,
+    isFinal=1073894090) at xmlparse.c:776
+#18 0x4002535d in pth_yield () from /usr/local/lib/libpth.so.13
+#19 0x400170e0 in ?? ()
+Cannot access memory at address 0xb668
+
+
+[9]
+This GDB was configured as &quot;i386-redhat-linux&quot;...
+Core was generated by `./jabberd/jabberd -D'.
+Program terminated with signal 11, Segmentation fault.
+Reading symbols from /usr/local/lib/libpth.so.13...done.
+Loaded symbols for /usr/local/lib/libpth.so.13
+Reading symbols from /lib/libdl.so.2...done.
+Loaded symbols for /lib/libdl.so.2
+Reading symbols from /lib/libresolv.so.2...done.
+Loaded symbols for /lib/libresolv.so.2
+Reading symbols from /usr/local/lib/libradiusclient.so.0...done.
+Loaded symbols for /usr/local/lib/libradiusclient.so.0
+Reading symbols from /lib/i686/libc.so.6...done.
+Loaded symbols for /lib/i686/libc.so.6
+Reading symbols from /lib/ld-linux.so.2...done.
+Loaded symbols for /lib/ld-linux.so.2
+Reading symbols from ./jsm/jsm.so...done.
+Loaded symbols for ./jsm/jsm.so
+Reading symbols from ./xdb_file/xdb_file.so...done.
+Loaded symbols for ./xdb_file/xdb_file.so
+Reading symbols from ./pthsock/pthsock_client.so...done.
+Loaded symbols for ./pthsock/pthsock_client.so
+Reading symbols from ./dnsrv/dnsrv.so...done.
+Loaded symbols for ./dnsrv/dnsrv.so
+Reading symbols from ./dialback/dialback.so...done.
+Loaded symbols for ./dialback/dialback.so
+Reading symbols from /lib/libnss_files.so.2...done.
+Loaded symbols for /lib/libnss_files.so.2
+Reading symbols from /lib/libnss_nisplus.so.2...done.
+Loaded symbols for /lib/libnss_nisplus.so.2
+Reading symbols from /lib/libnsl.so.1...done.
+Loaded symbols for /lib/libnsl.so.1
+Reading symbols from /lib/libnss_dns.so.2...done.
+Loaded symbols for /lib/libnss_dns.so.2
+#0  0x0805c3bb in xmlnode_get_attrib (owner=0xd, name=0x401a3d90 &quot;notify&quot;)
+    at xmlnode.c:480
+480         if (owner != NULL &amp;&amp; owner-&gt;firstattrib != NULL)
+(gdb) bt
+#0  0x0805c3bb in xmlnode_get_attrib (owner=0xd, name=0x401a3d90 &quot;notify&quot;)
+    at xmlnode.c:480
+#1  0x401963a5 in mod_auth_radius_reg (m=0x815ba30, arg=0x0) at mod_auth_radius.c:192
+#2  0x40190e4e in js_mapi_call (si=0x80cc658, e=6, packet=0x8139288, user=0x0, s=0x0)
+    at modules.c:149
+#3  0x401914b0 in js_authreg (arg=0x8139288) at authreg.c:90
+#4  0x08054ab7 in mtq_main (arg=0x8139dc8) at mtq.c:140
+#5  0x40024c08 in pth_spawn_trampoline () from /usr/local/lib/libpth.so.13
+#6  0x400a1184 in __makecontext () from /lib/i686/libc.so.6
+#7  0x080560ff in jid_safe (id=0x8139e08) at jid.c:48
+#8  0x400264f3 in pth_msgport_put () from /usr/local/lib/libpth.so.13
+#9  0x08054d97 in mtq_send (q=0x0, p=0x81dd638, f=0x401910b8 &lt;js_authreg&gt;, arg=0x8139288)
+    at mtq.c:228
+#10 0x4019018b in js_packet (i=0x8088ed8, p=0x8138830, arg=0x80cc658) at deliver.c:141
+#11 0x08052808 in deliver_instance (i=0x8088ed8, p=0x8138830) at deliver.c:660
+#12 0x08051fd8 in deliver (p=0x8138830, i=0x80d59f0) at deliver.c:468
+#13 0x401aabd0 in pthsock_client_read (m=0x81370a8, flag=3, arg=0x81371a0, x=0x8138708)
+    at client.c:353
+#14 0x08068ba4 in normal_contentTok (enc=0x8081ea0, ptr=0x80c3ace &quot;&quot;, end=0x80c3ace &quot;&quot;,
+    nextTokPtr=0x80c3970) at xmltok_impl.c:798
+#15 0x0805e4e3 in doContent (parser=0x81372d8, startTagLevel=0, enc=0x8081ea0,
+    s=0x80c3ace &quot;&quot;, end=0x80c3ace &quot;&quot;, nextPtr=0x80c39e0) at xmlparse.c:1058
+#16 0x0805e19e in contentProcessor (parser=0x8081ea0, start=0x80c3ace &quot;&quot;,
+    end=0x80c3ace &quot;&quot;, endPtr=0x813746c) at xmlparse.c:943
+#17 0x0805db7e in XML_Parse (parser=0x808568c, s=0x80916b4 &quot;&quot;, len=126,
+    isFinal=1073894090) at xmlparse.c:776
+#18 0x4002535d in pth_yield () from /usr/local/lib/libpth.so.13
+#19 0x400170e0 in ?? ()
+Cannot access memory at address 0xb668
+
+
+[10]
+This GDB was configured as &quot;sparc-sun-solaris2.8&quot;...
+Core was generated by `./jabberd/jabberd -D'.
+Program terminated with signal 11, Segmentation Fault.
+Reading symbols from /local/lib/libpth.so.14...done.
+Loaded symbols for /local/lib/libpth.so.14
+Reading symbols from /usr/lib/libdl.so.1...done.
+Loaded symbols for /usr/lib/libdl.so.1
+Reading symbols from /usr/lib/libsocket.so.1...done.
+Loaded symbols for /usr/lib/libsocket.so.1
+Reading symbols from /usr/lib/libnsl.so.1...done.
+Loaded symbols for /usr/lib/libnsl.so.1
+Reading symbols from /usr/lib/libresolv.so.2...done.
+Loaded symbols for /usr/lib/libresolv.so.2
+Reading symbols from /local/lib/libradiusclient.so.0...done.
+Loaded symbols for /local/lib/libradiusclient.so.0
+Reading symbols from /usr/lib/libc.so.1...done.
+Loaded symbols for /usr/lib/libc.so.1
+Reading symbols from /usr/lib/libmp.so.2...done.
+Loaded symbols for /usr/lib/libmp.so.2
+Reading symbols from /usr/platform/SUNW,Ultra-250/lib/libc_psr.so.1...done.
+Loaded symbols for /usr/platform/SUNW,Ultra-250/lib/libc_psr.so.1
+Reading symbols from /local/project/jabber/./jsm/jsm.so...done.
+Loaded symbols for /local/project/jabber/./jsm/jsm.so
+Reading symbols from /local/project/jabber/./xdb_file/xdb_file.so...done.
+Loaded symbols for /local/project/jabber/./xdb_file/xdb_file.so
+Reading symbols from /local/project/jabber/./pthsock/pthsock_client.so...done.
+Loaded symbols for /local/project/jabber/./pthsock/pthsock_client.so
+Reading symbols from /local/project/jabber/./dnsrv/dnsrv.so...done.
+Loaded symbols for /local/project/jabber/./dnsrv/dnsrv.so
+Reading symbols from /local/project/jabber/./dialback/dialback.so...done.
+Loaded symbols for /local/project/jabber/./dialback/dialback.so
+Reading symbols from /usr/lib/nss_files.so.1...done.
+Loaded symbols for /usr/lib/nss_files.so.1
+#0  0x2be04 in xmlnode_get_type (node=0x340020) at xmlnode.c:607
+607             return node-&gt;type;
+(gdb) bt
+#0  0x2be04 in xmlnode_get_type (node=0x340020) at xmlnode.c:607
+#1  0x2c558 in xmlnode_insert_node (parent=0x11aee8, node=0x340020) at xmlnode.c:777
+#2  0xff0c0c08 in mod_auth_radius_reg (m=0x13d100, arg=0x0) at mod_auth_radius.c:152
+#3  0xff0a8118 in js_mapi_call (si=0x7b5d0, e=6, packet=0x11ad30, user=0x0, s=0x0)
+    at modules.c:160
+#4  0xff0a885c in js_authreg (arg=0x11ad30) at authreg.c:86
+#5  0x20234 in mtq_main (arg=0x818c0) at mtq.c:151
+#6  0xff356094 in pth_spawn_trampoline () from /local/lib/libpth.so.14
+
+
+[11]
+This GDB was configured as &quot;sparc-sun-solaris2.8&quot;...
+Core was generated by `./jabberd/jabberd -D'.
+Program terminated with signal 11, Segmentation Fault.
+Reading symbols from /local/lib/libpth.so.14...done.
+Loaded symbols for /local/lib/libpth.so.14
+Reading symbols from /usr/lib/libdl.so.1...done.
+Loaded symbols for /usr/lib/libdl.so.1
+Reading symbols from /usr/lib/libsocket.so.1...done.
+Loaded symbols for /usr/lib/libsocket.so.1
+Reading symbols from /usr/lib/libnsl.so.1...done.
+Loaded symbols for /usr/lib/libnsl.so.1
+Reading symbols from /usr/lib/libresolv.so.2...done.
+Loaded symbols for /usr/lib/libresolv.so.2
+Reading symbols from /local/lib/libradiusclient.so.0...done.
+Loaded symbols for /local/lib/libradiusclient.so.0
+Reading symbols from /usr/lib/libc.so.1...done.
+Loaded symbols for /usr/lib/libc.so.1
+Reading symbols from /usr/lib/libmp.so.2...done.
+Loaded symbols for /usr/lib/libmp.so.2
+Reading symbols from /usr/platform/SUNW,Ultra-250/lib/libc_psr.so.1...done.
+Loaded symbols for /usr/platform/SUNW,Ultra-250/lib/libc_psr.so.1
+Reading symbols from /local/project/jabber/./jsm/jsm.so...done.
+Loaded symbols for /local/project/jabber/./jsm/jsm.so
+Reading symbols from /local/project/jabber/./xdb_file/xdb_file.so...done.
+Loaded symbols for /local/project/jabber/./xdb_file/xdb_file.so
+Reading symbols from /local/project/jabber/./pthsock/pthsock_client.so...done.
+Loaded symbols for /local/project/jabber/./pthsock/pthsock_client.so
+Reading symbols from /local/project/jabber/./dnsrv/dnsrv.so...done.
+Loaded symbols for /local/project/jabber/./dnsrv/dnsrv.so
+Reading symbols from /local/project/jabber/./dialback/dialback.so...done.
+Loaded symbols for /local/project/jabber/./dialback/dialback.so
+Reading symbols from /usr/lib/nss_files.so.1...done.
+Loaded symbols for /usr/lib/nss_files.so.1
+#0  0x2a9c4 in _xmlnode_search (firstsibling=0x400, name=0xff0c5b48 &quot;notify&quot;, type=1)
+    at xmlnode.c:116
+116             if ((current-&gt;type == type) &amp;&amp; (j_strcmp(current-&gt;name, name) == 0))
+(gdb) bt
+#0  0x2a9c4 in _xmlnode_search (firstsibling=0x400, name=0xff0c5b48 &quot;notify&quot;, type=1)
+    at xmlnode.c:116
+#1  0x2b960 in xmlnode_get_attrib (owner=0xff3a0018, name=0xff0c5b48 &quot;notify&quot;)
+    at xmlnode.c:493
+#2  0xff0c0f10 in mod_auth_radius_reg (m=0x13d148, arg=0x0) at mod_auth_radius.c:192
+#3  0xff0a8118 in js_mapi_call (si=0x7b5d0, e=6, packet=0x11aae8, user=0x0, s=0x0)
+    at modules.c:160
+#4  0xff0a8a68 in js_authreg (arg=0x11aae8) at authreg.c:101
+#5  0x20234 in mtq_main (arg=0x818c0) at mtq.c:151
+#6  0xff356094 in pth_spawn_trampoline () from /local/lib/libpth.so.14
+
+
+[12]
+This GDB was configured as &quot;sparc-sun-solaris2.8&quot;...
+Core was generated by `./jabberd/jabberd -D'.
+Program terminated with signal 11, Segmentation Fault.
+Reading symbols from /local/lib/libpth.so.14...done.
+Loaded symbols for /local/lib/libpth.so.14
+Reading symbols from /usr/lib/libdl.so.1...done.
+Loaded symbols for /usr/lib/libdl.so.1
+Reading symbols from /usr/lib/libsocket.so.1...done.
+Loaded symbols for /usr/lib/libsocket.so.1
+Reading symbols from /usr/lib/libnsl.so.1...done.
+Loaded symbols for /usr/lib/libnsl.so.1
+Reading symbols from /usr/lib/libresolv.so.2...done.
+Loaded symbols for /usr/lib/libresolv.so.2
+Reading symbols from /local/lib/libradiusclient.so.0...done.
+Loaded symbols for /local/lib/libradiusclient.so.0
+Reading symbols from /usr/lib/libc.so.1...done.
+Loaded symbols for /usr/lib/libc.so.1
+Reading symbols from /usr/lib/libmp.so.2...done.
+Loaded symbols for /usr/lib/libmp.so.2
+Reading symbols from /usr/platform/SUNW,Ultra-250/lib/libc_psr.so.1...done.
+Loaded symbols for /usr/platform/SUNW,Ultra-250/lib/libc_psr.so.1
+Reading symbols from /local/project/jabber/./jsm/jsm.so...done.
+Loaded symbols for /local/project/jabber/./jsm/jsm.so
+Reading symbols from /local/project/jabber/./xdb_file/xdb_file.so...done.
+Loaded symbols for /local/project/jabber/./xdb_file/xdb_file.so
+Reading symbols from /local/project/jabber/./pthsock/pthsock_client.so...done.
+Loaded symbols for /local/project/jabber/./pthsock/pthsock_client.so
+Reading symbols from /local/project/jabber/./dnsrv/dnsrv.so...done.
+Loaded symbols for /local/project/jabber/./dnsrv/dnsrv.so
+Reading symbols from /local/project/jabber/./dialback/dialback.so...done.
+Loaded symbols for /local/project/jabber/./dialback/dialback.so
+Reading symbols from /usr/lib/nss_files.so.1...done.
+Loaded symbols for /usr/lib/nss_files.so.1
+#0  0x2a9c4 in _xmlnode_search (firstsibling=0x400, name=0xff0c5b48 &quot;notify&quot;, type=1)
+    at xmlnode.c:116
+116             if ((current-&gt;type == type) &amp;&amp; (j_strcmp(current-&gt;name, name) == 0))
+(gdb) bt
+#0  0x2a9c4 in _xmlnode_search (firstsibling=0x400, name=0xff0c5b48 &quot;notify&quot;, type=1)
+    at xmlnode.c:116
+#1  0x2b960 in xmlnode_get_attrib (owner=0xff3a0018, name=0xff0c5b48 &quot;notify&quot;)
+    at xmlnode.c:493
+#2  0xff0c0f10 in mod_auth_radius_reg (m=0x13d148, arg=0x0) at mod_auth_radius.c:192
+#3  0xff0a8118 in js_mapi_call (si=0x7b5d0, e=6, packet=0x11b140, user=0x0, s=0x0)
+    at modules.c:160
+#4  0xff0a8a68 in js_authreg (arg=0x11b140) at authreg.c:101
+#5  0x20234 in mtq_main (arg=0x818c0) at mtq.c:151
+#6  0xff356094 in pth_spawn_trampoline () from /local/lib/libpth.so.14
+
+-- 
+
+------------------------------------------------------------&lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">memory at blank.org</A>&gt;
+It is inhumane, in my opinion, to force people who have a genuine medical need 
+for coffee to wait in line behind people who apparently view it as some kind 
+of recreational activity.                                       (--Dave Barry)
+&lt;<A HREF="http://blank.org/memory/">http://blank.org/memory/</A>&gt;----------------------------------------------------
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="070576.html">Publishing Stats (was Re: [JDEV] Concurrent Users)
+</A></li>
+	<LI>Next message: <A HREF="070580.html">[JDEV] ANNOUNCE: SashXB 0.9.9 with Jabber Extension
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#70578">[ date ]</a>
+              <a href="thread.html#70578">[ thread ]</a>
+              <a href="subject.html#70578">[ subject ]</a>
+              <a href="author.html#70578">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

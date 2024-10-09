@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Invalid handshake in component written with Jabber::Component
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Invalid%20handshake%20in%20component%20written%20with%20Jabber%3A%3AComponent&In-Reply-To=20011105192223.K9285%40server.pizzahut.com.ph">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="010084.html">
+   <LINK REL="Next"  HREF="010136.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Invalid handshake in component written with Jabber::Component</H1>
+    <B>DJ Adams</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Invalid%20handshake%20in%20component%20written%20with%20Jabber%3A%3AComponent&In-Reply-To=20011105192223.K9285%40server.pizzahut.com.ph"
+       TITLE="[JDEV] Invalid handshake in component written with Jabber::Component">dj.adams at pobox.com
+       </A><BR>
+    <I>Mon Nov  5 10:21:00 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="010084.html">[JDEV] Invalid handshake in component written with Jabber::Component
+</A></li>
+        <LI>Next message: <A HREF="010136.html">[JDEV] IMAP Authentication module?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10085">[ date ]</a>
+              <a href="thread.html#10085">[ thread ]</a>
+              <a href="subject.html#10085">[ subject ]</a>
+              <a href="author.html#10085">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Mon, Nov 05, 2001 at 07:22:23PM +0800, Migs Paraz wrote:
+&gt;<i> I'm trying to write my own JUD transport in Perl using Jabber::Connection.
+</I>&gt;<i> I think the problem is the Perl script's &quot;localname.&quot;  Thanks in advance!
+</I>&gt;<i> 
+</I>&gt;<i> Here's the script output:
+</I>
+Hi Migs
+
+Here are a few observations / tips / questions...
+
+&gt;<i> SEND: &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns='jabber:component:accept' xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> to='localhost'&gt;
+</I>&gt;<i> RECV: &lt;?xml version='1.0'?&gt;&lt;stream:stream xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='3BE66CA0' xmlns='jabber:component:accept' from='jud'&gt;
+</I>&gt;<i> SEND: &lt;handshake id='1'&gt;a4e308bfb34c7bade5130d882ad71599bb4bca89&lt;/handshake&gt;
+</I>&gt;<i> RECV: &lt;stream:error&gt;Invalid handshake&lt;/stream:error&gt;&lt;handshake/&gt;
+</I>&gt;<i> stream error: Invalid handshake at /usr/lib/perl5/site_perl/5.6.0/i386-linux/XML/Parser/Expat.pm line 614
+</I>&gt;<i> 
+</I>
+Ok, this shows us that the handshake sent, containing the secret, which
+wasn't correct...but as we'll see below, you don't show the snippet of
+code where the secret is sent.
+
+&gt;<i> 
+</I>&gt;<i> Here's the jabberd output:
+</I>&gt;<i> 
+</I>&gt;<i> Mon Nov  5 18:40:32 2001  mio.c:750 MIO read from socket 11: &lt;handshake id='1'&gt;a4e308bfb34c7bade5130d882ad71599bb4bca89&lt;/handshake&gt;
+</I>&gt;<i> Mon Nov  5 18:40:32 2001  base_accept.c:105 process XML: m:8140B40 state:3, arg:8108AA8, x:81F2BA0
+</I>&gt;<i> Mon Nov  5 18:40:32 2001  mio.c:1032 mio_write called on x: 0 buffer: &lt;stream:error&gt;Invalid handshake&lt;/stream:error&gt;
+</I>&gt;<i> Mon Nov  5 18:40:32 2001  mio.c:1032 mio_write called on x: 0 buffer: &lt;handshake/&gt;
+</I>&gt;<i> Mon Nov  5 18:40:32 2001  mio.c:275 write_dump writing data: &lt;stream:error&gt;Invalid handshake&lt;/stream:error&gt;
+</I>&gt;<i> Mon Nov  5 18:40:32 2001  mio.c:275 write_dump writing data: &lt;handshake/&gt;
+</I>&gt;<i> Mon Nov  5 18:40:32 2001  base_accept.c:105 process XML: m:8140B40 state:4, arg:8108AA8, x:8050ADC
+</I>
+I don't think this log output matches the run of the script with the log
+output shown above, because here, we can see that the secret must have been
+correct, as the &quot;correct&quot; handshake reply - &lt;handshake/&gt; - was sent, rather
+than a stream error.
+
+&gt;<i> Here's the relevant part of the script:
+</I>&gt;<i> 
+</I>&gt;<i> use Jabber::Connection;
+</I>&gt;<i> use Jabber::NodeFactory;
+</I>&gt;<i> use Jabber::NS qw(:all);
+</I>&gt;<i> 
+</I>&gt;<i> my $c = new Jabber::Connection(
+</I>&gt;<i>   ns =&gt; &quot;jabber:component:accept&quot;,                             
+</I>&gt;<i>   server =&gt; 'localhost:1234',
+</I>&gt;<i>   localname =&gt; &quot;jud.localhost&quot;,
+</I>&gt;<i>   log    =&gt; 1,
+</I>&gt;<i> );
+</I>&gt;<i> 
+</I>&gt;<i> $c-&gt;connect or die &quot;oops: &quot;.$c-&gt;lastError;
+</I>&gt;<i> 
+</I>
+THis is all fine as far as it goes, but the crucial bit is missing - 
+the call to auth(). You should have something here (after the call
+to connect()) like this:
+
+  $c-&gt;auth('test');
+
+where the word 'test' matches that in the &lt;secret/&gt; tag in the 
+XML stanza below.
+
+&gt;<i> 
+</I>&gt;<i> &lt;service id=&quot;jud&quot;&gt;
+</I>&gt;<i>   &lt;host&gt;jud.localhost&lt;/host&gt;
+</I>&gt;<i>   &lt;accept&gt;
+</I>&gt;<i>     &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+</I>&gt;<i>     &lt;port&gt;1234&lt;/port&gt;
+</I>&gt;<i>     &lt;secret&gt;test&lt;/secret&gt;
+</I>&gt;<i>   &lt;/accept&gt;
+</I>&gt;<i> &lt;/service&gt;
+</I>
+So basically, everything you've shown us here is correct, but what
+you haven't shown us is perhaps the thing that is tripping you up, 
+namely the specification of the secret in the call to auth(). 
+
+Hope that helps
+dj
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="010084.html">[JDEV] Invalid handshake in component written with Jabber::Component
+</A></li>
+	<LI>Next message: <A HREF="010136.html">[JDEV] IMAP Authentication module?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10085">[ date ]</a>
+              <a href="thread.html#10085">[ thread ]</a>
+              <a href="subject.html#10085">[ subject ]</a>
+              <a href="author.html#10085">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

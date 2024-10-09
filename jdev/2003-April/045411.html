@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabber extensions available for handling location	information
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabber%20extensions%20available%20for%20handling%20location%0A%09information&In-Reply-To=%3CBAAFF35C.BD80%25timbeau_hk%40yahoo.co.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="045410.html">
+   <LINK REL="Next"  HREF="045413.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabber extensions available for handling location	information</H1>
+    <B>Timothy Carpenter</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabber%20extensions%20available%20for%20handling%20location%0A%09information&In-Reply-To=%3CBAAFF35C.BD80%25timbeau_hk%40yahoo.co.uk%3E"
+       TITLE="[JDEV] jabber extensions available for handling location	information">timbeau_hk at yahoo.co.uk
+       </A><BR>
+    <I>Tue Apr  1 18:54:36 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="045410.html">[JDEV] component developement
+</A></li>
+        <LI>Next message: <A HREF="045413.html">[JDEV] jud jid unique?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45411">[ date ]</a>
+              <a href="thread.html#45411">[ thread ]</a>
+              <a href="subject.html#45411">[ subject ]</a>
+              <a href="author.html#45411">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Mattias,
+
+You are hitting an issue I felt important in pub-sub some time ago - see
+attached note from last year on this very topic.
+
+Your desire to convey different or subsections should be controlled by the
+namespace subscribed to.
+
+So if your packet has
+ 
+&lt;status&gt;at work&lt;/status&gt;
+&lt;location&gt;at desk&lt;/location&gt;
+&lt;activity&gt;damn hard project X&lt;/activity&gt;
+etc.
+
+then HR may subscribe to your presence in total, but only be permissioned
+for and so get just &lt;status&gt;...the project manager of task X should be
+allowed to specify &lt;activity&gt;  as the only thing they care about and thus
+put that in the namespace for their subscription, not caring if you are at
+your desk or not as long as you are busy doing their tasks! (to be fair,
+some PM's should only be able to ask &quot;if &lt;activity&gt; =
+projectsUnderMyAuthority&quot;...)
+
+About source JIDs? IMHO the component should be passing that on inside the
+message as part of the data, not spoofing the packet...
+
+brgds
+Tim
+
+On 25/11/2002 1:33 pm, &quot;Timothy Carpenter&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">timbeau_hk at yahoo.co.uk</A>&gt; wrote:
+
+&gt;<i> I agree and disagree with both sides!
+</I>&gt;<i> 
+</I>&gt;<i> I agree that &lt;location&gt; can form part of &lt;presence&gt; - e.g. &quot;I am on the
+</I>&gt;<i> phone at my desk&quot; or &quot;I am busy in meeting room 1&quot; is a very natural
+</I>&gt;<i> combination.
+</I>&gt;<i> 
+</I>&gt;<i> However, pub/sub would be a natural vehicle to filter, distribute and direct
+</I>&gt;<i> the information delivery.
+</I>&gt;<i> 
+</I>&gt;<i> Thus, this problem domain is a pretty good 'test case' for pub/sub.
+</I>&gt;<i> 
+</I>&gt;<i> Why? Two main reasons.
+</I>&gt;<i> 
+</I>&gt;<i> 1) It tests issues such as namespaces. An hierarchical namespace would put
+</I>&gt;<i> strain on filters if the key interest is at a lower level in some agreed
+</I>&gt;<i> hierarchy. What comes first? Is it name.title.organisation.location.presence
+</I>&gt;<i> or location.title.name.presence.organisation or
+</I>&gt;<i> title.presence.organisation.location.person?...and this is only a few
+</I>&gt;<i> elements!
+</I>&gt;<i> 
+</I>&gt;<i> 2) It also reveals the need for a layer below the 'source' publishers - a
+</I>&gt;<i> need for intermediate collators and filters to provide an efficient,
+</I>&gt;<i> flexible service to subscribers.
+</I>&gt;<i> 
+</I>&gt;<i> As an example, a Client application should not have to perform an &lt;iq&gt; and
+</I>&gt;<i> lookup information before deciding what to do with &lt;location&gt; information
+</I>&gt;<i> (it should be able to request eg &quot;any of my clients at reception&quot; without
+</I>&gt;<i> having to receive all &quot;at my desks&quot; and perform the filtering). Equally, the
+</I>&gt;<i> &lt;location&gt; publisher should not get involved in how what when why people
+</I>&gt;<i> want to filter the information it is publishing, as that would, at a stroke,
+</I>&gt;<i> limit the uses of that information and burden the publisher.
+</I>&gt;<i> 
+</I>&gt;<i> An intermediate pub/sub component should perform the handling of the
+</I>&gt;<i> subscriptions which may cut cross many 'sources'.
+</I>&gt;<i> 
+</I>&gt;<i> Appologies if this hasty note is not as clear as it should be.
+</I>&gt;<i> 
+</I>&gt;<i> brgds
+</I>&gt;<i> Tim
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> On 25/11/2002 1:01 pm, &quot;Ulrich Staudinger&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">chicago5 at gmx.de</A>&gt; wrote:
+</I>&gt;<i> 
+</I>&gt;&gt;<i> Ralph Meijer wrote:
+</I>&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;<i> On Mon, Nov 25, 2002 at 01:18:15PM +0100, Ulrich Staudinger wrote:
+</I>&gt;&gt;&gt;&gt;<i> I agree, another top-level element is not very hany and somehow disrupts
+</I>&gt;&gt;&gt;&gt;<i> the order in xmpp. I suggest to set up a jep about this and putting
+</I>&gt;&gt;&gt;&gt;<i> &lt;location&gt; in presence.
+</I>&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;<i> IMHO (again) this context information doesn't belong in the presence
+</I>&gt;&gt;&gt;<i> stanzas.
+</I>&gt;&gt;&gt;<i> Not everybody wants to receive this information, and the gabber hack for
+</I>&gt;&gt;&gt;<i> conveying music information is not nice either, in retro-spect. Again:
+</I>&gt;&gt;&gt;<i> publish/subscribe.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> IMHO i think pubsub doesn't suit this scenario. There exist many
+</I>&gt;&gt;<i> scenarios for Pubsub, but this scenario, calls for some sort of presence
+</I>&gt;&gt;<i> enhancement, since the location of a person is an elemental part of
+</I>&gt;&gt;<i> his/her physical presence in a room. Of course i agree, the gabber hack
+</I>&gt;&gt;<i> isn't very polite either.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Another argument against pubsub (in this case) is integrity. The
+</I>&gt;&gt;<i> integrity of users and clients in this environment and in this scenario
+</I>&gt;&gt;<i> is based upon the acceptance of a location element, transmitted in some
+</I>&gt;&gt;<i> way. All users can only benefit from this system if a user doesn't have
+</I>&gt;&gt;<i> to willingly subscribe to such a location tag.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> My four cents
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> ulrich
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;&gt;<i> beside this, it is definitely a cool project! :)
+</I>&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;<i> Sure thing!
+</I>&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;<i> --
+</I>&gt;&gt;&gt;<i> Greetz,
+</I>&gt;&gt;&gt;<i> 
+</I>&gt;&gt;&gt;<i> Ralphm
+</I>&gt;&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;&gt;<i> jdev mailing list
+</I>&gt;&gt;&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i> jdev mailing list
+</I>&gt;&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> __________________________________________________
+</I>&gt;<i> Do You Yahoo!?
+</I>&gt;<i> Everything you'll ever need on one web page
+</I>&gt;&gt;<i> from News and Sport to Email and Music Charts
+</I>&gt;<i> <A HREF="http://uk.my.yahoo.com">http://uk.my.yahoo.com</A>
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="045410.html">[JDEV] component developement
+</A></li>
+	<LI>Next message: <A HREF="045413.html">[JDEV] jud jid unique?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45411">[ date ]</a>
+              <a href="thread.html#45411">[ thread ]</a>
+              <a href="subject.html#45411">[ subject ]</a>
+              <a href="author.html#45411">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

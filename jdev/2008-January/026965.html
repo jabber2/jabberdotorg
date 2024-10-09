@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Bug in jabberd2 (2.1.13) on win32
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Bug%20in%20jabberd2%20%282.1.13%29%20on%20win32&In-Reply-To=35d657240801230926w7b82d1a5m98b17e1d533cb6ac%40mail.gmail.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="026963.html">
+   <LINK REL="Next"  HREF="026966.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Bug in jabberd2 (2.1.13) on win32</H1>
+    <B>Dan Hulme</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Bug%20in%20jabberd2%20%282.1.13%29%20on%20win32&In-Reply-To=35d657240801230926w7b82d1a5m98b17e1d533cb6ac%40mail.gmail.com"
+       TITLE="[jdev] Bug in jabberd2 (2.1.13) on win32">dhulme at gmail.com
+       </A><BR>
+    <I>Wed Jan 23 18:14:54 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="026963.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+        <LI>Next message: <A HREF="026966.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26965">[ date ]</a>
+              <a href="thread.html#26965">[ thread ]</a>
+              <a href="subject.html#26965">[ subject ]</a>
+              <a href="author.html#26965">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Have tracked the problem down to this point:
+
+mio_wsasync.h: 68
+
+    static void _mio_free_fd(mio_t m, mio_priv_fd_t priv_fd)            \
+    {                                                                   \
+        priv_fd-&gt;next_free = MIO(m)-&gt;next_free;                         \
+        priv_fd-&gt;mio_fd.fd = 0;                                         \
+        MIO(m)-&gt;next_free = priv_fd;                                    \
+    }                                                                   \
+
+
+This function appears to try to append the old closed socket to a
+linked list of free sockets.  When the new connection tries to use
+this socket, it has trouble.  Once the next connection connects,
+however, it will not use that socket as it is still in use, so it will
+work.  Not sure why the socket that is being appended is broken, but
+if this function is not called (at mio_impl.h: 267), the program works
+&quot;fine.&quot;  It may not be reusing sockets, but everything else works.
+
+Hope this helps.
+
+-Dan
+
+On Jan 23, 2008 9:26 AM, Dan Hulme &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dhulme at gmail.com</A>&gt; wrote:
+&gt;<i> You might also mention that the win32 is broken on 2.1.21 (doesn't compile).
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> On Jan 23, 2008 9:16 AM, Tomasz Sterna &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tomek at xiaoka.com</A>&gt; wrote:
+</I>&gt;<i> &gt; On &#346;r, 2008-01-23 at 08:48 -0800, Dan Hulme wrote:
+</I>&gt;<i> &gt; &gt; Am I correct in assuming this means it uses wsasync?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I guess so.
+</I>&gt;<i> &gt; That could mean, that there is a bug in wsasync implementation.
+</I>&gt;<i> &gt; I  will talk to Win32 build maintainer about.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; --
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;   /\_./o__ Tomasz Sterna
+</I>&gt;<i> &gt;  (/^/(_^^' &#65279;<A HREF="http://www.xiaoka.com/">http://www.xiaoka.com/</A>
+</I>&gt;<i> &gt; ._.(_.)_   im:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">smoku at xiaoka.com</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I></PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="026963.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+	<LI>Next message: <A HREF="026966.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26965">[ date ]</a>
+              <a href="thread.html#26965">[ thread ]</a>
+              <a href="subject.html#26965">[ subject ]</a>
+              <a href="author.html#26965">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

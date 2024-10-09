@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Websockets RFC: stream: prefix required or not?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Websockets%20RFC%3A%20stream%3A%20prefix%20required%20or%20not%3F&In-Reply-To=%3CC271054E16F8474D9104E1146C767BF13A3099%40DEFTHW99EK1MSX.ww902.siemens.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="090068.html">
+   <LINK REL="Next"  HREF="090070.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Websockets RFC: stream: prefix required or not?</H1>
+    <B>Hund, Johannes</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Websockets%20RFC%3A%20stream%3A%20prefix%20required%20or%20not%3F&In-Reply-To=%3CC271054E16F8474D9104E1146C767BF13A3099%40DEFTHW99EK1MSX.ww902.siemens.net%3E"
+       TITLE="[jdev] Websockets RFC: stream: prefix required or not?">johannes.hund at siemens.com
+       </A><BR>
+    <I>Tue Feb  3 09:53:15 UTC 2015</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="090068.html">[jdev] Websockets RFC: stream: prefix required or not?
+</A></li>
+        <LI>Next message: <A HREF="090070.html">[jdev] Websockets RFC: stream: prefix required or not?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90069">[ date ]</a>
+              <a href="thread.html#90069">[ thread ]</a>
+              <a href="subject.html#90069">[ subject ]</a>
+              <a href="author.html#90069">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> I called this out in 7395 because both stream features and errors
+</I>&gt;<i> traditionally use the 'stream' prefix while relying on the opening &lt;stream&gt;
+</I>&gt;<i> tag to define to define the prefix. But for WebSocket there is no parent
+</I>&gt;<i> &lt;stream&gt; tag providing those declarations, and it seemed like an easy item for
+</I>&gt;<i> implementors to either miss entirely or do incorrectly like so:
+</I>&gt;<i> 
+</I>&gt;<i> // Not define the namespace or prefix at all &lt;stream:features /&gt; &lt;stream:error
+</I>&gt;<i> /&gt;
+</I>&gt;<i> 
+</I>&gt;<i> // Define the namespace without a prefix, while still using a prefix
+</I>&gt;<i> &lt;stream:features xmlns=&quot;<A HREF="http://etherx.jabber.org/streams">http://etherx.jabber.org/streams</A>&quot; /&gt; &lt;stream:error
+</I>&gt;<i> xmlns=&quot;<A HREF="http://etherx.jabber.org/streams">http://etherx.jabber.org/streams</A>&quot; /&gt;
+</I>&gt;<i> 
+</I>&gt;<i> // Stamp 'jabber:client' as the namespace because it has no xmlns attribute
+</I>&gt;<i> &lt;stream:error xmlns=&quot;jabber:client&quot; /&gt; &lt;stream:features xmlns=&quot;jabber:client&quot;
+</I>&gt;<i> /&gt;
+</I>&gt;<i> 
+</I>&gt;<i> &#8212; Lance
+</I>
+
+Yes, there we saw there is a statement somewhere in the RFC that you should use the prefix &quot;stream&quot; ...if you use a prefix.
+I think this confuses many developers, as we have seen implementations that refuse fragments as invalid xml if it does not have a prefix (but declares the ns for the element) or uses a prefix differently to stream.
+
+This gives us problems when using EXI, as it will normally just produce valid xml. Therefore, it is up to the codec to just assign a namespace to any prefix (if necessary). There are flags/codec options defined in the EXI standard for exactly this (namespace preservation), but it reduces performance (as you have to communicate every use prefix), does not work when you build it from a memory representation and is a quirks mode IMHO. 
+
+Maybe it would be good to give some more implementation notes/advice to clarify what is valid and what is not?
+
+/Johannes
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="090068.html">[jdev] Websockets RFC: stream: prefix required or not?
+</A></li>
+	<LI>Next message: <A HREF="090070.html">[jdev] Websockets RFC: stream: prefix required or not?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#90069">[ date ]</a>
+              <a href="thread.html#90069">[ thread ]</a>
+              <a href="subject.html#90069">[ subject ]</a>
+              <a href="author.html#90069">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

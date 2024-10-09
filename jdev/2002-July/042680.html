@@ -1,0 +1,233 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Namespaces
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Namespaces&In-Reply-To=%3C02071104375100.02740%40mich%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="042677.html">
+   <LINK REL="Next"  HREF="042682.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Namespaces</H1>
+    <B>Kriggs</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Namespaces&In-Reply-To=%3C02071104375100.02740%40mich%3E"
+       TITLE="[JDEV] Namespaces">jabbermailer at rebirth-rpg.com
+       </A><BR>
+    <I>Thu Jul 11 03:37:51 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="042677.html">[JDEV] Namespaces
+</A></li>
+        <LI>Next message: <A HREF="042682.html">[JDEV] Namespaces
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42680">[ date ]</a>
+              <a href="thread.html#42680">[ thread ]</a>
+              <a href="subject.html#42680">[ subject ]</a>
+              <a href="author.html#42680">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>If you would like to help me (by reading these 90 lines of text), try your 
+best to correct me where I am wrong, and answer my questions (Lines marked 
+with an asterisk (*) are points which I especially am having trouble with):
+
+1)
+
+    &lt;a xmlns=&quot;x:y&quot;&gt;
+      &lt;b c=&quot;value1&quot;/&gt;
+    &lt;/a&gt;
+
+In this example, &lt;a/&gt;, &lt;b/&gt; and c=&quot;&quot; are all using the x:y namespace. &lt;b/&gt;'s 
+namespace is &quot;x:y&quot;, just like &lt;a/&gt;'s, as opposed to my previous theory that 
+&lt;b/&gt;'s namespace becomes x:y:a.
+
+* Would putting an x:y: prefix to every tag element's name do the same thing 
+as the use of xmlns=&quot;x:y&quot; in this example?
+
+2)
+
+    &lt;a xmlns=&quot;<A HREF="http://...&quot;">http://...&quot;</A> xmlns:s=&quot;x:y&quot;&gt;
+      &lt;s:b c=&quot;value1&quot;&gt;
+        &lt;d/&gt;
+        &lt;e s:f=&quot;value2&quot;/&gt;
+      &lt;/s:b&gt;
+    &lt;/a&gt;
+
+In this example,
+&lt;a/&gt; is using the &quot;<A HREF="http://...&quot;">http://...&quot;</A> website namespace
+&lt;b/&gt; is using the x:y bulltin namespace because of the s: prefix
+c=&quot;&quot; is using the x:y bulltin namespace because it is &lt;b/&gt;'s attribute.
+&lt;d/&gt; is using the &quot;<A HREF="http://...&quot;">http://...&quot;</A> website namespace, because it's prefix doesn't 
+depend on it's parent's prefix.
+&lt;e/&gt; is using the &quot;<A HREF="http://...&quot;">http://...&quot;</A> website namespace for the same reason
+f=&quot;&quot; is using the x:y bulltin namespace. Although normally an attribute 
+inherits from it's parent, f=&quot;&quot; has an s: prefix.
+
+3)
+
+    &lt;a xmlns=&quot;v:w&quot;&gt;
+      &lt;b xmlns=&quot;x:y&quot;&gt;
+        &lt;s:c/&gt;
+      &lt;/b&gt;
+    &lt;/a&gt;
+
+&lt;a/&gt; has v:w as it's namespace
+&lt;b/&gt; has x:y as it's namespace
+* &lt;c/&gt; has no namespace handler (?)
+
+4)
+
+In a more explicit example:
+
+    &lt;stream:stream 
+    to=&quot;denmark&quot; 
+    xmlns=&quot;jabber:client&quot; 
+    xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A>&gt;
+    [...]
+    &lt;iq type=&quot;set&quot; id=&quot;1&quot;&gt;
+      &lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+        &lt;username&gt;nick&lt;/username&gt;
+        &lt;password&gt;pass&lt;/password&gt;
+        &lt;resource&gt;home&lt;/resource&gt;
+      &lt;/query&gt;
+    &lt;/iq&gt;
+    [...]
+    &lt;/stream:stream&gt;
+
+&lt;stream:stream/&gt; uses the xmlns:stream namespace (because of the stream:... 
+part) looking for the element definition of &quot;stream&quot; (because of the 
+...stream part)
+&lt;iq/&gt;, having no prefix, defaults to the jabber:client namespace.
+&lt;query/&gt;, &lt;username/&gt;, &lt;password/&gt; and &lt;resource/&gt; all take from 
+jabber:iq:auth.
+
+* Do I take it that jabber, despite the xml standard, applies xmlns:* to the 
+level and lower, but applies xmlns only to the lower levels? Or does every 
+jabber:iq:* contain &lt;query/&gt; in it's definition?
+
+* I notice that jabber:iq:auth has more than 1 colon (:). Is this only 
+possible for namespaces, or can tag elements have that too (namespace 
+declared like xmlns:a:b:c=&quot;name:space&quot;)? If so, how do you separate the 
+element from the namespace? Is an actual element name not allowed to have any 
+colons (:) in them?
+
+I know I asked a lot of questions, and I may not have found the best way to 
+communicate what I was asking, but knowing this information is key if I'm 
+going to develop a successful Jabber client.
+
+-Kriggs
+RBJab
+
+PS. Thanks Peter, those links helped a lot.
+
+&gt;<i> You might want to read this:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="http://www.w3.org/TR/1999/REC-xml-names-19990114/">http://www.w3.org/TR/1999/REC-xml-names-19990114/</A>
+</I>&gt;<i>
+</I>&gt;<i> As well as the documents referenced from here:
+</I>&gt;<i>
+</I>&gt;<i> <A HREF="http://www.jabber.org/ietf/">http://www.jabber.org/ietf/</A>
+</I>&gt;<i>
+</I>&gt;<i> Peter
+</I>&gt;<i>
+</I>&gt;<i> --
+</I>&gt;<i> Peter Saint-Andre
+</I>&gt;<i> Jabber Software Foundation
+</I>&gt;<i> <A HREF="http://www.jabber.org/people/stpeter.html">http://www.jabber.org/people/stpeter.html</A>
+</I>&gt;<i>
+</I>&gt;<i> On Mon, 8 Jul 2002, Kriggs wrote:
+</I>&gt;<i> &gt; I'd like some confirmation on something right now. Can someone tell me if
+</I>&gt;<i> &gt; I'm right in the following examples:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &lt;a:b/&gt;
+</I>&gt;<i> &gt; &lt;a b=&quot;value&quot;/&gt;
+</I>&gt;<i> &gt; &lt;tag a:b=&quot;value&quot;/&gt;
+</I>&gt;<i> &gt; &lt;a&gt;&lt;b/&gt;&lt;/a&gt;
+</I>&gt;<i> &gt; &lt;a xmlns=&quot;r&quot;&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; where a is b's parent, and r is root? And am I forgetting anything?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; OK, now to talk about a part of the Programmer's Guide that lost me:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &quot;[...] The Jabber DTD is referenced from other XML documents and streams
+</I>&gt;<i> &gt; with the identifier jabber:client.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &lt;!-- The root of it all. --&gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &lt;!ELEMENT jabber ((
+</I>&gt;<i> &gt;   presence |
+</I>&gt;<i> &gt;   iq |
+</I>&gt;<i> &gt;   message
+</I>&gt;<i> &gt; )*)&gt;&quot;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; So the jabber element contains presence, iq and message. Where did x and
+</I>&gt;<i> &gt; error go? And does the jabber here mean jabber:client:jabber? Which would
+</I>&gt;<i> &gt; mean that for those tags, (presence, iq, message, ...) the jabber:... is
+</I>&gt;<i> &gt; implied? Maybe it means stream:stream:jabber, with jabber:... still
+</I>&gt;<i> &gt; implied, in which case the xmlns... just confuses me... Or maybe it's an
+</I>&gt;<i> &gt; error in the documentation? Or maybe I'm not seeing something?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; The clearest idea I have so far is that stream:stream is a &quot;function&quot; tag
+</I>&gt;<i> &gt; that uses the jabber:client namespace. So everything inside of the
+</I>&gt;<i> &gt; stream:stream uses jabber:client as it's parent. jabber:... would not be
+</I>&gt;<i> &gt; implied, and so presence, iq, message, etc. would actually be
+</I>&gt;<i> &gt; jabber:client:presence, jabber:client:iq, jabber:client:message, etc...
+</I>&gt;<i> &gt; All (or most) namespaces, such as jabber:iq:auth and jabber:iq:version,
+</I>&gt;<i> &gt; pull from the root level, meaning that jabber: is filled with a bunch of
+</I>&gt;<i> &gt; namespaces, and jabber:client contains only the &quot;function&quot; tags. The root
+</I>&gt;<i> &gt; tags would be stream: (for the transport layer's independence from
+</I>&gt;<i> &gt; jabber), jabber, and anything we'd want to invent? If I didn't keep
+</I>&gt;<i> &gt; getting the impression that there's an implied &quot;jabber:...&quot; in front of
+</I>&gt;<i> &gt; the main &quot;function&quot; tags, I would have a better time believing my
+</I>&gt;<i> &gt; explanation :)
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; If the answer to all my hoohaa is that jabber just fakes having a
+</I>&gt;<i> &gt; structure... well, for starters, I'd be very disappointed in what seemed
+</I>&gt;<i> &gt; like such a good effort, then I'd use the explanation I've come up with,
+</I>&gt;<i> &gt; despite it all. The chances of jabber evolving to have a tag of the same
+</I>&gt;<i> &gt; name at the exact wrong place seems unlikely.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Can anyone tell me where I'm wrong and/or right in all this?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Thank you!
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; -Kriggs
+</I>&gt;<i> &gt; RBJab
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="042677.html">[JDEV] Namespaces
+</A></li>
+	<LI>Next message: <A HREF="042682.html">[JDEV] Namespaces
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42680">[ date ]</a>
+              <a href="thread.html#42680">[ thread ]</a>
+              <a href="subject.html#42680">[ subject ]</a>
+              <a href="author.html#42680">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

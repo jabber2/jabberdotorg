@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] XMPP Ping method?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP%20Ping%20method%3F&In-Reply-To=%3C6051.1162413731.798608%40peirce.dave.cridland.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="054735.html">
+   <LINK REL="Next"  HREF="054752.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] XMPP Ping method?</H1>
+    <B>Dave Cridland</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20XMPP%20Ping%20method%3F&In-Reply-To=%3C6051.1162413731.798608%40peirce.dave.cridland.net%3E"
+       TITLE="[jdev] XMPP Ping method?">dave at cridland.net
+       </A><BR>
+    <I>Wed Nov  1 14:42:08 CST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="054735.html">[jdev] XMPP Ping method?
+</A></li>
+        <LI>Next message: <A HREF="054752.html">[jdev] XMPP Ping method?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54747">[ date ]</a>
+              <a href="thread.html#54747">[ thread ]</a>
+              <a href="subject.html#54747">[ subject ]</a>
+              <a href="author.html#54747">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed Nov  1 17:07:11 2006, Michal 'vorner' Vaner wrote:
+&gt;<i> On Wed, Nov 01, 2006 at 06:07:39PM +0100, Tobias Markmann wrote:
+</I>&gt;<i> &gt; Isn't that a TCP problem since that can happen to any protocol 
+</I>&gt;<i> which is
+</I>&gt;<i> &gt; based to TCP?
+</I>&gt;<i> 
+</I>&gt;<i> Well, it is partly implementation problem, many OSes (as I heard) 
+</I>&gt;<i> are
+</I>&gt;<i> able to tell you how much was already delivered and if you remember 
+</I>&gt;<i> what
+</I>&gt;<i> part of data was what stanza, you can resend it after reconnection.
+</I>&gt;<i> 
+</I>&gt;<i> But that is bit more work, of course, and alot more data.
+</I>
+No OS can tell you what's been delivered, but some might be able to 
+tell you what hasn't been sent, and what hasn't been acknowledged. I 
+looked for how to do this on Linux, which usually provides the 
+richest API to the network layer, but I couldn't find anything to 
+tell me either.
+
+But this isn't quite the same thing anyway - you want to know what 
+stanzas have been accepted - what happens if the ACKs get lost, or 
+the server dies?
+
+Consider ESMTP, which has got data level acknowledgement. There's a 
+long-known problem whereby after DATA (and these days, BDAT and 
+BURL), there's a chance that you'll lose the connection before you 
+get the 2xx acknowledgement from the server. This is on the increase 
+again, partly due to the preference for protocol-level rejections 
+instead of DSNs, partly due to the marked increase in usage of ESMTP 
+over things like GPRS.
+
+It's important to note that this specifically is about hop-by-hop, 
+and not end-to-end, which are different problems entirely. Finding 
+out if the guy you're talking to is still connected is quite easy, 
+just send an IQ (in principle *any* IQ), and you'll see.
+
+Hop-by-hop tests are quite easy, too, but there's a gotcha - when 
+they fail, you want to know which stanzas you need to resend. And 
+XMPP does not provide any mechanism for that, and nor do pings.
+
+My last suggestion - adding a sequence attribute to stanzas - didn't 
+seem to impress most people, partly because it requires servers to 
+rewrite stanzas between hops.
+
+If instead the sender appends a distinct stanza (which could be an 
+iq, or could be something else) to every TCP segment sent, which 
+itself contains a sequence, then that can be used as the restart 
+token with almost precisely the same effect, and requires no 
+rewriting of stanzas.
+
+So, the sender appends, for instance, &lt;iq type='set' 
+id='ping123'&gt;&lt;ping xmlns='urn:xmpp:ping' sent='1' recv='47'/&gt;&lt;/iq&gt; to 
+each send() call's payload, and the receiver can then note this 
+simply, and respond with an iq reply when it suits it, which also 
+contains sent and recv sequence counts.
+
+Loosely, you'd add that to the end of each TCP packet, in practise 
+about every 1.5k or at the end of each send() should be quite safe.
+
+Dave.
+-- 
+Dave Cridland - mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dave at cridland.net</A> - xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwd at jabber.org</A>
+  - <A HREF="acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/">acap://acap.dave.cridland.net/byowner/user/dwd/bookmarks/</A>
+  - <A HREF="http://dave.cridland.net/">http://dave.cridland.net/</A>
+Infotrope Polymer - ACAP, IMAP, ESMTP, and Lemonade
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="054735.html">[jdev] XMPP Ping method?
+</A></li>
+	<LI>Next message: <A HREF="054752.html">[jdev] XMPP Ping method?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#54747">[ date ]</a>
+              <a href="thread.html#54747">[ thread ]</a>
+              <a href="subject.html#54747">[ subject ]</a>
+              <a href="author.html#54747">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

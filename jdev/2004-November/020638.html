@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Gaim and gnomemeeting using jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Gaim%20and%20gnomemeeting%20using%20jabber&In-Reply-To=003401c4d732%248a88e320%244700000a%40internal.dobsoni.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="020635.html">
+   <LINK REL="Next"  HREF="020616.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Gaim and gnomemeeting using jabber</H1>
+    <B>Tijl Houtbeckers</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Gaim%20and%20gnomemeeting%20using%20jabber&In-Reply-To=003401c4d732%248a88e320%244700000a%40internal.dobsoni.net"
+       TITLE="[jdev] Gaim and gnomemeeting using jabber">thoutbeckers at splendo.com
+       </A><BR>
+    <I>Tue Nov 30 19:27:43 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="020635.html">[jdev] Gaim and gnomemeeting using jabber
+</A></li>
+        <LI>Next message: <A HREF="020616.html">[jdev] Gaim and gnomemeeting using jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20638">[ date ]</a>
+              <a href="thread.html#20638">[ thread ]</a>
+              <a href="subject.html#20638">[ subject ]</a>
+              <a href="author.html#20638">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Tue, 30 Nov 2004 23:15:53 -0000, Richard Dobson &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">richard at dobson-i.net</A>&gt;  
+wrote:
+
+&gt;&gt;&gt;<i> If you really are intent on doing this then using pubsub is your only  
+</I>&gt;&gt;&gt;<i> option if you want your proposal standardised, I dont see it ever  
+</I>&gt;&gt;&gt;<i> being passed by the council if you do it as a presence extension, and  
+</I>&gt;&gt;&gt;<i> I doubt the gaim folks would accept any implementation of it into  
+</I>&gt;&gt;&gt;<i> their main codebase if it has been rejected by the council.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> This is not a fair comment. I've had an offlist discussion about this  
+</I>&gt;&gt;<i> and suggested some alternatives such as JEP 115 or vcard-temp (VCARDS  
+</I>&gt;&gt;<i> are used for this purpose in other applications) that could use  
+</I>&gt;&gt;<i> existing standards. Wether you need pubsub for this or not heavily  
+</I>&gt;&gt;<i> depends on how feature laden you want to make this proposal. If it is  
+</I>&gt;&gt;<i> the authors intention just to publish a SIP uri, and potentially some  
+</I>&gt;&gt;<i> availability data then IMHO PubSub is definatly overkill.
+</I>&gt;<i>
+</I>&gt;<i> Well thats just your opinion just as I have my opinion, user mood is  
+</I>&gt;<i> pretty simple and that uses pubsub, I dont see how much simpler you  
+</I>&gt;<i> could make this voip-uri thing, so I dont see it being simple to be a  
+</I>&gt;<i> reason to implement it as a presence extension rather than using pubsub  
+</I>&gt;<i> since as Julian quite elequantly pointed out presence is not really the  
+</I>&gt;<i> right place for this extension regardless of how simple it is so that  
+</I>&gt;<i> just leaves pubsub as the only real other mechanism to publish this sort  
+</I>&gt;<i> of info to the people that are actually interested in it.
+</I>&gt;<i>
+</I>&gt;<i> Just out of interest how would you see this working using JEP-115 or  
+</I>&gt;<i> vcard-temp, as this doesnt seem to be IMO inline with the spirit of  
+</I>&gt;<i> JEP-115 and vcards dont get dynamically updated when you change things  
+</I>&gt;<i> so wouldnt really be useful for expressing voip presence.
+</I>&gt;<i>
+</I>&gt;<i> I would also want to see the security concerns addressed too as sending  
+</I>&gt;<i> the voip-uri to people who havent been invited is a potensially bad  
+</I>&gt;<i> security problem and I have yet to hear any real reason as to why other  
+</I>&gt;<i> people (who are not part of the session) have any need to know this in  
+</I>&gt;<i> the first place, as far as I can see it is completely useless to them so  
+</I>&gt;<i> as far as I can see there is no point in even sending it to them, all  
+</I>&gt;<i> they need to know is that you are in a call, which could simply be  
+</I>&gt;<i> expressed just using &lt;presence&gt;&lt;show&gt;dnd&lt;/show&gt;&lt;status&gt;On the  
+</I>&gt;<i> phone&lt;/status&gt;&lt;/presence&gt;, I still fail to understand why this is even  
+</I>&gt;<i> needed given this, I cant really see any benefit of having two separate  
+</I>&gt;<i> presences one for IM and one for VoIP.
+</I>
+You don't need to know the SIP uri to know that a client has one. You only  
+need to advertise that you have one. If you want to receive SIP calls  
+enable it, if you don't disable it. Or as JEP-115 puts it &quot;Some clients  
+will have bundles of functionality that can be enabled and disabled.&quot;  
+Doesn't sound very against the spirit of JEP-115.
+
+Once you want to intitiate your SIP conversation you retrieve the URI. The  
+mechanism for this, well that will depend on your requirments. You could  
+define a simple IQ request for an x:oob packet (this should appeal to you  
+if you think security is important, since you could send an error if you  
+don't want to share). But an argument could be made for putting it in  
+disco or vcard-temp, since that would enable offline retrival.
+
+What's the case for pubsub anyway? It's not dynamic.. in fact, I don't  
+even *want* the uri to be updated, *unless* I put in a call. Such a  
+message would be just as much &quot;polluting&quot; to the network as putting your  
+SIP uri in the presence. The only thing I can imagine you want this  
+dynamic is &quot;I have it&quot; or &quot;I don't have it&quot;.
+
+Ofcourse, this could mean we'll end up in the larger discussion.. is  
+JEP-0115 a good idea or just a presence hack to fix the flaws of Disco  
+like iChat and avatars? Why doesn't this use pubsub other than the well  
+know reasons &quot;there's no good pubsub server out there, no client supports  
+it etc.&quot; for example?
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="020635.html">[jdev] Gaim and gnomemeeting using jabber
+</A></li>
+	<LI>Next message: <A HREF="020616.html">[jdev] Gaim and gnomemeeting using jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20638">[ date ]</a>
+              <a href="thread.html#20638">[ thread ]</a>
+              <a href="subject.html#20638">[ subject ]</a>
+              <a href="author.html#20638">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] server components
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20server%20components&In-Reply-To=%3C3CD081B6.9080703%40akuma.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="071208.html">
+   <LINK REL="Next"  HREF="071203.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] server components</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20server%20components&In-Reply-To=%3C3CD081B6.9080703%40akuma.org%3E"
+       TITLE="[JDEV] server components">mass at akuma.org
+       </A><BR>
+    <I>Wed May  1 19:00:54 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="071208.html">[JDEV] server components
+</A></li>
+        <LI>Next message: <A HREF="071203.html">[JDEV] new email list for end users
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71212">[ date ]</a>
+              <a href="thread.html#71212">[ thread ]</a>
+              <a href="subject.html#71212">[ subject ]</a>
+              <a href="author.html#71212">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Bill Marcum wrote:
+
+&gt;<i>Can anyone point me towards more in-depth documentation for developing
+</I>&gt;<i>server components?  I've looked at all the documentation supplied for JECL
+</I>&gt;<i>and Jabberbeans, and read the 'Programming Jabber' book (which was very
+</I>&gt;<i>good), but I have yet to find anything that discusses the component -
+</I>&gt;<i>component protocol, (i.e., the syntax of the Route message).  
+</I>&gt;<i>
+</I>Component to component protocol is not standardized, and left to be 
+server implementation specific. As you delve deeper into the component 
+protocol, you quickly suspect it was not fully designed, but left to 
+evolve around features needed for the specific implementation.
+
+As far as what most server implementations have exposed (that I have 
+experience with):
+
+Route messages are (currently) used almost exclusively for 
+communications between a client connection manager and the session 
+manager. The purpose of the route tag is mostly to overload the delivery 
+information on an inner packet, since a connection manager proxies 
+packets to the session manager independant of where they are actually 
+directed to (or if they even have the 'to' and 'from' attributes set). 
+Routes also have types, which are used in the connection manager to 
+session manager protocol (I believe valid types are auth, session, and 
+error)
+
+Xdb messages are nearly impossible to store in anything other than a 
+filesystem, does not readily allow for partial updates of data, and most 
+of the Xdb storage mechanisms are based around namespaces which share 
+the name but do not have the same format as the client-accessable 
+namespaces. Xdb has never really been documented because it has never 
+really been anyone's favorite solution; it gets the job done until 
+something better comes along. It is used heavily by the session manager, 
+and not really used that much by most third-party components. It has an 
+orthogonal delivery tree; sending an xdb request to a domain name does 
+not neccessarily go to the same component as any other type of request.
+
+Log messages are mixed data sent out into the ether. Filtering is done 
+based on the severity (type) and originating address.
+
+So other than the handshake tag (which you should be happily not exposed 
+to with either of the libraries mentioned above), most components I have 
+had experience with:
+- ignore route tags, unless they are communicating with something that 
+expects route tags
+- send out normal messages as if they were clients, except that the 'to' 
+and 'from' addresses must always be explicitly set.
+- try to use Xdb as little as possible, mostly to retrieve configuration 
+information from the server for the particular component. (&lt;xdb 
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' from='your-component' id='unique' 
+ns='namespace:of:configuration:block'/&gt; )
+
+-David Waite
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="071208.html">[JDEV] server components
+</A></li>
+	<LI>Next message: <A HREF="071203.html">[JDEV] new email list for end users
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71212">[ date ]</a>
+              <a href="thread.html#71212">[ thread ]</a>
+              <a href="subject.html#71212">[ subject ]</a>
+              <a href="author.html#71212">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] PubSub Subscription Requests
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20PubSub%20Subscription%20Requests&In-Reply-To=%3CHJEJKDJAJDJDJKNAHACJAEMJDBAA.pendleto%40movsoftware.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="074574.html">
+   <LINK REL="Next"  HREF="074577.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] PubSub Subscription Requests</H1>
+    <B>Stephen Pendleton</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20PubSub%20Subscription%20Requests&In-Reply-To=%3CHJEJKDJAJDJDJKNAHACJAEMJDBAA.pendleto%40movsoftware.com%3E"
+       TITLE="[JDEV] PubSub Subscription Requests">pendleto at movsoftware.com
+       </A><BR>
+    <I>Fri Mar  7 13:27:33 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="074574.html">[JDEV] PubSub Subscription Requests
+</A></li>
+        <LI>Next message: <A HREF="074577.html">[JDEV] PubSub Subscription Requests
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74576">[ date ]</a>
+              <a href="thread.html#74576">[ thread ]</a>
+              <a href="subject.html#74576">[ subject ]</a>
+              <a href="author.html#74576">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Understood. Makes sense. The reason is that in my client I am attempting to
+automatically allow people to subscribe to my node, and I am attempting to
+find a robust way of parsing this node.
+
+For instance if I get:
+
+        &lt;field var=&quot;FORM_TYPE&quot; type=&quot;hidden&quot;&gt;
+            &lt;value&gt;<A HREF="http://jabber.org/protocol/pubsub&lt;/value">http://jabber.org/protocol/pubsub&lt;/value</A>&gt;
+        &lt;/field&gt;
+        &lt;field var=&quot;node&quot; type=&quot;hidden&quot;&gt;
+            &lt;value&gt;generic/pgm-mp3-player&lt;/value&gt;
+        &lt;/field&gt;
+        &lt;field var=&quot;subscriber_jid&quot; type=&quot;hidden&quot;&gt;
+            &lt;value&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sub1 at foo.com</A>&lt;/value&gt;
+        &lt;/field&gt;
+        &lt;field type=&quot;fixed&quot;&gt;
+            &lt;value&gt;The pubsub node is: generic/pgm-mp3-player&lt;/value&gt;
+        &lt;/field&gt;
+        &lt;field type=&quot;fixed&quot;&gt;
+            &lt;value&gt;The subscriber JID is: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sub1 at foo.com</A>&lt;/value&gt;
+        &lt;/field&gt;
+
+as part of the subscription request, I need to send back the following:
+
+        &lt;field var=&quot;FORM_TYPE&quot;&gt;
+           &lt;value&gt;<A HREF="http://jabber.org/protocol/pubsub&lt;/value">http://jabber.org/protocol/pubsub&lt;/value</A>&gt;
+        &lt;/field&gt;
+        &lt;field var=&quot;node&quot;&gt;
+           &lt;value&gt;generic/pgm-mp3-player&lt;/value&gt;
+        &lt;/field&gt;
+        &lt;field var=&quot;subscriber_jid&quot;&gt;
+           &lt;value&gt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sub1 at foo.com</A>&lt;/value&gt;
+        &lt;/field&gt;
+
+I am assuming that the var attributes in the &quot;field&quot; tag are not
+nescessarily always going to be &quot;node&quot; and &quot;subscriber_jid&quot;.
+
+I guess my feeling is that the concept of a &quot;node&quot; is key to the entire
+pubsub concept, but is only defined here in this transaction as a field in
+the x:data form. This is fine, but if you are trying to do this without user
+interaction there doesn't seem to be a robust way that the client can obtain
+the node that the request refers to (since the &quot;node&quot; field may be named
+something else in a different x:data form). Maybe I am missing something
+here..
+
+Thanks
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+Peter Millard
+Sent: Friday, March 07, 2003 1:16 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] PubSub Subscription Requests
+
+
+Stephen Pendleton wrote:
+&gt;<i> Now my question/comment is, is this the best way to do this? What is the
+</I>&gt;<i> advantange of sending a jabber:x:data form? Will there be implementations
+</I>&gt;<i> that require jabber:x:data data to be sent back? The only reason I ask
+</I>this
+&gt;<i> is because it seems to me it is pretty much the same as a simple &quot;roster
+</I>&gt;<i> subscription request&quot; that would require only a simple yes/no response
+</I>sent
+&gt;<i> back.
+</I>
+The advantage of using x-data here is so that x-data compliant clients do
+not
+need to implement yet another namespace for just a simple form. X-Data is
+perfectly suited for this type of operation. It's also not JUST a yes/no
+since
+the approver probably wants to see who the requestor is, and what NODE they
+are
+trying to subscribe to. Thus, there is a some basic information that needs
+to be
+displayed to the approver. In general, it's just not necessary to force
+clients
+to implement yet another bit-o-protocol, when we already have something that
+can
+be used. Re-use of protocol is a GOOD thing :)
+
+pgm.
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="074574.html">[JDEV] PubSub Subscription Requests
+</A></li>
+	<LI>Next message: <A HREF="074577.html">[JDEV] PubSub Subscription Requests
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74576">[ date ]</a>
+              <a href="thread.html#74576">[ thread ]</a>
+              <a href="subject.html#74576">[ subject ]</a>
+              <a href="author.html#74576">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

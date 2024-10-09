@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] scaling a single server
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20scaling%20a%20single%20server&In-Reply-To=%3C004b01bf738c%24bda0a220%2403c810ac%40jim.grarr.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="061289.html">
+   <LINK REL="Next"  HREF="061294.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] scaling a single server</H1>
+    <B>Jacob O'Reilly</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20scaling%20a%20single%20server&In-Reply-To=%3C004b01bf738c%24bda0a220%2403c810ac%40jim.grarr.com%3E"
+       TITLE="[JDEV] scaling a single server">jacob at clear.net.nz
+       </A><BR>
+    <I>Thu Feb 10 00:04:47 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="061289.html">[JDEV] Introduction
+</A></li>
+        <LI>Next message: <A HREF="061294.html">[JDEV] Presence Bug???
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61293">[ date ]</a>
+              <a href="thread.html#61293">[ thread ]</a>
+              <a href="subject.html#61293">[ subject ]</a>
+              <a href="author.html#61293">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>    
+    -----Original Message-----
+    From: temas &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">temas at box5.net</A>&gt;
+    To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A> &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+    Date: Thursday, 10 February 2000 06:56
+    Subject: Re: [JDEV] scaling a single server
+    
+    
+    If you wanted multiple servers to be @singlehostname.com, there is no exact
+    solution yet.  It really depends on how your setting it up, and is most likely
+    a proprietary solution at this point.  We are looking at a few ideas for out of
+    the box solutions, but I must say they aren't as friendly to a setup due to
+    many facts.  One of the primary points is XML processing.  With any protocol
+    you lose some time to the processing of the data stream, one of our ideas and
+    goals when looking at proprietary setups, we remove the XML parser and put it
+    in a seperate machine.  Then we look at adding a few boxes to handle the tons
+    of connections (I'm thinking fairly high here on a Linux box, that can only
+    be modded to a certain number of connections).  So at this point we've reduced
+    the load in a decent amount on the primary engines.  There are a lot of other
+    components to jabber that could run on it's own box for a solution of grand
+    proportions.  But I digress.
+That sounds like a good way of breaking it up.
+
+    
+    What kind of scaling do you need on a single box? We are looking at some pretty
+    cool ideas.  One of the problems that we've sort of kept quite for a while
+    (yeah we're bad) is that PTH does not play well with multiprocessor machines,
+    because the threading is userland it can only use a single processor.  When
+    jer and I met in NYC for the expo he proposed his solution on that and we
+    refined it a bit.  What we're looking at is making the different processors
+    do different parts, likein the multi box setup above.  Put the XML parser on a
+    processor, TCP handler, Garbage collector, etc... That way we utilize the box
+    more.  That should VASTLY increase single box scaling.  For single CPU systems
+    (as with any server)  there will be a max point that'll be hit.
+    
+I find that on UNIX machines, the classic multiprocessing model (fork'n go) works best.  Especially on systems that support copy-on-write forking, this can be quite efficient.  It certainly works well with multiple processors.
+
+I imagine that when scaled to a large number of users, the requirement for a large-scale database to provide the data store will be needed.  Has anyone experimented with this?  I would like to help in this area if there is any desire to provide this type of functionality.
+
+-- Jacob.
+    
+    
+    --temas
+    
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20000210/a6d03cd2/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20000210/a6d03cd2/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="061289.html">[JDEV] Introduction
+</A></li>
+	<LI>Next message: <A HREF="061294.html">[JDEV] Presence Bug???
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61293">[ date ]</a>
+              <a href="thread.html#61293">[ thread ]</a>
+              <a href="subject.html#61293">[ subject ]</a>
+              <a href="author.html#61293">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

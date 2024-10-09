@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber server on MacOS X
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20server%20on%20MacOS%20X&In-Reply-To=p05100903b6e3e3529a69%40%5B217.80.77.52%5D">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006796.html">
+   <LINK REL="Next"  HREF="006798.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber server on MacOS X</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20server%20on%20MacOS%20X&In-Reply-To=p05100903b6e3e3529a69%40%5B217.80.77.52%5D"
+       TITLE="[JDEV] Jabber server on MacOS X">kminkler at jabber.com
+       </A><BR>
+    <I>Sun Mar 25 13:32:29 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006796.html">[JDEV] Jabber server on MacOS X
+</A></li>
+        <LI>Next message: <A HREF="006798.html">[JDEV] Jabber server on MacOS X
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6797">[ date ]</a>
+              <a href="thread.html#6797">[ thread ]</a>
+              <a href="subject.html#6797">[ subject ]</a>
+              <a href="author.html#6797">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>That &quot;recieved KILL&quot; message is in jabberd/jabberd.c, it should be
+printed out whenever the server recieves a signal (other than SIGHUP),
+and dies.. 
+
+If pth is screwed up, it is possible that the signals are not being
+sent to the right thread (maybe..) since MIO uses alot of signals...
+althought the MIO signals should be sent (via pth) directly to specific
+threads.
+
+
+On Sun, Mar 25, 2001 at 09:18:48PM +0200, Max Horn wrote:
+&gt;<i> Hi folks,
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> I attempted to get the jabber server to run on my MacOS X box, but 
+</I>&gt;<i> failed. I am using latest CVS, plus some mods I had to make to get it 
+</I>&gt;<i> compiling (as they are mostly minor, I'd be happy to contribute them 
+</I>&gt;<i> back).
+</I>&gt;<i> 
+</I>&gt;<i> For those who don't know, MacOS X at its core is a BSD system; I know 
+</I>&gt;<i> it is possible to run Jabberd on other BSD systems, so I still hope 
+</I>&gt;<i> I'll get it to run on OS X.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> So I compiled the server, as &quot;static&quot;, since shared libs on OS X are 
+</I>&gt;<i> &quot;different&quot; to put it nicely ;) Then I followed the 1.4 Server HOWTO, 
+</I>&gt;<i> modifiying my jabber.xml file as described. Then I launch the server 
+</I>&gt;<i> like this:
+</I>&gt;<i> 
+</I>&gt;<i> ./jabberd/jabberd -D -h &lt;my.dydns.name&gt;
+</I>&gt;<i> 
+</I>&gt;<i> (of course I inserted the correct domain name)
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> This causes it to print out a lot of debug information; here is an 
+</I>&gt;<i> excerpt (the last messages it prints before exiting):
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  dnsrv.c:132 DNSRV CHILD: starting
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  mio.c:614 socket 5 has restore karma -100 -=&gt; 10
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  deliver.c:277 Registering s2s with instance s2s
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  dialback.c:265 dialback loading
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  deliver.c:235 @-internal processing &lt;xdb 
+</I>&gt;<i> type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' from='s2s' 
+</I>&gt;<i> ns='jabber:config:dialback' id='0'/&gt;
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  deliver.c:649 delivering to instance 's2s'
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  xdb.c:41 xdb_results checking xdb packet 
+</I>&gt;<i> &lt;xdb type='result' to='s2s' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">config at -internal</A>' 
+</I>&gt;<i> ns='jabber:config:dialback' id='0'&gt;&lt;dialback 
+</I>&gt;<i> xmlns='jabber:config:dialback'&gt;
+</I>&gt;<i> &lt;legacy/&gt;
+</I>&gt;<i> &lt;ip port='5269'/&gt;
+</I>&gt;<i> &lt;karma&gt;
+</I>&gt;<i> &lt;init&gt;50&lt;/init&gt;
+</I>&gt;<i> &lt;max&gt;50&lt;/max&gt;
+</I>&gt;<i> &lt;inc&gt;4&lt;/inc&gt;
+</I>&gt;<i> &lt;dec&gt;1&lt;/dec&gt;
+</I>&gt;<i> &lt;penalty&gt;-5&lt;/penalty&gt;
+</I>&gt;<i> &lt;restore&gt;50&lt;/restore&gt;
+</I>&gt;<i> &lt;/karma&gt;
+</I>&gt;<i> &lt;/dialback&gt;&lt;/xdb&gt;
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  mio.c:1105 io_select to listen on 5269 [(null)]
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  dnsrv.c:147 DNSRV CHILD: Read from buffer: &lt;stream&gt;
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  mio.c:1129 io_select starting to listen on 
+</I>&gt;<i> 5269 [(null)]
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  log.c:105 &lt;log type='alert' 
+</I>&gt;<i> from='-internal'&gt;Recieved Kill.  Jabberd shutting down.&lt;/log&gt;
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  deliver.c:460 DELIVER 3:-internal &lt;log 
+</I>&gt;<i> type='alert' from='-internal'&gt;Recieved Kill.  Jabberd shutting 
+</I>&gt;<i> down.&lt;/log&gt;
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  deliver.c:649 delivering to instance 'elogger'
+</I>&gt;<i> 20010325T19:07:40: [alert] (-internal): Recieved Kill.  Jabberd shutting down.
+</I>&gt;<i> Sun Mar 25 21:07:40 2001  mio.c:614 socket 8 has restore karma -100 -=&gt; 50
+</I>&gt;<i> Sun Mar 25 21:07:41 2001  mio.c:799 MIO is shutting down
+</I>&gt;<i> Sun Mar 25 21:07:41 2001  dialback_in.c:170 dbin read: fd 8 flag 4
+</I>&gt;<i> Sun Mar 25 21:07:41 2001  mio.c:354 freed MIO socket
+</I>&gt;<i> Sun Mar 25 21:07:41 2001  mio.c:354 freed MIO socket
+</I>&gt;<i> Sun Mar 25 21:07:41 2001  dnsrv.c:143 dnsrv: Read error on 
+</I>&gt;<i> coprocess(1): 1 Operation not permitted
+</I>&gt;<i> Sun Mar 25 21:07:41 2001  dnsrv.c:157 DNSRV CHILD: out of loop.. exiting normal
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> I am a bit confused over this, and how to interpret it. The server 
+</I>&gt;<i> suddenly receives a &quot;kill&quot; it seems?!?! What's going on there? BTW, I 
+</I>&gt;<i> also had to modify pth-1.3.7 slightly to get it to compile (modified 
+</I>&gt;<i> configure.in), but I doubt this is the problem, as &quot;make test&quot; run 
+</I>&gt;<i> fine for pth, and I know it has been used on MacOSX/Darwin before.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Any hints are appreciated!
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Max
+</I>&gt;<i> 
+</I>&gt;<i> -- 
+</I>&gt;<i> -----------------------------------------------
+</I>&gt;<i> Max Horn
+</I>&gt;<i> C/C++/Java Developer
+</I>&gt;<i> 
+</I>&gt;<i> email: &lt;mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">max at quendi.de</A>&gt;
+</I>&gt;<i> phone: (+49) 6151-494890
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>Keith Minkler
+
+-------
+Software Developer
+Jabber.COM, Inc.
+-------
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20010325/323097dc/attachment.pgp">https://www.jabber.org/jdev/attachments/20010325/323097dc/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006796.html">[JDEV] Jabber server on MacOS X
+</A></li>
+	<LI>Next message: <A HREF="006798.html">[JDEV] Jabber server on MacOS X
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6797">[ date ]</a>
+              <a href="thread.html#6797">[ thread ]</a>
+              <a href="subject.html#6797">[ subject ]</a>
+              <a href="author.html#6797">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

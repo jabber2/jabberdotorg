@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: Re: [jadmin] Problem building jabber-1.4.1
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Re%3A%20%5Bjadmin%5D%20Problem%20building%20jabber-1.4.1&In-Reply-To=%3C1173907051.3096.12.camel%40localhost.localdomain%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="055379.html">
+   <LINK REL="Next"  HREF="055389.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: Re: [jadmin] Problem building jabber-1.4.1</H1>
+    <B>Lars Sommer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20Re%3A%20%5Bjadmin%5D%20Problem%20building%20jabber-1.4.1&In-Reply-To=%3C1173907051.3096.12.camel%40localhost.localdomain%3E"
+       TITLE="[jdev] Re: Re: [jadmin] Problem building jabber-1.4.1">im at powerdise.com
+       </A><BR>
+    <I>Wed Mar 14 16:17:31 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="055379.html">[jdev] Re: Re: [jadmin] Problem building jabber-1.4.1
+</A></li>
+        <LI>Next message: <A HREF="055389.html">[jdev] Re: Re: [jadmin] Problem building jabber-1.4.1
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55387">[ date ]</a>
+              <a href="thread.html#55387">[ thread ]</a>
+              <a href="subject.html#55387">[ subject ]</a>
+              <a href="author.html#55387">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Matthias and Norman.
+
+Thank you so much! I got it working now! I can start the jabberd file
+from the /jabber/bin location now, i still get the segmentation fault of
+course, but now I can debug it :)
+
+I debug it like this:
+
+[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">root at localhost</A> bin]# gdb jabberd 
+blabla
+(gdb) run
+Starting program: /jabber/bin/jabberd 
+20070314T21:12:11: [notice] (-internal): initializing server
+(this is where i send the create-user-acount xml string from a telnet
+client)
+Program received signal SIGSEGV, Segmentation fault.
+
+0x00000001 in ?? ()
+(gdb) bt
+#0  0x00000001 in ?? ()
+#1  0x6fffffff in ?? ()
+#2  0x00000098 in ?? ()
+#3  0x00cc5f18 in xdb_file_phandler (i=0x96a5148, p=0x97ad128,
+arg=0x96a86e0) at xdb_file.c:291
+#4  0x0082020f in deliver_instance (i=0x96a5148, p=0x97ad128) at
+deliver.c:707
+#5  0x0081f903 in deliver (p=0x97ad128, i=0x96a1f48) at deliver.c:483
+#6  0x0081e12f in xdb_deliver (i=0x96a1f48, xc=0x971a530) at xdb.c:113
+#7  0x0081e4e4 in xdb_get (xc=0x96a21e8, owner=0x96f7d88, ns=0x9a3359
+&quot;jabber:iq:auth&quot;) at xdb.c:218
+#8  0x0098d777 in js_user (si=0x96a2190, id=0x96f7ca8, ht=0x96f9658) at
+users.c:179
+#9  0x00989a66 in _js_authreg_register (p=0x96f7b80) at authreg.c:123
+#10 0x0098a73d in js_authreg (arg=0x96f7b80) at authreg.c:157
+#11 0x0081ddc4 in mtq_main (arg=0x96f9190) at mtq.c:153
+#12 0x0064d279 in pth_spawn_trampoline ()
+from /usr/local/lib/libpth.so.20
+#13 0x00148564 in makecontext () from /lib/libc.so.6
+#14 0x00000000 in ?? ()
+(gdb) 
+
+Is this enough debugging info, or should i run gdb with some flags?
+Those hex values doesent make much sense to me, but it says something
+about that libpth.so.20 again.
+
+Well thank you again, you made my day alot better :)
+
+/Lars
+
+&gt;<i> The relevant utilities here might be &quot;ldconfig&quot; (which recreates the 
+</I>&gt;<i> locations the dynamic linker searches for libraries from the 
+</I>&gt;<i> /etc/ld.so.conf file) and &quot;ldd &lt;executable to check&gt;&quot; which can be used 
+</I>&gt;<i> to check if the system finds all requires libraries and where they are 
+</I>&gt;<i> loaded from.
+</I>&gt;<i> Matthias
+</I>---------------------------
+&gt;<i> add /usr/local/lib/ to /etc/ld.so.conf, and re-run ldconfig.
+</I>&gt;<i> (ldconfig 'compiles' ld.so.conf into ld.so.cache - which is used to
+</I>&gt;<i> resolve library references)
+</I>&gt;<i> 
+</I>&gt;<i> -- 
+</I>&gt;<i> - Norman Rasmussen
+</I>&gt;<i>  - Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">norman at rasmussen.co.za</A>
+</I>&gt;<i>  - Home page: <A HREF="http://norman.rasmussen.co.za/">http://norman.rasmussen.co.za/</A>
+</I>&gt;<i> 
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="055379.html">[jdev] Re: Re: [jadmin] Problem building jabber-1.4.1
+</A></li>
+	<LI>Next message: <A HREF="055389.html">[jdev] Re: Re: [jadmin] Problem building jabber-1.4.1
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55387">[ date ]</a>
+              <a href="thread.html#55387">[ thread ]</a>
+              <a href="subject.html#55387">[ subject ]</a>
+              <a href="author.html#55387">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

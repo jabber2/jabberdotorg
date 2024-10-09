@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] PubSub &amp; News Feeds
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20PubSub%20%26%20News%20Feeds&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="027791.html">
+   <LINK REL="Next"  HREF="027800.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] PubSub &amp; News Feeds</H1>
+    <B>JabberForum</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20PubSub%20%26%20News%20Feeds&In-Reply-To="
+       TITLE="[jdev] PubSub &amp; News Feeds">list-jdev at jabberforum.org
+       </A><BR>
+    <I>Mon May 26 07:36:47 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="027791.html">[jdev] PubSub &amp; News Feeds
+</A></li>
+        <LI>Next message: <A HREF="027800.html">[jdev] PubSub &amp; News Feeds
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27792">[ date ]</a>
+              <a href="thread.html#27792">[ thread ]</a>
+              <a href="subject.html#27792">[ subject ]</a>
+              <a href="author.html#27792">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+Kelly S;562 Wrote: 
+&gt;<i> 
+</I>&gt;<i> I don't really need the node tree to reflect the url sub directory
+</I>&gt;<i> structure if thats what your mentioning in the
+</I>&gt;<i> &quot;/subdomain.domain/some/path/feed/&quot; path.
+</I>&gt;<i> 
+</I>&gt;<i> I've created a root node with the id of &quot;feeds&quot; and inside here is
+</I>&gt;<i> really where I just want to populate a whole ton of feeds. However I
+</I>&gt;<i> need to relate their web url somehow when trying to fetch these feeds
+</I>&gt;<i> because the &quot;service&quot; which is going to download &amp; publish is going to
+</I>&gt;<i> need to know where to publish to.
+</I>&gt;<i> 
+</I>&gt;<i> I have been looking at some APIs of PubSub managers etc and many take
+</I>&gt;<i> node id as a string and I wonder if I put a url in there with &quot;/&quot; its
+</I>&gt;<i> going to think that is a sub node tree structure when all I really need
+</I>&gt;<i> is the following (I think?):
+</I>&gt;<i> 
+</I>&gt;<i> /feeds/someurl/entries*
+</I>&gt;<i> 
+</I>&gt;<i> I hope this makes sense. I'm not sure how else to describe it.
+</I>&gt;<i> 
+</I>
+Yes this makes sense. I had a fast look at the XEP. I don't see
+anything which tell which characters are allowed in an item id. Maybe
+there is somewhere, there are so many XEPs linked to each others, and
+linking one to another. Someone on this list who knows better the XEPs
+than me could probably answer. But maybe an id could simply be anything
+which is accepted as an XML parameter. In this case, you can probably
+use '/'. But I still need a confirmation from other people, so don't
+trust my writing!
+
+And as anyway the node url and the item id are given separatly, I don't
+think this would cause major issue of distinguish them. Something like
+this to publish an item could maybe do the trick:
+
+
+Code:
+--------------------
+    
+  &lt;iq type='set'
+  from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">hamlet at denmark.lit</A>/blogbot'
+  to='pubsub.shakespeare.lit'
+  id='publish1'&gt;
+  &lt;pubsub xmlns='<A HREF="http://jabber.org/protocol/pubsub'">http://jabber.org/protocol/pubsub'</A>&gt;
+  &lt;publish node='/feeds/someurl/entries'&gt;
+  &lt;item id='<A HREF="http://subdomain.domain/some/path/rssfeed/'">http://subdomain.domain/some/path/rssfeed/'</A>&gt;
+  &lt;entry xmlns='<A HREF="http://www.w3.org/2005/Atom'">http://www.w3.org/2005/Atom'</A>&gt;
+  ...
+  &lt;/entry&gt;
+  &lt;/item&gt;
+  &lt;/publish&gt;
+  &lt;/pubsub&gt;
+  &lt;/iq&gt;
+  
+--------------------
+
+
+Yet the problem with this method is that you have only one item for one
+rss feed. Is this what you want? I was rather thinking of one leaf node
+for one rss feed, and then one item in this node for every rss item.
+And in this case, you could transform the url
+<A HREF="http://subdomain.domain/some/path/rssfeed">http://subdomain.domain/some/path/rssfeed</A> into the pubsub node:
+/feeds/someurl/entries/subdomain.domain/some/path/rssfeed/
+Then inside this leaf node, you can publish all item you want.
+
+&gt;<i> 
+</I>&gt;<i> So basically I can request PubSub to send me the latest 1 item, take
+</I>&gt;<i> that date, then pull the RSS feed off the web, and only publish items
+</I>&gt;<i> newer? This makes sense I think. I was hoping I didn't have to execute
+</I>&gt;<i> queries before pushing data as that would put more load on the XMPP
+</I>&gt;<i> service but if I am able to request just 1 latest item  atleast thats
+</I>&gt;<i> minimizing the hit.
+</I>&gt;<i> 
+</I>
+Yes that's it. I think this is the way agregators work. And what you
+want to do is finally just some kind of dynamic agregator transforming
+rss feeds into Jabber feeds.
+Anyway I don't think that you can really avoid queries, because this is
+basically the problem of pull systems: you will always have to query
+data in order to know simply whether or not you need to do something!
+This is basically unefficient!
+Your system will bring the advantages of Jabber feed, but I don't think
+it can really delete the flaws (efficiency and non-realtime) of RSS as
+it still relies on it. To do so, you still need a pure Jabber
+notification from the beginning to the end.
+
+Anyway as long as it is not spread enough (but that RSS is), your
+system can probably be better than nothing. :-)
+
+
+-- 
+Jehan
+------------------------------------------------------------------------
+Jehan's Profile: <A HREF="http://www.jabberforum.org/member.php?userid=16911">http://www.jabberforum.org/member.php?userid=16911</A>
+View this thread: <A HREF="http://www.jabberforum.org/showthread.php?t=149">http://www.jabberforum.org/showthread.php?t=149</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="027791.html">[jdev] PubSub &amp; News Feeds
+</A></li>
+	<LI>Next message: <A HREF="027800.html">[jdev] PubSub &amp; News Feeds
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27792">[ date ]</a>
+              <a href="thread.html#27792">[ thread ]</a>
+              <a href="subject.html#27792">[ subject ]</a>
+              <a href="author.html#27792">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

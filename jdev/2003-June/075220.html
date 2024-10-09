@@ -1,0 +1,362 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Adding own namespace
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Adding%20own%20namespace&In-Reply-To=%3C001b01c331da%240d12bff0%2401000001%40bonk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="075219.html">
+   <LINK REL="Next"  HREF="075210.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Adding own namespace</H1>
+    <B>Bernino Lind</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Adding%20own%20namespace&In-Reply-To=%3C001b01c331da%240d12bff0%2401000001%40bonk%3E"
+       TITLE="[JDEV] Adding own namespace">lind at hlgroup.dk
+       </A><BR>
+    <I>Fri Jun 13 13:31:48 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="075219.html">[JDEV] Adding own namespace
+</A></li>
+        <LI>Next message: <A HREF="075210.html">[JDEV] Adding own namespace
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75220">[ date ]</a>
+              <a href="thread.html#75220">[ thread ]</a>
+              <a href="subject.html#75220">[ subject ]</a>
+              <a href="author.html#75220">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Ah J*...
+
+Like I said, I am lame.
+
+So the GET portion of this is not working.
+
+I have to go to a Champagne bar now, any takers to resolve my little
+error will be granted a toast.
+
+Its weekend.
+
+Best regards,
+Bernino
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>] On Behalf Of
+Bernino Lind
+Sent: Friday, June 13, 2003 8:15 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Cc: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">faustoq at libero.it</A>
+Subject: RE: [JDEV] Adding own namespace
+
+
+Dear list, dear Fausto, Richard, Benoit and other relevant interested
+parties.
+
+Now it works.
+
+To all those lamers, slow-goers and other not so well equipped persons
+plus the ones whom are just too old to think fast like myself (but hey,
+Im better insured!) id like to give my knowledge away.
+
+What I did is, EXAMPLE (using postgres):
+
+1. You want to create a game where you would like to store the score of
+the game in a relational database with SQL. 2. You would then like to
+use xdb_sql (see other docs to get it working) 3. You expand your DB
+model with what ever relevant tables, in this example I want to save the
+current date, the username, the gameid (I have multiple games) and the
+score:
+
+CREATE TABLE score (
+sid      INTEGER PRIMARY KEY DEFAULT NEXTVAL('serial'),
+username VARCHAR(255) REFERENCES users(username) NOT NULL,
+gameid   INTEGER NOT NULL,
+score    INTEGER NOT NULL,
+date     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+4. Add in xdb_sql.xml (your SQL config) the relevant SQL bits, in this
+example:
+
+    &lt;!-- ****************** score ********************** --&gt;
+     &lt;querydef name=&quot;score-set&quot; dtd=&quot;2&quot; type=&quot;set&quot;
+namespace=&quot;lind:score&quot;&gt;
+        &lt;text&gt;INSERT INTO score (username,gameid,score) VALUES
+('$$user$$', '$$gameid$$','$$score$$')&lt;/text&gt;
+        &lt;user&gt;$$user$$&lt;/user&gt;
+        &lt;bindvar tag=&quot;gameid&quot;&gt;$$gameid$$&lt;/bindvar&gt;
+        &lt;bindvar tag=&quot;score&quot;&gt;$$score$$&lt;/bindvar&gt;
+     &lt;/querydef&gt;
+
+     &lt;querydef name=&quot;score-get&quot; dtd=&quot;2&quot; type=&quot;get&quot;
+namespace=&quot;lind:score&quot;&gt;
+        &lt;text&gt;SELECT score, date FROM score WHERE username = '$$user$$'
+AND gameid='$$gameid$$'&lt;/text&gt;
+        &lt;user&gt;$$user$$&lt;/user&gt;
+        &lt;bindvar tag=&quot;gameid&quot;&gt;$$gameid$$&lt;/bindvar&gt;
+        &lt;top-result&gt;&lt;x xmlns='score:iq:get'/&gt;&lt;/top-result&gt;
+        &lt;bindcol tag=&quot;domain&quot; offset=&quot;0&quot;/&gt;
+        &lt;bindcol tag=&quot;file&quot; offset=&quot;1&quot;/&gt;
+        &lt;/querydef&gt;
+    &lt;/queries&gt;
+
+5. Add in you jabber.xml (your server configuration) a method for xdb:
+
+  &lt;xdb id=&quot;xdbscore&quot;&gt;
+    &lt;host/&gt;
+    &lt;ns&gt;lind:score&lt;/ns&gt;
+    &lt;load&gt;
+      &lt;xdb_sql&gt;/usr/local/lib/jabber/xdb_sql.so&lt;/xdb_sql&gt;
+    &lt;/load&gt;
+    &lt;jabberd:include&gt;/usr/local/etc/xdb_sql.xml&lt;/jabberd:include&gt;
+  &lt;/xdb&gt;
+
+IMPORTANT NOTE: never use ns of jabber: - this is reserved for the
+jabber people...which is why my xmlns is called lind:score
+
+6. Reload config
+
+7. Check that it works and use this kind of method: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lind at subsilo</A>
+jabberd14/xdb_sql&gt; telnet 192.168.0.166 5222 Trying 192.168.0.166...
+Connected to subsilo.subsilo.dk. Escape character is '^]'.
+&lt;stream:stream
+  to='192.168.0.166'
+  xmlns='jabber:client'
+  xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;
+&lt;?xml version='1.0'?&gt;&lt;stream:stream
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='3EEA0D28'
+xmlns='jabber:client' from='192.168.0.166'&gt;
+
+
+
+&lt;iq id='auth2' type='set'&gt;
+  &lt;query xmlns='jabber:iq:auth'&gt;
+    &lt;username&gt;jabberuser&lt;/username&gt;
+    &lt;password&gt;secret&lt;/password&gt;
+    &lt;resource&gt;telnet&lt;/resource&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+
+&lt;iq id='auth2' type='result'/&gt;
+
+
+&lt;presence/&gt;
+
+&lt;iq type=&quot;set&quot; id=&quot;1001&quot;&gt;
+  &lt;query xmlns=&quot;jabber:iq:private&quot;&gt;
+    &lt;score xmlns=&quot;lind:score&quot;&gt;
+      &lt;gameid&gt;1&lt;/gameid&gt;
+      &lt;score&gt;12&lt;/score&gt;
+    &lt;/score&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+&lt;iq type='result' id='1001' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabberuser at 192.168.0.166</A>/telnet'
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabberuser at 192.168.0.166</A>/telnet'/&gt;
+
+The way to set your score is via the jabber:iq:private...
+
+8. Doble checke that everything is in ordnung:
+jdb=# SELECT * from score ;
+ sid |         username         | gameid | score |            date
+
+-----+--------------------------+--------+-------+----------------------
+------
+   1 | <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabberuser at 192.168.0.166</A> |      1 |    12 | 2003-06-13
+20:11:40.774654
+   2 | <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabberuser at 192.168.0.166</A> |      1 |    12 | 2003-06-13
+20:11:54.546168
+(2 rows)
+
+jdb=# 
+
+9. Have an espresso and your favourite candy.
+
+Best regards,
+Bernino Lind
+
+
+
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>] On Behalf Of
+Bernino Lind
+Sent: Friday, June 13, 2003 6:49 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: RE: [JDEV] Adding own namespace
+
+
+Dear Richard,
+
+Thats very fine with some rules...
+
+s/jabber/lind/g
+
+But I still need to have some knowledge on the actual implementation.
+
+It sounds as though you can help me Richard - howto implement the
+question in ask?
+
+best regards,
+Bernino Lind
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>] On Behalf Of
+Richard Dobson
+Sent: Friday, June 13, 2003 10:31 AM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] Adding own namespace
+
+
+If you are creating your own non standard namespaces you must not use
+the word jabber in it, you must use something different usually the name
+of your application or your surname e.g. lind:score.
+
+Richard
+
+----- Original Message ----- 
+From: &quot;Bernino Lind&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lind at hlgroup.dk</A>&gt;
+To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Sent: Thursday, June 12, 2003 11:29 PM
+Subject: [JDEV] Adding own namespace
+
+
+&gt;<i> Dear list,
+</I>&gt;<i>
+</I>&gt;<i> I need to add a namespace for some development I am doing.
+</I>&gt;<i>
+</I>&gt;<i> Needed:
+</I>&gt;<i> * store a game id with score and jid in database
+</I>&gt;<i>
+</I>&gt;<i> Aka:
+</I>&gt;<i>
+</I>&gt;<i> &lt;iq type='set' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">score at my-host</A>'&gt;
+</I>&gt;<i>   &lt;query xmlns='jabber:score'&gt;
+</I>&gt;<i>      &lt;gameid&gt;1&lt;/gameid&gt;
+</I>&gt;<i>      &lt;score&gt;123&lt;/score&gt;
+</I>&gt;<i>    &lt;/query&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i> And ofcourse a &quot;get&quot; method to find the score of a particular user.
+</I>&gt;<i>
+</I>&gt;<i> I am very much in doubt of an implementation. I read about the 
+</I>&gt;<i> bloodbank example in some jep with jabber:x:data - but there is no 
+</I>&gt;<i> implementation guide so I dropped it.
+</I>&gt;<i>
+</I>&gt;<i> I also read the test:iq:url example - ditto problem.
+</I>&gt;<i>
+</I>&gt;<i> What I have done so far, by quessing, is:
+</I>&gt;<i>
+</I>&gt;<i> Add dtd=2 queries to the xdb_sql.xml configuration with a xmlns of 
+</I>&gt;<i> jabber:score. Add jabber:score to my jabber.xml configuration with 
+</I>&gt;<i> xdb_sql as storage method for all hosts for the xmlns jabber:score.
+</I>&gt;<i>
+</I>&gt;<i> I get 404 and 502: no go.
+</I>&gt;<i>
+</I>&gt;<i> Then I added service description and name. Still no go.
+</I>&gt;<i>
+</I>&gt;<i> In the browse section:
+</I>&gt;<i>         &lt;service type=&quot;score&quot; jid=&quot;score.192.168.0.166&quot; name=&quot;score&quot;&gt;
+</I>&gt;<i>           &lt;ns&gt;jabber:score&lt;/ns&gt;
+</I>&gt;<i>         &lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> In the xdb section:
+</I>&gt;<i>   &lt;xdb id=&quot;xdbscore&quot;&gt;
+</I>&gt;<i>     &lt;host/&gt;
+</I>&gt;<i>     &lt;ns&gt;jabber:score&lt;/ns&gt;
+</I>&gt;<i>     &lt;load&gt;
+</I>&gt;<i>       &lt;xdb_sql&gt;/usr/local/lib/jabber/xdb_sql.so&lt;/xdb_sql&gt;
+</I>&gt;<i>     &lt;/load&gt;
+</I>&gt;<i>     &lt;jabberd:include&gt;/usr/local/etc/xdb_sql.xml&lt;/jabberd:include&gt;
+</I>&gt;<i>   &lt;/xdb&gt;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Parallel to yahoo etc. gateway service sections:
+</I>&gt;<i>   &lt;service id=&quot;score&quot;&gt;
+</I>&gt;<i>     &lt;host&gt;score.192.168.0.166&lt;/host&gt;
+</I>&gt;<i>   &lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i> In the xdb_sql:
+</I>&gt;<i>     &lt;!-- ****************** score ********************** --&gt;
+</I>&gt;<i>      &lt;querydef name=&quot;score-set&quot; dtd=&quot;2&quot; type=&quot;set&quot; 
+</I>&gt;<i> namespace=&quot;jabber:score&quot;&gt;
+</I>&gt;<i>         &lt;text&gt;INSERT INTO score (username,gameid,score) VALUES
+</I>&gt;<i> ('$$user$$', '$$gameid$$','$$score$$')&lt;/text&gt;
+</I>&gt;<i>         &lt;user&gt;$$user$$&lt;/user&gt;
+</I>&gt;<i>         &lt;bindvar tag=&quot;gameid&quot;&gt;$$gameid$$&lt;/bindvar&gt;
+</I>&gt;<i>         &lt;bindvar tag=&quot;score&quot;&gt;$$score$$&lt;/bindvar&gt;
+</I>&gt;<i>      &lt;/querydef&gt;
+</I>&gt;<i>
+</I>&gt;<i>      &lt;querydef name=&quot;score-get&quot; dtd=&quot;2&quot; type=&quot;get&quot; 
+</I>&gt;<i> namespace=&quot;jabber:score&quot;&gt;
+</I>&gt;<i>         &lt;text&gt;SELECT score, date FROM score WHERE username =
+</I>&gt;<i> '$$user$$' AND gameid='$$gameid$$'&lt;/text&gt;
+</I>&gt;<i>         &lt;user&gt;$$user$$&lt;/user&gt;
+</I>&gt;<i>         &lt;bindvar tag=&quot;gameid&quot;&gt;$$gameid$$&lt;/bindvar&gt;
+</I>&gt;<i>         &lt;top-result&gt;&lt;x xmlns='score:iq:get'/&gt;&lt;/top-result&gt;
+</I>&gt;<i>         &lt;bindcol tag=&quot;domain&quot; offset=&quot;0&quot;/&gt;
+</I>&gt;<i>         &lt;bindcol tag=&quot;file&quot; offset=&quot;1&quot;/&gt;
+</I>&gt;<i>         &lt;/querydef&gt;
+</I>&gt;<i>     &lt;/queries&gt;
+</I>&gt;<i>
+</I>&gt;<i> Can anyone send an example of how to configure the server to add a 
+</I>&gt;<i> namespace in this way?
+</I>&gt;<i>
+</I>&gt;<i> As you can see this is really the same question previously asked on 
+</I>&gt;<i> this
+</I>&gt;<i> list: how to really use the dtd=2???
+</I>&gt;<i>
+</I>&gt;<i> best regards,
+</I>&gt;<i> Bernino Lind
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i>
+</I>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="075219.html">[JDEV] Adding own namespace
+</A></li>
+	<LI>Next message: <A HREF="075210.html">[JDEV] Adding own namespace
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75220">[ date ]</a>
+              <a href="thread.html#75220">[ thread ]</a>
+              <a href="subject.html#75220">[ subject ]</a>
+              <a href="author.html#75220">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Jabber4r
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Jabber4r&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="019121.html">
+   <LINK REL="Next"  HREF="019123.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Jabber4r</H1>
+    <B>Neil Mc Laughlin</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Jabber4r&In-Reply-To="
+       TITLE="[jdev] Jabber4r">nml at fjserv.net
+       </A><BR>
+    <I>Tue Apr  6 09:24:30 CDT 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="019121.html">[jdev] RE: [jadmin] Questions with JEP 045
+</A></li>
+        <LI>Next message: <A HREF="019123.html">[jdev] Jabber Applet message window only
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19122">[ date ]</a>
+              <a href="thread.html#19122">[ thread ]</a>
+              <a href="subject.html#19122">[ subject ]</a>
+              <a href="author.html#19122">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+I am quite new to jabber programming, so my apologies - this is probably
+quite basic stuff.
+
+I want to write a jabber bot in ruby using the Jabber4r library. The first
+generation bot will just logon to the jabber server without throwing an
+exception, but I haven't got that far yet. I'm hoping someone can spot
+what's going wrong here.
+
+Briefly, when the script trys to logon, the server refuses to authorize the
+connection. The error is 406 - Not Acceptable. The same uid &amp; password works
+fine with rhymbox or exodus.
+
+The xml dialogue is included below, first for the script and then for a
+exodus session logging into the same account.
+
+
+Software versions below.
+Ruby version: ruby 1.8.0 (2003-08-04) [i386-mswin32]
+Jabber version: Jabber4r 0.6.0 for Ruby 1.8.1
+Running on win 2k with Cygwin. uname -a output follows:
+CYGWIN_NT-5.0 neil 1.5.5(0.94/3/2) 2003-09-20 16:31 i686 unknown unknown
+Cygwin
+
+
+This is the script.
+#!/usr/bin/env ruby
+require 'jabber4r/jabber4r'
+Jabber::DEBUG = true
+session = Jabber::Session.bind('<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">neilmcl at jabber</A>', 'password', 5222, true)
+
+nb: 'password' isn't my real password.
+
+This is a transcript of the script running.
+bash-2.05b$ jab.rb
+SENDING:
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;&lt;stream:stream to=&quot;jabber&quot;
+xmlns=&quot;jabber:client&quot; xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A>&gt;
+RECEIVED:
+
+&lt;stream:stream xmlns:stream&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> from&quot;jabber&quot;
+id&quot;407275C1&quot; xmlns&quot;jabber:client&quot;/&gt;
+SENDING:
+&lt;iq type=&quot;set&quot; id=&quot;2&quot;&gt;
+    &lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;&lt;username&gt;neilmcl&lt;/username&gt;
+&lt;digest&gt;a729db796aa737fb20755a154689a22c6c423bce&lt;/digest&gt;
+&lt;resource/&gt;
+&lt;/query&gt;
+&lt;/iq&gt;
+RECEIVED:
+
+&lt;iq type&quot;error&quot; id&quot;2&quot;&gt;
+&lt;error code&quot;406&quot;&gt;Not Acceptable&lt;/error&gt;
+&lt;query xmlns&quot;jabber:iq:auth&quot;&gt;
+&lt;resource/&gt;
+&lt;digest sid&quot;407275C1&quot;&gt;a729db796aa737fb20755a154689a22c6c423bce&lt;/digest&gt;
+&lt;username&gt;neilmcl&lt;/username&gt;
+&lt;/query&gt;
+&lt;/iq&gt;
+./jab.rb:7: warning: already initialized constant DEBUG
+d:/ruby/lib/ruby/site_ruby/1.8/jabber4r/session.rb:141:in `bind':
+Authentication failed (RuntimeError)
+ from ./jab.rb:9
+bash-2.05b$
+
+This is a transcript of the equivalent exodus login.
+SENT: &lt;stream:stream to=&quot;jabber&quot; xmlns=&quot;jabber:client&quot;
+xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> version=&quot;1.0&quot; &gt;
+RECV: &lt;?xml version='1.0'?&gt;&lt;stream:stream
+xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> id='40727C56'
+xmlns='jabber:client' from='jabber'&gt;
+SENT: &lt;iq id=&quot;jcl_7&quot; type=&quot;get&quot;&gt;&lt;query
+xmlns=&quot;jabber:iq:auth&quot;&gt;&lt;username&gt;neilmcl&lt;/username&gt;&lt;/query&gt;&lt;/iq&gt;
+RECV: &lt;iq id='jcl_7' type='result'&gt;&lt;query
+xmlns='jabber:iq:auth'&gt;&lt;username&gt;neilmcl&lt;/username&gt;&lt;password/&gt;&lt;digest/&gt;&lt;sequ
+ence&gt;495&lt;/sequence&gt;&lt;token&gt;3F040A38&lt;/token&gt;&lt;resource/&gt;&lt;/query&gt;&lt;/iq&gt;
+SENT: &lt;iq id=&quot;jcl_8&quot; type=&quot;set&quot;&gt;&lt;query
+xmlns=&quot;jabber:iq:auth&quot;&gt;&lt;username&gt;neilmcl&lt;/username&gt;&lt;resource&gt;Exodus&lt;/resourc
+e&gt;&lt;hash&gt;acfb2bd52679a19c25bb758894ac905e7f308689&lt;/hash&gt;&lt;/query&gt;&lt;/iq&gt;
+RECV: &lt;iq id='jcl_8' type='result'/&gt;
+
+Cheers everyone,
+Neil
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="019121.html">[jdev] RE: [jadmin] Questions with JEP 045
+</A></li>
+	<LI>Next message: <A HREF="019123.html">[jdev] Jabber Applet message window only
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19122">[ date ]</a>
+              <a href="thread.html#19122">[ thread ]</a>
+              <a href="subject.html#19122">[ subject ]</a>
+              <a href="author.html#19122">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

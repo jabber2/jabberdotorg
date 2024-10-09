@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Figuring out what a client thinks its JID is
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Figuring%20out%20what%20a%20client%20thinks%20its%20JID%20is&In-Reply-To=%3C4BBAA437.4080502%40stpeter.im%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="088204.html">
+   <LINK REL="Next"  HREF="088207.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Figuring out what a client thinks its JID is</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Figuring%20out%20what%20a%20client%20thinks%20its%20JID%20is&In-Reply-To=%3C4BBAA437.4080502%40stpeter.im%3E"
+       TITLE="[jdev] Figuring out what a client thinks its JID is">stpeter at stpeter.im
+       </A><BR>
+    <I>Mon Apr  5 22:02:15 CDT 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="088204.html">[jdev] Figuring out what a client thinks its JID is
+</A></li>
+        <LI>Next message: <A HREF="088207.html">[jdev] Figuring out what a client thinks its JID is
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88206">[ date ]</a>
+              <a href="thread.html#88206">[ thread ]</a>
+              <a href="subject.html#88206">[ subject ]</a>
+              <a href="author.html#88206">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On 4/5/10 4:01 PM, Aaron Kryptokos wrote:
+&gt;<i> Nathan Fritz wrote:
+</I>&gt;&gt;<i> By not using the same node as the authentication user, you're going
+</I>&gt;&gt;<i> against two SHOULD suggestions in the RFC
+</I>&gt;<i> 
+</I>&gt;<i> I can't find anything in RFC 3920 about this case.  Can you help me find
+</I>&gt;<i> these two recommendations?
+</I>&gt;<i> 
+</I>&gt;&gt;<i> I would recommend against doing this on a public
+</I>&gt;&gt;<i> service where you expect any IM client.
+</I>&gt;<i> 
+</I>&gt;<i> The authentication and authorization system already exists, so my hands
+</I>&gt;<i> are mostly tied.  I'm open to any reasonable implementation that will
+</I>&gt;<i> make this work.  The one design restriction imposed on me is that the
+</I>&gt;<i> authenticating client must some sort of way provide the authentication
+</I>&gt;<i> username as part of the process; mapping from the node to auth
+</I>&gt;<i> credentials is not acceptable.
+</I>
+Hi Aaron, I took another look at your original message in this thread:
+
+<A HREF="https://www.jabber.org/jdev/2010-March/088174.html">https://www.jabber.org/jdev/2010-March/088174.html</A>
+
+and:
+
+<A HREF="https://www.jabber.org/jdev/2009-November/087885.html">https://www.jabber.org/jdev/2009-November/087885.html</A>
+
+We had some discussions about a related issue recently on the XMPP WG list:
+
+<A HREF="http://www.ietf.org/mail-archive/web/xmpp/current/msg00332.html">http://www.ietf.org/mail-archive/web/xmpp/current/msg00332.html</A>
+
+The conclusion we came to is that the authentication identity is indeed
+not necessarily the same as the localpart of a JID. We mostly glossed
+over this issue in RFC 3920, but the replacement RFC will make it clear
+that this is a matter for the SASL mechanism or local deployment policy,
+not the core XMPP RFC.
+
+&gt;<i> If it's true that the RFC discourages this practice, then I think the
+</I>&gt;<i> RFC may need to be revised.  For people who are running simple
+</I>&gt;<i> stand-alone Jabber servers, this sort of thing doesn't matter.  But for
+</I>&gt;<i> organizations like mine that are trying to embrace XMPP by adding an
+</I>&gt;<i> XMPP interface to existing infrastructure, this is a major issue.  GTalk
+</I>&gt;<i> has a variation of the same problem, except with domain instead of
+</I>&gt;<i> username.  I think the real long-term solution here is that the RFC
+</I>&gt;<i> needs to firmly instruct clients to not make assumptions about their
+</I>&gt;<i> JIDs, 
+</I>
+See <A HREF="http://tools.ietf.org/html/draft-ietf-xmpp-3920bis-05">http://tools.ietf.org/html/draft-ietf-xmpp-3920bis-05</A> (section 7.2.7).
+
+&gt;<i> and instead accept (or reject) what they are given at resource
+</I>&gt;<i> binding.
+</I>
+We could probably strengthen the text about that.
+
+&gt;&gt;<i> You
+</I>&gt;&gt;<i> are, again, in violation of the spec by delivering stanzas where the
+</I>&gt;&gt;<i> bare jid does not match their bound name, and you could cause
+</I>&gt;&gt;<i> unintended consequences on the client (crashes or strange behavior) by
+</I>&gt;&gt;<i> simply pinging them in this way.
+</I>&gt;<i> 
+</I>&gt;<i> I can't find any prohibition like this in RFC 3920 or the draft.  Can
+</I>&gt;<i> you point out a specific passage that prohibits this sort of probing?
+</I>
+I don't see any need for this -- the client needs to get its JID from
+the server.
+
+&gt;&gt;<i> I really don't see either of these options being viable as the client
+</I>&gt;&gt;<i> is simply broken if it doesn't respond to it's bound fulljid and you
+</I>&gt;&gt;<i> risk greater consequences if you try to &quot;adjust&quot; at the protocol
+</I>&gt;&gt;<i> level.
+</I>&gt;<i> 
+</I>&gt;<i> My main goal is for a short-term, practical improvement in functionality
+</I>&gt;<i> for as many users as possible.
+</I>
+I agree with Fritzy here -- better to file bug reports or provide
+patches to the clients you care about. Supposedly short-term fixes have
+a way of lasting for a long time, people start to depend on the fix and
+it will never disappear.
+
+&gt;<i> As an alternative, I'm thinking about perhaps having the user do
+</I>&gt;<i> something special to indicate that 'JID masquerading' should be
+</I>&gt;<i> performed, such as placing a special character in their username.
+</I>
+Please not.
+
+&gt;<i> Another option is to try to detect specific versions that are broken
+</I>&gt;<i> using XEP-0092: Software Version, and apply the workaround for just
+</I>&gt;<i> those.  This would get correct operations to the largest groups of
+</I>&gt;<i> users, and prevent breaking people whose clients were in fact operating
+</I>&gt;<i> correctly.
+</I>
+Do you have a list of broken clients? Let's figure out what they are and
+start the process of reporting bugs and fixing code.
+
+Peter
+
+-- 
+Peter Saint-Andre
+<A HREF="https://stpeter.im/">https://stpeter.im/</A>
+
+
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 6820 bytes
+Desc: S/MIME Cryptographic Signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20100405/bf997ae9/attachment.bin">https://www.jabber.org/jdev/attachments/20100405/bf997ae9/attachment.bin</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="088204.html">[jdev] Figuring out what a client thinks its JID is
+</A></li>
+	<LI>Next message: <A HREF="088207.html">[jdev] Figuring out what a client thinks its JID is
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88206">[ date ]</a>
+              <a href="thread.html#88206">[ thread ]</a>
+              <a href="subject.html#88206">[ subject ]</a>
+              <a href="author.html#88206">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

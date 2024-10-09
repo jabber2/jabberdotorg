@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber as Application Middleware
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20as%20Application%20Middleware&In-Reply-To=20010306093805.A1041%40dizzyd.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006462.html">
+   <LINK REL="Next"  HREF="006505.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber as Application Middleware</H1>
+    <B>eric at openthought.net</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Jabber%20as%20Application%20Middleware&In-Reply-To=20010306093805.A1041%40dizzyd.com"
+       TITLE="[JDEV] Jabber as Application Middleware">eric at openthought.net
+       </A><BR>
+    <I>Tue Mar  6 12:11:43 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006462.html">[JDEV] Jabber as Application Middleware
+</A></li>
+        <LI>Next message: <A HREF="006505.html">[JDEV] Jabber as Application Middleware
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6463">[ date ]</a>
+              <a href="thread.html#6463">[ thread ]</a>
+              <a href="subject.html#6463">[ subject ]</a>
+              <a href="author.html#6463">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dave,
+
+&gt;<i> This is exactly the subject I have been interested in of late, and
+</I>&gt;<i> have start investigating in a serious manner.. I've taken a first
+</I>&gt;<i> stab at gathering requirements for just such a project:
+</I>&gt;<i> 
+</I>&gt;<i> <A HREF="http://dizzyd.manilasites.com/stories/storyReader$15">http://dizzyd.manilasites.com/stories/storyReader$15</A>
+</I>
+Nice site, you're definatly off to a good start!  I'm very interested in what
+you have documented so far, and definatly interested in getting a project like
+this going.
+
+&gt;<i> &gt; 2. What protocol would be the recommended method of handling the style of
+</I>&gt;<i> &gt; query I mentioned?
+</I>
+&gt;<i> Well, I'm investigating the use of XMLRPC and/or SOAP. Either one would be 
+</I>&gt;<i> good -- tho I tend to lean towards XMLRPC.
+</I>
+Well, after some research that I've been doing over the last few days, I might
+agree with that too.  In addition to various other reasons, XML-RPC seems much
+simpler, which is the basis for much of the Jabber architecture.  Also, as I
+saw after following a link on your site, DJ Adams has already written a Perl
+module for doing XML-RPC over Jabber.  And to top it off, as seen on Slashdot,
+ESR supports XML-RPC.. who can argue with that? ;-)
+
+&gt;<i> &gt; 3. Speed -- upon proposing a system like this, the first question my boss
+</I>&gt;<i> &gt; asked was what kind of performance hit were we going to take for having a
+</I>&gt;<i> &gt; distributed system.
+</I>
+&gt;<i> Well, Jabber _does_ use XML -- and that's gonna inflict a little bit of added
+</I>&gt;<i> processing time for each packet. However, the j.org's server can handle up
+</I>&gt;<i> to 500 msgs/sec (benchmarked back in December) so that should be fast enough
+</I>&gt;<i> for what you need. Of note, j.com's implementation of the server handles
+</I>&gt;<i> thousands of msgs/sec.
+</I>
+Hmmm... 500 msgs/sec isn't bad.  And if that doesn't make them happy, I'm sure
+we could splurge for the commercial server.
+
+Now, part of the problem with XML may be the size of the packet you end up with
+after you get 100 good sized database records in it.  Which would be slower --
+a 500K XML packet being sent from one application to another over 10MB
+ethernet, or on-the-fly gzip compression to compress the message before it's
+sent?  I'm just wondering if there would be a benefit to compressing
+particulary large packets.  I'm referring to compressing the message within the
+Jabber packet (the XML-RPC/SOAP stuff), not the entire thing.
+
+&gt;<i> All that aside, I would also question whether retrieving
+</I>&gt;<i> a full record for every keystroke is the optimial setup -- so with a few
+</I>&gt;<i> optimizations on your system, it's totally possible that using Jabber could
+</I>&gt;<i> be as fast as using something more estoric like CORBA/COM. 
+</I>
+Well, I'm not entirely disagreeing with you here, but the implementation
+belongs to my boss.  So, whether good or bad, thats the way it's going to stay
+unless I can delicatly demonstrate a better way :-)  Not to pick on him though,
+he is very open to better ideas.
+
+&gt;<i> &gt; 4. Just to have some comparisons, what are your opinions on why a system
+</I>&gt;<i> &gt; like this using Jabber would be better then something like Oracle
+</I>&gt;<i> &gt; Application Server, xmlBlaster, and other such products?  And if Jabber
+</I>&gt;<i> &gt; isn't the right tool here, what is?
+</I>&gt;<i> 
+</I>&gt;<i> Well, I'm not familiar with those other products. Perhaps the biggest
+</I>&gt;<i> advantages that Jabber would bring would be:
+</I>&gt;<i>  * Cost -- it's free! :)
+</I>&gt;<i>  * Ease-of-use -- the protocl is fairly simple and can be read by a human; no
+</I>&gt;<i>                   weird IDL compilers or binary syntax/protocol to deal with
+</I>
+Free is good :-)  And you'll get no arguement from me about not needing bother
+with IDL compilers.  Not to mention trying to figure out how to handle such a
+beast in a cross platform way.  I haven't run across many CORBA implementations
+that claim to be cross platform, free, and have hooks into most programming
+languages.  Now, I know some different CORBA implementations can interoperate,
+but how much work will it take to figure out which those are.. and what happens
+if we discover they don't work 6 months after beginning development?
+
+In any case, assuming nobody has a case to use CORBA, I will gladly cross that
+off the list.
+
+&gt;<i> Again, I truly believe a sub-project should start gathering requirements and
+</I>&gt;<i> working towards utilizing Jabber just for such an application. Please take a
+</I>&gt;<i> look at what I've started and let's see if we can build a nice big snowball.
+</I>
+Well, count me in.  I definatly think it's possible to do all this without
+modifying Jabber at all.  However, Dave mentions (on his website, see the
+previous message in this thread) a few ideas that Jabber might be able to
+implement that could make Jabber a more robust middleware application.  His
+ideas include message queueing, message timeouts/retry, and so on.  I definatly
+feel these would be appropriate, but maybe somebody more knowledgable then
+myself could take a look at his page and discuss why to or why not to implement
+such ideas.
+
+Anyhow, I hope we can get something rolling here, I definatly can see a big
+opportunity with this.  Comments welcome.  Thanks,
+  -Eric
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006462.html">[JDEV] Jabber as Application Middleware
+</A></li>
+	<LI>Next message: <A HREF="006505.html">[JDEV] Jabber as Application Middleware
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6463">[ date ]</a>
+              <a href="thread.html#6463">[ thread ]</a>
+              <a href="subject.html#6463">[ subject ]</a>
+              <a href="author.html#6463">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

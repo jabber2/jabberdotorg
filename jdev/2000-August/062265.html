@@ -1,0 +1,516 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Java jabber client.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Java%20jabber%20client.&In-Reply-To=%3C399B6FC9.ACA1D79%40icon.com.hk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="062274.html">
+   <LINK REL="Next"  HREF="062275.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Java jabber client.</H1>
+    <B>Leon Kwan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Java%20jabber%20client.&In-Reply-To=%3C399B6FC9.ACA1D79%40icon.com.hk%3E"
+       TITLE="[JDEV] Java jabber client.">leon at icon.com.hk
+       </A><BR>
+    <I>Wed Aug 16 23:53:30 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="062274.html">[JDEV] MSN Transport Question
+</A></li>
+        <LI>Next message: <A HREF="062275.html">[JDEV] aim-t and icq-t
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62265">[ date ]</a>
+              <a href="thread.html#62265">[ thread ]</a>
+              <a href="subject.html#62265">[ subject ]</a>
+              <a href="author.html#62265">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Actually my code is just some modifcation of jtest2 that found in jabberbeans:
+
+package jabber;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.applet.*;
+import java.net.*;
+import java.io.*;
+import org.jabber.jabberbeans.*;
+import org.jabber.jabberbeans.Extension.*;
+
+public class JabberApplet extends Applet {
+        boolean isStandalone = false;
+        BorderLayout borderLayout2 = new BorderLayout();
+        Panel lowerpanel = new Panel();
+        ConnectionBean conn = null;
+        Label status = new Label(&quot; &quot;);
+        Panel upperpanel = new Panel();
+        BorderLayout borderLayout1 = new BorderLayout();
+        Panel panel1 = new Panel();
+        BorderLayout borderLayout3 = new BorderLayout();
+        List list2 = new List();
+        Label label1 = new Label(&quot;Offline&quot;);
+        Panel panel2 = new Panel();
+        Button logoutbtn = new Button();
+        Button loginbtn = new Button();
+        BorderLayout borderLayout4 = new BorderLayout();
+        Panel panel3 = new Panel();
+        Label label2 = new Label(&quot;     &quot;);
+
+        //Get a parameter value
+        public String getParameter(String key, String def) {
+                return isStandalone ? System.getProperty(key, def) :
+                        (getParameter(key) != null ? getParameter(key) : def);
+        }
+
+        //Construct the applet
+        public JabberApplet() {
+        }
+
+        //Initialize the applet
+        public void init() {
+  try {
+    conn = (org.jabber.jabberbeans.ConnectionBean)
+        java.beans.Beans.instantiate(
+           this.getClass().getClassLoader(),
+              &quot;org.jabber.jabberbeans.ConnectionBean&quot;);
+               }
+                catch (IOException ie)
+                {
+                 System.err.println(&quot;IOException&quot;);
+                }
+                catch (ClassNotFoundException cne)
+                {
+                 System.err.println(&quot;Class not found&quot;);
+                }
+                try {
+                        jbInit();
+                }
+                catch(Exception e) {
+                        e.printStackTrace();
+                }
+        }
+
+        //Component initialization
+        private void jbInit() throws Exception {
+                lowerpanel.setLayout(borderLayout1);
+                this.setLayout(borderLayout2);
+                status.setFont(new java.awt.Font(&quot;SansSerif&quot;, 1, 12));
+                status.setForeground(Color.red);
+                panel1.setLayout(borderLayout3);
+                logoutbtn.setLabel(&quot;Logout&quot;);
+                logoutbtn.addActionListener(new java.awt.event.ActionListener()
+                {
+
+                        public void actionPerformed(ActionEvent e)
+                        {
+                                logoutbtn_actionPerformed(e);
+                        }
+                });
+                loginbtn.setLabel(&quot;Login&quot;);
+                loginbtn.addActionListener(new java.awt.event.ActionListener()
+                {
+
+                        public void actionPerformed(ActionEvent e)
+                        {
+                                loginbtn_actionPerformed(e);
+                        }
+                });
+                upperpanel.setLayout(borderLayout4);
+                label1.setFont(new java.awt.Font(&quot;SansSerif&quot;, 1, 14));
+                label1.setForeground(Color.blue);
+                this.add(lowerpanel, BorderLayout.CENTER);
+                lowerpanel.add(list2, BorderLayout.CENTER);
+                this.add(upperpanel, BorderLayout.NORTH);
+                upperpanel.add(panel2, BorderLayout.CENTER);
+                panel2.add(loginbtn, null);
+                panel2.add(logoutbtn, null);
+                upperpanel.add(panel1, BorderLayout.EAST);
+                panel1.add(label1, BorderLayout.EAST);
+                upperpanel.add(panel3, BorderLayout.WEST);
+                panel3.add(label2, null);
+                this.add(status, BorderLayout.SOUTH);
+        }
+
+        //Get Applet information
+        public String getAppletInfo() {
+                return &quot;Applet Information&quot;;
+        }
+
+        //Get parameter info
+        public String[][] getParameterInfo() {
+                return null;
+        }
+
+        void loginbtn_actionPerformed(ActionEvent e) {
+         Object parent = JabberApplet.this.getParent();
+  LoginDialog d;
+    d = new LoginDialog((java.awt.Frame)parent);
+      if (d.getGotoLogin())
+        {
+   System.err.println(d.getLoginID());
+   System.err.println(d.getPassword());
+
+         try {
+     conn.setDefaultProtocolHandler();
+        conn.addPacketListener(new JTestPacketListener(this));
+        conn.addConnectionListener(new JMStatusListener(this));
+          conn.connect(InetAddress.getByName(&quot;redhat&quot;));
+                 }
+              catch (UnknownHostException uhe)
+                {
+                  uhe.printStackTrace();
+                   }
+                 catch (InstantiationException ie)
+         {
+           ie.printStackTrace();
+            }
+                        catch (IOException ioe)
+                {
+                  ioe.printStackTrace();
+                   }
+
+
+   //now, we construct a InfoQuery packet with reg data
+   InfoQueryBuilder iqb=new InfoQueryBuilder();
+
+   //and the auth data builder
+//   IQRegisterExtensionBuilder iqRegb=new IQRegisterExtensionBuilder();
+   IQAuthExtensionBuilder iqAuthb = new IQAuthExtensionBuilder();
+
+   //we are setting info
+   iqb.setType(&quot;set&quot;);
+   iqAuthb.setUsername(d.getLoginID());
+   iqAuthb.setPassword(d.getPassword());
+   iqAuthb.setResource(&quot;JavaApplet&quot;);
+
+   //build the Reg data
+   try
+   {
+       iqb.addExtension((QueryExtension)iqAuthb.build());
+   }
+   catch (InstantiationException ie)
+   {
+       //building failed ?
+       System.out.println(&quot;Fatal Error on Auth object build:&quot;);
+       System.out.println(ie.toString());
+       return;
+   }
+
+   //build the iq packet
+   try
+   {
+       //build the full InfoQuery packet
+       InfoQuery iq=(InfoQuery)iqb.build();
+
+       conn.send(iq);
+   }
+   catch (InstantiationException ie)
+   {
+       //building failed ?
+       System.out.println(&quot;Fatal Error on IQ object build:&quot;);
+       System.out.println(ie.toString());
+       return ;
+   }
+
+      System.out.println(&quot;Send requested for IQ&quot;);
+
+      PresenceBuilder pb = new PresenceBuilder();
+         try {
+            conn.send(pb.build());
+              }
+                catch (InstantiationException ie)
+                 {
+       //building failed ?
+       System.out.println(&quot;Fatal Error on Presence object build:&quot;);
+       System.out.println(ie.toString());
+       return ;
+   }
+
+      System.out.println(&quot;Build presence&quot;);
+   label1.setText(&quot;Online&quot;);
+      label1.setForeground(Color.red);
+     }
+        }
+
+        void logoutbtn_actionPerformed(ActionEvent e) {
+         conn.disconnect();
+  list2.removeAll();
+  label1.setText(&quot;Offline&quot;);
+  label1.setForeground(Color.blue);
+        }
+
+       public Label getStatus()
+        {
+         return status;
+        }
+
+        public List getList()
+        {
+         return list2;
+        }
+}
+
+
+===================================================
+package jabber;
+
+import java.awt.*;
+import java.awt.event.*;
+
+
+public class LoginDialog extends Dialog /*implements ActionListener*/ {
+        Panel panel1 = new Panel();
+        BorderLayout borderLayout1 = new BorderLayout();
+        Panel panel2 = new Panel();
+        Label label1 = new Label();
+        TextField loginid = new TextField(8);
+        FlowLayout flowLayout1 = new FlowLayout();
+        Panel panel3 = new Panel();
+        Label label2 = new Label();
+        TextField password = new TextField(8);
+        Panel panel4 = new Panel();
+        Button btn_ok = new Button();
+        Button btn_cancel = new Button();
+ boolean gotoLogin = false;
+
+        public LoginDialog(Frame owner) {
+//         System.err.println(&quot;TEST from LoginDialog&quot;);
+         super(owner, &quot;Please enter login id and password&quot;, true);
+          gotoLogin = false;
+                try {
+                        jbInit();
+                }
+                catch(Exception e) {
+                        e.printStackTrace();
+                }
+        }
+
+        private void jbInit() throws Exception {
+                panel1.setLayout(borderLayout1);
+                label1.setText(&quot;Login ID&quot;);
+                panel2.setLayout(flowLayout1);
+                loginid.setText(&quot;&quot;);
+                label2.setText(&quot;Password&quot;);
+                password.setEchoChar('*');
+                password.setText(&quot;&quot;);
+                btn_ok.setLabel(&quot;OK&quot;);
+                btn_ok.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                                btn_ok_actionPerformed(e);
+                        }
+                });
+                btn_cancel.setLabel(&quot;Cancel&quot;);
+                btn_cancel.addActionListener(new java.awt.event.ActionListener()
+{
+
+                        public void actionPerformed(ActionEvent e) {
+                                btn_cancel_actionPerformed(e);
+                        }
+                });
+                panel1.add(panel2, BorderLayout.NORTH);
+                panel2.add(label1, null);
+                panel2.add(loginid, null);
+                panel1.add(panel3, BorderLayout.CENTER);
+                panel3.add(label2, null);
+                panel3.add(password, null);
+                panel1.add(panel4, BorderLayout.SOUTH);
+                panel4.add(btn_ok, null);
+                panel4.add(btn_cancel, null);
+                add(panel1);
+                addWindowListener(new java.awt.event.WindowAdapter() {
+                 public void windowClosing(WindowEvent e) {
+                   win_dialog_actionPerformed(e);
+                    }
+                });
+                createFrame();
+                pack();
+  setVisible(true);
+        }
+
+        private void createFrame() {
+         Dimension d = getToolkit().getScreenSize();
+          setLocation(d.width/4 , d.height/3);
+        }
+
+        void btn_ok_actionPerformed(ActionEvent e) {
+         gotoLogin = true;
+  setVisible(false);
+        }
+
+        void btn_cancel_actionPerformed(ActionEvent e) {
+         gotoLogin = false;
+  setVisible(false);
+        }
+
+        void win_dialog_actionPerformed(WindowEvent e) {
+         dispose();
+        }
+
+        String getLoginID()
+        {
+         return loginid.getText();
+        }
+
+        String getPassword()
+        {
+         return password.getText();
+        }
+
+        boolean getGotoLogin()
+        {
+         return gotoLogin;
+        }
+/*        public void actionPerformed(ActionEvent e) {
+         setVisible(false);
+        }*/
+}
+
+===================================================
+package jabber;
+
+import org.jabber.jabberbeans.ConnectionAdapter;
+
+public class JMStatusListener extends ConnectionAdapter
+{
+ JabberApplet jabberApplet = null;
+
+ public JMStatusListener(JabberApplet a)
+  {
+    jabberApplet = a;
+     }
+ public void connecting()
+  {
+    jabberApplet.getStatus().setText(&quot;Connecting...&quot;);
+   }
+ public void connected()
+  {
+    jabberApplet.getStatus().setText(&quot;Connected...&quot;);
+   }
+ public void disconnected()
+  {
+    jabberApplet.getStatus().setText(&quot;Disconnected...&quot;);
+   }
+  public void connectFailed()
+  {
+    jabberApplet.getStatus().setText(&quot;Fail to connect...&quot;);
+   }
+}
+
+
+===================================================
+package jabber;
+
+import org.jabber.jabberbeans.PacketListener;
+import org.jabber.jabberbeans.Packet;
+
+public class JTestPacketListener implements PacketListener
+{
+ JabberApplet jabberApplet = null;
+
+        public JTestPacketListener(JabberApplet a)
+        {
+         jabberApplet = a;
+        }
+
+        public void receivedPacket(Packet parm1)
+        {
+                jabberApplet.getList().add(&quot;Receive&quot;+parm1.toString());
+        }
+
+        public void sentPacket(Packet parm1)
+        {
+                jabberApplet.getList().add(&quot;Send&quot;+parm1.toString());
+        }
+}
+
+-Leon
+
+David, Waite, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mass at ufl.edu</A> wrote:
+
+&gt;<i> I can field this one :)
+</I>&gt;<i>
+</I>&gt;<i> That is a bug in the existing version of Jabberbeans, and something I am
+</I>&gt;<i> working on now. Apparently there is a stream:error being sent, most probably
+</I>&gt;<i> due to either an invalid data packet being sent, or an incorrect servername
+</I>&gt;<i> at connect-time - both which cause the connection to reset (killing the
+</I>&gt;<i> output thread unexpectedly). Send me (<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mass at ufl.edu</A>) a more-complete log so I
+</I>&gt;<i> can see how far it is getting.
+</I>&gt;<i>
+</I>&gt;<i> -David Waite
+</I>&gt;<i>
+</I>&gt;<i> &gt; -----Original Message-----
+</I>&gt;<i> &gt; From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On
+</I>&gt;<i> &gt; Behalf Of Leon Kwan
+</I>&gt;<i> &gt; Sent: Wednesday, August 16, 2000 5:55 AM
+</I>&gt;<i> &gt; To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; Subject: [JDEV] Java jabber client.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Hello all, I am new to Jabber.
+</I>&gt;<i> &gt; I have installed the jabber server in the linux machine.
+</I>&gt;<i> &gt; and successfully connect it with WinJab.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Now I plan to use JabberBeans and Jabber-webb to implement
+</I>&gt;<i> &gt; the jabber client in java applet version.
+</I>&gt;<i> &gt; However, I do not know the correct procedure of interacting
+</I>&gt;<i> &gt; with jabber server.
+</I>&gt;<i> &gt; a. Connecting the server.
+</I>&gt;<i> &gt; b. Use IQ to send login request to the server.
+</I>&gt;<i> &gt; c. Send Presence packet?
+</I>&gt;<i> &gt; d. Get the roster list?
+</I>&gt;<i> &gt; e. Send Message packet?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; What I can do now is that I can connect and login to the server
+</I>&gt;<i> &gt; but cannot see its online status in another jabber client like
+</I>&gt;<i> &gt; WinJab. I think the presence packet may not properly sent.
+</I>&gt;<i> &gt; I got the exception:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; ISH: SAX: Unknown/invalid root element: stream: error
+</I>&gt;<i> &gt; java.lang.RuntimeException: Death of output thread
+</I>&gt;<i> &gt; at org/jabber/jabberbeans/sax/ProtocolHandler.onOutputDeath
+</I>&gt;<i> &gt; at org/jabber/jabberbeans/sax/OutputStreamHandler.run
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; I would like to ask if there exist any java client source code
+</I>&gt;<i> &gt; that successful connect to server and send message or get the
+</I>&gt;<i> &gt; roster list?
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; -Leon Kwan
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="062274.html">[JDEV] MSN Transport Question
+</A></li>
+	<LI>Next message: <A HREF="062275.html">[JDEV] aim-t and icq-t
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62265">[ date ]</a>
+              <a href="thread.html#62265">[ thread ]</a>
+              <a href="subject.html#62265">[ subject ]</a>
+              <a href="author.html#62265">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

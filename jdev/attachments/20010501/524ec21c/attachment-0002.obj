@@ -1,0 +1,218 @@
+#!/bin/sh
+
+# First get the name of where jabber lives
+JABBERD=`dirname $0`
+if [ x$JABBERD = "x" ]; then
+	JABBERD=`pwd`
+fi
+if [ x$JABBERD = "x." ]; then
+	JABBERD=`pwd`
+fi
+
+# All the configuration files
+CFG_JABBER="$JABBERD/etc/multiple.xml"
+CFG_JUD="$JABBERD/etc/judserv.xml"
+CFG_AIM="$JABBERD/etc/aimtrans.xml"
+CFG_ICQ="$JABBERD/etc/icqtrans.xml"
+CFG_MSN="$JABBERD/etc/msntrans.xml"
+CFG_YAHOO="$JABBERD/etc/yahootrans.xml"
+
+# All the pid files
+PID_JABBER="$JABBERD/run/jabber.pid"
+PID_JUD="$JABBERD/run/judserv.pid"
+PID_AIM="$JABBERD/run/aimtrans.pid"
+PID_ICQ="$JABBERD/run/icqtrans.pid"
+PID_MSN="$JABBERD/run/msntrans.pid"
+PID_YAHOO="$JABBERD/run/yahootrans.pid"
+
+# Functions to start/stop and get status of a server
+startreal() {
+	if [ -r $1 ]; then
+		PID=`cat $1`
+		PS=`ps -p $PID`
+		if [ $? != 0 ]; then
+			/bin/rm -f $1
+		else
+			echo "[FAIL]"
+			return
+		fi
+	fi
+
+	$JABBERD/bin/jabberd -H $JABBERD -c $2 &
+	if [ $? != 0 ]; then
+		echo "[FAIL]"
+	fi
+	echo $! > $1
+	echo "[OK]"
+}
+
+start() {
+	case "$1" in
+	'icq')
+		printf "Starting icq            "
+		startreal $PID_ICQ $CFG_ICQ
+		;;
+	'aim')
+		printf "Starting aim            "
+		startreal $PID_AIM $CFG_AIM
+		;;
+	'msn')
+		printf "Starting msn            "
+		startreal $PID_MSN $CFG_MSN
+		;;
+	'yahoo')
+		printf "Starting yahoo          "
+		startreal $PID_YAHOO $CFG_YAHOO
+		;;
+	'jud')
+		printf "Starting jud            "
+		startreal $PID_JUD $CFG_JUD
+		;;
+	'jabber')
+		printf "Starting jabber         "
+		startreal $PID_JABBER $CFG_JABBER
+		;;
+	*)
+		start jabber
+		start jud
+		start icq
+		start aim
+		start msn
+		start yahoo
+		;;
+	esac
+}
+
+stopreal() {
+	if [ -r $1 ]; then
+		PID=`cat $1`
+		PS=`ps -p $PID`
+		if [ $? != 0 ]; then
+			kill $PID
+			if [ $? != 0 ]; then
+				echo "[FAIL]"
+			fi
+			/bin/rm -f $1
+			echo "[OK]"
+			return
+		else
+			echo "[OK]"
+			/bin/rm -f $1
+			return
+		fi
+	fi
+
+	echo "[FAIL]"
+}
+
+stop() {
+	case "$1" in
+	'icq')
+		printf "Stopping icq            "
+		stopreal $PID_ICQ
+		;;
+	'aim')
+		printf "Stopping aim            "
+		stopreal $PID_AIM
+		;;
+	'msn')
+		printf "Stopping msn            "
+		stopreal $PID_MSN
+		;;
+	'yahoo')
+		printf "Stopping yahoo          "
+		stopreal $PID_YAHOO
+		;;
+	'jud')
+		printf "Stopping jud            "
+		stopreal $PID_JUD
+		;;
+	'jabber')
+		printf "Stopping jabber         "
+		stopreal $PID_JABBER
+		;;
+	*)
+		stop jabber
+		stop jud
+		stop icq
+		stop aim
+		stop msn
+		stop yahoo
+		;;
+	esac
+}
+
+statusreal() {
+	if [ -r $1 ]; then
+		PID=`cat $1`
+		PS=`ps -p $PID`
+		if [ $? != 0 ]; then
+			echo "[STOPPED]"
+			return
+		else
+			echo "[RUNNING]"
+			return
+		fi
+	fi
+
+	echo "[STOPPED]"
+}
+
+status() {
+	case "$1" in
+	'icq')
+		printf "Checking icq            "
+		statusreal $PID_ICQ
+		;;
+	'aim')
+		printf "Checking aim            "
+		statusreal $PID_AIM
+		;;
+	'msn')
+		printf "Checking msn            "
+		statusreal $PID_MSN
+		;;
+	'yahoo')
+		printf "Checking yahoo          "
+		statusreal $PID_YAHOO
+		;;
+	'jud')
+		printf "Checking jud            "
+		statusreal $PID_JUD
+		;;
+	'jabber')
+		printf "Checking jabber         "
+		statusreal $PID_JABBER
+		;;
+	*)
+		status jabber
+		status jud
+		status icq
+		status aim
+		status msn
+		status yahoo
+		;;
+	esac
+}
+
+case "$1" in
+'start')
+	start $2
+	;;
+
+'restart')
+	stop $2
+	start $2
+	;;
+
+'stop')
+	stop $2
+	;;
+
+'status')
+	status $2
+	;;
+
+*)
+	echo usage $0 {start|restart|stop|status} {icq|aim|msn|yahoo|jud|all}
+esac

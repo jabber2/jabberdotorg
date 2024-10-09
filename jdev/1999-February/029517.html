@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] [Client Lib 1.0]
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5BClient%20Lib%201.0%5D&In-Reply-To=%3CPine.LNX.3.96.990203173757.22820J-100000%40mondo.eppg.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="029516.html">
+   <LINK REL="Next"  HREF="029524.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] [Client Lib 1.0]</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20%5BClient%20Lib%201.0%5D&In-Reply-To=%3CPine.LNX.3.96.990203173757.22820J-100000%40mondo.eppg.com%3E"
+       TITLE="[JDEV] [Client Lib 1.0]">jeremie at jabber.org
+       </A><BR>
+    <I>Wed Feb  3 17:45:50 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="029516.html">[JDEV] [Clients 1.0]
+</A></li>
+        <LI>Next message: <A HREF="029524.html">[JDEV] [Client Lib 1.0]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29517">[ date ]</a>
+              <a href="thread.html#29517">[ thread ]</a>
+              <a href="subject.html#29517">[ subject ]</a>
+              <a href="author.html#29517">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+This is a rough draft!  
+
+CLI=Command Line Interface
+
+I want Jabber to be 100% accessible EASILY through the command line.  This
+is not nearly as easy as one might think.  Since an authenticated
+connection must be made and maintained to the server, there will always
+need to be a background process.  Data often trickles into that background
+process from the server, the user should be notified immediately about
+some of it(incoming messages), and later about other data(status changes). 
+This requires the background process to attach to the users TTY and send
+messages, similar to unix talk. 
+
+There are three models that need to be addressed.  A main background
+process that runs server-wide and handles all users, similar to unix talk.
+A process that runs and forks when the user logs in under that users
+shell/account(so the user can still use Jabber CLI tools even if the
+server admin doesn't support it server-wide).  Thirdly, each app starts
+and maintains it's own connection to the server when it runs.
+
+What I would like to see happen, is a static library written with simple
+functions that any app that wants to talk to a jabber server can call, and
+it doesn't have to worry about how it's talking to the server.  This
+library can try/support each of the ways above. 
+
+This will all resolve around a hidden folder in the users home dir,
+~/.jabber/ and a few files in there, &quot;secret&quot;, &quot;config&quot; and &quot;port&quot;.  The
+secret file will contain some simple config data like
+&quot;&lt;user&gt;username&lt;/user&gt;&lt;pass&gt;mypassword&lt;/pass&gt;&quot;.  This file should be
+protected so that ONLY the user can read it, 0700.  Now, say the sysadmin
+has a system wide background process running. when it notices that a user
+logs in or is logged in, it will scan that user's home dir, and upon
+finding a ~/.jabber/secret it will fork a process, setuid for that user,
+and connect to the jabber server defined in &quot;config&quot;.  It will also start
+listening on a random unused high port above 10000 or so, and save that
+port in ~/.jabber/port.  Any CLI jabber utilities used by the user will
+check for the port file and connect to that port to talk to the jabber
+server.  Any incoming messages will be sent to the users TTY. 
+
+Lets say that the sysadmin hasn't installed this background process
+server-wide.  Then if the user wants to still use Jabber, they can setup
+the ~/.jabber folder and put something like &quot;jabber -background&quot; in their
+shell startup script and it will do the same thing, connect to the server,
+log in, listen on a local high port, and put that port in the
+~/.jabber/port file.  All CLI utilities will work identically. 
+
+What if the user has never configured Jabber and uses a CLI utility?  The
+library would, after not finding any config data, fork a background
+process and log into the server anonymously.  All CLI utilities would work
+normally at that point. 
+
+The last scenario is a GUI Jabber client that is compiled with the
+library, it could then share the same login/connection as all CLI apps, it
+would just display the current status graphically. 
+
+
+Here are some proposed CLI apps:
+
+ jwrite:	Compose/send simple messages, either typed or from STDIN
+ jmesg:		Change/check current status, online, offline, away, etc... 
+ jwho:		View roster and status of users on your roster.  Add/remove entries
+ jtalk:		Start a threaded chat-like message communication with a user
+
+ jabber:
+	This is the main app, allowing you to fork a background log in, or
+run interactively and browse/compose messages, change status, check
+roster, all the same functionality in an interactive app.  It's possible
+that all of the other apps are just hard links to this one since it will
+contain all of the needed functionality. 
+
+
+This all sounds great, and should work fairly cleanly, but there needs to
+be a special API of calls in the library, as well as a special protocol
+between the background process and the intermittently run CLI apps.  This
+is because the background process will pool messages and status updates,
+and the CLI apps will just ask for them when they are run.  Hmm... I'm
+thinking that we might be able to make this REALLY easy, where the apps
+just use a standard IO just like they were talking to the real server, but
+when talking to this background process the process acts just like a
+&quot;caching proxy&quot; where all packets are passed on through it to the real
+server, but incoming messages and status's of other users are cached, and
+when say &quot;jwho&quot; asks for the roster, it might be cached in the proxy and
+sent down to &quot;jwho&quot; along with the status's of the users that were cached. 
+The only exception would be that maybe the user wanted to browse or
+re-read incoming messages, so when they were doing that with the &quot;jabber&quot;
+app, it would send a special message that would be intercepted by the
+proxy telling it to dump X number of recent messages to the &quot;jabber&quot; app. 
+Are there any situations that this wouldn't work? 
+
+
+It would be great to build the library with built in simple exposed
+callable functions to do Jabber things simply, like
+message(&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">recipient at server</A>&quot;,&quot;subject&quot;,&quot;real message content&quot;) and could be
+statically linked to any app that wanted to do Jabber stuff... all the CLI
+apps could be based around this library.  It would make writing a Jabber
+client painless, you wouldn't need to know/understand XML, the protocol,
+or anything like that.
+
+
+IMHO, this is an important area that needs lots of work and meshing out.
+
+
+
+
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="029516.html">[JDEV] [Clients 1.0]
+</A></li>
+	<LI>Next message: <A HREF="029524.html">[JDEV] [Client Lib 1.0]
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29517">[ date ]</a>
+              <a href="thread.html#29517">[ thread ]</a>
+              <a href="subject.html#29517">[ subject ]</a>
+              <a href="author.html#29517">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

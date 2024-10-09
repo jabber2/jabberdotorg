@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Registering with a transport?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Registering%20with%20a%20transport%3F&In-Reply-To=%3C002401bfb43b%24bb3c13d0%249901a8c0%40vantek.dom%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="032335.html">
+   <LINK REL="Next"  HREF="032337.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Registering with a transport?</H1>
+    <B>Peter Millard</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Registering%20with%20a%20transport%3F&In-Reply-To=%3C002401bfb43b%24bb3c13d0%249901a8c0%40vantek.dom%3E"
+       TITLE="[JDEV] Registering with a transport?">peter at vantek-corp.com
+       </A><BR>
+    <I>Tue May  2 08:38:41 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="032335.html">[JDEV] Registering with a transport?
+</A></li>
+        <LI>Next message: <A HREF="032337.html">[JDEV] Jabber Extensible Client Interface for Java
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#32336">[ date ]</a>
+              <a href="thread.html#32336">[ thread ]</a>
+              <a href="subject.html#32336">[ subject ]</a>
+              <a href="author.html#32336">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>David -
+Please reply back to <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">win32-dev at jabber.org</A> as this is really Win32 &amp; JabberCOM
+specific and doesn't need to be in the main JDEV list. If you aren't already
+subscribed to the list, visit win32.jabber.org to sign up.
+
+Registering w/ Agents is a process which involves a few steps.
+
+1. Send a &quot;get&quot; query to the agent to fetch the registration fields.
+2. Have the user fill in the fields
+3. Send the &quot;set&quot; query back to the agent.
+
+Using JabberCOM, you would use code like this.. (I'll try to write VB'ish code,
+but this may not be 100% syntactically correct). Note this this assumes we
+already have a specific JabberAgentItem object (CurrentAgentItem) which is
+accessed by using the list of agents returned after the
+JabberSession.Agents.Fetch call:
+
+' Step 1, get the registration fields/info from the agent.
+' Use the ID field to track what to do here..
+CurrentAgentItem.GetRegister &quot;agent_register_1&quot;
+
+'-------------
+For step 2, Use an event handler in the OnJabberIQ event.. The agent will send
+back a JabberIQ object containing all the fields for the registration process
+here..
+
+' Step 2.. Get all the fields from the JabberIQ in the OnJabberIQ Event.
+Dim FieldsIt as JabberIterator        ' Use an iterator to search thru all the
+JabberIQ fields
+Dim Field as XMLField
+
+if NameSpace = &quot;jabber:iq:register&quot; then
+    Set FieldsIt = IQ.Fields
+    Do While FieldsIt.HasNext
+        Set Field = FieldsIt.Next    ' You may have to somehow &quot;type-cast&quot; this
+in VB.. this
+                                                ' grabs the next XMLField object
+from the iterator so we can use it.
+                                                ' Note also that calling .Next
+also increments the iterator position
+        if Field.Name = &quot;instructions&quot; then
+            ' do something here to display the instructions
+        else if Field.Name = &quot;key&quot; then
+            ' Assign the key back to the agent so it can send it back
+            ' when we send back the registration
+            CurrentAgentItem.Key = Field.Data
+        else if Field.Name = &quot;registered&quot; then
+            ' do something here to indicate we are already
+            ' registered with this agent
+        else
+            ' display the Field.Name and Field.Data in some GUI element
+        end if
+    end do
+
+end if
+'--------
+
+OK, Now for Step 3, after the user fills out all the data for each field
+returned in step 2, you have to &quot;re-build&quot; a JabberIQ object based on the GUI
+elements and the data was entered. In WinJab, I use a grid to display all the
+fields returned in step 2 so rebuilding the JabberIQ is simple, just iterate
+through the rows adding 1 field to the new JabberIQ object per row. Obviously,
+the code is going to depend a lot on what kind of GUI elements you use for the
+actual registration data entry.
+
+' Step 3 - Send registration back to the agent
+Dim RegIQ as JabberIQ
+
+Set RegIQ = JabberSession.CreateIQ
+
+For i = 0 to MyGrid.RowCount - 1 do
+    RegIQ.SetField(MyGrid.Cells[0, i], MyGrid.Cells[1, i])
+Next i
+CurrentAgentItem.SetRegister &quot;agent_register_2&quot;, RegIQ
+
+'-----------
+That's about it... once the registration is complete you will most likely get a
+&quot;result&quot; &lt;iq&gt; tag back into either the OnJabberIQ event or the OnUnhandledQuery
+event... Depending on the Agent, you may also get other Jabber events like
+subscription requests, etc..
+
+Hope this helps demonstrate the power &amp; flexibility of the Agents Interface.
+Also note that agents can have &quot;Sub-Agents&quot;... All of that capability is
+&quot;exposed&quot; through each JabberAgentItem.Agents interface. Thus the AgentItem is
+inherently recursive (fun :)... so you can call CurrentAgentItem.Agents.Fetch,
+etc. The use of specific &quot;ID&quot; attributes is VERY important to track which sets,
+gets, results are tied to which agents.
+
+
+--------------------------------
+Peter Millard
+Software Engineer, Vantek Corp.
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">peter at vantek-corp.com</A>
+<A HREF="http://www.vantek-corp.com">http://www.vantek-corp.com</A>
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="032335.html">[JDEV] Registering with a transport?
+</A></li>
+	<LI>Next message: <A HREF="032337.html">[JDEV] Jabber Extensible Client Interface for Java
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#32336">[ date ]</a>
+              <a href="thread.html#32336">[ thread ]</a>
+              <a href="subject.html#32336">[ subject ]</a>
+              <a href="author.html#32336">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

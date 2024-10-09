@@ -1,0 +1,96 @@
+(I brought this up within an earlier message but I think it's worth
+raising to a separate thread, esp. since I got no answers / comments.)
+
+
+The 'oob' namespace seems to be Jabber's current answer for direct
+peer-to-peer communications, particularly file transfer. However, the
+documentation I've seen is really vague and leaves me with worries
+about its reliability and security. Let me list the problems I see,
+together with some possible solutions.
+
+
+Also, have any clients implemented file transfer or other oob
+communications yet?
+
+
+As I understand it the flow of control looks like this:
+
+* Sender opens a TCP port on its host and listens for HTTP connections
+on it.
+
+* Sender sends a Jabber message to receiver with an 'oob'-namespace
+element containing an HTTP URL pointing to its own IP address and the
+opened port.
+
+* Receiver initiates an HTTP download via the URL.
+
+* Sender gets the HTTP connection on the port it opened and sends the
+file data.
+
+* Both sides close the connection, and the sender stops listening on
+that port.
+
+
+<bold>Major concern.</bold>
+
+This does not work if the sender is behind any sort of a firewall
+and/or a NAT (network address translation) service. This applies to me
+personally both at home and at work. It does however support the
+<italic>receiver</italic> being behind any sort of firewall that
+allows HTTP connections (though the receiver's client may need to go
+through an HTTP proxy server.)
+
+It also relies on the sender giving out its IP address, which many
+people are loath to do for security reasons.
+
+
+This can be addressed by allowing the sender's Jabber server to act as
+a proxy: the message is rewritten to include a URL pointing to the
+server, and the server then proxies the incoming request through to
+the sender. This does of course require additional smarts on the part
+of the server, as well as placing additional bandwidth demands on it
+(but no more than the kinds of demands that are currently made on HTTP
+proxies, for instance.)
+
+
+<bold>Secondary concern.</bold>
+
+I'm unsure how a secure association can be made on the sender between
+the outgoing file transfer offer and the incoming HTTP request. The
+sender generally wants to be sure that only the specific entity the
+message was sent to can download the file, not some random other
+entity that may be probing the sender's machine for open ports.
+
+
+This can be addressed in a weak way by using a random port number, but
+since only 64536 numbers are generally available, that's not very
+secure.
+
+
+Stronger security could be obtained via regular HTTP authentication,
+by adding a username and (randomly generated) password to the URL.
+
+
+Of course, for greatest security, the entire message containing the
+URL would have to be encrypted to guard against interception.
+
+
+<bold>Third (tertiary?) concern.</bold>
+
+The receiver may well decide not to download the file at all
+(especially if it's named something like "sexy_babes.exe".) There
+doesn't seem to be any defined mechanism for the receiver's client to
+indicate to the sender that this has occurred.
+
+This means that the sender's client has to keep listening on that port
+until some kind of time-out occurs, and the sender him/herself may get
+confused wondering when the receiver is going to get around to
+receiving the file.
+
+
+Looks like there ought to be some kind of standard reply message type
+indicating a refusal to download the file, so the sender's client can
+close the port and present a GUI notification.
+
+
+--Jens Alfke

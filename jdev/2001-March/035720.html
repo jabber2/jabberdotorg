@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] servers specifying from fields
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20servers%20specifying%20from%20fields&In-Reply-To=%3CPine.LNX.4.21.0103040320340.681-100000%40megaepic.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="035719.html">
+   <LINK REL="Next"  HREF="035724.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] servers specifying from fields</H1>
+    <B>Mathew A Johnston</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20servers%20specifying%20from%20fields&In-Reply-To=%3CPine.LNX.4.21.0103040320340.681-100000%40megaepic.com%3E"
+       TITLE="[JDEV] servers specifying from fields">johnston at megaepic.com
+       </A><BR>
+    <I>Sun Mar  4 02:39:05 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="035719.html">[JDEV] servers specifying from fields
+</A></li>
+        <LI>Next message: <A HREF="035724.html">[JDEV] servers specifying from fields
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35720">[ date ]</a>
+              <a href="thread.html#35720">[ thread ]</a>
+              <a href="subject.html#35720">[ subject ]</a>
+              <a href="author.html#35720">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'm not sure if I understand the significance of, &quot;specifically for
+sending namespace fragments, and not for sending entire XML documents. In
+particular, specify whether you can send multiple namespace extensions
+through, and make sure people know they cannot do  things like insert a
+DTD or PI instructions (including &lt;?xml version=1.0?&gt;&quot;
+
+You mean whether they can send more than 1 &lt;x&gt; element within the
+encrypted block? Why is sending entire xml messages illegal?
+
+I think an error reporting method - ie &quot;I dont recognise this
+namespace&quot; would be a good thing. For the client to simply send back a
+message saying &quot;huh? i dont understand namespace xyz?&quot; is what I'm
+thinking. I'm thinking that there's already some support for this - i sort
+of recall hearing about this somewhere.
+
+I think we need a better method of key exchange - maybe an ability to use
+a 3rd party certificate authority. Of course, this is all client
+dependant, and does not necessarily need to have anything to do with
+jabber it's self; but I do think that we need a standard. Like you said,
+if it's easy to forge online messages that include the user's public key
+(to later be used for encrypted messages sent to the user), its hard to
+trust that we're actually sending to who we want to. Different levels of
+key security should be offered:
+
+	low: dont ever use encrypted messages
+	medium low: accept whatever key user claims on presence
+	medium: warn on change from last known key
+	medium high: 3rd party certificate authority
+	high: manual key exchange
+
+My two main concerns with jabber security are the ability to send messages
+encrypted (of any sort) and the strength of key exchange between clients.
+
+I think that if we can secure key exchange, and offer a way to send &lt;x&gt;
+elements encrypted (since all extentions should use x elements right?) we
+can provide a way for developers to implement their own secure private
+namespaces in their clients, to fill their needs. Right now, unless they
+implement what we're talking about, people cant really write extentions
+that are nice and secure, which sucks.
+
+Mathew Johnston
+
+
+
+On Sat, 3 Mar 2001, David Waite wrote:
+
+&gt;<i> Interesting.
+</I>&gt;<i> 
+</I>&gt;<i> Actually I have a couple of things to say about this.
+</I>&gt;<i> 
+</I>&gt;<i> Currently there isn't a way to broadcast capabilities within Jabber, meaning
+</I>&gt;<i> that there isn't some general field you can read to see that someone supports
+</I>&gt;<i> this draft extension. Encrypted messages work because it requires presence to be
+</I>&gt;<i> signed, which does little more than indicate the key to use for sending messages
+</I>&gt;<i> (I say this because saying your status is 'Online' is *extremely* open for
+</I>&gt;<i> replay - but who is going to hack into your account and set the status to signed
+</I>&gt;<i> 'Online' just to have the priviledge to receive encrypted messages?). You will
+</I>&gt;<i> need some sort of indicator that the client supports your namespace, or to try
+</I>&gt;<i> to propose capability reporting. Especially for encryption, you want to be
+</I>&gt;<i> careful of clients who say 'err, hmm, no i don't support encrypted content,
+</I>&gt;<i> could you send it again in plaintext?'
+</I>&gt;<i> 
+</I>&gt;<i> Would the client ever want to know the namespace of the encrypted block before
+</I>&gt;<i> decrypting? If you send me an encrypted xhtml block, and I don't support rich
+</I>&gt;<i> text...
+</I>&gt;<i> 
+</I>&gt;<i> Finally, I fear multiple extensions in a message, all encrypted. Five pgp blocks
+</I>&gt;<i> per message will just kill bandwidth. I don't think that is really a problem
+</I>&gt;<i> with your proposal.
+</I>&gt;<i> 
+</I>&gt;<i> Other than that, I would suggest adding the following comments:
+</I>&gt;<i> - This is specifically for sending namespace fragments, and not for sending
+</I>&gt;<i> entire XML documents. In particular, specify whether you can send multiple
+</I>&gt;<i> namespace extensions through, and make sure people know they cannot do things
+</I>&gt;<i> like insert a DTD or PI instructions (including &lt;?xml version=1.0?&gt; in ;-)
+</I>&gt;<i> - Make sure for future note that clients should recognize encrypted content.
+</I>&gt;<i> Specifically, a jabber:x:delay packet indicates a message delay - the server
+</I>&gt;<i> cannot verify that someone isn't forging a message delay timestamp if it is
+</I>&gt;<i> encrypted, so a client would need to have the logic to discard this information
+</I>&gt;<i> (or even better, indicate someone is trying to fake an older message).
+</I>&gt;<i> - Specify specifically if character encoding matters. Everything Jabber uses
+</I>&gt;<i> UTF8, so I assume this would as well.
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> -David Waite
+</I>&gt;<i> 
+</I>&gt;<i> Mathew A Johnston wrote:
+</I>&gt;<i> 
+</I>&gt;<i> &gt; Re-read megaepic.com/~johnston/nestedencrypted.txt
+</I>&gt;<i> &gt; The only legal encrypted element would be an x element... x elements do
+</I>&gt;<i> &gt; not usually include any reference to from addresses. (they should not).
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; Mathew Johnston
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; On Sun, 4 Mar 2001, Matthias Wimmer wrote:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; &gt; Hi Mathew!
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; But where is then your problem with the server setting the from-attribute?
+</I>&gt;<i> &gt; &gt; Let it set the attribute of the envelove of the encrypted data and ignore
+</I>&gt;<i> &gt; &gt; it if you prefere Data from within the encryted data ... but you need the
+</I>&gt;<i> &gt; &gt; data also outside the encrypted package to allow bouncing of messages if
+</I>&gt;<i> &gt; &gt; e.g. the receipiend has sent a message rule for auto reply.
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Tot kijk
+</I>&gt;<i> &gt; &gt;    Matthias
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; Mathew A Johnston schrieb am 2001-03-02 19:11:09:
+</I>&gt;<i> &gt; &gt; &gt; First, I want to make sure that everyone understands the point I'm trying
+</I>&gt;<i> &gt; &gt; &gt; to make. Currently, there is no way to send encrypted messages where the
+</I>&gt;<i> &gt; &gt; &gt; encrypted message is a block of xml to be parsed upon decryption. The
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt; &gt; _______________________________________________
+</I>&gt;<i> &gt; &gt; jdev mailing list
+</I>&gt;<i> &gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt; &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> 
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="035719.html">[JDEV] servers specifying from fields
+</A></li>
+	<LI>Next message: <A HREF="035724.html">[JDEV] servers specifying from fields
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35720">[ date ]</a>
+              <a href="thread.html#35720">[ thread ]</a>
+              <a href="subject.html#35720">[ subject ]</a>
+              <a href="author.html#35720">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

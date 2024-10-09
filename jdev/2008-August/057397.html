@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Eventing and SOAP
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Eventing%20and%20SOAP&In-Reply-To=%3C48A089B1.2000008%40stpeter.im%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="057392.html">
+   <LINK REL="Next"  HREF="057398.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Eventing and SOAP</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Eventing%20and%20SOAP&In-Reply-To=%3C48A089B1.2000008%40stpeter.im%3E"
+       TITLE="[jdev] Eventing and SOAP">stpeter at stpeter.im
+       </A><BR>
+    <I>Mon Aug 11 13:49:21 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="057392.html">[jdev] Eventing and SOAP
+</A></li>
+        <LI>Next message: <A HREF="057398.html">[jdev] Eventing and SOAP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57397">[ date ]</a>
+              <a href="thread.html#57397">[ thread ]</a>
+              <a href="subject.html#57397">[ subject ]</a>
+              <a href="author.html#57397">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Jonathan Dickinson wrote:
+&gt;<i> Hi All,
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> I am looking at the integration points for my server now (specifically 
+</I>&gt;<i> into the product that my employer develops). It is a workflow solution 
+</I>&gt;<i> (www.k2.net &lt;<A HREF="http://www.k2.net">http://www.k2.net</A>&gt;), and I am trying to figure out the best 
+</I>&gt;<i> way to notify users that they have work in such as way that:
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> 1.       IM clients apart from our own still tell the user that they 
+</I>&gt;<i> have work. A Sharepoint web address or such would be given in the body 
+</I>&gt;<i> of the message.
+</I>&gt;<i> 
+</I>&gt;<i> 2.       Our IM client detects that an agent (mobile agent 
+</I>&gt;<i> &lt;<A HREF="http://en.wikipedia.org/wiki/Mobile_agent">http://en.wikipedia.org/wiki/Mobile_agent</A>&gt;) is present in the stanza 
+</I>&gt;<i> and fires it up instead of giving the user the message.
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> My thoughts are to simply do the following:
+</I>&gt;<i> 
+</I>&gt;<i> &lt;message from=&quot;worklist.k2workflow.com&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">fred at k2workflow.com</A>&quot; 
+</I>&gt;<i> type=&quot;message&quot;&gt;
+</I>&gt;<i> 
+</I>&gt;<i>   &lt;body&gt;You have work. Visit 
+</I>&gt;<i> <A HREF="http://www.denallix.com/workitem.aspx?uid=12345abc&lt;/body">http://www.denallix.com/workitem.aspx?uid=12345abc&lt;/body</A>&gt;
+</I>&gt;<i> 
+</I>&gt;<i>  &lt;agent xmlns=&quot;urn:com:k2:agent&quot;&gt;&lt;!-- Agent description XML here --&gt;&lt;/agent&gt;
+</I>&gt;<i> 
+</I>&gt;<i> &lt;/message&gt;
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> I need to know if any clients would possibly have problems with a stanza 
+</I>&gt;<i> in that form, or maybe if someone has a better idea :). Thanks in advance.
+</I>
+That should be just fine.
+
+&gt;<i> AND&#8230; I also gave some more thought to SOAP and a nice clean &lt;pun&gt; way to 
+</I>&gt;<i> implement discovery within a jabber context alone. I thought of using 
+</I>&gt;<i> UDDI over XMPP (as it is itself a SOAP standard), this is merely a 
+</I>&gt;<i> suggestion, but how about the following:
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> &lt;iq type='result'
+</I>&gt;<i> 
+</I>&gt;<i>     from='shakespeare.lit'
+</I>&gt;<i> 
+</I>&gt;<i>     to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">romeo at montague.net</A>/orchard'
+</I>&gt;<i> 
+</I>&gt;<i>     id='info1'&gt;
+</I>&gt;<i> 
+</I>&gt;<i>   &lt;query xmlns='<A HREF="http://jabber.org/protocol/disco#items'">http://jabber.org/protocol/disco#items'</A>&gt;
+</I>&gt;<i> 
+</I>&gt;<i>     &lt;item jid='uddi.shakespeare.lit'
+</I>&gt;<i> 
+</I>&gt;<i>           node='uddi'
+</I>&gt;<i> 
+</I>&gt;<i>           name='SOAP discovery service'/&gt;
+</I>&gt;<i> 
+</I>&gt;<i>     &lt;item jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at uddi.shakespeare.lit</A>'
+</I>&gt;<i> 
+</I>&gt;<i>                 node='urn:myservices:foo'
+</I>&gt;<i> 
+</I>&gt;<i>                 name='Some service'/&gt;
+</I>&gt;<i> 
+</I>&gt;<i>   &lt;/query&gt;
+</I>&gt;<i> 
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i>  
+</I>&gt;<i> 
+</I>&gt;<i> My syntax may all be wrong, but I am sure you get the idea. The client 
+</I>&gt;<i> could the start doing UDDI calls against the uddi.shakespeare.lit node. 
+</I>&gt;<i> Also (as demonstrated) the server can broadcast any SOAP services it 
+</I>&gt;<i> supports upfront.
+</I>
+UDDI? Ick. But if you must, it seems fine to advertise the existence of 
+UDDI services over XMPP -- we could define a new disco identity for that 
+and register it here:
+
+<A HREF="http://www.xmpp.org/registrar/disco-categories.html">http://www.xmpp.org/registrar/disco-categories.html</A>
+
+I suggest the &quot;directory/uddi&quot; identity.
+
+Once you discover such a service, how would you interact with it? Is 
+that just straight SOAP as in XEP-0072?
+
+Peter
+
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 7338 bytes
+Desc: S/MIME Cryptographic Signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20080811/e5df041f/attachment-0001.bin">https://www.jabber.org/jdev/attachments/20080811/e5df041f/attachment-0001.bin</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="057392.html">[jdev] Eventing and SOAP
+</A></li>
+	<LI>Next message: <A HREF="057398.html">[jdev] Eventing and SOAP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57397">[ date ]</a>
+              <a href="thread.html#57397">[ thread ]</a>
+              <a href="subject.html#57397">[ subject ]</a>
+              <a href="author.html#57397">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

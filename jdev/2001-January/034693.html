@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Question...
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Question...&In-Reply-To=%3CFMEJJGGBCLGMNBONPMOBGEKJCBAA.tim.ferguson%40cw.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034692.html">
+   <LINK REL="Next"  HREF="034694.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Question...</H1>
+    <B>Tim Ferguson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Question...&In-Reply-To=%3CFMEJJGGBCLGMNBONPMOBGEKJCBAA.tim.ferguson%40cw.com%3E"
+       TITLE="[JDEV] Question...">tim.ferguson at cw.com
+       </A><BR>
+    <I>Tue Jan  2 15:58:48 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034692.html">[JDEV] Groupchat with 1.2 problems resolved
+</A></li>
+        <LI>Next message: <A HREF="034694.html">[JDEV] error opening port
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34693">[ date ]</a>
+              <a href="thread.html#34693">[ thread ]</a>
+              <a href="subject.html#34693">[ subject ]</a>
+              <a href="author.html#34693">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Dennis,
+
+Would you be interested in sharing the perl code you have for the LDAP
+authentication?
+
+Tim
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+Dennis Noordsij
+Sent: Tuesday, November 28, 2000 5:20 AM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>; Schuyler Heath
+Subject: Re: [JDEV] Question...
+
+Hey list and Schuyler,
+
+the information below works, thanks a lot for that! But I can't seem to find
+anything in Jabber::Net that supports the &lt;route&gt;&lt;/route&gt; message that is
+sent by jabberd to this component. I have a callback for &quot;receive&quot; that does
+receive this message but it doesn't seem to fit in any of the classes
+Jabber::Net provides.
+
+I guess I have to do the XML parsing of this thing myself, but I thought I'd
+just check with everyone to see if maybe I am missing something obvious :)
+
+Dennis
+
+BTW Thanks again Schuyler!
+
+
+On Monday 27 November 2000 16:35, Schuyler Heath wrote:
+&gt;<i> Hello,
+</I>&gt;<i>
+</I>&gt;<i> auth components are not written as xdb components, they are services or
+</I>jsm
+&gt;<i> modules.
+</I>&gt;<i>
+</I>&gt;<i> Here is what the configuration could look like:
+</I>&gt;<i>
+</I>&gt;<i> &lt;service id=&quot;perlauth&quot;&gt;
+</I>&gt;<i>   &lt;accept&gt;
+</I>&gt;<i>     &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+</I>&gt;<i>     &lt;port&gt;2233&lt;/ip&gt;
+</I>&gt;<i>     &lt;secret&gt;secret&lt;/secret&gt;
+</I>&gt;<i>   &lt;/accept&gt;
+</I>&gt;<i> &lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i> There is no need to have a &lt;host/&gt;, auth packets will be routed to your
+</I>&gt;<i> component with the id.  You will also need to add this to your jsm config.
+</I>&gt;<i>
+</I>&gt;<i> &lt;service id=&quot;sessions&quot;&gt;
+</I>&gt;<i> ...
+</I>&gt;<i>   &lt;jsm xmlns=&quot;jabber:jsm:config&quot;&gt;
+</I>&gt;<i>     ..
+</I>&gt;<i>     &lt;auth&gt;perlauth&lt;/auth&gt;
+</I>&gt;<i>   &lt;/jsm&gt;
+</I>&gt;<i> &lt;/service&gt;
+</I>&gt;<i>
+</I>&gt;<i> You then will receive the following when a user attempts to authenticate:
+</I>&gt;<i>
+</I>&gt;<i> &lt;route type='auth' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">2 at jpolld.localhost</A>/134566776' to='perlauth'
+</I>&gt;<i> oto='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test at localhost</A>'&gt; &lt;iq type='set' id='0'&gt;
+</I>&gt;<i>     &lt;query xmlns='jabber:iq:auth'&gt;
+</I>&gt;<i>       &lt;username&gt;test&lt;/username&gt;
+</I>&gt;<i>       &lt;password&gt;foo&lt;/password&gt;
+</I>&gt;<i>       &lt;resource&gt;home&lt;/resource&gt;
+</I>&gt;<i>     &lt;/query&gt;
+</I>&gt;<i>   &lt;/iq&gt;
+</I>&gt;<i> &lt;/route&gt;
+</I>&gt;<i>
+</I>&gt;<i> A successful result would look like this:
+</I>&gt;<i>
+</I>&gt;<i> &lt;route type='auth' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">2 at jpolld.localhost</A>/134566776' from='perlauth'
+</I>&gt;<i> oto='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">test at localhost</A>'&gt; &lt;iq type=&quot;result&quot; id=&quot;0&quot;/&gt;
+</I>&gt;<i> &lt;/route&gt;
+</I>&gt;<i>
+</I>&gt;<i> Schuyler
+</I>&gt;<i>
+</I>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034692.html">[JDEV] Groupchat with 1.2 problems resolved
+</A></li>
+	<LI>Next message: <A HREF="034694.html">[JDEV] error opening port
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34693">[ date ]</a>
+              <a href="thread.html#34693">[ thread ]</a>
+              <a href="subject.html#34693">[ subject ]</a>
+              <a href="author.html#34693">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

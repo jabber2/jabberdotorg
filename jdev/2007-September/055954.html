@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Stream Initiation: extension
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Stream%20Initiation%3A%20extension&In-Reply-To=%3C46FCEE17.6070207%40privat.utfors.se%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="055953.html">
+   <LINK REL="Next"  HREF="055955.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Stream Initiation: extension</H1>
+    <B>Mats Bengtsson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Stream%20Initiation%3A%20extension&In-Reply-To=%3C46FCEE17.6070207%40privat.utfors.se%3E"
+       TITLE="[jdev] Stream Initiation: extension">matben at privat.utfors.se
+       </A><BR>
+    <I>Fri Sep 28 07:05:43 CDT 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="055953.html">[jdev] Stream Initiation: extension
+</A></li>
+        <LI>Next message: <A HREF="055955.html">[jdev] Stream Initiation: extension
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55954">[ date ]</a>
+              <a href="thread.html#55954">[ thread ]</a>
+              <a href="subject.html#55954">[ subject ]</a>
+              <a href="author.html#55954">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>More thoughts:
+
+Somewhat based on XHTML Inband Images 
+<A HREF="http://wiki.jabber.org/index.php/XHTML_Inband_Images">http://wiki.jabber.org/index.php/XHTML_Inband_Images</A>
+I have come up with another suggestion.
+
+Define an URI form xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mats at home.se</A>/coci?sipub=pub0123
+which defines a unique resource identifier to a file or other entity.
+A client, the initiator, can include this in any appropriate place, 
+for instance, in a SVG image element (seen from the initiator side):
+
+SEND:
+&lt;message to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mari at mus.se</A>/work' type='chat'&gt;
+  &lt;thread&gt;ee2944c6&lt;/thread&gt;
+  &lt;x xmlns='<A HREF="http://jabber.org/protocol/svgwb'">http://jabber.org/protocol/svgwb'</A>&gt;
+    &lt;image x='32.0' y='32.0' 
+           xlink:href='xmpp:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mats at home.se</A>/coci?sipub=pub0123' 
+           id='158229644' width='128' height='128'&gt;
+      &lt;file xmlns='<A HREF="http://jabber.org/protocol/si/profile/file-transfer'">http://jabber.org/protocol/si/profile/file-transfer'</A> 
+            name='blender.png' size='12582'/&gt;
+    &lt;/image&gt;
+  &lt;/x&gt;
+&lt;/message&gt;
+
+The initiator then caches the mapping from the sipub identifier (pub0123)
+to the actual file or entity. The target can then request this file using:
+
+RECV:
+&lt;iq type='get' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mari at mus.se</A>/work' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mats at home.se</A>/coci' id='3210'&gt;
+   &lt;sipub xmlns='<A HREF="http://jabber.org/protocol/si-pub'">http://jabber.org/protocol/si-pub'</A> id='pub0123'/&gt;
+&lt;/iq&gt; 
+
+The initiator then looks up the second id here, the sipub id attribute,
+and if it indeed has a file reference cached for this id, it initiates an
+ordinary si-set/si query after sending a result:
+
+SEND:
+&lt;iq type='result' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mari at mus.se</A>/work' id='3210'&gt;
+  &lt;sipub xmlns='<A HREF="http://jabber.org/protocol/si-pub'">http://jabber.org/protocol/si-pub'</A> 
+         id='pub0123' sid='3c803c10-6983032b'/&gt;
+&lt;/iq&gt; 
+
+Note that a sid attribute MUST be included which references the si id attribute
+to expect when the target receives the iq-set/si query. The target must be sure
+to understand that when it gets the corresponding iq-set/si it must not
+be handled as an ordinary user initiated file transfer.
+
+Everything continues unchanged from existing Stream Initiation. If the initiator 
+can't find the sipub id reference it answers with an error as usual.
+Note that this XMPP URI is persistant since each request for it generates
+a new si stream. The si streams are, of course, not persistant, but the
+reference from the sipub identifier to the actual file or entity is.
+It is up to the initiating entity to decide on the lifetime of this relation. 
+
+There is a slightly alternative solution. The initiators iq-set/si must be
+handled in the context of the original XMPP URI which the iq-set/si element
+doesn't say anything about. It can therefore be mistaken as an ordinary 
+user initiated file transfer. Instead we could switch the 
+
+&lt;si xmlns='<A HREF="http://jabber.org/protocol/si'">http://jabber.org/protocol/si'</A> ...
+
+into
+
+&lt;sipub xmlns='<A HREF="http://jabber.org/protocol/si-pub'">http://jabber.org/protocol/si-pub'</A> ...
+
+in all places. I have some doubts about this, though. It complicates the
+life of a client developer.
+
+/Mats
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="055953.html">[jdev] Stream Initiation: extension
+</A></li>
+	<LI>Next message: <A HREF="055955.html">[jdev] Stream Initiation: extension
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55954">[ date ]</a>
+              <a href="thread.html#55954">[ thread ]</a>
+              <a href="subject.html#55954">[ subject ]</a>
+              <a href="author.html#55954">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

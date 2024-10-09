@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] One week of running jabberd 1.4
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20One%20week%20of%20running%20jabberd%201.4&In-Reply-To=%3C20010209191401.G22070%40box5.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="064710.html">
+   <LINK REL="Next"  HREF="064711.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] One week of running jabberd 1.4</H1>
+    <B>Thomas Muldowney</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20One%20week%20of%20running%20jabberd%201.4&In-Reply-To=%3C20010209191401.G22070%40box5.net%3E"
+       TITLE="[JDEV] One week of running jabberd 1.4">temas at box5.net
+       </A><BR>
+    <I>Fri Feb  9 19:14:02 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="064710.html">[JDEV] One week of running jabberd 1.4
+</A></li>
+        <LI>Next message: <A HREF="064711.html">[JDEV] RE: [jadmin] install jabber server behind firewall
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64713">[ date ]</a>
+              <a href="thread.html#64713">[ thread ]</a>
+              <a href="subject.html#64713">[ subject ]</a>
+              <a href="author.html#64713">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Reply after each section of comments...
+
+On Fri, Feb 09, 2001 at 04:15:52PM -0800, james rogers wrote:
+&gt;<i> Overall 1.4 is much more stable and easier to compile modules against than 1.2 was.  Good job and keep up the good work!
+</I>&gt;<i> 
+</I>&gt;<i> I do see a few issues that I would like to let other know about.
+</I>&gt;<i> 
+</I>&gt;<i> 1. Why does pthsock have the port hardcoded into it?  Shouldn't it be getting this from the configuration file?
+</I>&gt;<i> 
+</I>&gt;<i> grep &quot;5[0-9][0-9][0-9]&quot; pthsock/*.c
+</I>&gt;<i> 
+</I>&gt;<i> &lt;listen&gt;5222&lt;/listen&gt;            &lt;!-- Port to listen on --&gt;
+</I>&gt;<i> m = mio_listen(j_atoi(xmlnode_get_attrib(cur, &quot;port&quot;), 5222), xmlnode_get_data(cur), pthsock_client_listen, (void*)s__i, MIO_LISTEN_XML);
+</I>&gt;<i> m = mio_listen(5222, NULL, pthsock_client_listen, (void*)s__i, MIO_LISTEN_XML);
+</I>&gt;<i> m = mio_listen(j_atoi(xmlnode_get_attrib(cur, &quot;port&quot;), 5223), xmlnode_get_data(cur), pthsock_client_listen, (void*)s__i, MIO_SSL_ACCEPT, mio_handlers_new(MIO_SSL_READ, MIO_SSL_WRITE, MIO_XML_PARSER));
+</I>&gt;<i> m = mio_listen(j_atoi(xmlnode_get_attrib(cur, &quot;port&quot;), 5223), xmlnode_get_data(cur), pthsock_client_listen, (void*)s__i, MIO_SSL_ACCEPT, mio_handlers_new(MIO_SSL_READ, MIO_SSL_WRITE, MIO_XML_PARSER));
+</I>&gt;<i> 
+</I>&gt;<i> Even a global variable that is set from the configuration file or the command line is preferable to a hardcoded value that is fixed at compile time.
+</I>&gt;<i> 
+</I>&gt;<i> Some of us like to run test systems at ports other than the default port.
+</I>
+Have you tried  changing the &lt;ip /&gt; section in your jabber.xml?  I use
+&lt;ip port='5225' /&gt; for a lot of my personal testing, works great, still does
+with final.
+
+
+&gt;<i> 
+</I>&gt;<i> 2. On a sun box if you watch top as you log a client in and out repeatedly you can watch the memory constantly growing and never shrinking.  This looks like a memory leak to me.  Does anyone else see this behavior on other OSes?
+</I>&gt;<i> 
+</I>
+I've never seen this happen, is it possible that the update is not happening in
+real time?  Possibly the garbage collection routines for the system haven't 
+fully released the memory pages, and they are still partially allocated to the
+program in case it needs it again?  top is notorious for not portraying the 
+true system memory.  Try using vmstat or something else to monitor the memory
+usage.
+
+&gt;<i> 3. The aim transport won't compile, I get several hundred lines like this:
+</I>&gt;<i> 
+</I>&gt;<i> testfoo:~/current/devl/jabber-1.4RC/aim-transport-0.9.0$ make
+</I>&gt;<i> Making all in libfaim
+</I>&gt;<i> make[1]: Entering directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/libfaim'
+</I>&gt;<i> Making all in faim
+</I>&gt;<i> make[2]: Entering directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/libfaim/faim'
+</I>&gt;<i> make[2]: Nothing to be done for `all'.
+</I>&gt;<i> make[2]: Leaving directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/libfaim/faim'
+</I>&gt;<i> make[2]: Entering directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/libfaim'
+</I>&gt;<i> make[2]: Nothing to be done for `all-am'.
+</I>&gt;<i> make[2]: Leaving directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/libfaim'
+</I>&gt;<i> make[1]: Leaving directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/libfaim'
+</I>&gt;<i> Making all in src
+</I>&gt;<i> make[1]: Entering directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/src'
+</I>&gt;<i> /bin/sh ../libtool --mode=link gcc  -g -O2  -o aimtrans.so -L/usr/local/lib -fPIC -shared  auth.o buddies.o init.o iq.o iq_cb.o messages.o parser.o pres.o register.o s10n.o sessions.o utils.o ../libfaim/libfaim.a 
+</I>&gt;<i> gcc -g -O2 -o aimtrans.so -L/usr/local/lib -fPIC -shared auth.o buddies.o init.o iq.o iq_cb.o messages.o parser.o pres.o register.o s10n.o sessions.o utils.o ../libfaim/libfaim.a
+</I>&gt;<i> Text relocation remains                         referenced
+</I>&gt;<i>     against symbol                  offset      in file
+</I>&gt;<i> aim_gettlv8                         0x74c       ../libfaim/libfaim.a(aim_chat.o)
+</I>&gt;<i> aim_gettlv8                         0x250       ../libfaim/libfaim.a(aim_chatnav.o)
+</I>
+&lt;snip /&gt;
+
+&gt;<i> ld: fatal: relocations remain against allocatable but non-writable sections
+</I>&gt;<i> collect2: ld returned 1 exit status
+</I>&gt;<i> make[1]: *** [aimtrans.so] Error 1
+</I>&gt;<i> make[1]: Leaving directory `/jabber/jabber1.4/devl/jabber-1.4RC/aim-transport-0.9.0/src'
+</I>&gt;<i> make: *** [all-recursive] Error 1
+</I>&gt;<i> 
+</I>&gt;<i> Anyone seeing this on Sun?  Could I possible need to use the GNU ar, ld and ranlib utils?
+</I>
+I am the maintainer of the AIM Transport and I battled this for 3 hours and yes
+it is a known problem =)  I'll have a fix put together soon for it.  In the 
+meantime you can compile it by going into the src directory and running the 
+compilation by hand, including all the .c files as well as those in the libfaim
+subdirectory.  I'm not going to support this method (read:  don't ask me how),
+so unless you understand how to use the compiler fully I would suggest against
+trying.
+
+&gt;<i> 
+</I>&gt;<i> 3. Yahoo transports has it's include paths all messed up.  I could fix it, but it seems like too much effort for everyone to have to mess around with the package, maybe one of the maintainers could take a look at it and fix the package.
+</I>
+Compilation in some cases can be a bear, and we're trying to cope with this. 
+We're working on a tool called jbox.  It will know how to compile, install and
+configure different jabber packages.  Watch for it soon.
+
+&gt;<i> 
+</I>&gt;<i> 4. We need better logging facilities.  I need a single log that will collect all the logging from every agent and modules and I need to get a status report from every agent and module every X number of minutes to be written to the log.  This log also needs keywords in ALL CAPS for STATIS, WARNING, FATAL.   Even better would be an agent that would periodically update a file on a web server with the current status of all modules and agents and processes.
+</I>
+Have you played with the jabber.xml settings for logging?  They are decent and
+provide a whole lot of options, although it sounds like you may need to write
+a quick module to do some of the updates you are looking for.
+
+&gt;<i> 
+</I>&gt;<i> 5. When I run jabberd with a nohup command and then log out it now detects that it's parent PID changed to 1 and it exits too.  This is incorrect behavior and it should never do this.  Correct behavior would be to automatically become a deamon and write to its log files instead of standard out and standard error.  This isn't an application, it is a server and should run like one.
+</I>&gt;<i> 
+</I>
+I agree, as do all the developers, as to why this bug continues to plague us,
+I'd have to ask someone who has worked on that area of the code more.  Expect
+it to be fixed soon, as it annoys all of us =)
+
+
+&gt;<i> 6. Anyone know where I can find a good tuturial on how to use the xml library that jabber uses? I need an authentication module that I have written to read in it's own configuration file and to parse a message that I am getting back from a web server to get the password from there.  I had to write my own very breakable xml parser over a weekend and I would rather use the same thing as everyone else.
+</I>&gt;<i> 
+</I>
+<A HREF="http://docs.jabber.org/server/html/libxode.html">http://docs.jabber.org/server/html/libxode.html</A>
+
+Although this is now not an external library (it has been absorbed into the
+server), the API is the same inside of jabberd.  You'll probably want to look
+at the yet to be documented xstream functions as well.
+
+&gt;<i> 7. The jsm/modules/ Makefiles has a hardcoded list of objects.  This should be generated automatically when the make starts with something like:
+</I>&gt;<i> SOURCE= $(wildcard *.c)
+</I>&gt;<i> OBJECTS= $(subst .c,.o,$SOURCE))
+</I>&gt;<i> This works on GNU systems, I am sure that something similar can be used on other comerical makes to do the same thing and the Makefile automatically generated for the proper system.
+</I>&gt;<i> 
+</I>
+I'm sorry but I disagree, the jabber server is distributed as a system designed
+to compile itself, not any random thing that people stick in it.  If you are 
+developing a new component or module for the jabber server it is not difficult
+to add it in to the build system, or have your own external build system. Again,
+jbox will help solve some of these problems.
+
+&gt;<i> 8. How do I put my own configurations into the main config file and how do I then get the values out of the configuration file without having to use external global variables?
+</I>&gt;<i> 
+</I>
+It sounds like you want to be using xdb.  Look at the xdb_get and xdb_set 
+functions.
+
+&gt;<i> Any feedback would be appreciated and share any problem areas that you see with the code.  Then let's fix the problems together. :)
+</I>&gt;<i> 
+</I>&gt;<i> Thanks!
+</I>&lt;snip /&gt;
+
+It would seem that a lot of your problems come due to poor documentation.  
+That's always been a hard issue for us, as many of the developers do some of the
+documentation, but we find ourselves spending most of our time on the core
+system.  As soon as the new website backend goes live (one of my current top
+priorities) I plan to spend significant time doing documentation.  Expect
+status reports to the list.
+
+--temas
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20010209/d2e1b794/attachment-0002.pgp">https://www.jabber.org/jdev/attachments/20010209/d2e1b794/attachment-0002.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="064710.html">[JDEV] One week of running jabberd 1.4
+</A></li>
+	<LI>Next message: <A HREF="064711.html">[JDEV] RE: [jadmin] install jabber server behind firewall
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64713">[ date ]</a>
+              <a href="thread.html#64713">[ thread ]</a>
+              <a href="subject.html#64713">[ subject ]</a>
+              <a href="author.html#64713">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

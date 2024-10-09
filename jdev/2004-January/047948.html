@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] bug in mod_privacy ?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20bug%20in%20mod_privacy%20%3F&In-Reply-To=%3C200401191415.47389.snake%40penza-gsm.ru%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="047945.html">
+   <LINK REL="Next"  HREF="047954.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] bug in mod_privacy ?</H1>
+    <B>Alexey Nezhdanov</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20bug%20in%20mod_privacy%20%3F&In-Reply-To=%3C200401191415.47389.snake%40penza-gsm.ru%3E"
+       TITLE="[JDEV] bug in mod_privacy ?">snake at penza-gsm.ru
+       </A><BR>
+    <I>Mon Jan 19 05:15:47 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="047945.html">[JDEV] bug in mod_privacy ?
+</A></li>
+        <LI>Next message: <A HREF="047954.html">[JDEV] bug in mod_privacy ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47948">[ date ]</a>
+              <a href="thread.html#47948">[ thread ]</a>
+              <a href="subject.html#47948">[ subject ]</a>
+              <a href="author.html#47948">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> &gt; ..._I_ have tested this patch and it works well - the server
+</I>&gt;<i> &gt; became in compliance with the xmpp-im document.
+</I>
+&gt;<i> Sorry about the misunderstanding. I'm glad to hear that patch worked for
+</I>&gt;<i> you.
+</I>:<i>)
+</I>
+Unfortunately there are another bug in mod_privacy.
+The communications blocked all at once if there are rule that blocks 
+communications to one account:
+(Though may be it is my mistake here).
+
+1. Retrieving all privacy lists:
+===================
+-=&gt;|&lt;iq type='get' id='36'&gt;&lt;query xmlns='jabber:iq:privacy' /&gt;&lt;/iq&gt;
+&lt;=-|&lt;iq xmlns='jabber:client' id='36' type='result'&gt;&lt;query 
+xmlns='jabber:iq:privacy'&gt;&lt;default name='test2'/&gt;&lt;list name='test'/&gt;&lt;list 
+name='test2'/&gt;&lt;/query&gt;&lt;/iq&gt;
+===================
+As you can see - I have defined two privacy lists 'test' and 'test2' and made 
+list 'test2' default.
+Here is this lists:
+===================
+-=&gt;|&lt;iq type='get' id='46'&gt;&lt;query xmlns='jabber:iq:privacy'&gt;&lt;list 
+name='test' /&gt;&lt;/query&gt;&lt;/iq&gt;
+&lt;=-|&lt;iq xmlns='jabber:client' id='46' type='result'&gt;&lt;query 
+xmlns='jabber:iq:privacy'&gt;&lt;list name='test'&gt;&lt;item order='6' action='allow' 
+value='snake_at_penza-gsm.ru' type='jid'/&gt;&lt;/list&gt;&lt;/query&gt;&lt;/iq&gt;
+-=&gt;|&lt;iq type='get' id='47'&gt;&lt;query xmlns='jabber:iq:privacy'&gt;&lt;list 
+name='test2' /&gt;&lt;/query&gt;&lt;/iq&gt;
+&lt;=-|&lt;iq xmlns='jabber:client' id='47' type='result'&gt;&lt;query 
+xmlns='jabber:iq:privacy'&gt;&lt;list name='test2'&gt;&lt;item order='6' action='deny' 
+value='sm_at_penza-gsm.ru' type='jid'/&gt;&lt;/list&gt;&lt;/query&gt;&lt;/iq&gt;
+====================
+So the list 'test' allows communication from 'snake' account and list 'test2' 
+prohibits communications with 'sm' account (From here and forth I have 
+replaced the &quot;at&quot;'s by their textual equivalents. &quot;On the wire&quot; they all are 
+real &quot;@&quot;'s)
+-----------------------------
+XMPP-IM
+10.2 Business Rules
+7. If no fall-through item is provided in a list, the fall-through action is 
+assumed to be &quot;accept&quot;.
+-----------------------------
+So the list &quot;test&quot; is must appear as just &quot;no any specific rules&quot;.
+
+Trying to send messages (since there are no active lists and 'test2' is 
+default list we now must be prohibited from communications with 'sm' ):
+======================
+-=&gt;|&lt;message to='sm_at_penza-gsm.ru' id='48'&gt;&lt;body&gt;testA&lt;/body&gt;&lt;/message&gt;
+-=&gt;|&lt;message to='snake_at_penza-gsm.ru' id='49'&gt;&lt;body&gt;testA&lt;/body&gt;&lt;/message&gt;
+======================
+Both delivery fails!
+If I will set list 'test' as default - then the messages will be delivered 
+sucessfully
+======================
+-=&gt;|&lt;iq type='set' id='50'&gt;&lt;query xmlns='jabber:iq:privacy'&gt;&lt;active 
+name='test' /&gt;&lt;/query&gt;&lt;/iq&gt;
+&lt;=-|&lt;iq xmlns='jabber:client' id='50' type='result'/&gt;
+-=&gt;|&lt;message to='sm_at_penza-gsm.ru' id='51'&gt;&lt;body&gt;testB&lt;/body&gt;&lt;/message&gt;
+-=&gt;|&lt;message to='snake_at_penza-gsm.ru' id='52'&gt;&lt;body&gt;testB&lt;/body&gt;&lt;/message&gt;
+======================
+Both messages arrives at destinations.
+
+-- 
+Respectfully
+Alexey Nezhdanov
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="047945.html">[JDEV] bug in mod_privacy ?
+</A></li>
+	<LI>Next message: <A HREF="047954.html">[JDEV] bug in mod_privacy ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47948">[ date ]</a>
+              <a href="thread.html#47948">[ thread ]</a>
+              <a href="subject.html#47948">[ subject ]</a>
+              <a href="author.html#47948">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

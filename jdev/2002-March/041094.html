@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] BUG: xdb_auth check
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20BUG%3A%20xdb_auth%20check&In-Reply-To=%3C3C971BD7.7EDE7FDC%40snoogans.co.uk%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="041100.html">
+   <LINK REL="Next"  HREF="041095.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] BUG: xdb_auth check</H1>
+    <B>Chris Pile</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20BUG%3A%20xdb_auth%20check&In-Reply-To=%3C3C971BD7.7EDE7FDC%40snoogans.co.uk%3E"
+       TITLE="[JDEV] BUG: xdb_auth check">cpile at snoogans.co.uk
+       </A><BR>
+    <I>Tue Mar 19 05:07:03 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="041100.html">[JDEV] illgal character in yahoo message
+</A></li>
+        <LI>Next message: <A HREF="041095.html">[JDEV] What commercial client libraries are available?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#41094">[ date ]</a>
+              <a href="thread.html#41094">[ thread ]</a>
+              <a href="subject.html#41094">[ subject ]</a>
+              <a href="author.html#41094">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+I've been playing around with the xdb_auth check authentication method
+and think I've found a bug.
+
+Setup:
+FreeBSD4.5
+jabber-1.4.2 using SSL only
+
+Client:
+JIM 1.10.0.6
+
+Load:
+159 user accounts, only one user authenticating.
+
+Tested with jer's xdb_auth_test.pl script and my own xdb_auth.pl script
+which is basically the same as jer's but uses PAM for authentication.
+
+I only noticed this bug with 159 users in my roster.
+
+Problem:
+Authentication works fine to begin with, but if you logon, logoff
+repeatedly about 6-10 times, then logoff, the xdb_auth session seems to
+get back logged with messages.  Even about 2-5 minutes after you last
+logged off, there are still xdb_auth messages passing around in the
+server (xdb type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jid at jabber.example.com</A>' from='sessions'
+ns='jabber:iq:auth').
+
+When the id='$attr{id}' reaches around 600-1000, attempting to logon to
+the server again fails.  The client (JIM) seems to attempt to logon, but
+times out and jabberd logs &quot;login fail &lt;ip&gt; 401 Jabber Instant
+Messenger&quot; in record.log.
+
+I also find that presence messages take a long time to get passed around
+to all users.  This may be a speed issue with the perl xdb_auth_test.pl
+script, but I'm not sure.
+
+I can provide more debug output if necessary, but need to know exactly
+what I'm looking for.  I'd appreciate any feedback regarding this
+problem since I like the idea of the xdb_auth/check feature.
+
+
+Thanks,
+Chris.
+
+----
+
+example of jabberd -D output during a point when authentication will
+fail, but no current users are logged on or attempting to log on.  These
+messages seem to be a backlog.
+
+
+
+Tue Mar 19 10:04:39 2002  init.c:125 SESSION TOTAL 0/0
+Tue Mar 19 10:04:39 2002  users.c:88 checking users for host
+jabber.example.com
+Tue Mar 19 10:04:39 2002  usercount 0   total users
+
+Tue Mar 19 10:04:44 2002  deliver.c:474 DELIVER 2:jabber.example.com
+&lt;xdb type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sarah at jabber.example.com</A>' from='sessions'
+ns='jabber:iq:auth' id='1089'/&gt;
+Tue Mar 19 10:04:44 2002  deliver.c:678 delivering to instance
+'xdb_auth_test'
+Tue Mar 19 10:04:44 2002  mio.c:1054 mio_write called on x: 8223C00
+buffer: (null)
+Tue Mar 19 10:04:44 2002  deliver.c:474 DELIVER 2:jabber.example.com
+&lt;xdb type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nicholas at jabber.example.com</A>' from='sessions'
+ns='jabber:iq:auth' id='1088'/&gt;
+Tue Mar 19 10:04:44 2002  deliver.c:678 delivering to instance
+'xdb_auth_test'
+Tue Mar 19 10:04:44 2002  mio.c:1054 mio_write called on x: 826A400
+buffer: (null)
+Tue Mar 19 10:04:44 2002  deliver.c:474 DELIVER 2:jabber.example.com
+&lt;xdb type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sarah at jabber.example.com</A>' from='sessions'
+ns='jabber:iq:auth' id='1087'/&gt;
+Tue Mar 19 10:04:44 2002  deliver.c:678 delivering to instance
+'xdb_auth_test'
+Tue Mar 19 10:04:44 2002  mio.c:1054 mio_write called on x: 83B2000
+buffer: (null)
+Tue Mar 19 10:04:44 2002  mio.c:620 mio while loop, working
+Tue Mar 19 10:04:44 2002  mio.c:279 write_dump writing data: &lt;xdb
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sarah at jabber.example.com</A>' from='sessions'
+ns='jabber:iq:auth' id='1089'/&gt;
+Tue Mar 19 10:04:44 2002  mio.c:279 write_dump writing data: &lt;xdb
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">nicholas at jabber.example.com</A>' from='sessions'
+ns='jabber:iq:auth' id='1088'/&gt;
+Tue Mar 19 10:04:44 2002  mio.c:279 write_dump writing data: &lt;xdb
+type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">sarah at jabber.example.com</A>' from='sessions'
+ns='jabber:iq:auth' id='1087'/&gt;
+Tue Mar 19 10:04:44 2002  mio.c:607 mio while loop top
+Tue Mar 19 10:04:44 2002  mio.c:620 mio while loop, working
+Tue Mar 19 10:04:44 2002  mio.c:760 MIO read from socket 12: &lt;xdb
+from='xdb_auth_test' to='sessions' id='1060' type='result'
+ns='jabber:iq:auth'&gt;&lt;query xmlns='jabber:iq:auth'/&gt;&lt;/xdb&gt;&lt;xdb
+from='xdb_auth_test' to='sessions' id='1063' type='result'
+ns='jabber:iq:auth'&gt;&lt;query xmlns='jabber:iq:auth'/&gt;&lt;/xdb&gt;
+Tue Mar 19 10:04:44 2002  base_accept.c:120 process XML: m:809BC80
+state:3, arg:809E2C0, x:8262000
+Tue Mar 19 10:04:44 2002  deliver.c:474 DELIVER 1:sessions &lt;xdb
+from='xdb_auth_test' to='sessions' id='1060' type='result'
+ns='jabber:iq:auth'&gt;&lt;query xmlns='jabber:iq:auth'/&gt;&lt;/xdb&gt;
+Tue Mar 19 10:04:44 2002  deliver.c:678 delivering to instance
+'sessions'
+Tue Mar 19 10:04:44 2002  xdb.c:52 xdb_results checking xdb packet &lt;xdb
+from='xdb_auth_test' to='sessions' id='1060' type='result'
+ns='jabber:iq:auth'&gt;&lt;query xmlns='jabber:iq:auth'/&gt;&lt;/xdb&gt;
+Tue Mar 19 10:04:44 2002  base_accept.c:120 process XML: m:809BC80
+state:3, arg:809E2C0, x:8262000
+Tue Mar 19 10:04:44 2002  deliver.c:474 DELIVER 1:sessions &lt;xdb
+from='xdb_auth_test' to='sessions' id='1063' type='result'
+ns='jabber:iq:auth'&gt;&lt;query xmlns='jabber:iq:auth'/&gt;&lt;/xdb&gt;
+Tue Mar 19 10:04:44 2002  deliver.c:678 delivering to instance
+'sessions'
+Tue Mar 19 10:04:44 2002  xdb.c:52 xdb_results checking xdb packet &lt;xdb
+from='xdb_auth_test' to='sessions' id='1063' type='result'
+ns='jabber:iq:auth'&gt;&lt;query xmlns='jabber:iq:auth'/&gt;&lt;/xdb&gt;
+Tue Mar 19 10:04:44 2002  mio.c:607 mio while loop top
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="041100.html">[JDEV] illgal character in yahoo message
+</A></li>
+	<LI>Next message: <A HREF="041095.html">[JDEV] What commercial client libraries are available?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#41094">[ date ]</a>
+              <a href="thread.html#41094">[ thread ]</a>
+              <a href="subject.html#41094">[ subject ]</a>
+              <a href="author.html#41094">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

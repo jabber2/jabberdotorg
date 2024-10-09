@@ -1,0 +1,35 @@
+50a51
+>     session sessn;
+53c54
+<     xmlnode x;
+---
+>     xmlnode x, session_priority;
+70,72c71,85
+<         }else if(!js_mapi_call(si, e_AUTH, p, user, NULL)){
+<             if(jpacket_subtype(p) == JPACKET__GET)
+<             { /* if it's a type="get" for auth, everybody mods it and we result and return it */
+---
+>         }else{
+> 	    /* get existing session data (if any) */
+> 	    sessn = js_session_primary(user);
+> 	    if(sessn != NULL)
+> 	    {
+> 	      session_priority = xmlnode_get_tag(si->config,"first-session-priority");
+> 	      if(session_priority != NULL)
+> 	      {
+> 		jutil_error(p->x, TERROR_AUTH);
+> 	      }
+> 	      log_debug(ZONE,"user %s is currently online",user->user);
+> 	    }
+> 	    else if(!js_mapi_call(si, e_AUTH, p, user, NULL)){
+> 	      if(jpacket_subtype(p) == JPACKET__GET)
+> 	      { /* if it's a type="get" for auth, everybody mods it and we result and return it */
+76c89
+<             }else{ /* type="set" that didn't get handled used to be a problem, but now auth_plain passes on failed checks so it might be normal */
+---
+> 	      }else{ /* type="set" that didn't get handled used to be a problem, but now auth_plain passes on failed checks so it might be normal */
+78c91,92
+<             }
+---
+> 	      }
+> 	    }

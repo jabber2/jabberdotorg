@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: Help with setting up Jabber server on Red Hat
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Help%20with%20setting%20up%20Jabber%20server%20on%20Red%20Hat&In-Reply-To=%3C4.3.2.7.2.20000809170954.00b1fae8%40smtp.magix.com.sg%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="032926.html">
+   <LINK REL="Next"  HREF="032928.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: Help with setting up Jabber server on Red Hat</H1>
+    <B>Patrick Quek</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Help%20with%20setting%20up%20Jabber%20server%20on%20Red%20Hat&In-Reply-To=%3C4.3.2.7.2.20000809170954.00b1fae8%40smtp.magix.com.sg%3E"
+       TITLE="[JDEV] Re: Help with setting up Jabber server on Red Hat">patquek at magix.com.sg
+       </A><BR>
+    <I>Wed Aug  9 04:21:23 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="032926.html">[JDEV] Probe presence problem
+</A></li>
+        <LI>Next message: <A HREF="032928.html">[JDEV] Re: Help with setting up Jabber server on Red Hat
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#32927">[ date ]</a>
+              <a href="thread.html#32927">[ thread ]</a>
+              <a href="subject.html#32927">[ subject ]</a>
+              <a href="author.html#32927">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi all,
+
+Thanks for the replies from Steve Grasso, Ryan Eatmon, Eliot Landrum and 
+Thomas Charron.
+
+My server IP is 192.168.0.3 (thanks to Eliot for pointing out my typo) and 
+my client IP is 192.168.0.55.
+
+I have made changes to jserver.xml to include both the hostname and IP of 
+the RedHat machine and attempted to connect from WinJab by use of hostname 
+instead of IP address.
+
+The strange thing is that whenever I attempt to connect using WinJab with 
+the hostname of the Jabber server (redsnapper - I made sure I can ping it 
+from my WinJab machine), i obtain the following results:
+
+WinJab:
+         Attempting to Connect to redsnapper...
+         Disconnected from Server!
+
+jserver.xml:
+         Wed Aug  9 17:01:40 2000  warn/etherx error 'Interrupted system 
+call' reading from socket '192.168.0.55'
+
+If I attempt to connect from WinJab using IP address of server 
+(192.168.0.3), there are no message is generated in jserver.xml but WinJab 
+still complains with:
+
+WinJab:
+         Attempting to Connect to redsnapper...
+         Disconnected from Server!
+
+I have no problem connecting to external servers (eg. jabber.org).
+
+Here is a snippet from my jserver.xml which may be of use:
+
+   &lt;names&gt;
+     &lt;default&gt;redsnapper&lt;/default&gt;
+     &lt;!-- You may have alises for this server, these are NOT virtual hosts,
+          only use these for migrating from an old server name or for 
+*receive only* on an alternate name
+       &lt;alias&gt;old.host.net&lt;/alias&gt;
+     --&gt;
+   &lt;/names&gt;
+
+   &lt;listen&gt;
+     &lt;jabber&gt;5222&lt;/jabber&gt;
+     &lt;ssl&gt;5223&lt;/ssl&gt;
+     &lt;irc&gt;6667&lt;/irc&gt;
+     &lt;http&gt;5280&lt;/http&gt;
+     &lt;telnet&gt;5228&lt;/telnet&gt;
+
+     &lt;!-- Specific IPs can also be used:
+     &lt;jabber ip='192.168.0.3'&gt;5222&lt;/jabber&gt;
+     &lt;irc ip='12.34.56.79'&gt;6667&lt;/irc&gt;
+     --&gt;
+
+   &lt;/listen&gt;
+
+At 12:00 PM 8/8/2000 -0500, you wrote:
+
+&gt;<i>Message: 5
+</I>&gt;<i>Date: Tue, 08 Aug 2000 17:00:39 +0800
+</I>&gt;<i>To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>From: Patrick Quek &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">patquek at magix.com.sg</A>&gt;
+</I>&gt;<i>Subject: [JDEV] Help with setting up Jabber server on Red Hat
+</I>&gt;<i>Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i>Hi all,
+</I>&gt;<i>
+</I>&gt;<i>Apologies for the mass mail but I am quite stuck with a problem getting
+</I>&gt;<i>Jabber to work and I've virtually exhausted all sources of help I can find.
+</I>&gt;<i>Hope I may have a little of your time to point out what could be the
+</I>&gt;<i>problem here:
+</I>&gt;<i>
+</I>&gt;<i>Basically I've set up Jabber on RedHat6.2 for all of the following components:
+</I>&gt;<i>
+</I>&gt;<i>libxode
+</I>&gt;<i>libjabber
+</I>&gt;<i>libetherx
+</I>&gt;<i>jabber-transport
+</I>&gt;<i>
+</I>&gt;<i>by running ./configure, make, make install and then ldconfig for each of
+</I>&gt;<i>the above.  I can start jserver by running &quot;/usr/local/bin/jserver &amp;&quot; with
+</I>&gt;<i>no problems.   I note that in /usr/local/var/log/jserver.error there is
+</I>&gt;<i>message:
+</I>&gt;<i>
+</I>&gt;<i>Tue Aug  8 12:40:30 2000  warn/jserver Initializing Services
+</I>&gt;<i>
+</I>&gt;<i>Jabber is running on 192.168.0.1 and my WinJab is running from 192.168.0.55
+</I>&gt;<i>-- both machines are able to ping each other and port 5222 is open on
+</I>&gt;<i>192.168.0.3.
+</I>&gt;<i>
+</I>&gt;<i>I am unable to get WinJab to connect to 192.168.0.3, it gives me the
+</I>&gt;<i>following message:
+</I>&gt;<i>
+</I>&gt;<i>Attempting to Connect to 192.168.0.3...
+</I>&gt;<i>Disconnected from Server!
+</I>&gt;<i>COMM ERROR: Could not establish Stream. Session Closed. (0)
+</I>&gt;<i>Pausing 5 secs. before reconnect Attempt
+</I>&gt;<i>
+</I>&gt;<i>I am able to use WinJab to connect to jabber.com with no problems.  It
+</I>&gt;<i>appears then there is some problem on my jserver.  Do I need to start
+</I>&gt;<i>etherxd manually?  If i do, I have been unable to locate this file anywhere...
+</I>&gt;<i>
+</I>&gt;<i>Any help would be greatly appreciated.
+</I>&gt;<i>
+</I>&gt;<i>Thanks!
+</I>&gt;<i>
+</I>&gt;<i>cheers,
+</I>&gt;<i>Patrick
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="032926.html">[JDEV] Probe presence problem
+</A></li>
+	<LI>Next message: <A HREF="032928.html">[JDEV] Re: Help with setting up Jabber server on Red Hat
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#32927">[ date ]</a>
+              <a href="thread.html#32927">[ thread ]</a>
+              <a href="subject.html#32927">[ subject ]</a>
+              <a href="author.html#32927">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

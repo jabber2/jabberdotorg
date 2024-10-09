@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] irc-jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20irc-jabber&In-Reply-To=20001114003932.B6751%40overdue.dhis.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004623.html">
+   <LINK REL="Next"  HREF="004642.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] irc-jabber</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20irc-jabber&In-Reply-To=20001114003932.B6751%40overdue.dhis.net"
+       TITLE="[JDEV] irc-jabber">keith at digix.dyndns.org
+       </A><BR>
+    <I>Tue Nov 14 00:56:56 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004623.html">[JDEV] irc-jabber
+</A></li>
+        <LI>Next message: <A HREF="004642.html">[JDEV] irc-jabber &amp; killall -HUP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4635">[ date ]</a>
+              <a href="thread.html#4635">[ thread ]</a>
+              <a href="subject.html#4635">[ subject ]</a>
+              <a href="author.html#4635">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> How about those us us who run stable, not cvs versions of things?
+</I>&gt;<i> When will there be a version which will work with the (just-released)
+</I>&gt;<i> stable server 1.2?  (We waited long enough for 1.2 to be released,
+</I>&gt;<i> this wait for a compatible irctrans is an additional aggravation.
+</I>&gt;<i> Please don't tell us we need to wait for server 1.4.)
+</I>
+To make a long story short,
+
+I haven't had the time to work on irc-jabber, putting all my time into server development, and when i have had the time, I've put the development effort against future jabberd versions, to minimize the times I would have to rewrite the thing..
+
+
+or, if you prefer the long version...
+
+The problem is more subtle than you may realize.. The problem lies with library conflicts... In the 1.0 server, libetherx was used to handle transport communications, and socket handling... This library was completely removed in the 1.2 server.  Jabberd is a whole new beast, hardly any code from 1.0 made it into 1.2, (except the jabber-transport code that went into the JSM module of course)... in the 1.2 server, jabberd didn't have any sort of internal socket management... each component that wanted to use sockets, had to implement sockets itself... this sucks, and is alot of code duplication.. so MIO is born.. MIO and the move from pth to pthreads has been planned for 1.3/1.4 server.  this allows a compoenent to use the same API it's been using with libetherx, but have jabberd maintain all socket controls, and offer a super simple socket API.
+
+In IRC-transport, another issue arose.. that of the groupchat protocol... early on, we realized a flaw in the groupchat protocol, a large limitation that needed to be fixed... unfortunatly, this was AFTER it was widely implemented/suported... such is life... there are two groupchat protocols now, the &quot;old&quot; and the &quot;new&quot;... both are incompatable with each other.... I had split development of irc-transport into two branches.. a &quot;new&quot; branch, and a &quot;old&quot; one... however, i didn't get too far on getting the &quot;new&quot; protocol working, as it was more challenging than first expected, to get it to work within the (ugly) IRC protocol... Around this time, I started working on Server Development, and with all the projects I've my hands in, i quickly got short on time to finish development on my transports, and focused fully on server 2.0 development... so, as it stands, I have a 1.0 style irc transport that implements the &quot;old&quot; gc protocol, this is my 1.0 irc transport... I killed the &quot;new&quot; protocol branch, moved everything there to the irc-jabber module, and started moving this over to the jabberd style transport (this was around 1.1.3 version of jabberd -- a very early dev version)... I also managed to get it working properly, logging in, messeging, etc.. but without much testing, and registration was not supported... 
+
+the &quot;old&quot; protocol branch was not updated, or moved to jabberd style transport, however, it would be trivial to get it working, using the latest libetherx, with jabberd, and base_accept -- being a minimal of a one line code change.
+
+now, when 1.2 was finnally released, I finnaly had some time to work on other things, before 1.3 development started up again, but i was charged by jabber.com to fix yahoo transport, and get it to QA approval status... (I work for Jabber.com btw..)  While i was doing this, I stated work on MIO, in the 1.3 server, once MIO was working, I had time to work on irc-jabber once again... and now that MIO was done, I was able to kill the dependancies on tstreams (which were buggy), and I moved the codebase to MIO, and got it working with the 1.3 server... so, in effect, I jumped the 1.2 server.. but the 1.0.0 irc transport will be able to connect to jabberd with that code change, and it's a matter of putting in a &quot;etherx port&quot; configuration option, to get it to work with jabberd... 
+
+again, the problem is time.. unfortunatly...  I have many projects fully, or parially under my care currently, irc-transport, irc-jabber, yahoo-transport, pyjama, groupchat, and server development, and to me, Server developemnt comes first, above all else.. You all may feel differently, but that's my take... =]
+
+Take Care,
+Keith
+
+&lt;snip/&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004623.html">[JDEV] irc-jabber
+</A></li>
+	<LI>Next message: <A HREF="004642.html">[JDEV] irc-jabber &amp; killall -HUP
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4635">[ date ]</a>
+              <a href="thread.html#4635">[ thread ]</a>
+              <a href="subject.html#4635">[ subject ]</a>
+              <a href="author.html#4635">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] how to program a jabber game server
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20how%20to%20program%20a%20jabber%20game%20server&In-Reply-To=%3C45C9BA0F.8040907%40dobson-i.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="084482.html">
+   <LINK REL="Next"  HREF="084484.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] how to program a jabber game server</H1>
+    <B>Richard Dobson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20how%20to%20program%20a%20jabber%20game%20server&In-Reply-To=%3C45C9BA0F.8040907%40dobson-i.net%3E"
+       TITLE="[jdev] how to program a jabber game server">richard at dobson-i.net
+       </A><BR>
+    <I>Wed Feb  7 05:37:51 CST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="084482.html">[jdev] how to program a jabber game server
+</A></li>
+        <LI>Next message: <A HREF="084484.html">[jdev] how to program a jabber game server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#84483">[ date ]</a>
+              <a href="thread.html#84483">[ thread ]</a>
+              <a href="subject.html#84483">[ subject ]</a>
+              <a href="author.html#84483">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Denis Guillaume wrote:
+&gt;<i>
+</I>&gt;<i> &quot;The easiest way (and how im implementing it) is for the game component
+</I>&gt;<i> to handle it all, what you are thinking of as a bot rather be handled by
+</I>&gt;<i> the game component directly.&quot;
+</I>Kind of, but that wasn't really a clear explanation of what I was trying 
+to get at, ill try to explain more clearly below.
+&gt;<i>  But in fact, being bots or components, what I would find flexible is the
+</I>&gt;<i> possibility to plug them dynamically this way :
+</I>&gt;<i> - the GameSessionsComponent is asked by a client to create a new session
+</I>&gt;<i>  game ;
+</I>&gt;<i> - this session is then simply a MUC managed by a dynamically plugged
+</I>&gt;<i> RefereeComponent or RefereeBot.
+</I>That is far more complex that it ever needs to be.
+
+Well the way I am developing it is that technically from the protocol 
+perspective there is no distinction between what you are calling 
+gamesessioncomponent, refereecomponent and refereebot, the only two 
+entities as far as initiating and managing a game are &quot;game host&quot; and 
+&quot;game client&quot;.
+
+Now the game host can be anything, a component, a bot or another user, 
+all it is is a JID which you communicate with to create a game session, 
+send any game moves/actions and the game host will then distribute game 
+state (i.e. any moves they should be aware of) out to all the game 
+clients, be these players or observers, the moves are not sent via MUC 
+rooms to make things nice and simple as a lot of games require that 
+players only know a certain amount of the game state and should not know 
+everything (only the game host should) examples of these sort of games 
+are battleships, scrabble, poker (infact probably all card games), I can 
+only think of a few instances of games where the entire game state is 
+know by all players (chess and checkers), and it makes things far 
+simpler for the game host to directly send out the game state, rather 
+than having to have two sets of game state being sent separately, i.e. 
+global state being sent via a MUC room and private state being sent 
+directly, you would also need extra security in place in the MUC room to 
+ensure other players couldnt send game state into the room that players 
+would blindly think is from the host, so if a MUC room is associated 
+with a game it is solely there for ingame chat between the game clients. 
+This all makes things nice and simple and is inline with how proper 
+online games usually work (i.e. there being a central host for the game, 
+along with clients).
+
+Right so, as far as a particular game session goes there are just two 
+entities, &quot;game host&quot; and &quot;game client&quot;, but there is also a third 
+entity that might come into play but is not entirely required for gaming 
+to function and that is the &quot;game matching service&quot;. Now the game 
+matching service is basically somewhere where you can browse a list of 
+available games and find other people to play with (via disco), its 
+pretty simple really.
+
+In my implementation that I am working on I have a component acting as 
+both the &quot;game matching service&quot; and the &quot;game host&quot;, but this need not 
+necessarily be the case (although its easiest for me to implement it 
+this way) as you could just have the game matching service as a 
+component which lists game hosts that aren't actually part of the 
+component but which could be standalone bots, or simply games hosted by 
+someone elses component, or even a users client which has registered a 
+particular game with the matching service that it can host.
+
+So if a user was trying to play a game (via the matching service) it 
+would work as follows.
+
+S = Matching service
+M = MUC server
+H = Game host
+C = Game client
+
+C [requests game listing]--&gt; S
+S [returns game listing]--&gt; C
+
+The client wants to play scrabble and finds a scrabble host in the list.
+
+C [request to initiate scrabble session]--&gt; H
+H [creates ingame chat MUC room]--&gt; M
+M [MUC room created]--&gt; H
+H [game session started, includes MUC room address]--&gt; C
+C [invites other players]--&gt; H
+C [makes move/action]--&gt; H
+H [distributes game state changes to players]--&gt; C
+C [ends game]--&gt; H
+
+Richard
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="084482.html">[jdev] how to program a jabber game server
+</A></li>
+	<LI>Next message: <A HREF="084484.html">[jdev] how to program a jabber game server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#84483">[ date ]</a>
+              <a href="thread.html#84483">[ thread ]</a>
+              <a href="subject.html#84483">[ subject ]</a>
+              <a href="author.html#84483">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

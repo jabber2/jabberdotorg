@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] voicechat again
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20voicechat%20again&In-Reply-To=%3C404731C2.2020406%40die-horde.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="077506.html">
+   <LINK REL="Next"  HREF="077510.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] voicechat again</H1>
+    <B>Ulrich Staudinger</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20voicechat%20again&In-Reply-To=%3C404731C2.2020406%40die-horde.de%3E"
+       TITLE="[jdev] voicechat again">us at die-horde.de
+       </A><BR>
+    <I>Thu Mar  4 07:40:18 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="077506.html">[jdev] voicechat again
+</A></li>
+        <LI>Next message: <A HREF="077510.html">[jdev] voicechat again
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77507">[ date ]</a>
+              <a href="thread.html#77507">[ thread ]</a>
+              <a href="subject.html#77507">[ subject ]</a>
+              <a href="author.html#77507">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>first of all, please change the font for this mail to a fixed width font 
+(due to the ascii sketch below)
+
+I hope i don't miss anything in this mail.
+
+Scenario A:
+
+* tcp and udp sessions are already possible through 95/65 combination
+* codec independence is given
+
+
+Scenario B:
+
+* rtp is on a higher level than tcp/udp
+
+* jacek asked, should jabber be some sort of control protocol or just an 
+application launcher?
+    * i think xmpp should do the controlling and i think, there is no 
+split between control protocol and application launcher protocol.
+    * if we launch an application we can still control that application!
+  
+
+
+an RTP approach seems reasonable - there are many well working 
+implementations around.
+the rtp approach is fairly easy to implement, depending on the used 
+library.
+
+I hope the ascii art get's through.
+
+
+          *JABBER SERVER*
+               |
+               |
+      *RTP RELAY/COMPONENT*
+       /                \
+    [RTP]              [RTP]
+     /                    \
+    /                      \
+*CLIENT*   &lt;-----RTP----&gt; *CLIENT*
+  +RTP LIB                 +RTP LIB
+
+That's fairly easy and hands most media transmission problems to the RTP 
+libraries (thanks to matthias wimmer for consequently and always 
+pointing to RTP). Clients can exchange rtp data between them or rtp data 
+with a component. what needs to be done is the negotiation whether a 
+client A should send data directly to another B client or whether it 
+should send data to the server, who sends (in case of a udp connection) 
+in return the data to client B. Of course that way we would omit the 
+problem with UDP/TCP, since the rtp components would &quot;know/test&quot; their 
+transport mechanism between endpoints. through the relay on the server 
+it would be possible to even mix UDP connections and TCP connections 
+inside a session - means a server has session data and stores this data 
+either for pulling through TCP from a client or for pushing to a client 
+through UDP.
+
+What we should take care of are rtp session parameters, a client should 
+be able to find out what sort of data a rtp session holds.
+
+The jabber layer behind this architecture would then stop or start rtp 
+sessions and carry all those other informations about the session. Since 
+RTP is based on urls, we would just have to exchange URLs on xmpp layer 
+[for recieving/accessing and transmitting media]. RTP as well makes 
+authentication through passwords possible, which we can then exchange on 
+xmpp layer, for example [to proactively secure private sessions].
+
+
+*Very important, the use cases are still the same ! *
+
+Another argument for RTP is codec independence - we can transmit almost 
+everything with rtp, even chat data if it's required, it's just not so 
+well adapted ;-). RTP takes care of payload identification. Codec 
+independence means, RTP can handle OGG or speex very well, it's just a 
+question of the used library.
+
+
+i hope my points get through. i'd go with rtp.
+
+
+u
+
+
+
+
+
+
+Jacek Konieczny wrote:
+
+&gt;<i>On Wed, Mar 03, 2004 at 10:57:14PM -0600, Thomas Charron wrote:
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>&gt;&gt;<i>  JEP-65 is specifically geared twards opeing up a TCP socket to
+</I>&gt;&gt;<i>communicate data.  IMHO, anything that uses it is specifically 'jabber
+</I>&gt;&gt;<i>oriented'.  Utilizing it could be used, but the end solution is, by
+</I>&gt;&gt;<i>nature, something that ends up running as a solution for the jabber
+</I>&gt;&gt;<i>network.  Using existing systems, such as rtp, etc, allows existing
+</I>&gt;&gt;<i>applications alraedy BUILT to handle these things to funciton.
+</I>&gt;&gt;<i>    
+</I>&gt;&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>RTP is a protocol to send multimedia streams via unreliable
+</I>&gt;<i>transport protocol, like UDP. JEP-65 is a protocol to establish reliable
+</I>&gt;<i>(TCP) connection between two Jabber clients. There is no conflict here.
+</I>&gt;<i>TCP connection may be used for voice and _existing_ Ogg stream format
+</I>&gt;<i>may be use for this. Using UDP whould be much better, so we need some
+</I>&gt;<i>kind of protocol to establish UDP link between two Jabber entities. RTP
+</I>&gt;<i>doesn't provide that. But RTP may be used as soon as those clients can
+</I>&gt;<i>communicate via UDP.
+</I>&gt;<i>
+</I>&gt;<i>IMHO existings standards like RTP, OGG or speex should be used at low
+</I>&gt;<i>level to encode/transmit actual data, but higher-level singnaling has to
+</I>&gt;<i>be a new XMPP-based protocol unless we want our Jabber clients to be
+</I>&gt;<i>just external voice-communication-application launchers. And XMPP
+</I>&gt;<i>infrastructure seems very well suited for voice chat/multimedia
+</I>&gt;<i>conference signaling. IMHO even better that H.323 or SIP - which may be
+</I>&gt;<i>good for IP telephony, but not for PC-to-PC communication.
+</I>&gt;<i>
+</I>&gt;<i>Greets,
+</I>&gt;<i>	Jacek
+</I>&gt;<i>_______________________________________________
+</I>&gt;<i>jdev mailing list
+</I>&gt;<i><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i><A HREF="https://jabberstudio.org/mailman/listinfo/jdev">https://jabberstudio.org/mailman/listinfo/jdev</A>
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20040304/a87be6cf/attachment-0002.htm">https://www.jabber.org/jdev/attachments/20040304/a87be6cf/attachment-0002.htm</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="077506.html">[jdev] voicechat again
+</A></li>
+	<LI>Next message: <A HREF="077510.html">[jdev] voicechat again
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77507">[ date ]</a>
+              <a href="thread.html#77507">[ thread ]</a>
+              <a href="subject.html#77507">[ subject ]</a>
+              <a href="author.html#77507">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

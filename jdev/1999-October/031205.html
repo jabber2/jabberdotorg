@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Connectivity and streaming.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Connectivity%20and%20streaming.&In-Reply-To=%3C19991012185518.A27775%40robhome.dhis.org%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="031210.html">
+   <LINK REL="Next"  HREF="031213.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Connectivity and streaming.</H1>
+    <B>Scott Robinson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Connectivity%20and%20streaming.&In-Reply-To=%3C19991012185518.A27775%40robhome.dhis.org%3E"
+       TITLE="[JDEV] Connectivity and streaming.">quad at jabber.org
+       </A><BR>
+    <I>Tue Oct 12 20:55:19 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="031210.html">[JDEV] Anonymous Logins, etc..
+</A></li>
+        <LI>Next message: <A HREF="031213.html">[JDEV] Connectivity and streaming.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#31205">[ date ]</a>
+              <a href="thread.html#31205">[ thread ]</a>
+              <a href="subject.html#31205">[ subject ]</a>
+              <a href="author.html#31205">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&lt;disclaimer&gt;
+This post is being originated from the fact that there are many able coders
+on this list, but none can become involved because Jer leaves many details
+for later. The coding architecture of Jabber is still very centralized. The
+recent message-level routing discussion has given me much faith in The
+Jabber Team, and I believe that we can work from what we currently have into
+developing a full v0.7 protocol spec.
+&lt;/disclaimer&gt;
+
+&lt;summary&gt;
+Currently, on docs.jabber.org, Jer has posted a very sketchy example of an
+XML streaming system. While this works for many systems, and it especially
+flows well with our &quot;coherent XML document&quot; paradigm, I would like to place
+the following on the table: we cannot assume we'll be running on a reliable
+socket medium.
+&lt;/summary&gt;
+
+&lt;review&gt;
+The current Jabber system layout has three layers of network transportation:
+between client and transport (C&amp;T), between transport and router (C&amp;B), and
+between router and router (R&amp;R). Each has their own connection requirements
+and types of data being passed.
+&lt;/review&gt;
+
+&lt;completeness&gt;
+a) client and transport
+Between the client and transport, the connection requirements are unknown
+as well as the data. This is exactly what the Jabber paradigm is in that we
+want to create transports which can connect to ANY IM-esque protocol in
+existance as well as ones to come. This means we cannot place any
+requirements upon the data coming into our transports.
+&lt;/completeness&gt;
+
+&lt;important&gt;
+b) transport and router
+Communications requirements between the transport and router are also
+unknown. However, I believe we've made the mistake, since our only examples
+have been jabbertransport and etherx, of making to many assumptions. The
+general thought (as well as what I've seen in the documentation) is we'll
+have a reliable (TCP) connection between the transport and router. We cannot
+assume this! This is only available on a TCP/IP network, which by the design
+of Jabber we cannot have network-level assumptions of this sort. New forms
+of intra-level communication will appear. Example: direct router access as
+seen in the new direct jabbertransport access and direct etherx access via
+IPC/shared memory.
+
+c) router and router
+We've also made the assumption communications between routers will be TCP/IP
+only. The XML streams recommended implementation has given direct support
+for this. A router on a unreliable network would be forced to understand (or
+parse) the contents of a &quot;properly&quot; implemented Jabbertransport. As it is
+also stated in the plans for our routing system, in general, we cannot have
+this.
+&lt;/improtant&gt;
+
+&lt;solution&gt;
+Rather than force network requirements upon our communications layers, we
+should reduce the needs of our REFERENCE transport and router. XML
+streaming, as an example, should have recommendations for short/burst
+connections and streams. In that, jabbertransport would need to communicate
+with etherx in much shorter (hopefully, a single message per connection)
+squeals.
+
+&lt;silver lining&gt;
+There is hope though! I can see an improved T&amp;R (JabberBox) protocol which
+allows for route-checking, and more importantly a way of querying the MTS
+(maximum transmission size) and whether a connection is &quot;reliable.&quot; This,
+unfortunately, would only be on a transport-to-transport basis. However,
+remember we want all the processing in the transports and not the routers
+(or clients to a level).
+&lt;/silver lining&gt;
+&lt;/solution&gt;
+
+&lt;alternatives&gt;
+I can imagine posts of &quot;well, then we can the unreliable systems be FORCED
+to code a reliable protocol underneath Jabber.&quot; However, I, as a developer,
+would not appreciate network transport requirements to come bundled into
+this new &quot;universal&quot; communications system. It might even give me reason to
+move to a project which didn't require even MORE coding on my part.
+
+We want to take over the world, let's give the world a reason to take us
+with open arms.
+&lt;/alternatives&gt;
+
+Scott.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 240 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/19991012/d4a746e5/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/19991012/d4a746e5/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="031210.html">[JDEV] Anonymous Logins, etc..
+</A></li>
+	<LI>Next message: <A HREF="031213.html">[JDEV] Connectivity and streaming.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#31205">[ date ]</a>
+              <a href="thread.html#31205">[ thread ]</a>
+              <a href="subject.html#31205">[ subject ]</a>
+              <a href="author.html#31205">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

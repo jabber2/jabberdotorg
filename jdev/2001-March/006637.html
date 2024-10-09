@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Starting the Server Automatically In SUN Solaris.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Starting%20the%20Server%20Automatically%20In%20SUN%20Solaris.&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="006634.html">
+   <LINK REL="Next"  HREF="006624.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Starting the Server Automatically In SUN Solaris.</H1>
+    <B>Peter Saint-Andre</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Starting%20the%20Server%20Automatically%20In%20SUN%20Solaris.&In-Reply-To="
+       TITLE="[JDEV] Starting the Server Automatically In SUN Solaris.">stpeter at jabber.org
+       </A><BR>
+    <I>Thu Mar 15 13:23:24 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="006634.html">[JDEV] Starting the Server Automatically In SUN Solaris.
+</A></li>
+        <LI>Next message: <A HREF="006624.html">[JDEV] Karma settings
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6637">[ date ]</a>
+              <a href="thread.html#6637">[ thread ]</a>
+              <a href="subject.html#6637">[ subject ]</a>
+              <a href="author.html#6637">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Sure thing! I hope to add the 1.4 server content to the FAQ tonight or
+tomorrow night....
+
+Peter
+
+--
+Peter Saint-Andre
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">stpeter at jabber.org</A>
+
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">kadokev at msg.net</A> wrote:
+&gt;<i> 
+</I>&gt;<i> Can this be added to the FAQ?
+</I>&gt;<i> 
+</I>&gt;<i> &gt;       I  installed the JABBER Server in SUN Solaris system.
+</I>&gt;<i> &gt;       I am using it regularly.
+</I>&gt;<i> &gt;       But each day , i need to restart the server because I am starting it
+</I>&gt;<i> &gt; using telnet at the prompt and whenever I closes the telnet, the server is
+</I>&gt;<i> &gt; shutting down.
+</I>&gt;<i> &gt;       Is There any way of restarting the server automatically and running
+</I>&gt;<i> &gt; it on and on and on continuously ................
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;       I know there is way of starting these servers as a Demon Service .
+</I>&gt;<i> &gt;       But I don't know more details about this thing.
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;       Anyone can solve my problem???
+</I>&gt;<i> 
+</I>&gt;<i> There are a number of different ways to run 'jabberd' as a daemon. I use
+</I>&gt;<i> Dan Bernstein's &quot;daemontools&quot; from  <A HREF="http://cr.yp.to/daemontools.html">http://cr.yp.to/daemontools.html</A>
+</I>&gt;<i> 
+</I>&gt;<i> Daemontools is a collection of tools for managing UNIX services, it is the
+</I>&gt;<i> recommended method for running 'dnscache' and 'tinyDNS' (free BIND replacements)
+</I>&gt;<i> and works well for just about any process that needs to always be up. It uses
+</I>&gt;<i> a program called 'supervise' to automatically restart the process if it dies.
+</I>&gt;<i> 
+</I>&gt;<i> After installing daemontools, I add a rc script to run 'svscan' at boot,
+</I>&gt;<i> and instruct svscan to supervise jabber with:
+</I>&gt;<i> 
+</I>&gt;<i>         ln -s /usr/local/jabber-1.4 /service/jabber
+</I>&gt;<i> 
+</I>&gt;<i> Finally, install the following script as /usr/local/jabber-1.4/run:
+</I>&gt;<i> 
+</I>&gt;<i> #! /bin/sh
+</I>&gt;<i> #
+</I>&gt;<i> # March 7, 2001. Kevin Kadow. Free to redistribute and modify
+</I>&gt;<i> #
+</I>&gt;<i> # Start up the core jabberd process.
+</I>&gt;<i> # Requires 'daemontools' available at <A HREF="http://cr.yp.to/daemontools.html">http://cr.yp.to/daemontools.html</A>
+</I>&gt;<i> #
+</I>&gt;<i> PATH=$PATH:/usr/local/bin
+</I>&gt;<i> 
+</I>&gt;<i> cd /usr/local/jabber-1.4
+</I>&gt;<i> 
+</I>&gt;<i> su jabber -c &quot;kill `cat ./spool/jabber.pid`; rm ./spool/jabber.pid&quot;
+</I>&gt;<i> 
+</I>&gt;<i> exec setuidgid jabber jabberd/jabberd
+</I>&gt;<i> 
+</I>&gt;<i> ###EOF###
+</I>&gt;<i> 
+</I>&gt;<i> For security, /usr/local/jabber-1.4 and the 'run' file should be owned by root,
+</I>&gt;<i> with only /usr/loca/jabber-1.4/spool owned by the 'jabber' user:
+</I>&gt;<i> 
+</I>&gt;<i>         chown root /usr/local/jabber-1.4 /usr/local/jabber-1.4/run
+</I>&gt;<i>         chown jabber /usr/local/jabber-1.4/spool
+</I>&gt;<i> 
+</I>&gt;<i> That's it. It seems complex, but once you get used to Dan's style, the benefits
+</I>&gt;<i> of daemontools, dnscache, and qmail in security and speed are worth the effort.
+</I>&gt;<i> 
+</I>&gt;<i> Kevin
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="006634.html">[JDEV] Starting the Server Automatically In SUN Solaris.
+</A></li>
+	<LI>Next message: <A HREF="006624.html">[JDEV] Karma settings
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6637">[ date ]</a>
+              <a href="thread.html#6637">[ thread ]</a>
+              <a href="subject.html#6637">[ subject ]</a>
+              <a href="author.html#6637">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

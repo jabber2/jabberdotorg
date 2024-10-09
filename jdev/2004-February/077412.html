@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] problem with connecting to mysql server on module..
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20problem%20with%20connecting%20to%20mysql%20server%20on%20module..&In-Reply-To=%3Chtjo2n.ykulnq%40webmail.ispgaya.pt%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="077411.html">
+   <LINK REL="Next"  HREF="077413.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] problem with connecting to mysql server on module..</H1>
+    <B>Lu&#237;s Miguel Silva</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20problem%20with%20connecting%20to%20mysql%20server%20on%20module..&In-Reply-To=%3Chtjo2n.ykulnq%40webmail.ispgaya.pt%3E"
+       TITLE="[jdev] problem with connecting to mysql server on module..">lms at ispgaya.pt
+       </A><BR>
+    <I>Mon Feb 23 09:51:59 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="077411.html">[jdev] [leadership/opensource] invitation to online survey
+</A></li>
+        <LI>Next message: <A HREF="077413.html">[jdev] XMPP on Verizon
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77412">[ date ]</a>
+              <a href="thread.html#77412">[ thread ]</a>
+              <a href="subject.html#77412">[ subject ]</a>
+              <a href="author.html#77412">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello all,
+
+Yesterday i began coding a auth module for my university.
+I need a special module which auths in 2 ways:
+a) against the mysql DB which supports the auth for our samba 3.0 domain
+server.
+b) against an hash (on a mysql db) which is created when users auth
+themselves on a site.
+
+Thanks to the help of Matthias Wimmer i was able to start the code of my new
+module.
+
+I based myself on authreg_anon.c.
+
+Iam now able to get the users password and then generate the NT/LM hash so i
+can NEXT make a mysql query and see if they inserted the correct password.
+
+My problem is that my c2s server crashes when i get make a mysql
+connection...
+Here is a snap of the code...
+
+#ifdef WANT_AUTHREG_ISPGAYA
+
+#include &quot;mkntpwd.h&quot;
+#include &lt;mysql.h&gt;
+                                                                      #define
+MYSQL_SERVER         &quot;192.168.4.36&quot;
+#define MYSQL_USER           &quot;jabberd2&quot;
+#define MYSQL_PASSWORD       &quot;thepassword&quot;
+#define MYSQL_DATABASE       &quot;samba&quot;
+#define MYSQL_USERS_TABLE    &quot;user&quot;
+#define MYSQL_SERVER_PORT    3306
+...
+static int _ar_ispgaya_check_password(authreg_t ar, char *username, char
+*realm, char password[257])
+{
+        ...        
+        FILE *fx;
+        MYSQL *conn;
+        MYSQL_RES *res;
+        MYSQL_ROW row;
+
+        ...nt/lm hash generation code here...
+
+        conn = mysql_init(NULL);
+        if(conn == NULL) return 1;
+        if(mysql_real_connect(conn,
+MYSQL_SERVER,MYSQL_USER,MYSQL_PASSWORD,MYSQL_DATABASE,MYSQL_SERVER_PORT,NULL,0)
+== NULL) {
+         fx=fopen(&quot;/tmp/test.txt&quot;,&quot;a&quot;);
+         fputs(&quot;could not connect to server...\n&quot;,fx);
+         fclose(fx);
+        }
+        ...
+}
+
+It all goes smoothly till i get to the mysql_real_connect() function!
+The call to that function crashes my server!
+
+Do i have to declare it anywhere in the code?
+I never worked with modules in C..so im pretty blind folded :o/
+
+PS: the Makefile includes the -lmysqlclient flag!
+PS2: the authreg_mysql module works perfectly on my system...
+
+Thank you,
++-----------------------------------------
+|<i> Lu&#237;s Miguel Silva
+</I>|<i> Network Administrator@ ISPGaya.pt
+</I>|<i> Rua Ant&#243;nio Rodrigues da Rocha, 291/341 
+</I>|<i> Sto. Ov&#237;dio &#149; 4400-025 V. N. de Gaia
+</I>|<i> Portugal
+</I>|<i> T: +351 22 3745730/3/5  F: +351 22 3745738
+</I>|<i> G: +351 93 6371253      E: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">lms at ispgaya.pt</A>
+</I>|<i> H: <A HREF="http://lms.ispgaya.pt/">http://lms.ispgaya.pt/</A>
+</I>+-----------------------------------------
+________________________________________________________________
+Este email foi enviado atrav&#233;s do site <A HREF="http://webmail.ispgaya.pt/">http://webmail.ispgaya.pt/</A>
+Instituto Superior Polit&#233;cnico Gaya
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="077411.html">[jdev] [leadership/opensource] invitation to online survey
+</A></li>
+	<LI>Next message: <A HREF="077413.html">[jdev] XMPP on Verizon
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77412">[ date ]</a>
+              <a href="thread.html#77412">[ thread ]</a>
+              <a href="subject.html#77412">[ subject ]</a>
+              <a href="author.html#77412">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

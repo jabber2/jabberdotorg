@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] just wondering...
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20just%20wondering...&In-Reply-To=%3C20020107164604.B24459%40redhat.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039890.html">
+   <LINK REL="Next"  HREF="039900.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] just wondering...</H1>
+    <B>Daniel Veillard</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20just%20wondering...&In-Reply-To=%3C20020107164604.B24459%40redhat.com%3E"
+       TITLE="[JDEV] just wondering...">veillard at redhat.com
+       </A><BR>
+    <I>Mon Jan  7 15:46:05 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039890.html">[JDEV] just wondering...
+</A></li>
+        <LI>Next message: <A HREF="039900.html">[JDEV] just wondering...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39898">[ date ]</a>
+              <a href="thread.html#39898">[ thread ]</a>
+              <a href="subject.html#39898">[ subject ]</a>
+              <a href="author.html#39898">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Fri, Jan 04, 2002 at 04:41:39PM -0800, zak wrote:
+&gt;<i> for example, instead of sending this...
+</I>&gt;<i> 
+</I>&gt;<i>  &lt;?xml version='1.0' encoding='UTF-8' ?&gt; &lt;stream:stream to='jabber.org' 
+</I>&gt;<i> xmlns='jabber:client' xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;
+</I>&gt;<i> 
+</I>&gt;<i> doesn't it make sense to send...
+</I>&gt;<i> 
+</I>&gt;<i>  &lt;?xml version='1.0' encoding='UTF-8' ?&gt; &lt;stream:stream to='jabber.com' 
+</I>&gt;<i> xmlns='jabber:client' xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;
+</I>&gt;<i> &lt;/stream:stream&gt;
+</I>
+   there is 2 problems with this, one serious one minor:
+     - the serious one is the following:
+       Look at the production for an XML document in the spec:
+       <A HREF="http://www.w3.org/TR/REC-xml#NT-document">http://www.w3.org/TR/REC-xml#NT-document</A>
+       [1]    document    ::=    prolog element Misc*
+
+       The last term means that the XML document does not terminate with
+       the end of the root element. An XML parser has no way of detecting
+       the end of the document entity. It must be provided by another
+       layer (usually underneath like the end of the file). So either
+       you have to hack to detect the end of the root element and
+       arbitrary decide that's the end of the document or you have
+       to insert markers in the stream. In both case you end up doing
+       a preparsing of the input stream or you have to mix layers of
+       recognitions. Unfortunately people seems to do that often, trying
+       to pile up a contiguous set of XML document on a single flow.
+
+     - the less serious one is that reusing an XML parser state for
+       parsing multiple document doesn't make much sense, and is again
+       a very common recipe for disasters. So you end up having to 
+       recreate or reinitialize a parser state for every messages. Not
+       good at all for performances.
+
+  Actually the use of a continuous pair of XML documents for the data
+exchange in Jabber was novel for me, I was surprized but it's actually
+very smart, it can do this (this really helps performances and simplicity
+of implementation) because it keeps the connection. Most other use of XML
+in protocol (WebDav, XML-RPC, SOAP on HTTP, etc ...) don't keep the connection
+and have to associate 1 or 2 documents per exchange.
+  I implemented XML-RPC on top of Jabber (following the draft from last summer)
+and it's actually very nice to be able to parse all the XML-RPC calls of the
+application with the same parser instance, neat !
+
+Daniel
+
+-- 
+Daniel Veillard      | Red Hat Network <A HREF="https://rhn.redhat.com/">https://rhn.redhat.com/</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">veillard at redhat.com</A>  | libxml Gnome XML XSLT toolkit  <A HREF="http://xmlsoft.org/">http://xmlsoft.org/</A>
+<A HREF="http://veillard.com/">http://veillard.com/</A> | Rpmfind RPM search engine <A HREF="http://rpmfind.net/">http://rpmfind.net/</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039890.html">[JDEV] just wondering...
+</A></li>
+	<LI>Next message: <A HREF="039900.html">[JDEV] just wondering...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39898">[ date ]</a>
+              <a href="thread.html#39898">[ thread ]</a>
+              <a href="subject.html#39898">[ subject ]</a>
+              <a href="author.html#39898">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

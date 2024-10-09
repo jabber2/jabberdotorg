@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Binary XML useful for Jabber?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Binary%20XML%20useful%20for%20Jabber%3F&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="007956.html">
+   <LINK REL="Next"  HREF="007973.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Binary XML useful for Jabber?</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Binary%20XML%20useful%20for%20Jabber%3F&In-Reply-To="
+       TITLE="[JDEV] Binary XML useful for Jabber?">dwaite at jabber.com
+       </A><BR>
+    <I>Wed May 23 01:27:36 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="007956.html">[JDEV] Binary XML useful for Jabber?
+</A></li>
+        <LI>Next message: <A HREF="007973.html">[JDEV] Binary XML useful for Jabber?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7958">[ date ]</a>
+              <a href="thread.html#7958">[ thread ]</a>
+              <a href="subject.html#7958">[ subject ]</a>
+              <a href="author.html#7958">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Jens Alfke wrote:
+
+&gt;<i> David Waite &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dwaite at jabber.com</A>&gt; wrote:
+</I>&gt;<i>
+</I>&gt;<i> &gt; I don't think this last item is there. the LITERAL token (for elements which
+</I>&gt;<i> &gt; are not in the DTD) reports an offset in the string table, meaning it needs to
+</I>&gt;<i> &gt; be defined beforehand and not inline.
+</I>&gt;<i>
+</I>&gt;<i> Look at &quot;inline string extension tokens&quot;, the format of which is a magic
+</I>&gt;<i> number followed by the string itself. The spec's not organized or written
+</I>&gt;<i> very clearly, but it certainly looks to me as though these let you insert
+</I>&gt;<i> arbitrary keywords on the fly if they weren't defined upfront.
+</I>&gt;<i>
+</I>
+Hmm, I looked at it again (a couple of times, it is definately not the clearest
+specification ever written); it looks like textual content of attributes and cdata
+is handled by the inline strings, but tags have to use LITERAL, which uses an
+offset into a table. Another worry is that it doesn't appear the binary format can
+extend to multiple bytes if needed - more than 64 unique tags would seem to
+overflow the dictionary. These are both not problems with a binary protocol, but
+just difficulties in mapping wbXML to Jabber.
+
+&gt;<i>
+</I>&gt;<i> &gt; I really doubt this would simplify parsing (either in terms of execution speed
+</I>&gt;<i> &gt; or in Lines of Code).
+</I>&gt;<i>
+</I>&gt;<i> Sure it would. Binary XML has basically been lexed in advance, and typical
+</I>&gt;<i> parsers spend about 25% of their time lexing. A lot of the code complexity
+</I>&gt;<i> is in lexing, as well. It should be really easy to write a BXML parser, and
+</I>&gt;<i> you could make it plug-compatible with a regular parser like Expat, which
+</I>&gt;<i> would make it easy to drop into existing code. Generating XML is less
+</I>&gt;<i> standardized, but hopefully people have modularized their XML generators
+</I>&gt;<i> such that generating BXML would require changing very little code (I know I
+</I>&gt;<i> have.)
+</I>&gt;<i>
+</I>&gt;<i> &gt; If you didn't &quot;decompress&quot; the binary format before
+</I>&gt;<i> &gt; sending it into Jabber, it would require substantial changes which would
+</I>&gt;<i> &gt; pretty
+</I>&gt;<i> &gt; much encompass every line of code.
+</I>&gt;<i>
+</I>&gt;<i> I haven't looked at the server implementation, but if dependence on XML
+</I>&gt;<i> syntax is so tightly woven into it, then I have to say it sounds like it's
+</I>&gt;<i> badly designed. Please don't tell me the modules of the server communicate
+</I>&gt;<i> internally via raw XML... :-O
+</I>&gt;<i>
+</I>
+Internally loaded (shared library) components of the server communicate via
+structures which are centered around DOM-like XML nodes (some of the structures
+pass along additional state information, or the routing information of the packet
+parsed out). Trying to get these to work with a binary structure in addition to DOM
+would require heavy manipulation. Since the target user's transport isn't known,
+the component which finally communicates with the user would probably need to do
+the conversion over to wbXML, and internally things would remain using DOM.
+
+External (out-of-process) components do communicate over the wire with an XML
+protocol.
+
+-David Waite
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="007956.html">[JDEV] Binary XML useful for Jabber?
+</A></li>
+	<LI>Next message: <A HREF="007973.html">[JDEV] Binary XML useful for Jabber?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7958">[ date ]</a>
+              <a href="thread.html#7958">[ thread ]</a>
+              <a href="subject.html#7958">[ subject ]</a>
+              <a href="author.html#7958">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

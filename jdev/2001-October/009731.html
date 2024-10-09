@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Namespace usage on server
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Namespace%20usage%20on%20server&In-Reply-To=20011003080529.A29126%40obelix.dizzyd.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="009719.html">
+   <LINK REL="Next"  HREF="009732.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Namespace usage on server</H1>
+    <B>temas</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Namespace%20usage%20on%20server&In-Reply-To=20011003080529.A29126%40obelix.dizzyd.com"
+       TITLE="[JDEV] Namespace usage on server">temas at box5.net
+       </A><BR>
+    <I>Wed Oct  3 11:18:52 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="009719.html">[JDEV] Namespace usage on server
+</A></li>
+        <LI>Next message: <A HREF="009732.html">[JDEV] Namespace usage on server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9731">[ date ]</a>
+              <a href="thread.html#9731">[ thread ]</a>
+              <a href="subject.html#9731">[ subject ]</a>
+              <a href="author.html#9731">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Diz is right, we just need to make our parser in the next gen reference
+implementation (and possibly a patch for 1.4.x) to fully understand
+namespaces.  The rest of this thread seems like a bit of
+miscommunication or crossed wires.  Let's fix this rather than argue
+over it, we've identitified the problem.
+
+--temas
+
+
+On Wed, 2001-10-03 at 09:05, Dave Smith wrote:
+&gt;<i> Actually, what you are seeing is broken behaviour in Jabber's handling
+</I>&gt;<i> of namespaces. In keeping with the XML 1.0 and XML Namespaces spec,
+</I>&gt;<i> specifying the namespace on a per packet basis is perfectly acceptable.
+</I>&gt;<i> Unfortunately, up to this point, the Jabber server doesn't process
+</I>&gt;<i> namespaces at all (at least, in a correct manner) and hence you get
+</I>&gt;<i> unexpected behaviour when you move the namespace declarations around.
+</I>&gt;<i> 
+</I>&gt;<i> At some point, someone will have to fix this.. :)
+</I>&gt;<i> 
+</I>&gt;<i> Diz
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> On Wed, Oct 03, 2001 at 03:16:25PM +0200, Fabrice DESRE - FT.BD/FTRD/DMI/GRI wrote:
+</I>&gt;<i> &gt;   Hello,
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;  Writing my own client, I found something
+</I>&gt;<i> &gt; strange in the open source server : if I 
+</I>&gt;<i> &gt; initiate the session with :
+</I>&gt;<i> &gt; &lt;?xml version='1.0'?&gt;
+</I>&gt;<i> &gt; &lt;stream:stream to='jabber' 
+</I>&gt;<i> &gt;                xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>
+</I>&gt;<i> &gt;                xmlns='jabber:client'&gt;
+</I>&gt;<i> &gt;    &lt;iq id='A3' type='get'&gt;
+</I>&gt;<i> &gt;        &lt;query xmlns='jabber:iq:auth'&gt;
+</I>&gt;<i> &gt;           &lt;username&gt;fabrice&lt;/username&gt;
+</I>&gt;<i> &gt;        &lt;/query&gt;
+</I>&gt;<i> &gt;    &lt;/iq&gt;
+</I>&gt;<i> &gt; &lt;/stream:stream&gt;
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;  everything works fine, but if I send :
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; &lt;?xml version='1.0'?&gt;
+</I>&gt;<i> &gt; &lt;stream:stream to='jabber' 
+</I>&gt;<i> &gt;                xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A>&gt;
+</I>&gt;<i> &gt;    &lt;iq xmlns='jabber:client' id='A3' type='get'&gt;
+</I>&gt;<i> &gt;        &lt;query xmlns='jabber:iq:auth'&gt;
+</I>&gt;<i> &gt;           &lt;username&gt;fabrice&lt;/username&gt;
+</I>&gt;<i> &gt;        &lt;/query&gt;
+</I>&gt;<i> &gt;    &lt;/iq&gt;
+</I>&gt;<i> &gt; &lt;/stream:stream&gt;
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; then the server sends me this error and closes the connection :
+</I>&gt;<i> &gt; &lt;?xml version='1.0'?&gt;
+</I>&gt;<i> &gt; &lt;stream:stream xmlns:stream='<A HREF="http://etherx.jabber.org/streams'">http://etherx.jabber.org/streams'</A> 
+</I>&gt;<i> &gt;     id='3BBB0DE3' 
+</I>&gt;<i> &gt;     xmlns='jabber:client' 
+</I>&gt;<i> &gt;     from='jabber'&gt;
+</I>&gt;<i> &gt;    &lt;stream:error&gt;Invalid Namespace&lt;/stream:error&gt;
+</I>&gt;<i> &gt; &lt;/stream:stream&gt;
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt;  I don't understand the rationale of this error message. My first XML
+</I>&gt;<i> &gt; stream is perfectly valid and the QName of the elements are the same
+</I>&gt;<i> &gt; in both cases.
+</I>&gt;<i> &gt; I didn't find any mention of this requirement in the docs so I guess 
+</I>&gt;<i> &gt; it's a bug in the server ?
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; 	Fabrice
+</I>&gt;<i> &gt; -- 
+</I>&gt;<i> &gt; Fabrice Desr? - France Telecom R&amp;D/DMI/GRI
+</I>&gt;<i> &gt; Tel: +(33) 2 96 05 31 43
+</I>&gt;<i> &gt; Fax: +(33) 2 96 05 32 86
+</I>&gt;<i> &gt; _______________________________________________
+</I>&gt;<i> &gt; jdev mailing list
+</I>&gt;<i> &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20011003/2655d35e/attachment.pgp">https://www.jabber.org/jdev/attachments/20011003/2655d35e/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="009719.html">[JDEV] Namespace usage on server
+</A></li>
+	<LI>Next message: <A HREF="009732.html">[JDEV] Namespace usage on server
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#9731">[ date ]</a>
+              <a href="thread.html#9731">[ thread ]</a>
+              <a href="subject.html#9731">[ subject ]</a>
+              <a href="author.html#9731">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

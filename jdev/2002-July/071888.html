@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Keep-Alives
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Keep-Alives&In-Reply-To=%3C3D2555F1.5080602%40tthias.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="071887.html">
+   <LINK REL="Next"  HREF="071880.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Keep-Alives</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Keep-Alives&In-Reply-To=%3C3D2555F1.5080602%40tthias.net%3E"
+       TITLE="[JDEV] Keep-Alives">m at tthias.net
+       </A><BR>
+    <I>Fri Jul  5 03:16:49 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="071887.html">[JDEV] Keep-Alives
+</A></li>
+        <LI>Next message: <A HREF="071880.html">[JDEV] Keep-Alives
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71888">[ date ]</a>
+              <a href="thread.html#71888">[ thread ]</a>
+              <a href="subject.html#71888">[ subject ]</a>
+              <a href="author.html#71888">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi David!
+
+David Waite wrote:
+
+&gt;<i> There is no standard way of manipulating keepalives. There is no 
+</I>&gt;<i> standard set of system calls to configure keepalives. Keepalives may 
+</I>&gt;<i> not be configurable per socket (they might be a machine-wide 
+</I>&gt;<i> configurable, affecting all other services running on that machine) or 
+</I>&gt;<i> configurable at all.
+</I>
+That's right, I can't configure the intervals per socket ... but I can 
+turn them on and off per socket. It's also right that there is no 
+standard way to manipulate keep-alives, but this hasn't been done by the 
+server. The server just enables keep-alives on the sockets and the 
+server administrator configures the intervals by the way it is thought 
+to be done on his machine, e.g. with a call to sysctl or by manipulating 
+the files in the proc filesystem.
+But what is with OOB, the other proposed way to detect broken 
+connections: It is by far more OS dependand how to implement it (e.g. on 
+Unix you have to write signal handlers) and it has some sort of time out 
+too (the depends on how often we have to send the OOB packets). The 
+difference is not the length of the time out we have to detect the 
+broken connection, the difference is: how hard is it to implement it? 
+how compatible is it? and do we have to change the client too?
+And yes, we're affacting other services too: But only the services that 
+use keep-alives too. And we can configure them at the shortest interval 
+of all the minimum intervals that are required by the services.
+
+&gt;<i> Also, keep in mind that the worst case timeout due to a keepalive is 
+</I>&gt;<i> going to be around ten minutes, even if the keepalive interval is 
+</I>&gt;<i> reduced down to one minute. This means someone who unplugs their modem 
+</I>&gt;<i> may still take 10 minutes to timeout, and that any messages sent to 
+</I>&gt;<i> them during this period will still be lost.
+</I>
+This can be configured: E.g. with an inactivity timer of 60 seconds, a 
+keep-alive interval of 10 seconds and 4 probes it would be detected 
+after two minutes.
+
+As Dave wrote: This isn't a solution for guaranteed delivery (we can use 
+something based on JEP-0022-&lt;delivered/&gt;-events for that). This is just 
+a way to detect broken connections, at present if a TCP/IP link is not 
+closed properly (e.g. just cut the network connection) the server can't 
+detect this and the user can have an available presence for hours. Also 
+it fixes problems with NAT routers.
+
+
+Tot kijk
+   Matthias
+
+-- 
+Fon: +49-700 77007770		<A HREF="http://matthias-wimmer.de/">http://matthias-wimmer.de/</A>
+Fax: +49-89 312 88654		<A HREF="jabber://mawis@charente.de">jabber://mawis@charente.de</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="071887.html">[JDEV] Keep-Alives
+</A></li>
+	<LI>Next message: <A HREF="071880.html">[JDEV] Keep-Alives
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71888">[ date ]</a>
+              <a href="thread.html#71888">[ thread ]</a>
+              <a href="subject.html#71888">[ subject ]</a>
+              <a href="author.html#71888">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

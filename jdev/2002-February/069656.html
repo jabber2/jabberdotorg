@@ -1,0 +1,389 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] jabber.py problems
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabber.py%20problems&In-Reply-To=%3C20020207011545.GD435%4010.am%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="069650.html">
+   <LINK REL="Next"  HREF="069663.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] jabber.py problems</H1>
+    <B>mallum</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20jabber.py%20problems&In-Reply-To=%3C20020207011545.GD435%4010.am%3E"
+       TITLE="[JDEV] jabber.py problems">breakfast at 10.am
+       </A><BR>
+    <I>Wed Feb  6 19:15:45 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="069650.html">[JDEV] jabber.py problems
+</A></li>
+        <LI>Next message: <A HREF="069663.html">[JDEV] jabber.py problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#69656">[ date ]</a>
+              <a href="thread.html#69656">[ thread ]</a>
+              <a href="subject.html#69656">[ subject ]</a>
+              <a href="author.html#69656">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hmm, thanks for the work on the patch, I'll take a look at it later.
+
+But Im a little dubious as apart from yuo saying it poor quality and
+the fact that the dreaded &quot;ordinal not in range&quot; *may still* occur I
+cant really see it as a proper fix. 
+
+Id really like to understand what the problem is with changing
+site.encoding which seems to me the most logical and easiest way to
+fix things 100% . 
+
+It seems however you fix things in jabberpy the python expat bindings
+will still barf unless you change site.encoding .
+
+Its probably best to discuss this further ( if you want ) on the
+jabber.py list.
+
+  -- mallum
+
+
+
+on Wed, Feb 06, 2002 at 08:35:05PM +0100, Jacek Konieczny wrote:
+&gt;<i> On Wed, Feb 06, 2002 at 06:14:17PM +0100, Igor Stroh wrote:
+</I>&gt;<i> &gt; &gt; &gt; it doesn't work this way, don't ask my why :) to switch to utf-8, edit
+</I>&gt;<i> &gt; &gt; &gt; your site.py and change the line that says &quot;encoding = 'ascii'&quot; to
+</I>&gt;<i> &gt; &gt; &gt; &quot;encoding = 'UTF-8'&quot;
+</I>&gt;<i> &gt; &gt; It is not a good thing (one Python hacker told me this, with some
+</I>&gt;<i> &gt; &gt; arguments, that convinced me).
+</I>&gt;<i> &gt; &gt; jabber.py should be fixed, so it uses proper encoding. 
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; there's no way to do it other than to follow the instructions at
+</I>&gt;<i> &gt; <A HREF="http://www.python.org/cgi-bin/faqw.py?req=show&amp;file=faq04.102.htp">http://www.python.org/cgi-bin/faqw.py?req=show&amp;file=faq04.102.htp</A>
+</I>&gt;<i> &gt; 
+</I>&gt;<i> ...
+</I>&gt;<i> &gt; 
+</I>&gt;<i> &gt; again, this is a known issue, if you think there's a better way to handle
+</I>&gt;<i> &gt; this problem, please send a patch 
+</I>&gt;<i> Here is patch attached. It is not very good or pretty, but I wrote it
+</I>&gt;<i> just to show you how I think it should look like.
+</I>&gt;<i> 
+</I>&gt;<i> IMHO jabber.py module should work on Unicode and it should not depend in
+</I>&gt;<i> any way on system or locale encoding. Applications are responsible for
+</I>&gt;<i> encoding conversion and if they don't do it well it is OK, that they
+</I>&gt;<i> crash. Sometimes it is the only way to convinve ascii-speaking developer
+</I>&gt;<i> to fix this :-)
+</I>&gt;<i> 
+</I>&gt;<i> The problem is, that the expat python module doesn't support Unicode
+</I>&gt;<i> very well :-( Thats why the patch is so ugly (but I am sure there are
+</I>&gt;<i> better ways to do this anyway).
+</I>&gt;<i> 
+</I>&gt;<i> This patch makes the sample jabber client work for me, with
+</I>&gt;<i> international characters.
+</I>&gt;<i> 
+</I>&gt;<i> It could happen, that conversion error (&quot;ordinal not in range&quot;) may
+</I>&gt;<i> occur. If it is raised in jabber.py, it means something more has to be
+</I>&gt;<i> fixed in the module. When in the application --- this means application
+</I>&gt;<i> is broken. Making the module silently convert international characters
+</I>&gt;<i> to &quot;?&quot; is bad. I left this behaviour for log and debug messages --- this
+</I>&gt;<i> are the only places where it seems OK for me.
+</I>&gt;<i> 
+</I>&gt;<i> &gt; or a solution proposal to jabber.py
+</I>&gt;<i> &gt; mailing list 
+</I>&gt;<i> &gt; or just post in here, i'll forward the message to the list...
+</I>&gt;<i> Could you do this, please?
+</I>&gt;<i> 
+</I>&gt;<i> Greets,
+</I>&gt;<i>        Jacek
+</I>&gt;<i> 
+</I>&gt;<i> The ugly patch follow...
+</I>&gt;<i> 
+</I>&gt;<i> diff -durN jabber.py-0.3-1.orig/examples/test_client.py jabber.py-0.3-1/examples/test_client.py
+</I>&gt;<i> --- jabber.py-0.3-1.orig/examples/test_client.py	Thu Jan 17 13:05:40 2002
+</I>&gt;<i> +++ jabber.py-0.3-1/examples/test_client.py	Wed Feb  6 20:13:48 2002
+</I>&gt;<i> @@ -1,4 +1,4 @@
+</I>&gt;<i> -#!/usr/bin/env python2
+</I>&gt;<i> +#!/usr/bin/python
+</I>&gt;<i>  
+</I>&gt;<i>  # $Id: test_client.py,v 1.9 2002/01/17 12:05:40 mallum Exp $
+</I>&gt;<i>  
+</I>&gt;<i> @@ -9,6 +9,7 @@
+</I>&gt;<i>  from select import select
+</I>&gt;<i>  from string import split,strip,join
+</I>&gt;<i>  import sys,os
+</I>&gt;<i> +import locale
+</I>&gt;<i>  
+</I>&gt;<i>  sys.path.insert(1, os.path.join(sys.path[0], '..'))
+</I>&gt;<i>  
+</I>&gt;<i> @@ -24,6 +25,12 @@
+</I>&gt;<i>  MyStatus = ''
+</I>&gt;<i>  MyShow   = ''
+</I>&gt;<i>  
+</I>&gt;<i> +loc = locale.getdefaultlocale()
+</I>&gt;<i> +if loc[1]:
+</I>&gt;<i> +	LocalEncoding=loc[1]
+</I>&gt;<i> +else:
+</I>&gt;<i> +	LocalEncoding=getdefaultencoding()
+</I>&gt;<i> +
+</I>&gt;<i>  def usage():
+</I>&gt;<i>      print &quot;%s: a simple python jabber client &quot; % sys.argv[0]
+</I>&gt;<i>      print &quot;usage:&quot;
+</I>&gt;<i> @@ -107,7 +114,7 @@
+</I>&gt;<i>          if Who != '':
+</I>&gt;<i>              msg = jabber.Message(Who, strip(txt))
+</I>&gt;<i>              msg.setType('chat')
+</I>&gt;<i> -            print &quot;&lt;%s&gt; %s&quot; % (JID, msg.getBody())
+</I>&gt;<i> +            print &quot;&lt;%s&gt; %s&quot; % (JID.encode(LocalEncoding,&quot;replace&quot;), msg.getBody().encode(LocalEncoding,&quot;replace&quot;))
+</I>&gt;<i>              con.send(msg)
+</I>&gt;<i>          else:
+</I>&gt;<i>              print colorize('Nobody selected','red')
+</I>&gt;<i> @@ -117,8 +124,8 @@
+</I>&gt;<i>      &quot;&quot;&quot;Called when a message is recieved&quot;&quot;&quot;
+</I>&gt;<i>      if msg.getBody(): ## Dont show blank messages ##
+</I>&gt;<i>          print colorize(
+</I>&gt;<i> -            '&lt;' + str(msg.getFrom()) + '&gt;', 'green'
+</I>&gt;<i> -            ) + ' ' + msg.getBody()
+</I>&gt;<i> +            '&lt;' + str(msg.getFrom()).encode(LocalEncoding,&quot;replace&quot;) + '&gt;', 'green'
+</I>&gt;<i> +            ) + ' ' + msg.getBody().encode(LocalEncoding,&quot;replace&quot;) 
+</I>&gt;<i>  
+</I>&gt;<i>  def presenceCB(con, prs):
+</I>&gt;<i>      &quot;&quot;&quot;Called when a presence is recieved&quot;&quot;&quot;
+</I>&gt;<i> @@ -149,11 +156,23 @@
+</I>&gt;<i>          print colorize(&quot;we are now unsubscribed to %s&quot;  % (who), 'blue')
+</I>&gt;<i>  
+</I>&gt;<i>      elif type == 'available':
+</I>&gt;<i> +        sh=prs.getShow()
+</I>&gt;<i> +	if sh:
+</I>&gt;<i> +		sh=sh.encode(LocalEncoding,&quot;replace&quot;)
+</I>&gt;<i> +        st=prs.getStatus()
+</I>&gt;<i> +	if st:
+</I>&gt;<i> +		st=st.encode(LocalEncoding,&quot;replace&quot;)
+</I>&gt;<i>          print colorize(&quot;%s is available (%s / %s)&quot; % \
+</I>&gt;<i> -                       (who, prs.getShow(), prs.getStatus()),'blue')
+</I>&gt;<i> +                       (who, sh, st),'blue')
+</I>&gt;<i>      elif type == 'unavailable':
+</I>&gt;<i> +	sh=prs.getShow()
+</I>&gt;<i> +	if sh:
+</I>&gt;<i> +		sh=sh.encode(LocalEncoding,&quot;replace&quot;)
+</I>&gt;<i> +	st=prs.getStatus()
+</I>&gt;<i> +	if st:
+</I>&gt;<i> +		st=st.encode(LocalEncoding,&quot;replace&quot;)
+</I>&gt;<i>          print colorize(&quot;%s is unavailable (%s / %s)&quot; % \
+</I>&gt;<i> -                       (who, prs.getShow(), prs.getStatus()),'blue')
+</I>&gt;<i> +                       (who, sh, st),'blue')
+</I>&gt;<i>  
+</I>&gt;<i>  
+</I>&gt;<i>  def iqCB(con,iq):
+</I>&gt;<i> @@ -243,7 +262,7 @@
+</I>&gt;<i>      inputs, outputs, errors = select([sys.stdin], [], [],1)
+</I>&gt;<i>  
+</I>&gt;<i>      if sys.stdin in inputs:
+</I>&gt;<i> -        doCmd(con,sys.stdin.readline())
+</I>&gt;<i> +        doCmd(con,unicode(sys.stdin.readline(),LocalEncoding))
+</I>&gt;<i>      else:
+</I>&gt;<i>          con.process(1)
+</I>&gt;<i>      
+</I>&gt;<i> diff -durN jabber.py-0.3-1.orig/jabber.py jabber.py-0.3-1/jabber.py
+</I>&gt;<i> --- jabber.py-0.3-1.orig/jabber.py	Thu Jan 17 13:05:40 2002
+</I>&gt;<i> +++ jabber.py-0.3-1/jabber.py	Wed Feb  6 20:18:05 2002
+</I>&gt;<i> @@ -155,7 +155,7 @@
+</I>&gt;<i>  
+</I>&gt;<i>      def send(self, what):
+</I>&gt;<i>          &quot;&quot;&quot;Sends a jabber protocol element (Node) to the server&quot;&quot;&quot;
+</I>&gt;<i> -        xmlstream.Client.write(self,str(what))
+</I>&gt;<i> +        xmlstream.Client.write(self,what)
+</I>&gt;<i>  
+</I>&gt;<i>      def dispatch(self, root_node ):
+</I>&gt;<i>          &quot;&quot;&quot;Called internally when a 'protocol element' is recieved.
+</I>&gt;<i> @@ -364,7 +364,7 @@
+</I>&gt;<i>  
+</I>&gt;<i>      def send(self, what):
+</I>&gt;<i>          &quot;&quot;&quot;Sends a jabber protocol element (Node) to the server&quot;&quot;&quot;
+</I>&gt;<i> -        xmlstream.Client.write(self,str(what))
+</I>&gt;<i> +        xmlstream.Client.write(self,what.unicode())
+</I>&gt;<i>  
+</I>&gt;<i>      def sendInitPresence(self):
+</I>&gt;<i>          &quot;&quot;&quot;Sends an empty presence protocol element to the
+</I>&gt;<i> @@ -603,6 +603,9 @@
+</I>&gt;<i>          &quot;&quot;&quot;returns an xmlstreamnode representation of the protocol element&quot;&quot;&quot;
+</I>&gt;<i>          return self._node
+</I>&gt;<i>      
+</I>&gt;<i> +    def unicode(self):
+</I>&gt;<i> +        return self._node.unicode()
+</I>&gt;<i> +
+</I>&gt;<i>      def __str__(self):
+</I>&gt;<i>          return self._node.__str__()
+</I>&gt;<i>  
+</I>&gt;<i> diff -durN jabber.py-0.3-1.orig/xmlstream.py jabber.py-0.3-1/xmlstream.py
+</I>&gt;<i> --- jabber.py-0.3-1.orig/xmlstream.py	Thu Jan 17 13:05:40 2002
+</I>&gt;<i> +++ jabber.py-0.3-1/xmlstream.py	Wed Feb  6 20:22:18 2002
+</I>&gt;<i> @@ -44,11 +44,6 @@
+</I>&gt;<i>  STDIO   = 0
+</I>&gt;<i>  TCP_SSL = 2
+</I>&gt;<i>  
+</I>&gt;<i> -ENCODING = site.encoding  ## fallback encoding to avoid random
+</I>&gt;<i> -                          ## random UnicodeError: ASCII decoding error:
+</I>&gt;<i> -                          ##                      ordinal not in range(128)
+</I>&gt;<i> -                          ## type errors - being looked into. 
+</I>&gt;<i> -
+</I>&gt;<i>  BLOCK_SIZE  = 1024     ## Number of bytes to get at at time via socket
+</I>&gt;<i>                         ## transactions
+</I>&gt;<i>  
+</I>&gt;<i> @@ -159,7 +154,28 @@
+</I>&gt;<i>          return newnode
+</I>&gt;<i>  
+</I>&gt;<i>      def __str__(self):
+</I>&gt;<i> -        return self._xmlnode2str()
+</I>&gt;<i> +        return self.unicode()
+</I>&gt;<i> +
+</I>&gt;<i> +    def unicode(self, parent=None):
+</I>&gt;<i> +        &quot;&quot;&quot;Returns an xml ( Unicode ) representation of the node
+</I>&gt;<i> +         and it children&quot;&quot;&quot;
+</I>&gt;<i> +        s = u&quot;&lt;&quot; + self.name  
+</I>&gt;<i> +        if self.namespace:
+</I>&gt;<i> +            if parent and parent.namespace != self.namespace:
+</I>&gt;<i> +                s = s + u&quot; xmlns = '%s' &quot; % self.namespace
+</I>&gt;<i> +        for key in self.attrs.keys():
+</I>&gt;<i> +            val = str(self.attrs[key])
+</I>&gt;<i> +            s = s + u&quot; %s='%s'&quot; % ( key, XMLescape(val) )
+</I>&gt;<i> +        s = s + u&quot;&gt;&quot;
+</I>&gt;<i> +        cnt = 0 
+</I>&gt;<i> +        if self.kids != None:
+</I>&gt;<i> +            for a in self.kids:
+</I>&gt;<i> +                if (len(self.data)-1) &gt;= cnt: s = s + XMLescape(self.data[cnt])
+</I>&gt;<i> +                s = s + a._xmlnode2str(parent=self)
+</I>&gt;<i> +                cnt=cnt+1
+</I>&gt;<i> +        if (len(self.data)-1) &gt;= cnt: s = s + XMLescape(self.data[cnt])
+</I>&gt;<i> +        s = s + u&quot;&lt;/&quot; + self.name + u&quot;&gt;&quot;
+</I>&gt;<i> +        return s
+</I>&gt;<i>  
+</I>&gt;<i>      def _xmlnode2str(self, parent=None):
+</I>&gt;<i>          &quot;&quot;&quot;Returns an xml ( string ) representation of the node
+</I>&gt;<i> @@ -208,6 +224,7 @@
+</I>&gt;<i>         method of Node&quot;&quot;&quot;
+</I>&gt;<i>      def __init__(self,data):
+</I>&gt;<i>          self._parser = xml.parsers.expat.ParserCreate(namespace_separator=' ')
+</I>&gt;<i> +        self._parser.returns_unicode = 1
+</I>&gt;<i>          self._parser.StartElementHandler  = self.unknown_starttag
+</I>&gt;<i>          self._parser.EndElementHandler    = self.unknown_endtag
+</I>&gt;<i>          self._parser.CharacterDataHandler = self.handle_data
+</I>&gt;<i> @@ -298,8 +315,10 @@
+</I>&gt;<i>              self._logFH = None
+</I>&gt;<i>          
+</I>&gt;<i>      def DEBUG(self,txt):
+</I>&gt;<i> +        if type(txt) is type(u&quot;&quot;):
+</I>&gt;<i> +	    txt=txt.encode(sys.getdefaultencoding(),&quot;replace&quot;)
+</I>&gt;<i>          if self._debug:
+</I>&gt;<i> -            sys.stderr.write(&quot;DEBUG: %s\n&quot; % txt)
+</I>&gt;<i> +            sys.stderr.write(&quot;DEBUG: %s\n&quot; % txt )
+</I>&gt;<i>  
+</I>&gt;<i>      def getSocket(self):
+</I>&gt;<i>          return self._sock
+</I>&gt;<i> @@ -368,45 +387,42 @@
+</I>&gt;<i>          data_in = u''
+</I>&gt;<i>          if self._connection == TCP:
+</I>&gt;<i>              data_in = data_in + \
+</I>&gt;<i> -              unicode(self._sock.recv(BLOCK_SIZE),'utf-8').encode(ENCODING,
+</I>&gt;<i> -                                                            'replace')
+</I>&gt;<i> +              unicode(self._sock.recv(BLOCK_SIZE),'utf-8')
+</I>&gt;<i>              while data_in:
+</I>&gt;<i>                  data = data + data_in
+</I>&gt;<i>                  if len(data_in) != BLOCK_SIZE:
+</I>&gt;<i>                      break
+</I>&gt;<i> -                data_in = unicode(self._sock.recv(BLOCK_SIZE),'utf-8').encode(
+</I>&gt;<i> -                    ENCODING, 'replace')
+</I>&gt;<i> -
+</I>&gt;<i> +                data_in = unicode(self._sock.recv(BLOCK_SIZE),'utf-8')
+</I>&gt;<i>          if self._connection == TCP_SSL:
+</I>&gt;<i>              data_in = data_in + \
+</I>&gt;<i> -              unicode(self._sslObj.recv(BLOCK_SIZE),'utf-8').encode(ENCODING,'replace')
+</I>&gt;<i> +              unicode(self._sslObj.recv(BLOCK_SIZE),'utf-8')
+</I>&gt;<i>              while data_in:
+</I>&gt;<i>                  data = data + data_in
+</I>&gt;<i>                  if len(data_in) != BLOCK_SIZE:
+</I>&gt;<i>                      break
+</I>&gt;<i> -                data_in = unicode(self._sslObj.recv(BLOCK_SIZE),'utf-8').encode(ENCODING, 'replace')
+</I>&gt;<i> +                data_in = unicode(self._sslObj.recv(BLOCK_SIZE),'utf-8')
+</I>&gt;<i>  
+</I>&gt;<i>          elif self._connection == STDIO:
+</I>&gt;<i>              ## Hope this dont buffer !
+</I>&gt;<i> -            data_in = data_in + unicode(sys.stdin.read(1024),'utf-8').encode(
+</I>&gt;<i> -                    ENCODING, 'replace')
+</I>&gt;<i> -            while data_in:
+</I>&gt;<i> +            data_in = data_in + unicode(sys.stdin.read(1024),'utf-8')
+</I>&gt;<i> +	    while data_in:
+</I>&gt;<i>                  data = data + data_in
+</I>&gt;<i>                  if len(data_in) != 1024:
+</I>&gt;<i>                      break
+</I>&gt;<i> -                data_in = unicode(sys.stdin.read(1024),'utf-8').encode(
+</I>&gt;<i> -                    ENCODING, 'replace')
+</I>&gt;<i> +                data_in = unicode(sys.stdin.read(1024),'utf-8')
+</I>&gt;<i>          else:
+</I>&gt;<i>              pass # should never get here
+</I>&gt;<i>              
+</I>&gt;<i>          self.DEBUG(&quot;got data %s&quot; % data )
+</I>&gt;<i>          self.log(data, 'RECV:')
+</I>&gt;<i> -        self._parser.Parse(data)
+</I>&gt;<i> +        self._parser.Parse(data.encode(&quot;utf-8&quot;))
+</I>&gt;<i>          return data
+</I>&gt;<i>      
+</I>&gt;<i>      def write(self,data_out=u''):
+</I>&gt;<i>          &quot;&quot;&quot;Writes raw outgoing data. blocks&quot;&quot;&quot;
+</I>&gt;<i>          try:
+</I>&gt;<i> +            if type(data_out) is type(u''):
+</I>&gt;<i> +                data_out=data_out.encode(&quot;utf-8&quot;)
+</I>&gt;<i>              if self._connection == TCP:
+</I>&gt;<i>                  self._sock.send (data_out)
+</I>&gt;<i>              elif self._connection == TCP_SSL:
+</I>&gt;<i> @@ -418,6 +434,7 @@
+</I>&gt;<i>              self.log(data_out, 'SENT:')
+</I>&gt;<i>              self.DEBUG(&quot;sent %s&quot; % data_out)
+</I>&gt;<i>          except:
+</I>&gt;<i> +            raise
+</I>&gt;<i>              self.DEBUG(&quot;xmlstream write threw error&quot;)
+</I>&gt;<i>              self.disconnected()
+</I>&gt;<i>              
+</I>&gt;<i> @@ -461,9 +478,13 @@
+</I>&gt;<i>      def log(self, data, inout=''):
+</I>&gt;<i>          &quot;&quot;&quot;Logs data to the specified filehandle. Data is time stamped
+</I>&gt;<i>          and prefixed with inout&quot;&quot;&quot;
+</I>&gt;<i> +	if type(data) is type(u&quot;&quot;):
+</I>&gt;<i> +		data=data.encode(sys.getdefaultencoding(),&quot;replace&quot;)
+</I>&gt;<i> +	if type(inout) is type(u&quot;&quot;):
+</I>&gt;<i> +		inout=data.encode(sys.getdefaultencoding(),&quot;replace&quot;)
+</I>&gt;<i>          if self._logFH is not None:
+</I>&gt;<i>              self._logFH.write(&quot;%s - %s - %s\n&quot; %           
+</I>&gt;<i> -            (time.asctime(time.localtime(time.time())), inout, data ) )
+</I>&gt;<i> +            (time.asctime(time.localtime(time.time())), inout, data)) 
+</I>&gt;<i>          
+</I>&gt;<i>      def getIncomingID(self):
+</I>&gt;<i>          &quot;&quot;&quot;Returns the streams ID&quot;&quot;&quot;
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="069650.html">[JDEV] jabber.py problems
+</A></li>
+	<LI>Next message: <A HREF="069663.html">[JDEV] jabber.py problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#69656">[ date ]</a>
+              <a href="thread.html#69656">[ thread ]</a>
+              <a href="subject.html#69656">[ subject ]</a>
+              <a href="author.html#69656">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

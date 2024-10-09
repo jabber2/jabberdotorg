@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] ICQ Transport with Jabber 1.2
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20ICQ%20Transport%20with%20Jabber%201.2&In-Reply-To=8D96EDA0AC04D31197B400A0C96C148001AA3099%40OSSEX1.webb.net">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="004615.html">
+   <LINK REL="Next"  HREF="004619.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] ICQ Transport with Jabber 1.2</H1>
+    <B>Keith Minkler</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20ICQ%20Transport%20with%20Jabber%201.2&In-Reply-To=8D96EDA0AC04D31197B400A0C96C148001AA3099%40OSSEX1.webb.net"
+       TITLE="[JDEV] ICQ Transport with Jabber 1.2">keith at digix.dyndns.org
+       </A><BR>
+    <I>Mon Nov 13 12:30:45 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="004615.html">[JDEV] ICQ Transport with Jabber 1.2
+</A></li>
+        <LI>Next message: <A HREF="004619.html">[JDEV] ICQ Transport with Jabber 1.2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4617">[ date ]</a>
+              <a href="thread.html#4617">[ thread ]</a>
+              <a href="subject.html#4617">[ subject ]</a>
+              <a href="author.html#4617">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Eric, (et all)
+
+    If you mean getting the ehandler_new_ex() function to connect to Jabberd, I would be glad to offer an explanation of how that is done...
+
+    first, this function in libetherx was modified to take a port argument, and the internals of libetherx were modified so that, if the transport connects to the server on port 5269, it will use the 1.0 transport style, if it connects to any other port, it will use the jabberd style (i.e. base_accept).
+
+    next, in your jabberd config file, you will need a service item, such as:
+
+    &lt;service id=&quot;icq.jabber.com&quot;&gt;
+        &lt;accept&gt;
+            &lt;port&gt;9000&lt;/port&gt;
+            &lt;ip&gt;12.34.56.78&lt;/ip&gt;
+            &lt;secret&gt;icq-accept&lt;/secret&gt;
+        &lt;/accept&gt;
+    &lt;/service&gt;
+
+    this tells jabberd to listen for incoming component connections on port 9000, of ip 12.34.56.78.  and to only allow transports with the secret &quot;icq-accept&quot;, note that multiple service items can listen on the same ip and port, as long as they use different &quot;etherx&quot; secrets, they can be distinguished between each other...
+
+    now, in icq transport (or anything else using ehandler_new_ex(),  you should provide configuration for the following things:
+
+    etherx host   (usually defaults to 127.0.0.1)
+    etherx secret (can default to test?)
+    etherx port   (should default to 5269)
+
+    this way, you can always call ehandler_new_ex(..., port);  and default it to 5269, since when the port is 5269, libetherx uses the 1.0 style transport connection, (etherx, instead of base_accept for 2.0)
+
+    this is how the majority of transports are connecting to the jabber.org server, currently.
+
+    in the 1.3+ server, there will be a cool thing called MIO (managed i/o), to replace the libetherx tstream functions,  it acts as a frontend to all socket calls, and implements (currently) a select loop behind the scenes.. (this will be updated to allow *any* backend -- polld, select, sig-io, etc), but, a component MUST be a jabberd loadable .so object to take advantage of that... 
+
+    for the 1.4 release however, we are hoping to have ALL transports/agents updated to be jabberd loadable .so components... this makes things much easier..
+
+    I dunno if i can clearly explain how to create a loadable .so just yet, but if you are curious, I rewrote svc_irc, irc-t, and groupchat as loadable modules.... (located in irc-jabber and conferencing modules)  so you can check those out,  the biggest points to look at are, the init.c file, which is where the majic happens.. irc-jabber gives an example of a jabberd component that has sub-modules, much like jsm, it has different modules, one for only parsing IRC, one for the transport, and one for the gateway (svc).  Groupchat is a more simple example.  the other big thing to note, is.. since you are connecting right to jabberd, you must include the jabberd.h file, and you no longer use libetherx, you must call deliver(dpacket_new(x),i); to deliver a packet, instead of ehandler_send... (where x is an xmlnode, and i is your instance you get from jabberd).
+
+    Hope this helps everyone,
+
+    Keith (please mail futher questions to this group)
+
+On Mon, Nov 13, 2000 at 10:00:18AM -0700, Eric Bowersox wrote:
+&gt;<i> Since I myself have not yet gotten the ICQ transport to work with the 1.2
+</I>&gt;<i> server, I can't really answer that question yet.
+</I>&gt;<i>  
+</I>&gt;<i> The old ICQ transport cannot connect to a 1.2 server.  I have put code in
+</I>&gt;<i> the new ICQ transport that will allow it to connect to the 1.2 server under
+</I>&gt;<i> the right conditions, but we have been unable thusfar to get it to work.
+</I>&gt;<i> (This, incidentally, is one of the major stumbling blocks that keeps me from
+</I>&gt;<i> releasing the new transport at this time.)
+</I>&gt;<i>  
+</I>&gt;<i>                     Eric
+</I>&gt;<i> 
+</I>&gt;<i> -----Original Message-----
+</I>&gt;<i> From: Vincent Lim's Yahoo [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">happiedwf at yahoo.com</A>]
+</I>&gt;<i> Sent: Sunday, November 12, 2000 11:22 PM
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis.noordsij at wiral.com</A>; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: [JDEV] ICQ Transport with Jabber 1.2
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> Hi,
+</I>&gt;<i>  
+</I>&gt;<i> I noticed your posting about getting the ICQ transport to work with Jabber
+</I>&gt;<i> 1.2. 
+</I>&gt;<i> I tried too, and was able to get the ICQ Transport to compile.
+</I>&gt;<i>  
+</I>&gt;<i> After starting up the jabberd daemon, I started up the ICQ transport.
+</I>&gt;<i> Everything went smoothly.
+</I>&gt;<i> I noticed that the jabberd daemon acknowledge that the ICQ transport coming
+</I>&gt;<i> online because the 
+</I>&gt;<i> debug mode showed something like '...legacy server incoming connection
+</I>&gt;<i> established from .....'.
+</I>&gt;<i>  
+</I>&gt;<i> On connecting a JabberIM client to my jabber server, I tried to register the
+</I>&gt;<i> ICQ service, but I get an error.
+</I>&gt;<i> The error shows .....502: Remote Server Error.
+</I>&gt;<i>  
+</I>&gt;<i> Is there something I need to do? 
+</I>&gt;<i> And, since there is no more separate etherx component in Jabber 1.2, where
+</I>&gt;<i> do you specify 
+</I>&gt;<i> the 'secret' key, which is present in icq_transport.xml?
+</I>&gt;<i>  
+</I>&gt;<i>  
+</I>&gt;<i> Regards
+</I>&gt;<i> Vincent
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="004615.html">[JDEV] ICQ Transport with Jabber 1.2
+</A></li>
+	<LI>Next message: <A HREF="004619.html">[JDEV] ICQ Transport with Jabber 1.2
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4617">[ date ]</a>
+              <a href="thread.html#4617">[ thread ]</a>
+              <a href="subject.html#4617">[ subject ]</a>
+              <a href="author.html#4617">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

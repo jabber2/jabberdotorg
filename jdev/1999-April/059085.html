@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Client Lib &amp; Associated Thoughts (And Many Capital Letters)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Client%20Lib%20%26%20Associated%20Thoughts%20%28And%20Many%20Capital%20Letters%29&In-Reply-To=%3C199904270219.VAA00624%40hawthorne.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="059083.html">
+   <LINK REL="Next"  HREF="059091.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Client Lib &amp; Associated Thoughts (And Many Capital Letters)</H1>
+    <B>dsmith at ai.uwf.edu</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Client%20Lib%20%26%20Associated%20Thoughts%20%28And%20Many%20Capital%20Letters%29&In-Reply-To=%3C199904270219.VAA00624%40hawthorne.com%3E"
+       TITLE="[JDEV] Client Lib &amp; Associated Thoughts (And Many Capital Letters)">dsmith at ai.uwf.edu
+       </A><BR>
+    <I>Mon Apr 26 21:19:45 CDT 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="059083.html">[JDEV] General Welcome! (please read)
+</A></li>
+        <LI>Next message: <A HREF="059091.html">[JDEV] Client Lib &amp; Associated Thoughts (And Many Capital Letters)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59085">[ date ]</a>
+              <a href="thread.html#59085">[ thread ]</a>
+              <a href="subject.html#59085">[ subject ]</a>
+              <a href="author.html#59085">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Greetings...
+
+This one's gonna be long. Better make sure you have some Dew... :)
+
+By nature, XML is a heirarchial language. Basically, you can take any
+well-formed XML document and parse it into a N-ary tree (tree with n
+children per parent). This is a very powerful concept and I think we can
+put it into good use. 
+
+Let's define some specific terminology (for debate):
+
+Tag: an XML tag (e.g. &lt;d&gt; or &lt;/d&gt; or &lt;d/&gt;
+
+Conversation: the exchange of XML tags between two processes (whether
+they be local or remote). 
+
+Session (a.k.a root tag): a set of tags (in this case,
+&lt;jabber&gt;&lt;/jabber&gt;) that signify the beginning and ending of a
+jabber client/server conversation. 
+
+Packet: a set of *specific* tags (and all data contained within) which
+represent a complete thought in a conversation. In the current protocol,
+&lt;message&gt;&lt;/message&gt; &lt;roster&gt;&lt;/roster&gt; &lt;login&gt;&lt;/login&gt; are all examples
+of a packet. Each packet may contain many sub-tags and datums.
+
+Attribute: a name/value pair stored within an opening tag. Each tag
+may have multiple attributes. 
+
+Datum: a raw value stored between two tags. For instance,
+in the packet &quot;&lt;d&gt;HELLO!&lt;/d&gt;&quot; the string &quot;HELLO!&quot; is the datum. Each
+tag may contain multiple datums, each seperated by a set of sub-tags.
+For instance, in the packet &quot;&lt;d&gt;HELLO!&lt;sd&gt;Greetings&lt;/sd&gt;QUICK!&lt;/d&gt;&quot;,
+the &quot;d&quot; tag has multiple datums &quot;HELLO!&quot; and &quot;QUICK!&quot;. Multiple datums
+are merged into a single unbroken string (still thinking about this
+idea...)
+
+At this point, you should be warned that I've worked primarily with
+object-oriented languages and will express my structure in a loose C++
+grammar...
+
+With these definitions in mind, we can specify a set concrete data
+structures to represent a parsed XML session. We (could have) the
+following objects/data structures:
+
+
+class tag_t
+{
+  // Variables
+  char* name;
+
+  attribset_t* attribs;
+  tagset_t*    tags;
+
+  char*  datum;
+
+  // Operations
+  char* getAttribValue(char* AttribName);
+  char* getDatum();
+  tag_t* getTag(char* TagName);
+
+  bool hasAttrib(char* AttribName);
+  bool hasTag(char* TagName);
+}
+
+class attrib_t
+{
+  // Variables
+  char* name;
+  char* value;
+}
+
+class attribset_t
+{
+  // Maintains some hashtable of attrib_t pointers, hashed
+  // by name for quick lookup
+
+  // Operations
+  bool  hasAttrib(char* AttribName);
+  char* getAttribValue(char* AttribName);
+  attrib_t* getAttrib(char* AttribName);
+}
+
+Basically these objects provide a way to represent a complete XML
+document, along with navigation of the sub-tags. This is really
+critical to the client libs. This way, people who write clients don't
+have to even worry about linking with expat or parsing XML. When a
+packet arrives from the server, it's parsed into a tag_t and returned
+to the client with no thinking on the client side. It would probably be
+best to use this at the common lib level, since the entire project
+would benefit from such a structure. :)
+
+If you are lost, say so and I'll post an example of how these objects
+would interact. :)
+
+So, that's the first of my thoughts on the client-lib. I realize that
+the project is C. May I politely inquire as to the possiblities of
+using c++? 
+
+More later. :)
+
+D.
+
+
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="059083.html">[JDEV] General Welcome! (please read)
+</A></li>
+	<LI>Next message: <A HREF="059091.html">[JDEV] Client Lib &amp; Associated Thoughts (And Many Capital Letters)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59085">[ date ]</a>
+              <a href="thread.html#59085">[ thread ]</a>
+              <a href="subject.html#59085">[ subject ]</a>
+              <a href="author.html#59085">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

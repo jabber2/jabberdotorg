@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] JabberCOM Question
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JabberCOM%20Question&In-Reply-To=%3C01BFF26D.BF314EE0.appleweed%40indigenoustech.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="062002.html">
+   <LINK REL="Next"  HREF="062005.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] JabberCOM Question</H1>
+    <B>Appleweed</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20JabberCOM%20Question&In-Reply-To=%3C01BFF26D.BF314EE0.appleweed%40indigenoustech.com%3E"
+       TITLE="[JDEV] JabberCOM Question">appleweed at indigenoustech.com
+       </A><BR>
+    <I>Thu Jul 20 17:04:45 CDT 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="062002.html">[JDEV] [Fwd: Cool idea! (Jabphone ;-)]
+</A></li>
+        <LI>Next message: <A HREF="062005.html">[JDEV] JabberCOM Question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61993">[ date ]</a>
+              <a href="thread.html#61993">[ thread ]</a>
+              <a href="subject.html#61993">[ subject ]</a>
+              <a href="author.html#61993">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Ask and ye shall receive! :)
+
+I got one of my close buddy's to take a look at JabberCOM today. He is just 
+such a VC++/COM &quot;guru&quot; and identified the issues in less than 3 minutes. 
+(Seriously. I spent 4 hours the day before... heh. No big deal... had 
+nothing else to do but work. :)
+
+There seems to be at least two problems. But at least they are easy to 
+understand.
+1. In JabberCOM, IXMLNode is a derived class from IDispatch (as I can see 
+from the type library header file [JabberCOM.tlh] that VC++ generated when 
+it tried to import the COM object.) IXMLNode contains several virtual 
+member functions. Before you create any new objects with this class you 
+need to define another class that actually implements these virtual 
+functions or else you get &quot;error C2259&quot; at the point you tried to create an 
+instance of IXMLNode. This error is followed by *many* errors of type 
+&quot;error C4259&quot;.
+
+Later in the code, the IXMLTag class is derived from IXMLNode, but this 
+class *does not* implement the virtual functions of IXMLNode. Instead, it 
+creates a few more to go along with those functions it inherited. Finally, 
+the IJabberAgents class is derived from IDispatch and it tries to create an 
+instance of IXMLTag, which fails since the virtual functions were never 
+implemented.
+
+Here is a clearer view:
+
+IXMLNode : IDispatch
+{
+  // bunch of virtual stuff...
+  virtual HRESULT _stdcall func1() = 0;
+}
+
+IXMLTag  : IXMLNode:
+{
+  // more virtual stuff...
+  virtual HRESULT _stdcall func2() = 0;
+}
+
+IJabberAgents : IDispatch
+{
+  // even more virtual stuff, with one exception here:
+  virtual HRESULT _stdcall Add (
+    struct IXMLTag Tag,  // &lt;--- this is an error, since no virtual 
+functions were ever implemented
+    struct IJabberAgentItem * * Agent ) = 0;
+}
+
+... somewhere, maybe in IXMLTag, a fully implemented class needs to be 
+created.
+
+2. There also seems to be a few cases where a prototype declares parameters 
+to be passed of one type, but when implemented the parameters are actually 
+of another type.
+
+ex:
+function something (int *, char *);
+
+function something (BSTR, struct IXMLTag)
+{
+  //stuff
+}
+
+This caused the MFC class wizard to comment out all the methods involved. 
+Solving this takes tracing the code and matching parameter-for-parameter 
+between prototype and implemented function.
+
+---
+
+I have a project in mind that I'm working on currently. Has to do with 
+gaming and the ability of Jabber to associate data sources &quot;out-of-band&quot; 
+across its distributed architecture. I could really use JabberCOM to 
+quickly prototype my client, so I'll see what I can do to help out and fix 
+the above problems. Might have to port the whole thing to C++ (which, of 
+course, defeats the whole purpose of COM in the first place :P ), but I 
+would hafta write the code anyway if I don't.
+
+Will be a good challenge. Haven't looked at Pascal-like code for a long 
+time.
+
+Hey... and please don't take my above points as a slight towards you. I 
+think what you created is awesome and I've seen at least two 
+fully-functional clients that have benefited from it! :)
+
+-Omar Abdelwahed
+
+-----Original Message-----
+From:	<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">peter at vantek-corp.com</A> [SMTP:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">peter at vantek-corp.com</A>]
+Sent:	Thursday, July 20, 2000 11:51 AM
+To:	<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject:	Re: [JDEV] JabberCOM Question
+
+Omar -
+
+There are some serious issues with regard to using JabberCOM inside of a
+VC++ project. Apparently, it looks like the events do not get imported
+properly and you would have to handle them manually. This happens because
+JabberCOM is a &quot;raw&quot; COM Object, not an ActiveX control.
+
+This is a long standing issue, and I'd love for a VC++/COM guru to generate
+some sample code that others can use as a template. Unfortunately, my VC++
+knowledge is VERY VERY limited :(
+
+Peter Millard.
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="062002.html">[JDEV] [Fwd: Cool idea! (Jabphone ;-)]
+</A></li>
+	<LI>Next message: <A HREF="062005.html">[JDEV] JabberCOM Question
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61993">[ date ]</a>
+              <a href="thread.html#61993">[ thread ]</a>
+              <a href="subject.html#61993">[ subject ]</a>
+              <a href="author.html#61993">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

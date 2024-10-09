@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Changing database structure in xdb_sql
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Changing%20database%20structure%20in%20xdb_sql&In-Reply-To=%3C002001c26303%249eb3cb30%241d00a8c0%40tvir.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="043533.html">
+   <LINK REL="Next"  HREF="043541.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Changing database structure in xdb_sql</H1>
+    <B>Bruce Heller</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Changing%20database%20structure%20in%20xdb_sql&In-Reply-To=%3C002001c26303%249eb3cb30%241d00a8c0%40tvir.net%3E"
+       TITLE="[JDEV] Changing database structure in xdb_sql">bheller at terravirtual.net
+       </A><BR>
+    <I>Mon Sep 23 08:17:48 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="043533.html">[JDEV] Changing database structure in xdb_sql
+</A></li>
+        <LI>Next message: <A HREF="043541.html">[JDEV] Changing database structure in xdb_sql
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43535">[ date ]</a>
+              <a href="thread.html#43535">[ thread ]</a>
+              <a href="subject.html#43535">[ subject ]</a>
+              <a href="author.html#43535">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Well when I log the query I get :
+
+20020923T11:21:34: [alert] (xdb_sql_backend.c:92): the query is: UPDATE
+users SET password = 'azerty' WHERE jid =
+'<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">cvxnjknkj at chablis.terravirtual.net</A>'
+
+The query is right, if I copy/paste it to MySQL (thru phpMyAdmin for
+example), it does work perfectly... But it still puts a &quot;NULL&quot; value to the
+password... :/
+
+
+--------------------------------
+Bruce Heller
+Ligne Directe: 01.47.66.55.64
+Fax: 01.47.66.55.54
+Standard: 01.47.66.55.50
+--------------------------------
+TERRA VIRTUAL
+73, rue de Saussure
+75017 PARIS
+-------------------------------
+----- Original Message -----
+From: &quot;raditha dissanayake&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jabber at raditha.com</A>&gt;
+To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+Sent: Saturday, September 21, 2002 11:41 PM
+Subject: Re: [JDEV] Changing database structure in xdb_sql
+
+
+&gt;<i> certainly does not look as if there is an error in your xml
+</I>&gt;<i> what you can do is to add something like this
+</I>&gt;<i>
+</I>&gt;<i> &lt;code&gt;
+</I>&gt;<i>     log_error(ZONE,&quot;the query is: %s&quot;,query);
+</I>&gt;<i> &lt;/code&gt;
+</I>&gt;<i>
+</I>&gt;<i> to your sqldb_query() function in xdb_sql_backend.c that will tell you
+</I>&gt;<i> what is the exact query that is being passed to the databse.
+</I>&gt;<i>
+</I>&gt;<i> As for your second question you will be better off using a database that
+</I>&gt;<i> supports stored procedures rather than trying to use two separate queries.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Justin Georgeson wrote:
+</I>&gt;<i>
+</I>&gt;<i> &gt; You created your database with jid instead of username, right? Did you
+</I>&gt;<i> &gt; create it manually or edit one of the sample configs and create off
+</I>that?
+&gt;<i> &gt;
+</I>&gt;<i> &gt; Bruce Heller wrote:
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;&gt; Hello. I wanted to use a slighty different database architecture with
+</I>&gt;<i> &gt;&gt; xdb_sql, I modified the xdb_sql.xml according to the new layout of the
+</I>&gt;<i> &gt;&gt; tables. But it doesn't work as it should.
+</I>&gt;<i> &gt;&gt; For example the password changing was :
+</I>&gt;<i> &gt;&gt; &lt;!-- Authentication set query --&gt;
+</I>&gt;<i> &gt;&gt;       &lt;querydef name=&quot;auth-set&quot;&gt;
+</I>&gt;<i> &gt;&gt;         &lt;text&gt;UPDATE users SET password = '$$p$$' WHERE username =
+</I>&gt;<i> &gt;&gt; '$$username$$'&lt;/text&gt;
+</I>&gt;<i> &gt;&gt;         &lt;bindvar name=&quot;user&quot;&gt;$$username$$&lt;/bindvar&gt;
+</I>&gt;<i> &gt;&gt;         &lt;bindvar name=&quot;password&quot;&gt;$$p$$&lt;/bindvar&gt;
+</I>&gt;<i> &gt;&gt;       &lt;/querydef&gt;
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; And is now :
+</I>&gt;<i> &gt;&gt; &lt;!-- Authentication set query --&gt;
+</I>&gt;<i> &gt;&gt;       &lt;querydef name=&quot;auth-set&quot;&gt;
+</I>&gt;<i> &gt;&gt;         &lt;text&gt;UPDATE users SET password = '$$p$$' WHERE jid =
+</I>&gt;<i> &gt;&gt; '$$username$$'&lt;/text&gt;
+</I>&gt;<i> &gt;&gt;         &lt;bindvar name=&quot;user&quot;&gt;$$username$$&lt;/bindvar&gt;
+</I>&gt;<i> &gt;&gt;         &lt;bindvar name=&quot;password&quot;&gt;$$p$$&lt;/bindvar&gt;
+</I>&gt;<i> &gt;&gt;       &lt;/querydef&gt;
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; The only change here is that the username is now called &quot;jid&quot; in the
+</I>&gt;<i> &gt;&gt; database... But it won't change the password right, it onyl returns
+</I>&gt;<i> &gt;&gt; &quot;NULL&quot;
+</I>&gt;<i> &gt;&gt; into the database...
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; Also, I would like to know if it's possible to excecute 2 SQL query
+</I>&gt;<i> &gt;&gt; for a
+</I>&gt;<i> &gt;&gt; single querydef ?
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; Thanks in advance !
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; --------------------------------
+</I>&gt;<i> &gt;&gt; Bruce Heller
+</I>&gt;<i> &gt;&gt; Ligne Directe: 01.47.66.55.64
+</I>&gt;<i> &gt;&gt; Fax: 01.47.66.55.54
+</I>&gt;<i> &gt;&gt; Standard: 01.47.66.55.50
+</I>&gt;<i> &gt;&gt; --------------------------------
+</I>&gt;<i> &gt;&gt; TERRA VIRTUAL
+</I>&gt;<i> &gt;&gt; 73, rue de Saussure
+</I>&gt;<i> &gt;&gt; 75017 PARIS
+</I>&gt;<i> &gt;&gt; -------------------------------
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; _______________________________________________
+</I>&gt;<i> &gt;&gt; jdev mailing list
+</I>&gt;<i> &gt;&gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> &gt;&gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="043533.html">[JDEV] Changing database structure in xdb_sql
+</A></li>
+	<LI>Next message: <A HREF="043541.html">[JDEV] Changing database structure in xdb_sql
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43535">[ date ]</a>
+              <a href="thread.html#43535">[ thread ]</a>
+              <a href="subject.html#43535">[ subject ]</a>
+              <a href="author.html#43535">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

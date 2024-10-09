@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] XDB_SQL &amp; transports
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20XDB_SQL%20%26%20transports&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="011550.html">
+   <LINK REL="Next"  HREF="011545.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] XDB_SQL &amp; transports</H1>
+    <B>Rodrigo Roman</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20XDB_SQL%20%26%20transports&In-Reply-To="
+       TITLE="[JDEV] XDB_SQL &amp; transports">dedalo at ferengi.com.ar
+       </A><BR>
+    <I>Tue Mar  5 06:01:08 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="011550.html">[JDEV] About msn transport
+</A></li>
+        <LI>Next message: <A HREF="011545.html">[JDEV] question on running ECHO component
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11540">[ date ]</a>
+              <a href="thread.html#11540">[ thread ]</a>
+              <a href="subject.html#11540">[ subject ]</a>
+              <a href="author.html#11540">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>finally I made an advance to make transports work with mysql (it didn't
+work for me... and still doesn't)
+Now when I add a transport to my roster ther this information is saved
+into 2 tables, rosterusers (always did) and aim (this is new).
+ 
+Well now xdb_is saving data, also I saw in the debug that it is getting
+the data. but still have a problem.
+ 
+It cannot get presence to the transport. this is my debug:
+ 
+Tue Mar  5 02:49:31 2002  mio.c:760 MIO read from socket 22: &lt;presence
+to=&quot;aim.hermes.ferengi.com.ar&quot; type=&quot;available&quot;/&gt;
+Tue Mar  5 02:49:31 2002  c2s [client.c:277] pthsock_client_read called
+with: m:81A2198 flag:3 arg:81A22A0
+Tue Mar  5 02:49:31 2002  deliver.c:474 DELIVER 4:hermes.ferengi.com.ar
+&lt;route to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/825AB08' 
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">22 at c2s</A>/81A2198'&gt;&lt;presence &lt;mailto:from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">22 at c2s</A>/81A2198'&gt;
+to='aim.hermes.ferengi.com.ar' type='available'/&gt;&lt;/route&gt;
+Tue Mar  5 02:49:31 2002  deliver.c:678 delivering to instance
+'sessions'
+Tue Mar  5 02:49:31 2002  deliver.c:94 (81174D0)incoming packet &lt;route
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/825AB08' from='22
+@c2s/81A2198'&gt;&lt;presence to='aim.hermes.ferengi.com.ar'
+type='available'/&gt;&lt;/route&gt;
+Tue Mar  5 02:49:31 2002  users.c:143
+js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>,81A4FE8)
+Tue Mar  5 02:49:31 2002  mtq 81B69A0 entering from pth
+Tue Mar  5 02:49:31 2002  mtq 81B69A0 queue call 8259EB8
+Tue Mar  5 02:49:31 2002  sessions.c:246 THREAD:SESSION:FROM received a
+packet!
+Tue Mar  5 02:49:31 2002  modules.c:135 mapi_call 1
+Tue Mar  5 02:49:31 2002  modules.c:158 MAPI 825AE00
+Tue Mar  5 02:49:31 2002  modules.c:158 MAPI 825AE48
+Tue Mar  5 02:49:31 2002  mod_presence.c:337 track presence sent to jids
+Tue Mar  5 02:49:31 2002  modules.c:158 MAPI 825AE58
+Tue Mar  5 02:49:31 2002  modules.c:175 mapi_call returning unhandled
+Tue Mar  5 02:49:31 2002  deliver.c:257
+deliver(to[aim.hermes.ferengi.com.ar],from[<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/
+Hermes],t
+ype[2],packet[&lt;presence to='aim.hermes.ferengi.com.ar'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/Hermes'/&gt;])
+Tue Mar  5 02:49:31 2002  deliver.c:474 DELIVER
+1:aim.hermes.ferengi.com.ar &lt;presence to='aim.hermes.ferengi.com.ar'
+from
+='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/Hermes'/&gt;
+Tue Mar  5 02:49:31 2002  deliver.c:678 delivering to instance
+'aimlinker'
+Tue Mar  5 02:49:31 2002  mtq 81B69A0 leaving to pth
+Tue Mar  5 02:49:31 2002  mio.c:607 mio while loop top
+Tue Mar  5 02:49:49 2002  deliver.c:606 delivery failed (Internal
+Timeout)
+Tue Mar  5 02:49:49 2002  log.c:116 &lt;log type='notice'
+from='aim.hermes.ferengi.com.ar'&gt;bouncing a packet to aim.hermes.f
+erengi.com.ar from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/Hermes: Internal
+Timeout&lt;/log&gt;
+Tue Mar  5 02:49:49 2002  deliver.c:474 DELIVER
+3:aim.hermes.ferengi.com.ar &lt;log type='notice'
+from='aim.hermes.ferengi.c
+om.ar'&gt;bouncing a packet to aim.hermes.ferengi.com.ar from
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/Hermes: Internal Timeout&lt;/log&gt;
+Tue Mar  5 02:49:49 2002  deliver.c:678 delivering to instance 'elogger'
+20020305T10:49:49: [notice] (aim.hermes.ferengi.com.ar): bouncing a
+packet to aim.hermes.ferengi.com.ar from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at herme</A>
+s.ferengi.com.ar/Hermes: Internal Timeout
+Tue Mar  5 02:49:49 2002  deliver.c:474 DELIVER 1:hermes.ferengi.com.ar
+&lt;presence to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/Hermes
+' from='aim.hermes.ferengi.com.ar' type='error'&gt;&lt;error
+code='502'&gt;Internal Timeout&lt;/error&gt;&lt;/presence&gt;
+Tue Mar  5 02:49:49 2002  deliver.c:678 delivering to instance
+'sessions'
+Tue Mar  5 02:49:49 2002  deliver.c:94 (81174D0)incoming packet
+&lt;presence to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/Hermes' from='
+aim.hermes.ferengi.com.ar' type='error'&gt;&lt;error code='502'&gt;Internal
+Timeout&lt;/error&gt;&lt;/presence&gt;
+Tue Mar  5 02:49:49 2002  users.c:143
+js_user(<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>,81A4FE8)
+Tue Mar  5 02:49:49 2002  deliver.c:55 delivering locally to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/Hermes
+Tue Mar  5 02:49:49 2002  modules.c:135 mapi_call 3
+Tue Mar  5 02:49:49 2002  modules.c:158 MAPI 8120328
+Tue Mar  5 02:49:49 2002  mod_presence deliver phase
+Tue Mar  5 02:49:49 2002  modules.c:175 mapi_call returning unhandled
+Tue Mar  5 02:49:49 2002  mtq 81B69A0 entering from pth
+Tue Mar  5 02:49:49 2002  mtq 81B69A0 queue call 825C9B8
+Tue Mar  5 02:49:49 2002  sessions.c:301 THREAD:SESSION:TO received data
+from aim.hermes.ferengi.com.ar!
+Tue Mar  5 02:49:49 2002  modules.c:135 mapi_call 0
+Tue Mar  5 02:49:49 2002  modules.c:158 MAPI 825AE38
+Tue Mar  5 02:49:49 2002  mod_presence incoming filter for
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/Hermes
+Tue Mar  5 02:49:49 2002  modules.c:175 mapi_call returning unhandled
+Tue Mar  5 02:49:49 2002  deliver.c:474 DELIVER 4:c2s &lt;route
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/825AB08' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">22 at c2s</A>/81A21
+98'&gt;&lt;presence to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/Hermes'
+from='aim.hermes.ferengi.com.ar' type='error'&gt;&lt;error code='502'&gt;In
+ternal Timeout&lt;/error&gt;&lt;/presence&gt;&lt;/route&gt;
+Tue Mar  5 02:49:49 2002  deliver.c:678 delivering to instance 'c2s'
+Tue Mar  5 02:49:49 2002  c2s [client.c:164]
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/825AB08 has an active session, delivering
+packe
+t
+Tue Mar  5 02:49:49 2002  c2s [client.c:236] Writing packet to MIO:
+&lt;presence to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/Hermes' fr
+om='aim.hermes.ferengi.com.ar' type='error'&gt;&lt;error code='502'&gt;Internal
+Timeout&lt;/error&gt;&lt;/presence&gt;
+Tue Mar  5 02:49:49 2002  mio.c:1054 mio_write called on x: 8259700
+buffer: (null)
+Tue Mar  5 02:49:49 2002  mtq 81B69A0 leaving to pth
+Tue Mar  5 02:49:49 2002  mio.c:620 mio while loop, working
+Tue Mar  5 02:49:49 2002  mio.c:279 write_dump writing data: &lt;presence
+to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dedalo at hermes.ferengi.com.ar</A>/Hermes' from='aim
+.hermes.ferengi.com.ar' type='error'&gt;&lt;error code='502'&gt;Internal
+Timeout&lt;/error&gt;&lt;/presence&gt;
+Tue Mar  5 02:49:49 2002  mio.c:607 mio while loop top
+ 
+I'm using different processes for transports and I have 2 versions of
+multiple.xml one to hadle xdb_file and other for xdb_sql in the sabe
+server, if I use xdb_file it get presence OK (so aim transport is
+properly installed).
+ 
+any help?
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20020305/16d432f7/attachment.htm">https://www.jabber.org/jdev/attachments/20020305/16d432f7/attachment.htm</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="011550.html">[JDEV] About msn transport
+</A></li>
+	<LI>Next message: <A HREF="011545.html">[JDEV] question on running ECHO component
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11540">[ date ]</a>
+              <a href="thread.html#11540">[ thread ]</a>
+              <a href="subject.html#11540">[ subject ]</a>
+              <a href="author.html#11540">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

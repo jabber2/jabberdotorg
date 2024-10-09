@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] NetBSD-15/i386 and pth/mio
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20NetBSD-15/i386%20and%20pth/mio&In-Reply-To=%3CXFMail.010319154437.noud%40knot.nl%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="036004.html">
+   <LINK REL="Next"  HREF="036013.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] NetBSD-15/i386 and pth/mio</H1>
+    <B>User Noud</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20NetBSD-15/i386%20and%20pth/mio&In-Reply-To=%3CXFMail.010319154437.noud%40knot.nl%3E"
+       TITLE="[JDEV] NetBSD-15/i386 and pth/mio">noud at knot.nl
+       </A><BR>
+    <I>Mon Mar 19 08:44:37 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="036004.html">[JDEV] Jabber DevZone News - Integration of full support for XML-RPC  and SOAP
+</A></li>
+        <LI>Next message: <A HREF="036013.html">[JDEV] 302 Redirect
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35997">[ date ]</a>
+              <a href="thread.html#35997">[ thread ]</a>
+              <a href="subject.html#35997">[ subject ]</a>
+              <a href="author.html#35997">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE><A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tsbandit at jabber.org</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bugs at jabber.org</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">info at jabber.org</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jadmin at jabber.org</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+
+NetBSD-15/i386:
+i tried building static jabber-1.4 .. and cvs for some time but still:
+
+Mon Mar 19 14:34:02 2001  deliver.c:649 delivering to instance 'sessions'
+Mon Mar 19 14:34:02 2001  xdb.c:41 xdb_results checking xdb packet &lt;xdb
+type='result' to='sessions' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mm at mail.knot.nl</A>' ns='
+jabber:iq:auth:0k' id='2'&gt;&lt;zerok
+xmlns='jabber:iq:auth:0k'&gt;&lt;token&gt;3AB4E2CD&lt;/token&gt;&lt;sequence&gt;487&lt;/sequence&gt;&lt;hash&gt;f
+7ba4b113b3cb4e
+f610506a791a4e3e4985eecd4&lt;/hash&gt;&lt;/zerok&gt;&lt;/xdb&gt;
+Mon Mar 19 14:34:02 2001  modules.c:163 mapi_call returning unhandled
+Mon Mar 19 14:34:02 2001  deliver.c:460 DELIVER 4:c2s &lt;route
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mm at mail.knot.nl</A>' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">11 at c2s</A>/810F280' type='auth'&gt;&lt;iq id='0' 
+type='result'&gt;&lt;query
+xmlns='jabber:iq:auth'&gt;&lt;username&gt;mm&lt;/username&gt;&lt;password/&gt;&lt;digest/&gt;&lt;sequence&gt;486&lt;
+/sequence&gt;&lt;token&gt;3AB4E2CD&lt;
+/token&gt;&lt;resource/&gt;&lt;/query&gt;&lt;/iq&gt;&lt;/route&gt;
+Mon Mar 19 14:34:02 2001  deliver.c:649 delivering to instance 'c2s'
+Mon Mar 19 14:34:02 2001  client.c:132 C2S: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">mm at mail.knot.nl</A> has an active
+session, delivering packet
+Mon Mar 19 14:34:02 2001  client.c:186 Writing packet to MIO: &lt;iq id='0'
+type='result'&gt;&lt;query xmlns='jabber:iq:auth'&gt;&lt;username&gt;
+mm&lt;/username&gt;&lt;password/&gt;&lt;digest/&gt;&lt;sequence&gt;486&lt;/sequence&gt;&lt;token&gt;3AB4E2CD&lt;/token&gt;
+&lt;resource/&gt;&lt;/query&gt;&lt;/iq&gt;
+Mon Mar 19 14:34:02 2001  mio.c:899 mio_write called on x: 8160000 buffer:
+(null)
+Mon Mar 19 14:34:02 2001  dnsrv.c:143 dnsrv: Read error on coprocess(1): 1
+Operation not permitted
+Mon Mar 19 14:34:02 2001  dnsrv.c:157 DNSRV CHILD: out of loop.. exiting normal
+User defined signal 2
+
+so any time a user or new user connects my server's gone.
+
+if i outcomment:
+    if(mio__data != NULL)
+        pth_raise(mio__data-&gt;t, SIGUSR2);
+in mio_write in mio.c, a (new) user can connect.
+conference and jud won't work, i guess related to outcommenting the pth_raise.
+
+so to me this seems related to
+David Clissold's  jabberd crash in swapcontext() via _mio_raw_connect()
+.. <A HREF="http://mailman.jabber.org/pipermail/jdev/2001-March/005574.html">http://mailman.jabber.org/pipermail/jdev/2001-March/005574.html</A>
+and Phil Oleson's comment.
+
+i hope someone looks into the pth/mio thingy ..
+thanx,
+~n
+
+
+----------------------------------
+E-Mail: User Noud &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">noud at knot.nl</A>&gt;
+Date: 19-Mar-01
+Time: 15:42:27
+
+This message was sent by XFMail
+----------------------------------
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="036004.html">[JDEV] Jabber DevZone News - Integration of full support for XML-RPC  and SOAP
+</A></li>
+	<LI>Next message: <A HREF="036013.html">[JDEV] 302 Redirect
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35997">[ date ]</a>
+              <a href="thread.html#35997">[ thread ]</a>
+              <a href="subject.html#35997">[ subject ]</a>
+              <a href="author.html#35997">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

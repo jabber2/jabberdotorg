@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] bug in conferencing
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20bug%20in%20conferencing&In-Reply-To=%3CFF2AF4D762A0D3119E86009027C39A060BBA4C69%40sea-ex0.starwave.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="066960.html">
+   <LINK REL="Next"  HREF="066963.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] bug in conferencing</H1>
+    <B>Robert Temple</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20bug%20in%20conferencing&In-Reply-To=%3CFF2AF4D762A0D3119E86009027C39A060BBA4C69%40sea-ex0.starwave.com%3E"
+       TITLE="[JDEV] bug in conferencing">robert.temple at dig.com
+       </A><BR>
+    <I>Sat Jun  9 00:32:11 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="066960.html">[JDEV] Admin Rights
+</A></li>
+        <LI>Next message: <A HREF="066963.html">[JDEV] bug in conferencing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66955">[ date ]</a>
+              <a href="thread.html#66955">[ thread ]</a>
+              <a href="subject.html#66955">[ subject ]</a>
+              <a href="author.html#66955">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>We are trying to get conferencing working.   Its pretty much working, but I
+found one minor bug.
+
+If a person sends a message with some text that needs to be escaped, like a
+'&lt;' or '&gt;' character,
+the conferencing component drops everything after the escaped character when
+sending to others in
+the room.
+
+In one example, I went to a room and sent the following text:
+&lt;BOLD&gt;
+everyone bug me got this as the text back from the server
+&lt;
+
+The XML looks like this going to the server, as it should:
+&amp;lt;BOLD&amp;gt;
+But comes out with just this:
+&amp;lt;
+
+Below is a chunk from log file from the conferencing, you can see where it
+drops the stuff after the &amp;lt;
+
+-Robert
+
+Fri Jun  8 22:22:37 2001  mio.c:698 MIO read from socket 5: &lt;message
+type='groupchat' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa-82c08cc at conf.go.com</A>'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa at go.com</A>/jabberkit'&gt;&lt;body&gt;&amp;lt;BOLD&amp;gt;&lt;/body&gt;&lt;html
+xmlns='<A HREF="http://www.w3.org/1999/xhtml'">http://www.w3.org/1999/xhtml'</A>&gt;&lt;body
+style='font-size:10pt;color:#800000;font-weight:400;font-style:normal;text-d
+ecoration:none;font-family:Courier
+New;'&gt;&amp;lt;BOLD&amp;gt;&lt;/body&gt;&lt;/html&gt;&lt;/message&gt;
+Fri Jun  8 22:22:37 2001  base_connect.c:118 process XML: m:168668 state:3,
+arg:78000, x:1761F8
+Fri Jun  8 22:22:37 2001  deliver.c:460 DELIVER 1:conf.go.com &lt;message
+type='groupchat' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa-82c08cc at conf.go.com</A>'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa at go.com</A>/jabberkit'&gt;&lt;body&gt;&amp;lt;BOLD&amp;gt;&lt;/body&gt;&lt;html
+xmlns='<A HREF="http://www.w3.org/1999/xhtml'">http://www.w3.org/1999/xhtml'</A>&gt;&lt;body
+style='font-size:10pt;color:#800000;font-weight:400;font-style:normal;text-d
+ecoration:none;font-family:Courier
+New;'&gt;&amp;lt;BOLD&amp;gt;&lt;/body&gt;&lt;/html&gt;&lt;/message&gt;
+Fri Jun  8 22:22:37 2001  deliver.c:649 delivering to instance 'conf.go.com'
+Fri Jun  8 22:22:37 2001  mtq B1BF8 entering from pth
+Fri Jun  8 22:22:37 2001  mtq B1BF8 queue call 176C60
+Fri Jun  8 22:22:37 2001  conference.c:184 processing packet &lt;message
+type='groupchat' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa-82c08cc at conf.go.com</A>'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa at go.com</A>/jabberkit'&gt;&lt;body&gt;&amp;lt;BOLD&amp;gt;&lt;/body&gt;&lt;html
+xmlns='<A HREF="http://www.w3.org/1999/xhtml'">http://www.w3.org/1999/xhtml'</A>&gt;&lt;body
+style='font-size:10pt;color:#800000;font-weight:400;font-style:normal;text-d
+ecoration:none;font-family:Courier
+New;'&gt;&amp;lt;BOLD&amp;gt;&lt;/body&gt;&lt;/html&gt;&lt;/message&gt;
+Fri Jun  8 22:22:37 2001  conference_room.c:221 handling request from
+participant
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa at go.com</A>/jabberkit(b9c1e396efeff817b39a8e70c2c914911800d20c/aa_test
+_aa) to room <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa-82c08cc at conf.go.com</A>
+Fri Jun  8 22:22:37 2001  conference_user.c:288 user send to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rwtemple at go.com</A>/jabberkit from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa at go.com</A>/jabberkit
+Fri Jun  8 22:22:37 2001  deliver.c:460 DELIVER 1:go.com &lt;message
+type='groupchat' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rwtemple at go.com</A>/jabberkit'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa-82c08cc at conf.go.com</A>/b9c1e396efeff817b39a8e70c2c914911800d20
+c' cnu=''&gt;&lt;body&gt;&amp;lt;&lt;/body&gt;&lt;html xmlns='<A HREF="http://www.w3.org/1999/xhtml'">http://www.w3.org/1999/xhtml'</A>&gt;&lt;body
+style='font-size:10pt;color:#800000;font-weight:400;font-style:normal;text-d
+ecoration:none;font-family:Courier New;'&gt;&amp;lt;&lt;/body&gt;&lt;/html&gt;&lt;/message&gt;
+Fri Jun  8 22:22:37 2001  deliver.c:649 delivering to instance 'conflinker'
+Fri Jun  8 22:22:37 2001  mio.c:908 mio_write called on x: 177600 buffer:
+(null)
+Fri Jun  8 22:22:37 2001  conference_user.c:288 user send to
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa at go.com</A>/jabberkit from <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa at go.com</A>/jabberkit
+Fri Jun  8 22:22:37 2001  deliver.c:460 DELIVER 1:go.com &lt;message
+type='groupchat' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa at go.com</A>/jabberkit'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa-82c08cc at conf.go.com</A>/b9c1e396efeff817b39a8e70c2c914911800d20
+c' cnu=''&gt;&lt;body&gt;&amp;lt;BOLD&amp;gt;&lt;/body&gt;&lt;html
+xmlns='<A HREF="http://www.w3.org/1999/xhtml'">http://www.w3.org/1999/xhtml'</A>&gt;&lt;body
+style='font-size:10pt;color:#800000;font-weight:400;font-style:normal;text-d
+ecoration:none;font-family:Courier
+New;'&gt;&amp;lt;BOLD&amp;gt;&lt;/body&gt;&lt;/html&gt;&lt;/message&gt;
+Fri Jun  8 22:22:37 2001  deliver.c:649 delivering to instance 'conflinker'
+Fri Jun  8 22:22:37 2001  mio.c:908 mio_write called on x: 178620 buffer:
+(null)
+Fri Jun  8 22:22:37 2001  mtq B1BF8 leaving to pth
+Fri Jun  8 22:22:37 2001  mio.c:268 write_dump writing data: &lt;message
+type='groupchat' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">rwtemple at go.com</A>/jabberkit'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa-82c08cc at conf.go.com</A>/b9c1e396efeff817b39a8e70c2c914911800d20
+c' cnu=''&gt;&lt;body&gt;&amp;lt;&lt;/body&gt;&lt;html xmlns='<A HREF="http://www.w3.org/1999/xhtml'">http://www.w3.org/1999/xhtml'</A>&gt;&lt;body
+style='font-size:10pt;color:#800000;font-weight:400;font-style:normal;text-d
+ecoration:none;font-family:Courier New;'&gt;&amp;lt;&lt;/body&gt;&lt;/html&gt;&lt;/message&gt;
+Fri Jun  8 22:22:37 2001  mio.c:268 write_dump writing data: &lt;message
+type='groupchat' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa at go.com</A>/jabberkit'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">aa_test_aa-82c08cc at conf.go.com</A>/b9c1e396efeff817b39a8e70c2c914911800d20
+c' cnu=''&gt;&lt;body&gt;&amp;lt;BOLD&amp;gt;&lt;/body&gt;&lt;html
+xmlns='<A HREF="http://www.w3.org/1999/xhtml'">http://www.w3.org/1999/xhtml'</A>&gt;&lt;body
+style='font-size:10pt;color:#800000;font-weight:400;font-style:normal;text-d
+ecoration:none;font-family:Courier
+New;'&gt;&amp;lt;BOLD&amp;gt;&lt;/body&gt;&lt;/html&gt;&lt;/message&gt;
+
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="066960.html">[JDEV] Admin Rights
+</A></li>
+	<LI>Next message: <A HREF="066963.html">[JDEV] bug in conferencing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66955">[ date ]</a>
+              <a href="thread.html#66955">[ thread ]</a>
+              <a href="subject.html#66955">[ subject ]</a>
+              <a href="author.html#66955">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,72 @@
+This is the new conferencing/groupchat service for the 1.4 server.
+
+Unpack it into your 1.4 server folder, and type 'make' to build the conference.so.
+
+Then add the following to your jabber.xml configuration file:
+
+(NOTE: if you want this service to be accessible from other servers,
+ change any 'conference.localhost' or 'private.localhost' listed below
+ to a fully qualified domain name!)
+
+Conference can be configured as a private conferencing server (no browse, all rooms locked up):
+
+<service id='private.localhost'>
+  <load><conference>./conference/conference.so</conference></load>
+  <conference xmlns="jabberd:config:conference">
+    <private/>
+    <history>30</history>
+    <vCard>
+      <FN>Private Conferences</FN>
+      <DESC>This service is for private conferencing rooms.</DESC>
+      <URL>http://foo.bar/</URL>
+    </vCard>
+    <notice>
+      <join> has become available</join>
+      <leave> has left</leave>
+      <rename> is now known as </rename>
+    </notice>
+  </conferece>
+</service>
+
+Add this section to the browse area of the jsm service to advertise it to your users:
+
+    <conference type="private" jid="private.localhost" name="Private Conferencing"/>
+
+
+Conference can ALSO be configured as a public chatroom server:
+
+<service id='conference.localhost'>
+  <load><conference>./conference/conference.so</conference></load>
+  <conference xmlns="jabber:config:conference">
+    <public/>
+    <vCard>
+      <FN>Public Chatrooms</FN>
+      <DESC>This service is for public chatrooms.</DESC>
+      <URL>http://foo.bar/</URL>
+    </vCard>
+    <history>20</history>
+    <notice>
+      <join> has become available</join>
+      <leave> has left</leave>
+      <rename> is now known as </rename>
+    </notice>
+    <room jid="help@conference.localhost">
+      <name>Assistance Zone</name>
+      <privacy/>
+    </room>
+    <room jid="admin@conference.localhost">
+      <name>Adminz only</name>
+      <secret>con0r</secret>
+      <notice>
+        <join> just rocks!</join>
+        <leave> gets lost</leave>
+        <rename> feels it is more important to be known as </rename>
+      </notice>
+    </room>
+  </conference>
+</service>
+
+Add this section to the browse area of the jsm service to advertise it to your users:
+
+    <conference type="public" jid="conference.localhost" name="Public Chatrooms"/>
+

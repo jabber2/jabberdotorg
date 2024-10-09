@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] From the crude hack department
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20From%20the%20crude%20hack%20department&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="012260.html">
+   <LINK REL="Next"  HREF="012414.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] From the crude hack department</H1>
+    <B>Piers Harding</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20From%20the%20crude%20hack%20department&In-Reply-To="
+       TITLE="[JDEV] From the crude hack department">piers at ompa.net
+       </A><BR>
+    <I>Thu Apr 18 08:32:11 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="012260.html">[JDEV] Slashdot Article
+</A></li>
+        <LI>Next message: <A HREF="012414.html">Slightly Related: Re: [JDEV] Emoticons: guidelines
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12261">[ date ]</a>
+              <a href="thread.html#12261">[ thread ]</a>
+              <a href="subject.html#12261">[ subject ]</a>
+              <a href="author.html#12261">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Jarl is great!  Perl is great!
+
+The other day when I was trying to test out some headline viewing
+integration with pubsub, I had the problem of clients not being able to
+support new packet types etc.
+So....  I modifeid Jarl!
+
+In JEP 0024 the packet type for pushed subscription data is an IQ - but
+the payload can be anything eg:
+&lt;iq type='set' to='pubsub component' id='p1'&gt; 
+  &lt;query xmlns='pipetree:iq:pubsub'&gt; 
+    &lt;publish xmlns='peerkat:home:weblogs:jabber:test'&gt; 
+      &lt;item xmlns='peerkat:home:weblogs:jabber:test'&gt; 
+        &lt;title&gt;the title&lt;/title&gt; 
+        &lt;link&gt;<A HREF="http://the.link&lt;/link">http://the.link&lt;/link</A>&gt; 
+        &lt;description&gt;this is the description&lt;/description&gt; 
+      &lt;/item&gt; 
+    &lt;/publish&gt; 
+  &lt;/query&gt; 
+&lt;/iq&gt; 
+
+Basically all I need t odo was to munge this dat aarround so that it
+looked like a &lt;message type=&quot;headline&quot;/&gt;.  So using a combination of
+Jabber::NodeFactory and Net::Jabber I only had to do two things.
+
+(a) at arround line 712 of jarl I changed the receive callback to look
+like:
+ $jabber{client}-&gt;SetCallBacks(message=&gt;\&amp;messageCB,
+                                presence=&gt;\&amp;presenceCB,
+                                iq=&gt;\&amp;iqCB,
+                                send=&gt;\&amp;jarlDebug_AddSendXML,
+                                receive=&gt;\&amp;my_iq_CB);
+
+(b) I inserted my own custom callback to handle both debug packets and
+whatever I want to do ( which is create headlines ).
+
+The real bit of magic is this subroutine which takes a packet and
+generates a headline- this to me is the real magic, as jarl has
+subroutines for all these events, which means you can easily roll all
+your own custom payload packets in.
+
+         &amp;jarlHeadlineIF_AddMessage($mess);
+
+
+Note: I have picked up the debugging of packets by mannually calling
+&amp;jarlDebug_AddReceiveXML( @_ );
+
+
+
+sub my_iq_CB {
+
+  my ( $sid, $xml )  = @_;
+# $xml is the string of xml
+
+# make sure you still get debug
+  &amp;jarlDebug_AddReceiveXML( @_ );
+
+  $Debug-&gt;Log1(&quot;my_iq_CB: start&quot;);
+
+# parse the xml so that I can easily manipulate it
+  use Jabber::NodeFactory;
+  my $jcnf = new Jabber::NodeFactory(fromstr =&gt; 1);
+  my $n = $jcnf-&gt;newNodeFromStr($xml);
+  return unless $n-&gt;name() eq &quot;iq&quot;;
+
+  my $query = $n-&gt;getTag('query');
+  return unless $query;
+  return unless $query-&gt;attr(&quot;xmlns&quot;) eq &quot;jabber:iq:pubsub&quot;;
+
+  print STDERR &quot;WE HAVE A PUBSUB: $xml ....&quot;;
+
+ # now create the headline packet and then call the magic
+  foreach my $pub ( $query-&gt;getChildren() ){
+    next unless $pub-&gt;name() eq &quot;publish&quot;;
+    foreach my $item ( $pub-&gt;getChildren() ){
+      next unless $item-&gt;name() eq &quot;item&quot;;
+        my $mess = new Net::Jabber::Message();
+        $mess-&gt;SetMessage(
+                        to =&gt; $n-&gt;attr('to'),
+                        from =&gt; $n-&gt;attr('from'),
+                        type =&gt; 'headline',
+                        subject =&gt; $item-&gt;getTag(&quot;title&quot;)-&gt;data(),
+                        body =&gt; $item-&gt;getTag(&quot;link&quot;)-&gt;data().&quot; -
+&quot;.$item-&gt;getTag(&quot;description&quot;)-&gt;data(),
+                        );
+
+#  this is the magic
+         &amp;jarlHeadlineIF_AddMessage($mess);
+    }
+  }
+
+  $Debug-&gt;Log1(&quot;my_iq_CB: end&quot;);
+}
+
+Cheers.
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="012260.html">[JDEV] Slashdot Article
+</A></li>
+	<LI>Next message: <A HREF="012414.html">Slightly Related: Re: [JDEV] Emoticons: guidelines
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12261">[ date ]</a>
+              <a href="thread.html#12261">[ thread ]</a>
+              <a href="subject.html#12261">[ subject ]</a>
+              <a href="author.html#12261">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

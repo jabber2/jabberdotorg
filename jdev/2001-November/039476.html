@@ -1,0 +1,215 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Perl and c SHA problems
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Perl%20and%20c%20SHA%20problems&In-Reply-To=%3C20011115110755.B8937%40box5.net%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="039471.html">
+   <LINK REL="Next"  HREF="039484.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Perl and c SHA problems</H1>
+    <B>Thomas Muldowney</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Perl%20and%20c%20SHA%20problems&In-Reply-To=%3C20011115110755.B8937%40box5.net%3E"
+       TITLE="[JDEV] Perl and c SHA problems">temas at box5.net
+       </A><BR>
+    <I>Thu Nov 15 11:07:56 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="039471.html">[JDEV] Perl and c SHA problems
+</A></li>
+        <LI>Next message: <A HREF="039484.html">[JDEV] Perl and c SHA problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39476">[ date ]</a>
+              <a href="thread.html#39476">[ thread ]</a>
+              <a href="subject.html#39476">[ subject ]</a>
+              <a href="author.html#39476">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hrm, I'll play around with this and see if I can get some more info for
+you.
+
+--temas
+
+
+On Wed, Nov 14, 2001 at 08:52:48AM -0700, Tim Ferguson wrote:
+&gt;<i> Hello,
+</I>&gt;<i> 
+</I>&gt;<i> I am running the 1.4.1 server on Tru64.  I suspect a problem with sha.c due
+</I>&gt;<i> to the 64 bit OS, but I do not know where to go from here.  I actually
+</I>&gt;<i> already have a modified version of sha.c from someone who claimed it fixed
+</I>&gt;<i> any 64 bit problems and I will include what is modified below.  The symptoms
+</I>&gt;<i> are:  All agents or transports can not connect due to an invalid handshake
+</I>&gt;<i> if they are written in perl, of course all agents written in c can connect
+</I>&gt;<i> because they all use the same routine, and no one can do anything but plain
+</I>&gt;<i> text authentication.  I tried moving the perl agents to linux and connecting
+</I>&gt;<i> back to the Tru64 server just to make sure that the perl was not the problem
+</I>&gt;<i> with the 64 bit architecture, but of course I still had an invalid handshake
+</I>&gt;<i> reported.  Does anyone have ideas, or have they already dealt with this?
+</I>&gt;<i> 
+</I>&gt;<i> Thanks,
+</I>&gt;<i> 
+</I>&gt;<i> Tim Ferguson
+</I>&gt;<i> Cable &amp; Wireless
+</I>&gt;<i> 719-590-4100
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> shahash and shahash_r are the only functions changed in my modified sha.c:
+</I>&gt;<i> 
+</I>&gt;<i> char *shahash(char *str)
+</I>&gt;<i> {
+</I>&gt;<i>     char read_buffer[65];
+</I>&gt;<i>     //int read_buffer[64];
+</I>&gt;<i>     int c=1, i;
+</I>&gt;<i>     long long length=0;
+</I>&gt;<i>     int strsz;
+</I>&gt;<i>     static char final[41];
+</I>&gt;<i>     int *hashval;
+</I>&gt;<i> 
+</I>&gt;<i>     if(str==NULL) return NULL;
+</I>&gt;<i> 
+</I>&gt;<i>     memset(read_buffer, 0, 65);
+</I>&gt;<i>      hashval = (int *)malloc(20);
+</I>&gt;<i> 
+</I>&gt;<i>     sha_init(hashval);
+</I>&gt;<i> 
+</I>&gt;<i>     strsz = strlen(str);
+</I>&gt;<i> 
+</I>&gt;<i>     while (strsz&gt;0)
+</I>&gt;<i>     {
+</I>&gt;<i>         strncpy((char *)&amp;read_buffer, str, 64);
+</I>&gt;<i>         c = strlen((char *)&amp;read_buffer);
+</I>&gt;<i>         length+=c;
+</I>&gt;<i>         strsz-=c;
+</I>&gt;<i>         if (strsz&lt;=0)
+</I>&gt;<i>         {
+</I>&gt;<i>             length&lt;&lt;=3;
+</I>&gt;<i>             read_buffer[c]=0x80;
+</I>&gt;<i>             for (i=c+1; i&lt;64; i++)
+</I>&gt;<i>                 read_buffer[i]=0;
+</I>&gt;<i>             if (c&gt;55)
+</I>&gt;<i>             {
+</I>&gt;<i>                 /* we need to do an entire new block */
+</I>&gt;<i>                 sha_hash((int *)&amp;read_buffer, hashval);
+</I>&gt;<i>                 for (i=0; i&lt;14; i++)
+</I>&gt;<i>                     ((int*)&amp;read_buffer)[i]=0;
+</I>&gt;<i>             }
+</I>&gt;<i> 
+</I>&gt;<i> #ifdef WORDS_BIGENDIAN
+</I>&gt;<i>             memcpy(read_buffer+56, &amp;length, 8);
+</I>&gt;<i> #else
+</I>&gt;<i>             for(i=0; i&lt;8; i++)
+</I>&gt;<i>                 read_buffer[56+i]=(length&gt;&gt;(56-(i*8))) &amp; 0xFF;
+</I>&gt;<i> #endif
+</I>&gt;<i> 
+</I>&gt;<i>         }
+</I>&gt;<i> 
+</I>&gt;<i>         sha_hash((int *)&amp;read_buffer, hashval);
+</I>&gt;<i>         str+=64;
+</I>&gt;<i>     }
+</I>&gt;<i> 
+</I>&gt;<i>         final[40] = '\0';
+</I>&gt;<i>     strprintsha((char *)&amp;final, hashval);
+</I>&gt;<i>     free(hashval);
+</I>&gt;<i>     return (char *)&amp;final;
+</I>&gt;<i> }
+</I>&gt;<i> 
+</I>&gt;<i> void shahash_r(const char* str, char hashbuf[41])
+</I>&gt;<i> {
+</I>&gt;<i>     char read_buffer[65];
+</I>&gt;<i>     //int read_buffer[64];
+</I>&gt;<i>     int c=1, i;
+</I>&gt;<i>     long long length=0;
+</I>&gt;<i>     int strsz;
+</I>&gt;<i>     int *hashval;
+</I>&gt;<i> 
+</I>&gt;<i>     if(str==NULL)
+</I>&gt;<i>         {
+</I>&gt;<i>                 hashbuf[0] = '\0';
+</I>&gt;<i>                 return;
+</I>&gt;<i>         }
+</I>&gt;<i> 
+</I>&gt;<i>     memset(read_buffer, 0, 65);
+</I>&gt;<i>     hashval = (int *)malloc(20);
+</I>&gt;<i> 
+</I>&gt;<i>     sha_init(hashval);
+</I>&gt;<i> 
+</I>&gt;<i>     strsz = strlen(str);
+</I>&gt;<i> 
+</I>&gt;<i>     while (strsz&gt;0)
+</I>&gt;<i>     {
+</I>&gt;<i>        strncpy((char *)&amp;read_buffer, str, 64);
+</I>&gt;<i>         c = strlen((char *)&amp;read_buffer);
+</I>&gt;<i>         length+=c;
+</I>&gt;<i>         strsz-=c;
+</I>&gt;<i>         if (strsz&lt;=0)
+</I>&gt;<i>         {
+</I>&gt;<i>             length&lt;&lt;=3;
+</I>&gt;<i>             read_buffer[c]=0x80;
+</I>&gt;<i>             for (i=c+1; i&lt;64; i++)
+</I>&gt;<i>                 read_buffer[i]=0;
+</I>&gt;<i>             if (c&gt;55)
+</I>&gt;<i>             {
+</I>&gt;<i>                 /* we need to do an entire new block */
+</I>&gt;<i>                 sha_hash((int *)&amp;read_buffer, hashval);
+</I>&gt;<i>                 for (i=0; i&lt;14; i++)
+</I>&gt;<i>                     ((int*)&amp;read_buffer)[i]=0;
+</I>&gt;<i>             }
+</I>&gt;<i> 
+</I>&gt;<i> #ifdef WORDS_BIGENDIAN
+</I>&gt;<i>             memcpy(read_buffer+56, &amp;length, 8);
+</I>&gt;<i> #else
+</I>&gt;<i>             for(i=0; i&lt;8; i++)
+</I>&gt;<i>               {
+</I>&gt;<i>                 read_buffer[56+i]=(length&gt;&gt;(56-(i*8))) &amp; 0xFF;
+</I>&gt;<i>                 /* we need to do an entire new block */
+</I>&gt;<i>                 sha_hash((int *)&amp;read_buffer, hashval);
+</I>&gt;<i>                 for (i=0; i&lt;14; i++)
+</I>&gt;<i>                   ((int*)&amp;read_buffer)[i]=0;
+</I>&gt;<i>               }
+</I>&gt;<i> #endif
+</I>&gt;<i> 
+</I>&gt;<i>         }
+</I>&gt;<i> 
+</I>&gt;<i>         sha_hash((int *)&amp;read_buffer, hashval);
+</I>&gt;<i>         str+=64;
+</I>&gt;<i>     }
+</I>&gt;<i> 
+</I>&gt;<i>     hashbuf[40] = '\0';
+</I>&gt;<i>     strprintsha((char *)hashbuf, hashval);
+</I>&gt;<i>     free(hashval);
+</I>&gt;<i> }
+</I>-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20011115/14b08859/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20011115/14b08859/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="039471.html">[JDEV] Perl and c SHA problems
+</A></li>
+	<LI>Next message: <A HREF="039484.html">[JDEV] Perl and c SHA problems
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#39476">[ date ]</a>
+              <a href="thread.html#39476">[ thread ]</a>
+              <a href="subject.html#39476">[ subject ]</a>
+              <a href="author.html#39476">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

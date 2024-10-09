@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Consistent JIDs across multiple XMPP servers
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Consistent%20JIDs%20across%20multiple%20XMPP%20servers&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="027455.html">
+   <LINK REL="Next"  HREF="027447.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Consistent JIDs across multiple XMPP servers</H1>
+    <B>Moyer, Todd (TMOYER)</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Consistent%20JIDs%20across%20multiple%20XMPP%20servers&In-Reply-To="
+       TITLE="[jdev] Consistent JIDs across multiple XMPP servers">TMOYER at arinc.com
+       </A><BR>
+    <I>Wed Apr  2 13:45:37 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="027455.html">[jdev] pubsub and paid for content
+</A></li>
+        <LI>Next message: <A HREF="027447.html">[jdev] Consistent JIDs across multiple XMPP servers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27445">[ date ]</a>
+              <a href="thread.html#27445">[ thread ]</a>
+              <a href="subject.html#27445">[ subject ]</a>
+              <a href="author.html#27445">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+This is my first post to the list, and I'm looking for advice on the
+applicability of XMPP to a certain problem space.  Dave Crindland suggested
+posting it to the developer mailing list because it may involve some
+extensions to XMPP.  Here's a real-world situation which I'm currently
+witnessing:
+
+Several delivery companies compete for customers, but also routinely lease
+their delivery vehicles to each other for short amounts of time.   All
+delivery vehicles are equipped with on-board computers which monitor things
+like current position and remaining fuel.  The vehicles are beginning to be
+equipped with wireless connectivity (a mix of 802.11, cellular modems, and
+private data radios).  Each company operates their own private data radio
+wireless networks and 802.11 networks, and all networks have different
+coverage areas.  The delivery companies, and the vendors who produce the
+onboard computers and wireless equipment, have agreed in principle that a
+standard messaging mechanism is needed to exchange messages between the
+onboard computers and the delivery company data centers.  The idea is that a
+leased vehicle will be able to communicate with both the lessee and lessor.
+The lessee's dispatch department will need to remain in contact with the
+vehicle for dispatching instructions, while the vehicle owner will also want
+to remain in contact to receive position reports and maintenance-related
+information.  The data centers of all delivery companies are capable of
+exchanging messages with each other, but there is one rule which must be
+followed:  Communication between the leased vehicle and the lessee cannot
+depend on any of the lessor's infrastructure.
+
+So, if we were to use XMPP to exchange messages between the vehicles and
+data centers, here's one way we could do it:
+
+1) Each delivery company sets up one or more XMPP servers.  Each XMPP server
+can establish a server-to-server connection to every other XMPP server.
+2) Each vehicle acts as an XMPP client, and is preloaded with a list of XMPP
+server addresses for each supported wireless link.  It also knows the JID of
+each XMPP client in the data center with which it wants to communicate.
+3) As a vehicle enters a wireless coverage area (and it may be the coverage
+area of a competitor), it establishes a connection with an XMPP server which
+it knows should be reachable over the new link.
+4) Each vehicle has a unique identifier which it uses as its node address in
+its Jabber ID.  The domain in the JID is the domain name of the XMPP server.
+5) For messages travelling from the vehicle to a data center, the JID is
+fixed and regular message stanzas will handle the routing just fine.
+
+But I don't see an easy way to route messages from a data center to a
+vehicle which is currently on a different XMPP server.  Basically,
+applications in the data center would have to know the &quot;current&quot; JID (or
+JIDs) of the vehicle (&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">vehicle1234 at companyA.com</A>&quot; versus
+&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">vehicle1234 at companyB.com</A>&quot;).  We really want a consistent JID for each
+vehicle regardless of which XMPP server it is connected to.  Why not just
+have the vehicle always connect to the same XMPP server, regardless of which
+network its on?  First, because we may not have the necessary IP routing,
+but also because we cannot depend on any of the lessor's infrastructure.  If
+Company A leases a vehicle from Company B, Company A must not depend on any
+of Company B's infrastructure to communicate with the leased vehicle.  This
+is because Company B has no real obligation to provide communications
+services to Company A (remember, they are fundamentally competitors).
+
+One way to solve this problem would be to give each vehicle a &quot;pseudo-JID&quot;
+such as &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">vehicle1234 at mobile-location</A>&quot; and have a service within the XMPP
+servers map this to the current &quot;real JID.&quot;  The XMPP servers could exchange
+this mapping among themselves as needed, and then each XMPP server would
+know how to route a message to a vehicle without depending on any one
+server.  But I believe this would involve a new extension to XMPP.  And I'm
+sure this isn't the only way to solve the problem..
+
+I first posed this question in the jdev chatroom-- Dave Crindland also
+suggested I place a link to the log:
+<A HREF="http://logs.jabber.org/jdev@conference.jabber.org/2008-03-28.html#09:02:02">http://logs.jabber.org/jdev@conference.jabber.org/2008-03-28.html#09:02:02</A>
+
+I can see this being of interest to a much wider audience-- anyone who wants
+to maintain a consistent JID across a set of XMPP servers, where they can
+connect to any one of the set.  I look forward to benefitting from the
+expertise of the folks on this list...
+
+----------
+Todd Moyer
+Advanced Transportation Programs
+ARINC, Inc.
+(410)266-4241
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <A HREF="https://www.jabber.org/jdev/attachments/20080402/9cf50b14/attachment.htm">https://www.jabber.org/jdev/attachments/20080402/9cf50b14/attachment.htm</A> 
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 4962 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20080402/9cf50b14/attachment.bin">https://www.jabber.org/jdev/attachments/20080402/9cf50b14/attachment.bin</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="027455.html">[jdev] pubsub and paid for content
+</A></li>
+	<LI>Next message: <A HREF="027447.html">[jdev] Consistent JIDs across multiple XMPP servers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27445">[ date ]</a>
+              <a href="thread.html#27445">[ thread ]</a>
+              <a href="subject.html#27445">[ subject ]</a>
+              <a href="author.html#27445">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

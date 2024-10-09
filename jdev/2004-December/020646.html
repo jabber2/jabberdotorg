@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Gaim and gnomemeeting using jabber
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Gaim%20and%20gnomemeeting%20using%20jabber&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="020644.html">
+   <LINK REL="Next"  HREF="020653.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Gaim and gnomemeeting using jabber</H1>
+    <B>Richard Dobson</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Gaim%20and%20gnomemeeting%20using%20jabber&In-Reply-To="
+       TITLE="[jdev] Gaim and gnomemeeting using jabber">richard at dobson-i.net
+       </A><BR>
+    <I>Wed Dec  1 09:34:34 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="020644.html">[jdev] Gaim and gnomemeeting using jabber
+</A></li>
+        <LI>Next message: <A HREF="020653.html">[jdev] Gaim and gnomemeeting using jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20646">[ date ]</a>
+              <a href="thread.html#20646">[ thread ]</a>
+              <a href="subject.html#20646">[ subject ]</a>
+              <a href="author.html#20646">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Sorry for this big email everyone
+
+&gt;<i> Notice that voip-presence and im-presence are not entirely unrelated:
+</I>&gt;<i> while it is false to assume that voip-away implies im-away, being
+</I>&gt;<i> im-away certainly means you're voip-away.
+</I>
+No but its unrelated enough to not be correct as an extension to IM 
+presence, as I and others have repeatedly said.
+
+&gt;<i> I really think that:
+</I>&gt;<i> * using presence isn't as stupid as you think ;
+</I>
+Its not just me that thinks it, and as you are new to jabber I would suggest 
+you listen to the people that have been working with it and developing with 
+it for a very long time (I myself have been working with jabber stuff since 
+before there was even a JSF).
+
+&gt;<i> * using jabber:x:oob to send the uri isn't against the standard ;
+</I>
+No using jabber:x:oob is the correct thing to send the URI in, but you are 
+using jabber:x:oob in a way that is wrong and will potensially cause serious 
+problems with backwards compatibility, sending a voip-uri in jabber:x:oob is 
+asking the recieving client to execute that URI and pass it right to the 
+appropriate application on the users system, which will likely cause them to 
+start a voip call, trying to use this as a way to say you are in a voip call 
+is simply wrong and against the spec.
+
+&gt;<i> * it works _now_, and not in 10 years when people will have finished
+</I>&gt;<i> debatting the issue ;
+</I>
+It wont work now due to the problems outlined above.
+
+&gt;<i> * it makes a very simple patch that has a chance to get upstream now ;
+</I>
+It might be simple but it is still wrong.
+
+&gt;<i> Bad. You assume that deciding if the call is done or not is jabber's
+</I>&gt;<i> problem: it's not. There's a voip-client there: it will ask the user for
+</I>&gt;<i> confirmation. When someone has your voip-uri, you still have your word
+</I>&gt;<i> to say.
+</I>&gt;<i>
+</I>&gt;<i> Besides, aren't the presence packets only sent to contacts for which I
+</I>&gt;<i> already said they were authorized to know about me?
+</I>
+Not always no, if for example you are in a chatroom the people in that room 
+will get your presence, and if you are adding your extension to presence 
+lots of people will know what your machines IP etc is, which is very bad, 
+jabber is designed in such a way that normally your IP address will not be 
+revealed to all and sundry, also when chatting to people you and adding them 
+to your contacts it doesnt mean you necessarily trust them enough to reveal 
+your ip address uncessarily, what about DDos attacks or the various buffer 
+overflow attacks that can be performed against a users machine once someone 
+has their IP? The VoIP software you speak of will do nothing to protect the 
+user from that.
+
+&gt;<i> No problem with sending the uri... the voip client isn't a web server:
+</I>&gt;<i> it doesn't serve each and every request blindly. Please let the voip
+</I>&gt;<i> client do its job.
+</I>
+There are big security problems with just broadcasting the voip-uri as 
+detailed above that the voip client will not protect you against.
+
+&gt;<i> Hmmm... as far as I remember, I had to allow my contacts to see me, and
+</I>&gt;<i> they had to decide they wanted to see me... so telling them &quot;I'm there&quot;
+</I>&gt;<i> isn't polluting the network, it's using it.
+</I>
+But you are not just telling them you are there (thats what the standard IM 
+presence already does on its own), you are telling them extra information on 
+top of that which most will not want or need to know, thus the pollution, 
+its far better if only clients that want to receive said extra information 
+receive it, thus the need to use pubsub.
+
+&gt;<i> Not completely separately. There's an implication, but not an
+</I>&gt;<i> equivalence, between voip-presence and im-presence.
+</I>
+If they are not equal then it doesnt belong as an extension to IM presence, 
+its as simple as that really.
+
+&gt;<i> And yes, it could be nice to be able to separate:
+</I>&gt;<i> * advertize voip is possible ;
+</I>&gt;<i> * advertize the voip-uri ;
+</I>&gt;<i> * advertize the voip-presence.
+</I>&gt;<i>
+</I>&gt;<i> BUT I would like to do as much as possible *NOW* and not in ten years.
+</I>
+Rushing through things just because you are impatient is never a good idea, 
+start working with us rather than fighting us and you will find this will go 
+much faster.
+
+There are several separate tasks you seem to be trying to bunch together 
+here and in doing so you are not doing it the right way, the different tasks 
+I can see are as follows:
+
+1) advertise a client is voip capable (this should be done using JEP-0030 
+and JEP-0115).
+2) initiate a chat with another voip capable client (this should be done 
+using JEP-0020, then JEP-0066).
+3) advertise your voip-presence as something separate from the normal 
+im-presence (there is nothing currently to do this, but as has been said a 
+protocol based on pubsub is the best solution to this task).
+
+So overall you can do most of what you are trying to do now and right away 
+without having to wait for anything, it is only task 3 that needs a protocol 
+developed for it, and IMO step 3 is the least needed part of this and isnt 
+really even needed to get voip calling working in jabber clients, if I were 
+you I would just forget about task 3 for the moment and leave that for 
+sometime in the future, it really is not needed as you can use the 
+im-presence to notify other people you are on the phone (IMO you should be 
+just doing it this way anyway).
+
+&gt;<i> And as I already pointed out: I don't really want to _work on_ jabber,
+</I>&gt;<i> but merely _use_ jabber. I would like some simple, standard and
+</I>&gt;<i> _current_ mechanism to allow to call jabber-im contacts. Then provide a
+</I>&gt;<i> patch for gaim (must be simple or they won't accept it), then for
+</I>&gt;<i> gossip, then for ...
+</I>
+Well if your &quot;simple&quot; patch is not following the standards I dont see them 
+even accepting that, if all you really want to do is allow people to call 
+each other using their im clients then you just need to implement Tasks 1 
+and 2 outlined above and just forget about Task 3 (which IMO is not needed 
+anyway).
+
+&gt;<i> For the moment, most of the discussion was:
+</I>&gt;<i> * uh, are you sure it's presence?
+</I>&gt;<i> * no, you really should read all of the existing and obsolete protocols,
+</I>&gt;<i> then propose one, fix it, get it through the standardization process.
+</I>&gt;<i> * really, your remote contact should be asked if he's interested in
+</I>&gt;<i> knowing about voip, then if he would accept calls from you, then for
+</I>&gt;<i> each call if really he means he wants to get it through!
+</I>&gt;<i>
+</I>&gt;<i> The goal is to have something that people will use! And will use _now_!
+</I>
+Well im afraid if you want it to become a standard that people will use then 
+you will have to do it properly and not just try to rush through something 
+which I would class as a &quot;hack&quot;, and in this case a &quot;hack&quot; that will very 
+likely break stuff and expose users to some potensially serious security 
+problems that they would not otherwise be exposed to. Your best solution if 
+you really do want to get something working now without any problems is for 
+you to just implement Tasks 1 and 2 for which there already exists well 
+established protocols as outlined above and just forget about Task 3 for the 
+moment.
+
+Richard
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="020644.html">[jdev] Gaim and gnomemeeting using jabber
+</A></li>
+	<LI>Next message: <A HREF="020653.html">[jdev] Gaim and gnomemeeting using jabber
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20646">[ date ]</a>
+              <a href="thread.html#20646">[ thread ]</a>
+              <a href="subject.html#20646">[ subject ]</a>
+              <a href="author.html#20646">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,255 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Is this bug fixed after 1.2 ? / workaround
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Is%20this%20bug%20fixed%20after%201.2%20%3F%20/%20workaround&In-Reply-To=01010819021400.09161%40dennis">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005503.html">
+   <LINK REL="Next"  HREF="005512.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Is this bug fixed after 1.2 ? / workaround</H1>
+    <B>Dennis Noordsij</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Is%20this%20bug%20fixed%20after%201.2%20%3F%20/%20workaround&In-Reply-To=01010819021400.09161%40dennis"
+       TITLE="[JDEV] Is this bug fixed after 1.2 ? / workaround">dennis.noordsij at wiral.com
+       </A><BR>
+    <I>Mon Jan  8 13:34:42 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005503.html">[JDEV] Is this bug fixed after 1.2 ?
+</A></li>
+        <LI>Next message: <A HREF="005512.html">[JDEV] Is this bug fixed after 1.2 ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5507">[ date ]</a>
+              <a href="thread.html#5507">[ thread ]</a>
+              <a href="subject.html#5507">[ subject ]</a>
+              <a href="author.html#5507">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi,
+
+For those interested :-) It's sort of in the jabber docs, every xdb component 
+*has* to reply sensibly and the highest result is accepted. I'll blame the 
+problem on the xdb_file.so and being linked into jabber for not obeying &lt;ns&gt; 
+namespaces as using &lt;ns&gt; to single out namespaces works fine for the external 
+program, so I just make the xdb_file.so reply either error's (the type=result 
+from the external program should 'win' anyway) or empty result sets (a bigger 
+result set from the external program should also 'win'). I also don't let the 
+xdb_file.so write offline messages to the disk. 
+
+I guess that is good enough to test individual namespace handling by my 
+external program until I can handle enough namespaces to take out xdb_file 
+altogether and use the external one.
+
+Still, a better would explanation would be appreciated :-)
+
+Regards,
+Dennis
+
+
+
+
+On Monday 08 January 2001 19:02, you wrote:
+&gt;<i> &gt;On Friday 01 December 2000 18:08, you wrote:
+</I>&gt;<i> &gt; However, in the case where you have a xdb_get followed by a xdb_set
+</I>&gt;<i> &gt; (eg. to store an offline message), the xdb_get will timeout nicely,
+</I>&gt;<i> &gt; then the xdb_set will do a segfault on the following line :
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; [jabberd/io/base_load.c:xdb_set()]
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;         pth_mutex_acquire(&amp;mutex, FALSE, NULL);
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; But there I've no clue :(
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; For now, handling correctly all namespaces seems the safest way ...
+</I>&gt;<i>
+</I>&gt;<i> Hello, sorry for the long email, but I have to tried to include as much
+</I>&gt;<i> information as possible, it appears to be a real problem (don't know if it
+</I>&gt;<i> has been fixed) with other people posting about it in the past.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> I am trying to split up the XDB section to have the original xdb_file.so
+</I>&gt;<i> module handle everything except the jabber:x:offline namespace.
+</I>&gt;<i>
+</I>&gt;<i> In jabber.xml, I add
+</I>&gt;<i>
+</I>&gt;<i> 	&lt;ns&gt;jabber:iq:auth&lt;/ns&gt;
+</I>&gt;<i> 	&lt;ns&gt;jabber:iq:roster&lt;/ns&gt;
+</I>&gt;<i> 	&lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+</I>&gt;<i> 	&lt;ns&gt;vcard-temp&lt;/ns&gt;
+</I>&gt;<i>
+</I>&gt;<i> to the xdb section.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> I then add a new xdb entry, set &lt;ns&gt;jabber:x:offline&lt;/ns&gt; and the
+</I>&gt;<i> appropriate &lt;accept&gt; tag. This program (external, uses libxode, libjabber
+</I>&gt;<i> and libpthread) connects and handshakes with jabber.
+</I>&gt;<i>
+</I>&gt;<i> I want this program to handle all offline messages.
+</I>&gt;<i>
+</I>&gt;<i> Events that happen:
+</I>&gt;<i>
+</I>&gt;<i> - jabber starts
+</I>&gt;<i> - offline program connects and handshakes
+</I>&gt;<i> - I try to log in using Gabber
+</I>&gt;<i> - offline program sees this:
+</I>&gt;<i>
+</I>&gt;<i>  RECEIVED:
+</I>&gt;<i>  &lt;xdb type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at host</A>/jabber:x:offline'
+</I>&gt;<i>           from='host' id='4'/&gt;
+</I>&gt;<i>
+</I>&gt;<i>  REPLIED:
+</I>&gt;<i>  &lt;xdb type='result' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at host</A>/jabber:x:offline'
+</I>&gt;<i>      to='host' id='4'&gt;&lt;offline xmlns='jabber:x:offline'/&gt;&lt;/xdb&gt;
+</I>&gt;<i>
+</I>&gt;<i>  CONNECTION TO JABBER LOST
+</I>&gt;<i>
+</I>&gt;<i> - In the mean time, jabber saw this:
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  deliver.c:472 DELIVER 2:host &lt;xdb
+</I>&gt;<i>      type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at host</A>/jabber:x:offline'
+</I>&gt;<i>      from='host' id='4'/&gt;
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  deliver.c:344 delivering to instance
+</I>&gt;<i> 'offlineagent' Mon Jan  8 19:13:50 2001  deliver.c:344 delivering to
+</I>&gt;<i> instance 'xdb' Mon Jan  8 19:13:50 2001  deliver.c:278 delivery failed
+</I>&gt;<i> (Server Configuration Error)
+</I>&gt;<i>
+</I>&gt;<i> (Note, the external program is called 'offlineagent', 'xdb' is the original
+</I>&gt;<i> xdb entry with &lt;ns&gt; tags added).
+</I>&gt;<i>
+</I>&gt;<i> - Even though jabber claims to deliver the xdb_get to instance 'xdb' I have
+</I>&gt;<i> patched the xdb_file.c file to log a notice when a jabber:x:offline request
+</I>&gt;<i> is received; in this case it never sees one. (as hoped :-)
+</I>&gt;<i>
+</I>&gt;<i> - Next, jabber notices the reply from the external program:
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  base_accept.c:341 io incoming message event for
+</I>&gt;<i> 14
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  base_accept.c:328 io read event for 14
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  base_accept.c:213 base_accept: &lt;xdb type='result'
+</I>&gt;<i>      from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at host</A>/jabber:x:offline' to='host'
+</I>&gt;<i>      id='4'&gt;&lt;offline xmlns='jabber:x:offline'/&gt;&lt;/xdb&gt;
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  deliver.c:472 DELIVER 1:host &lt;xdb
+</I>&gt;<i>      type='result' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at host</A>/jabber:x:offline'
+</I>&gt;<i>      to='host' id='4'&gt;&lt;offline xmlns='jabber:x:offline'/&gt;&lt;/xdb&gt;
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  deliver.c:344 delivering to instance 'sessions'
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  base_load.c:167 xdb_results checking xdb packet
+</I>&gt;<i>      &lt;xdb type='result' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at host</A>/jabber:x:offline'
+</I>&gt;<i>      to='host' id='4'&gt;&lt;offline xmlns='jabber:x:offline'/&gt;&lt;/xdb&gt;
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  base_load.c:327 xdb_get() done waiting for
+</I>&gt;<i>      <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at host</A> jabber:x:offline
+</I>&gt;<i>
+</I>&gt;<i> - Well, so far it all looked good.
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  deliver.c:472 DELIVER 2:host &lt;xdb
+</I>&gt;<i>      type='set' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at host</A>/jabber:x:offline'
+</I>&gt;<i>      from='host' id='5'&gt;&lt;offline xmlns='jabber:x:offline'/&gt;&lt;/xdb&gt;
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  deliver.c:344 delivering to instance
+</I>&gt;<i> 'offlineagent'
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  deliver.c:344 delivering to instance 'xdb'
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  deliver.c:278 delivery failed (Server
+</I>&gt;<i> Configuration Error)
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  log.c:105 &lt;log type='warn'
+</I>&gt;<i>      from='host'&gt;dropping an xdb request for
+</I>&gt;<i>      <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at host</A>/jabber:x:offline&lt;/log&gt;
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  deliver.c:472 DELIVER 3:host &lt;log
+</I>&gt;<i>      type='warn' from='host'&gt;dropping an xdb request for
+</I>&gt;<i>      <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at host</A>/jabber:x:offline&lt;/log&gt;
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  deliver.c:344 delivering to instance 'logger'
+</I>&gt;<i>      20010108T17:13:50: [warn] (host): dropping an xdb request
+</I>&gt;<i>      for <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at host</A>/jabber:x:offline
+</I>&gt;<i>
+</I>&gt;<i> Mon Jan  8 19:13:50 2001  base_load.c:378 xdb_set() waiting for
+</I>&gt;<i>      <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dennis at host</A> jabber:x:offline
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> At this point jabber has segfaulted. The external component has never seen
+</I>&gt;<i> any data on the socket after this initial request, and shut down because
+</I>&gt;<i> the socket was closed.
+</I>&gt;<i>
+</I>&gt;<i> &gt; However, in the case where you have a xdb_get followed by a xdb_set
+</I>&gt;<i> &gt; (eg. to store an offline message), the xdb_get will timeout nicely,
+</I>&gt;<i> &gt; then the xdb_set will do a segfault on the following line :
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; [jabberd/io/base_load.c:xdb_set()]
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt;         pth_mutex_acquire(&amp;mutex, FALSE, NULL);
+</I>&gt;<i> &gt;
+</I>&gt;<i> &gt; But there I've no clue :(
+</I>&gt;<i>
+</I>&gt;<i> Sounds like this is my problem :-)
+</I>&gt;<i>
+</I>&gt;<i> &gt; For now, handling correctly all namespaces seems the safest way ...
+</I>&gt;<i>
+</I>&gt;<i> But I *am* handling all namespaces correctly as far as I know. For some
+</I>&gt;<i> reason the &lt;ns&gt; tags are not enough to tell jabber to not approach the
+</I>&gt;<i> xdb_file.so module for jabber:x:offline messages (but I guess it does, and
+</I>&gt;<i> then fails, hence the delivery failed (Server Configuration Error) - and
+</I>&gt;<i> then when no reply comes in from that component (even though there can't be
+</I>&gt;<i> one at all anyway) jabber segfaults.
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Also, when I don't put in the &lt;ns&gt; tags in the jabber.xml file my external
+</I>&gt;<i> component receives all jabber:x:offline messages, even replies to them, but
+</I>&gt;<i> the xdb_file.so module seems to 'win'. No crashes, but no point in my
+</I>&gt;<i> program either :-)
+</I>&gt;<i>
+</I>&gt;<i> If I patch the xdb_file.so module to ignore jabber:x:offline messages,
+</I>&gt;<i> there is no Server Configuration Error when sending the get request, the
+</I>&gt;<i> rest of the events are the same, ie the get is received and responded to
+</I>&gt;<i> properly, then a set is sent but jabber segfaults (external program never
+</I>&gt;<i> sees the set though).
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Does it help if I go to 1.4 ? :-)
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> Kind regards,
+</I>&gt;<i> Dennis
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005503.html">[JDEV] Is this bug fixed after 1.2 ?
+</A></li>
+	<LI>Next message: <A HREF="005512.html">[JDEV] Is this bug fixed after 1.2 ?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5507">[ date ]</a>
+              <a href="thread.html#5507">[ thread ]</a>
+              <a href="subject.html#5507">[ subject ]</a>
+              <a href="author.html#5507">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

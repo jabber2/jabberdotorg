@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Namespaces
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Namespaces&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="013390.html">
+   <LINK REL="Next"  HREF="013396.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Namespaces</H1>
+    <B>David Waite</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Namespaces&In-Reply-To="
+       TITLE="[JDEV] Namespaces">mass at akuma.org
+       </A><BR>
+    <I>Thu Jul 11 08:56:31 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="013390.html">[JDEV] Namespaces
+</A></li>
+        <LI>Next message: <A HREF="013396.html">[JDEV] Namespaces
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13392">[ date ]</a>
+              <a href="thread.html#13392">[ thread ]</a>
+              <a href="subject.html#13392">[ subject ]</a>
+              <a href="author.html#13392">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Kriggs wrote:
+
+&gt;<i>If you would like to help me (by reading these 90 lines of text), try your 
+</I>&gt;<i>best to correct me where I am wrong, and answer my questions (Lines marked 
+</I>&gt;<i>with an asterisk (*) are points which I especially am having trouble with):
+</I>&gt;<i>
+</I>&gt;<i>1)
+</I>&gt;<i>
+</I>&gt;<i>    &lt;a xmlns=&quot;x:y&quot;&gt;
+</I>&gt;<i>      &lt;b c=&quot;value1&quot;/&gt;
+</I>&gt;<i>    &lt;/a&gt;
+</I>&gt;<i>
+</I>&gt;<i>In this example, &lt;a/&gt;, &lt;b/&gt; and c=&quot;&quot; are all using the x:y namespace. &lt;b/&gt;'s 
+</I>&gt;<i>namespace is &quot;x:y&quot;, just like &lt;a/&gt;'s, as opposed to my previous theory that 
+</I>&gt;<i>&lt;b/&gt;'s namespace becomes x:y:a.
+</I>&gt;<i>
+</I>Yep. Well, there is some debate over whether c=&quot;&quot; is in a namespace at 
+all. the names recommendation does not clarify on this point until the 
+appendix, which is non-normative. Long discussion.
+
+&gt;<i>* Would putting an x:y: prefix to every tag element's name do the same thing 
+</I>&gt;<i>as the use of xmlns=&quot;x:y&quot; in this example?
+</I>&gt;<i>
+</I>Incorrect.
+1) You must use namespace prefixes to qualify an element not in the 
+default (non-prefixed) namespace. You cannot substitute a namespace URI 
+for said prefix. There isn't a standard for writing out &quot;this element in 
+this namespace&quot;.
+
+2) Prefixes cannot contain the ':' character anyways. (see 
+<A HREF="http://www.w3.org/TR/1999/REC-xml-names-19990114/#ns-decl">http://www.w3.org/TR/1999/REC-xml-names-19990114/#ns-decl</A>)
+
+&gt;<i>2)
+</I>&gt;<i>
+</I>&gt;<i>    &lt;a xmlns=&quot;<A HREF="http://...&quot;">http://...&quot;</A> xmlns:s=&quot;x:y&quot;&gt;
+</I>&gt;<i>      &lt;s:b c=&quot;value1&quot;&gt;
+</I>&gt;<i>        &lt;d/&gt;
+</I>&gt;<i>        &lt;e s:f=&quot;value2&quot;/&gt;
+</I>&gt;<i>      &lt;/s:b&gt;
+</I>&gt;<i>    &lt;/a&gt;
+</I>&gt;<i>
+</I>&gt;<i>In this example,
+</I>&gt;<i>&lt;a/&gt; is using the &quot;<A HREF="http://...&quot;">http://...&quot;</A> website namespace
+</I>&gt;<i>&lt;b/&gt; is using the x:y bulltin namespace because of the s: prefix
+</I>&gt;<i>c=&quot;&quot; is using the x:y bulltin namespace because it is &lt;b/&gt;'s attribute.
+</I>&gt;<i>&lt;d/&gt; is using the &quot;<A HREF="http://...&quot;">http://...&quot;</A> website namespace, because it's prefix doesn't 
+</I>&gt;<i>depend on it's parent's prefix.
+</I>&gt;<i>&lt;e/&gt; is using the &quot;<A HREF="http://...&quot;">http://...&quot;</A> website namespace for the same reason
+</I>&gt;<i>f=&quot;&quot; is using the x:y bulltin namespace. Although normally an attribute 
+</I>&gt;<i>inherits from it's parent, f=&quot;&quot; has an s: prefix.
+</I>&gt;<i>
+</I>Other than the comment above on c=&quot;&quot;, sure.
+
+&gt;<i>3)
+</I>&gt;<i>
+</I>&gt;<i>    &lt;a xmlns=&quot;v:w&quot;&gt;
+</I>&gt;<i>      &lt;b xmlns=&quot;x:y&quot;&gt;
+</I>&gt;<i>        &lt;s:c/&gt;
+</I>&gt;<i>      &lt;/b&gt;
+</I>&gt;<i>    &lt;/a&gt;
+</I>&gt;<i>
+</I>&gt;<i>&lt;a/&gt; has v:w as it's namespace
+</I>&gt;<i>&lt;b/&gt; has x:y as it's namespace
+</I>&gt;<i>* &lt;c/&gt; has no namespace handler (?)
+</I>&gt;<i>
+</I>Yep.
+
+&gt;<i>4)
+</I>&gt;<i>
+</I>&gt;<i>In a more explicit example:
+</I>&gt;<i>
+</I>&gt;<i>    &lt;stream:stream 
+</I>&gt;<i>    to=&quot;denmark&quot; 
+</I>&gt;<i>    xmlns=&quot;jabber:client&quot; 
+</I>&gt;<i>    xmlns:stream=&quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A>&gt;
+</I>&gt;<i>    [...]
+</I>&gt;<i>    &lt;iq type=&quot;set&quot; id=&quot;1&quot;&gt;
+</I>&gt;<i>      &lt;query xmlns=&quot;jabber:iq:auth&quot;&gt;
+</I>&gt;<i>        &lt;username&gt;nick&lt;/username&gt;
+</I>&gt;<i>        &lt;password&gt;pass&lt;/password&gt;
+</I>&gt;<i>        &lt;resource&gt;home&lt;/resource&gt;
+</I>&gt;<i>      &lt;/query&gt;
+</I>&gt;<i>    &lt;/iq&gt;
+</I>&gt;<i>    [...]
+</I>&gt;<i>    &lt;/stream:stream&gt;
+</I>&gt;<i>
+</I>&gt;<i>&lt;stream:stream/&gt; uses the xmlns:stream namespace (because of the stream:... 
+</I>&gt;<i>part) looking for the element definition of &quot;stream&quot; (because of the 
+</I>&gt;<i>...stream part)
+</I>&gt;<i>
+</I>You mean &quot;<A HREF="http://etherx.jabber.org/streams&quot;">http://etherx.jabber.org/streams&quot;</A> namespace.
+
+&gt;<i>&lt;iq/&gt;, having no prefix, defaults to the jabber:client namespace.
+</I>&gt;<i>&lt;query/&gt;, &lt;username/&gt;, &lt;password/&gt; and &lt;resource/&gt; all take from 
+</I>&gt;<i>jabber:iq:auth.
+</I>&gt;<i>  
+</I>&gt;<i>
+</I>Yep.
+
+&gt;<i>* Do I take it that jabber, despite the xml standard, applies xmlns:* to the 
+</I>&gt;<i>level and lower, but applies xmlns only to the lower levels? Or does every 
+</I>&gt;<i>jabber:iq:* contain &lt;query/&gt; in it's definition?
+</I>&gt;<i>
+</I>There was some confusion over the namespace spec. &quot;query&quot; as above is 
+not in the jabber:client namespace, even though it has been reported in 
+some documentation as thus before.
+
+&gt;<i>* I notice that jabber:iq:auth has more than 1 colon (:). Is this only 
+</I>&gt;<i>possible for namespaces, or can tag elements have that too (namespace 
+</I>&gt;<i>declared like xmlns:a:b:c=&quot;name:space&quot;)? If so, how do you separate the 
+</I>&gt;<i>element from the namespace? Is an actual element name not allowed to have any 
+</I>&gt;<i>colons (:) in them?
+</I>&gt;<i>
+</I>Namespaces can have more than one colon, as they are URIs. A qualified 
+element or attribute name can only be qualified indirectly by a prefix, 
+not directly by a namespace.
+
+-David Waite
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="013390.html">[JDEV] Namespaces
+</A></li>
+	<LI>Next message: <A HREF="013396.html">[JDEV] Namespaces
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13392">[ date ]</a>
+              <a href="thread.html#13392">[ thread ]</a>
+              <a href="subject.html#13392">[ subject ]</a>
+              <a href="author.html#13392">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Performance of jabber and IQ messages
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Performance%20of%20jabber%20and%20IQ%20messages&In-Reply-To=%3CXFMail.20010205102550.andyh%40myinternet.com.au%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="064568.html">
+   <LINK REL="Next"  HREF="064572.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Performance of jabber and IQ messages</H1>
+    <B>Andy Hird</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Performance%20of%20jabber%20and%20IQ%20messages&In-Reply-To=%3CXFMail.20010205102550.andyh%40myinternet.com.au%3E"
+       TITLE="[JDEV] Performance of jabber and IQ messages">andyh at myinternet.com.au
+       </A><BR>
+    <I>Sun Feb  4 17:25:50 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="064568.html">[JDEV] C API plus connecting to jabber
+</A></li>
+        <LI>Next message: <A HREF="064572.html">[JDEV] Call For Binary Contributions and Package Maintainers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64569">[ date ]</a>
+              <a href="thread.html#64569">[ thread ]</a>
+              <a href="subject.html#64569">[ subject ]</a>
+              <a href="author.html#64569">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi there, Sorry its taken so long to get back to you.
+
+Most of my problems I've traced to using Net::Jabber (the perl API). Both
+authentication and speed problems go away when I switched to using the C API.
+
+I'll maybe try and get some sample code to the Net::Jabber people for the
+authentication problem (although it may actually be a problem in the server).
+Its simple to repro - have several (&gt; 1) perl clients attempting to connect to
+the jabber server with the same username (resource can be different) using
+mod_auth_0k or mod_auth_digest style authentication at the same time.
+Eventually one or more of the clients will fail to authenticate.
+
+Thanks
+Andy
+
+
+On 24-Jan-2001 Thomas Muldowney wrote:
+&gt;<i> using the iq get for auth it should be handing back a handing back a
+</I>&gt;<i> different
+</I>&gt;<i> token to auth with.
+</I>&gt;<i> 
+</I>&gt;<i> Let me know about the server performance (CVS more specifically since we're
+</I>&gt;<i> close to 1.4).
+</I>&gt;<i> 
+</I>&gt;<i> --temas
+</I>&gt;<i> 
+</I>&gt;<i> On Wed, Jan 24, 2001 at 10:44:31AM +1100, Andy Hird wrote:
+</I>&gt;&gt;<i> I used the precompiled static binaries from jabber.org of the 1.2 server.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> I hardly changed the config. I commented out the &lt;update&gt; line and changed
+</I>&gt;&gt;<i> the
+</I>&gt;&gt;<i> &lt;host&gt; section to be the name of my local host.
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> I've just got the 1.2 source (and the CVS tree) and compiled it so maybe
+</I>&gt;&gt;<i> I'll
+</I>&gt;&gt;<i> see if that makes much of a difference. 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> I've also found what looks like a bug in the 0k authentication. If you have
+</I>&gt;&gt;<i> two
+</I>&gt;&gt;<i> clients try to authenticate with the same username and password but a
+</I>&gt;&gt;<i> different
+</I>&gt;&gt;<i> resource then the second fails. It looks like the client which contacts
+</I>&gt;&gt;<i> second
+</I>&gt;&gt;<i> gets the same hash as the first client (and things start going wrong from
+</I>&gt;&gt;<i> there). I can provide more details (and a demo client with the perl
+</I>&gt;&gt;<i> libraries).
+</I>&gt;&gt;<i> Not sure whether this happens in 1.4
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> Andy
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> On 23-Jan-2001 Thomas Muldowney wrote:
+</I>&gt;&gt;<i> &gt; Sorry for the delayed reply... How did you build the server, what is the
+</I>&gt;&gt;<i> &gt; config?
+</I>&gt;&gt;<i> &gt; Anything else you feel I should know to anser more easily?
+</I>&gt;&gt;<i> &gt; 
+</I>&gt;&gt;<i> &gt; --temas
+</I>&gt;&gt;<i> &gt; 
+</I>&gt;&gt;<i> &gt; On Fri, Jan 19, 2001 at 12:16:18PM +1100, Andy Hird wrote:
+</I>&gt;&gt;<i> &gt;&gt; Oops mistake.
+</I>&gt;&gt;<i> &gt;&gt; I'm actually seeing times of 0.5 s for complete round trip of my requests
+</I>&gt;&gt;<i> &gt;&gt; -
+</I>&gt;&gt;<i> &gt;&gt; so
+</I>&gt;&gt;<i> &gt;&gt; ..25 s for the request and .25s back again. That time doesn't include any
+</I>&gt;&gt;<i> &gt;&gt; processing done by the RPC server (ie. decoding SOAP messages and
+</I>&gt;&gt;<i> &gt;&gt; executing
+</I>&gt;&gt;<i> &gt;&gt; the
+</I>&gt;&gt;<i> &gt;&gt; remote precedure call). Its just the time it takes for the message to go
+</I>&gt;&gt;<i> &gt;&gt; via
+</I>&gt;&gt;<i> &gt;&gt; jabber from one jabber client to another.
+</I>&gt;&gt;<i> &gt;&gt; 
+</I>&gt;&gt;<i> &gt;&gt; Andy
+</I>&gt;&gt;<i> &gt;&gt; 
+</I>&gt;&gt;<i> &gt;&gt; On 19-Jan-2001 Andy Hird wrote:
+</I>&gt;&gt;<i> &gt;&gt; &gt; 
+</I>&gt;&gt;<i> &gt;&gt; &gt; I'm seeing an average time of around .5 s for an IQ message to go from
+</I>&gt;&gt;<i> &gt;&gt; &gt; one
+</I>&gt;&gt;<i> &gt;&gt; &gt; jabber client to another. Both clients and the server are running one
+</I>&gt;&gt;<i> &gt;&gt; &gt; the
+</I>&gt;&gt;<i> &gt;&gt; &gt; same
+</I>&gt;&gt;<i> &gt;&gt; &gt; machine (its Debian Linux with a 2.2 kernel). 
+</I>&gt;&gt;<i> &gt;&gt; &gt; The messages are pretty small - around 800 bytes for both the outgoing
+</I>&gt;&gt;<i> &gt;&gt; &gt; request
+</I>&gt;&gt;<i> &gt;&gt; &gt; and the incoming response.
+</I>&gt;&gt;<i> &gt;&gt; &gt; 
+</I>&gt;&gt;<i> &gt;&gt; &gt; I'm writing the clients in perl with the module Net::Jabber.
+</I>&gt;&gt;<i> &gt;&gt; &gt; 
+</I>&gt;&gt;<i> &gt;&gt; &gt; Anyone have similar timings? Any advice?
+</I>&gt;&gt;<i> &gt;&gt; &gt; 
+</I>&gt;&gt;<i> &gt;&gt; &gt; Andy
+</I>&gt;&gt;<i> &gt;&gt; &gt; 
+</I>&gt;&gt;<i> &gt;&gt; &gt; 
+</I>&gt;&gt;<i> &gt;&gt; &gt; _______________________________________________
+</I>&gt;&gt;<i> &gt;&gt; &gt; jdev mailing list
+</I>&gt;&gt;<i> &gt;&gt; &gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i> &gt;&gt; &gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;&gt;<i> &gt;&gt; 
+</I>&gt;&gt;<i> &gt;&gt; 
+</I>&gt;&gt;<i> &gt;&gt; _______________________________________________
+</I>&gt;&gt;<i> &gt;&gt; jdev mailing list
+</I>&gt;&gt;<i> &gt;&gt; <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i> &gt;&gt; <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> 
+</I>&gt;&gt;<i> _______________________________________________
+</I>&gt;&gt;<i> jdev mailing list
+</I>&gt;&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="064568.html">[JDEV] C API plus connecting to jabber
+</A></li>
+	<LI>Next message: <A HREF="064572.html">[JDEV] Call For Binary Contributions and Package Maintainers
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64569">[ date ]</a>
+              <a href="thread.html#64569">[ thread ]</a>
+              <a href="subject.html#64569">[ subject ]</a>
+              <a href="author.html#64569">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

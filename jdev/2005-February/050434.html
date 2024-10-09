@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] jabberd 1.4.x password changing
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20jabberd%201.4.x%20password%20changing&In-Reply-To=%3CE7650E6BCAF2414E8134C60A29AE28800132B915%40ms3aex05.USIEXCHANGE.COM%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="050433.html">
+   <LINK REL="Next"  HREF="050435.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] jabberd 1.4.x password changing</H1>
+    <B>Bresler, Jonathan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20jabberd%201.4.x%20password%20changing&In-Reply-To=%3CE7650E6BCAF2414E8134C60A29AE28800132B915%40ms3aex05.USIEXCHANGE.COM%3E"
+       TITLE="[jdev] jabberd 1.4.x password changing">Jonathan.Bresler at usi.net
+       </A><BR>
+    <I>Fri Feb 11 15:03:32 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="050433.html">[jdev] jabberd 1.4.x password changing
+</A></li>
+        <LI>Next message: <A HREF="050435.html">[jdev] Re: jabberd 1.4.x password changing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50434">[ date ]</a>
+              <a href="thread.html#50434">[ thread ]</a>
+              <a href="subject.html#50434">[ subject ]</a>
+              <a href="author.html#50434">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Peter,
+
+jsm/users.c user data caching.
+
+as long as there is a session for a user, the cached user data will not be purged.
+one all session go away you must wait as long as &lt;jsm&gt;&lt;usergc&gt;NNN&lt;/usergc&gt;&lt;/jsm&gt; seconds
+for the cached user data to be discarded.
+
+IMHO its an error to cache the password information at all.  its only needed at login.
+so read the disk for each login of each user.
+
+unfortunately the &quot;bounce user on null resource login&quot; depends upon the password being
+in the user cache.  could be re-implemented with a flag/variable in the user data structure
+rather than overloading the password field.
+
+dealing with this here.  have some code that begins to address it.  issue i have right now
+is that the register and change password code is intermixed...split that out.  have two 
+controls in .xml file now.  (newuser=&quot;yes|no&quot;  changepassword=&quot;yes|no&quot;).
+
+have to stop the code from disallowing the change but modifying disk anyway ;)
+
+Jonathan
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-bounces at jabber.org</A> on behalf of Peter Saint-Andre
+Sent: Fri 2/11/2005 1:09 PM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: [jdev] jabberd 1.4.x password changing
+ 
+At jabber.org (running jabberd 1.4.2cvs plus patches, it's a long story, 
+don't ask), I see the following behavior with regard to password changes:
+
+1. Log in with pw1, change password to pw2 (confirmed as changed in 
+database), log out, successfully log in with pw2. All is happy.
+
+2. Log in with pw1 as resource1, log in with pw1 as resource2, change 
+password to pw2 from resource2 (confirmed as changed in database), log 
+out of resource2, leave resource1 logged in, try to log in with pw2 as 
+resource2, get 401 error (but can successfully log in with pw1 as 
+resource2). Once I log out of resource1 (no more connected resources), I 
+am then able to successfully log in with pw2.
+
+So it seems that there is some kind of session caching happening, even 
+though pgmillard confirms that we have all xdb caching turned off. Is 
+there a way to configure jabberd 1.4 to not cache anything, do we need 
+to finally and definitively upgrade to 1.4.3, or is this a bug?
+
+Thanks!
+
+/psa
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">http://mail.jabber.org/mailman/listinfo/jdev</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="050433.html">[jdev] jabberd 1.4.x password changing
+</A></li>
+	<LI>Next message: <A HREF="050435.html">[jdev] Re: jabberd 1.4.x password changing
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50434">[ date ]</a>
+              <a href="thread.html#50434">[ thread ]</a>
+              <a href="subject.html#50434">[ subject ]</a>
+              <a href="author.html#50434">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

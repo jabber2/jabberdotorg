@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Re: architecture questions
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20architecture%20questions&In-Reply-To=%3C07c501c3f7e1%24a9ff29c0%246401a8c0%40jambotech.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="077422.html">
+   <LINK REL="Next"  HREF="077398.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Re: architecture questions</H1>
+    <B>Joanne</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Re%3A%20architecture%20questions&In-Reply-To=%3C07c501c3f7e1%24a9ff29c0%246401a8c0%40jambotech.com%3E"
+       TITLE="[jdev] Re: architecture questions">jlc020404jabber at jambotech.com
+       </A><BR>
+    <I>Fri Feb 20 12:45:08 CST 2004</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="077422.html">[jdev] Re: architecture questions
+</A></li>
+        <LI>Next message: <A HREF="077398.html">[jdev] Re: architecture questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77396">[ date ]</a>
+              <a href="thread.html#77396">[ thread ]</a>
+              <a href="subject.html#77396">[ subject ]</a>
+              <a href="author.html#77396">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>One think I forgot to ask... 
+
+In my load balancing scenario, I suggested writing a jabber component. Is its possible to implement this load balancer as a client instead? That way, I can scale the number of load balancers to support redundancy. Can somone also clarify which is the better way of implementing a load balancer: component or client?
+
+&quot;Joanne&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jlc020404jabber at jambotech.com</A>&gt; wrote in message news:079901c3f7df$afa09410$<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">6401a8c0 at jambotech.com...</A>
+I have a few areas I'd appreciate thoughts/opinions on:
+
+(1) message queuing/processing
+It seems that jabber's queuing mechanism is only dependent on a a client's &quot;online&quot; status. If a client is offline, jabber will automatically queue the messages in an offline store. But as soon as the client's online presence is detected, jabber will start &quot;pushing&quot; all queued messages to it automatically. Assuming our jabber client had no queuing mechanism, we would have to block while processing each message. Would this block-&gt;process type of method work well within the jabber framework in order to take advantage of its built in queuing mechanism? I wrote a simple client to test this type of processing and on the surface it appears to work, but I was just wondering if anyone might see other factors/issues/caveats I might not be considering before I choose this type of implementation.
+
+(2) scalability &amp; redundancy
+I would like to connect multiple jabber clients to the same jabber server. Also keep in mind that my clients will only be available within the internal network, so I'm exploiting the A2A (application 2 application) capability of jabber. Although each jabber client does the same thing, they would each need to have unique jids. But I also read that I could run multiple clients with the same jid but with different resource identifiers. Jabber would then decide which client to forward the message to based on the client's presence priority. Unfortunately, this doesn't do any load balancing, but it would allow me to take down one client without disrupting any message processing (since jabber would just forward messages to the next priority client). Is my thinking correct on this?
+
+(3) load balancing
+To truly achieve load balancing, it appears to me that I would need to implement a custom jabber component. All messages would be addressed to this component jid (instead of a client jid as described above). The component would then decide which of the available clients it would forward messages to. However, it appears that we would loose the queuing capability of jabber since store/forward is not available to components (according to &quot;Programming Jabber&quot;), so does that mean I would have to implement my own queuing mechanism within the component? I could probably get away with sacrificing the load balancing component and just rely on the presence priority forwarding of jabber to support redundancy in the short run, but eventually, I could build the load balancing component later. 
+
+So how does this all sound? I just need a sanity check here before I start coding away. I'd appreciate comments/suggesteions anyone should have.
+
+Joanne
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="077422.html">[jdev] Re: architecture questions
+</A></li>
+	<LI>Next message: <A HREF="077398.html">[jdev] Re: architecture questions
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77396">[ date ]</a>
+              <a href="thread.html#77396">[ thread ]</a>
+              <a href="subject.html#77396">[ subject ]</a>
+              <a href="author.html#77396">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

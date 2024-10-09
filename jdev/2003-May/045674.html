@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Wrong JEP-11 (browse) implementation in servers and clients
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Wrong%20JEP-11%20%28browse%29%20implementation%20in%20servers%20and%20clients&In-Reply-To=%3C20030507101759.GA7735%40serwis2.beta%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="045676.html">
+   <LINK REL="Next"  HREF="045675.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Wrong JEP-11 (browse) implementation in servers and clients</H1>
+    <B>Jacek Konieczny</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Wrong%20JEP-11%20%28browse%29%20implementation%20in%20servers%20and%20clients&In-Reply-To=%3C20030507101759.GA7735%40serwis2.beta%3E"
+       TITLE="[JDEV] Wrong JEP-11 (browse) implementation in servers and clients">jajcus at bnet.pl
+       </A><BR>
+    <I>Wed May  7 05:18:00 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="045676.html">[JDEV] odigo
+</A></li>
+        <LI>Next message: <A HREF="045675.html">[JDEV] help with sip/simple TRANSPORT
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45674">[ date ]</a>
+              <a href="thread.html#45674">[ thread ]</a>
+              <a href="subject.html#45674">[ subject ]</a>
+              <a href="author.html#45674">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hello,
+
+While adding browse support to one of services I found out, that Psi
+doesn't seem to handle browse as it is specified in active version of
+JEP-11. Then I found out than my server behaves exactly the same way as
+Psi - uses version 0.3 of JEP-11 instead of 1.0. MUC and tkabber use
+the active version of JEP-11. Other clients, servers and services should
+be checked too.
+
+The difference is in element names used in browse requests and response.
+
+In version 0.3 (outdated), the request is:
+	&lt;iq from=&quot;...&quot; to=&quot;...&quot; type=&quot;get&quot;&gt;
+		&lt;query xmlns=&quot;jabber:iq:browse&quot;/&gt;
+	&lt;/iq&gt;
+
+According to the active version 1.0 it should be:
+	&lt;iq from=&quot;...&quot; to=&quot;...&quot; type=&quot;get&quot;&gt;
+		&lt;item xmlns=&quot;jabber:iq:browse&quot;/&gt;
+	&lt;/iq&gt;
+
+
+In version 0.3 the response is:
+	&lt;iq from=&quot;...&quot; to=&quot;...&quot; type=&quot;get&quot;&gt;
+		&lt;service xmlns=&quot;jabber:iq:browse&quot; type=&quot;...&quot; jid=&quot;...&quot; name=&quot;...&quot;&gt;
+		&lt;/service&gt;
+	&lt;/iq&gt;
+	
+According to the active version 1.0 it should be:
+	&lt;iq from=&quot;...&quot; to=&quot;...&quot; type=&quot;get&quot;&gt;
+		&lt;item xmlns=&quot;jabber:iq:browse&quot; category=&quot;service&quot; type=&quot;...&quot; jid=&quot;...&quot; name=&quot;...&quot;&gt;
+		&lt;/item&gt;
+	&lt;/iq&gt;
+	
+When using jabberd-1.4.x most of the server reply may be corrected by
+fixing &lt;browse/&gt; section in jabber.xml. But still the root element of
+&quot;jabber:iq:browse&quot; namespace will be wrong. A patch to correct this
+is available here: <A HREF="http://www.bnet.pl/~jajcus/jabberd14/jabberd-browse.patch">http://www.bnet.pl/~jajcus/jabberd14/jabberd-browse.patch</A>
+This is a pach against current CVS sources, but it should work for
+jabberd-1.4.2 too. After applying the patch server configuration
+(&lt;browse/&gt; section) should also be corrected. This should not break
+compatibility with broken clients (at least not much).
+
+Greets,
+	Jacek
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="045676.html">[JDEV] odigo
+</A></li>
+	<LI>Next message: <A HREF="045675.html">[JDEV] help with sip/simple TRANSPORT
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#45674">[ date ]</a>
+              <a href="thread.html#45674">[ thread ]</a>
+              <a href="subject.html#45674">[ subject ]</a>
+              <a href="author.html#45674">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,284 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Add-on support from Jabber protocol
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Add-on%20support%20from%20Jabber%20protocol&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="009067.html">
+   <LINK REL="Next"  HREF="008934.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Add-on support from Jabber protocol</H1>
+    <B>Jean Louis Seguineau</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20Add-on%20support%20from%20Jabber%20protocol&In-Reply-To="
+       TITLE="[JDEV] Add-on support from Jabber protocol">jean-louis.seguineau at antepo.com
+       </A><BR>
+    <I>Thu Aug  2 13:23:59 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="009067.html">[JDEV] Sparse considerations about server status
+</A></li>
+        <LI>Next message: <A HREF="008934.html">[JDEV] reason for dual message delivery?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8931">[ date ]</a>
+              <a href="thread.html#8931">[ thread ]</a>
+              <a href="subject.html#8931">[ subject ]</a>
+              <a href="author.html#8931">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Along the lines exposed by Thomas Charron, may I suggest that you extend the
+existing jabber:iq:register to the client side to handle registration to
+add-on (what you describe as session).
+
+Rationale : if your product supports add-on, there should be some kind of
+generic add-on manager embeded into the client. This add-on manager will be
+responsible for registering internally what add-on is present on a given
+machine, and will be able to answer the browse request made by other peer
+clients. It should also answer the registration request by creating a
+session id that would be used as a &lt;thread&gt; in further exchanges between
+peer clients. These session ids should only be unique for the duration of
+the session, and beween aggreed peers.
+
+It is possible to extend the existing jabber:iq:register to register to a
+given add-on. This namespace include a tag &lt;key&gt; that is used to return a
+unique key identifying the registration process. This tag value will be used
+as the session id.
+
+A peer to peer client dialogue would look like this :
+
+Client-&gt;Add-on manager (request for required registration information,
+applies to all add-on types):
+
+&lt;iq type='get' id='uniquevalue' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at bar.org</A>/resource'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bar at foo.com</A>'&gt;
+  &lt;query xmlns='jabber:iq:register'/&gt;
+&lt;/iq&gt;
+
+Note the use of the resource in addressing the add-on enabled client to be
+certain to get to that specific client.
+
+Add-on manager -&gt;Client:
+
+&lt;iq type='result' id='uniquevalue' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at bar.org</A>/resource'&gt;
+  &lt;query xmlns=&quot;jabber:iq:register&quot;&gt;
+    &lt;instructions&gt;Some instructions to be displayed if
+necessary.&lt;/instructions&gt;
+    &lt;key&gt;A1B2C3D4E5F6G7H8J9K0&lt;/key&gt;
+    &lt;username/&gt;
+    &lt;name/&gt;
+    &lt;password/&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+
+Client-&gt;Add-on manager :
+
+&lt;iq type=&quot;set&quot; id=&quot;uniquevalue&quot; to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at bar.org</A>/resource'
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">bar at foo.com</A>'&gt;
+  &lt;query xmlns=&quot;jabber:iq:register&quot;&gt;
+    &lt;key&gt;A1B2C3D4E5F6G7H8J9K0&lt;/key&gt;
+    &lt;username&gt;foo&lt;/username&gt;
+    &lt;password&gt;secret&lt;/password&gt;
+    &lt;name&gt;chess&lt;/name&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+
+Add-on manager -&gt;Client:
+
+&lt;iq type='result' id='uniquevalue' from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">foo at bar.org</A>/resource'&gt;
+  &lt;query xmlns=&quot;jabber:iq:register&quot;/&gt;
+&lt;/iq&gt;
+
+The client will send the add-on it wants to subscribe to in the &lt;name&gt; tag,
+and retain the value of the &lt;key&gt; tag tu use it as the &lt;thread&gt; tag in the
+message element.
+You can add any kind of sophistication by using the other tags like
+&lt;password&gt;, &lt;username&gt;, aso to add further functionality to the add-on
+manager.
+
+The adventage of this method resides in only extending existing mechanisms,
+without affecting either the server of traditional IM clients.
+
+Regards
+
+Jean-Louis Seguineau
+CTO
+Antepo - a World of Interactions
+<A HREF="http://www.antepo.com">http://www.antepo.com</A>
+
+
+----- Original Message -----
+&gt;<i> Message: 2
+</I>&gt;<i> From: &quot;Ashvil&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ashvil at i3connect.net</A>&gt;
+</I>&gt;<i> To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> Date: Wed, 1 Aug 2001 20:07:19 +0530
+</I>&gt;<i> Subject: [JDEV] Add-on support from Jabber protocol
+</I>&gt;<i> Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i> Based on the feedback we got from Thomas Charron on creating some open
+</I>&gt;<i> extensions to the Jabber protocol, we have a first draft on what we think
+</I>&gt;<i> would be needed for Magrathea.
+</I>&gt;<i>
+</I>&gt;<i> We need
+</I>&gt;<i> a) a way for the client to query what add-ons are installed
+</I>&gt;<i> b) a way to establish session to the add-on
+</I>&gt;<i> c) provide the communication envelope between the add-ons.
+</I>&gt;<i>
+</I>&gt;<i> Here is the proposal in PDF format.
+</I>&gt;<i> <A HREF="http://dev.i3connect.com/proposal.pdf">http://dev.i3connect.com/proposal.pdf</A>
+</I>&gt;<i>
+</I>&gt;<i> I hope we can quickly create a simple wire protocol to support the above
+</I>&gt;<i> needs. We have tried to design the wire format in accordance with the
+</I>other
+&gt;<i> jabber messages but we don't have the long history and expertise in
+</I>Jabber,
+&gt;<i> you folks have. So your feedback is highly valued.
+</I>&gt;<i>
+</I>&gt;<i> Regards,
+</I>&gt;<i> Ashvil
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;<i> --__--__--
+</I>&gt;<i>
+</I>&gt;<i> Message: 3
+</I>&gt;<i> To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Subject: RE: [JDEV] Add-on support from Jabber protocol
+</I>&gt;<i> Date: Wed, 01 Aug 2001 10:43:05 -0500 (CDT)
+</I>&gt;<i> From: Thomas Charron &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">tcharron at ductape.net</A>&gt;
+</I>&gt;<i> Cc: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ashvil at i3connect.com</A>, <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">Vijay at i3connect.com</A>
+</I>&gt;<i> Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i>
+</I>&gt;<i>   Doc looks good.  Only a coupla syntax issues I can see here.  First,
+</I>&gt;<i> Browsing.  You guys are definatly 'getting it' as far as this is
+</I>concerned.
+&gt;<i> Theres only a small isse with the response.  The 'get' is correct, but I
+</I>think
+&gt;<i> I'd do this a little differently then you did.  The 'conversation' would
+</I>look
+&gt;<i> more like this:
+</I>&gt;<i>
+</I>&gt;<i> &lt;iq type='get' to='jid2'&gt;
+</I>&gt;<i>   &lt;user xmlns='jabber:iq:browse'/&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i> &lt;iq type='result' to='jid1' from='jid2'&gt;
+</I>&gt;<i>   &lt;user xmlns='jabber:iq:browse' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at jid2</A>'&gt;
+</I>&gt;<i>     &lt;user jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/home&quot; type=&quot;client&quot; name=&quot;Home Desktop&quot;/&gt;
+</I>&gt;<i>     &lt;application jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/chess&quot; type=&quot;i3connectchess&quot;
+</I>name=&quot;Chess&quot;/&gt;
+&gt;<i>   &lt;/user&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i>   There are actually several ways to do this, but this would be easiest.
+</I>If
+&gt;<i> you implemented a generic gaming protocol, for use by multiple games, it
+</I>could
+&gt;<i> look like this:
+</I>&gt;<i>
+</I>&gt;<i> &lt;iq type='get' to='jid2'&gt;
+</I>&gt;<i>   &lt;user xmlns='jabber:iq:browse'/&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i> &lt;iq type='result' to='jid1' from='jid2'&gt;
+</I>&gt;<i>   &lt;user xmlns='jabber:iq:browse' jid='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at jid2</A>'&gt;
+</I>&gt;<i>     &lt;user jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/home&quot; type=&quot;client&quot; name=&quot;Home Desktop&quot;/&gt;
+</I>&gt;<i>     &lt;application jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/chess&quot; type=&quot;i3connectgame&quot;
+</I>&gt;<i> name=&quot;ChessMasta&quot;/&gt;
+</I>&gt;<i>   &lt;/user&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i> &lt;iq type='get' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/chess'&gt;
+</I>&gt;<i>   &lt;user xmlns='jabber:iq:browse'/&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i> &lt;iq type='result' to='jid1' from='jid2'&gt;
+</I>&gt;<i>   &lt;application xmlns='jabber:iq:browse' jid=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user at server</A>/chess&quot;
+</I>&gt;<i> type=&quot;i3connectgame&quot; name=&quot;ChessMasta&quot;&gt;
+</I>&gt;<i>     &lt;ns&gt;i3connect:games:chess&lt;/ns&gt;
+</I>&gt;<i>     &lt;ns&gt;i3connect:games:checkers&lt;/ns&gt;
+</I>&gt;<i>   &lt;/application&gt;
+</I>&gt;<i> &lt;/iq&gt;
+</I>&gt;<i>
+</I>&gt;<i>   Make sense?  The important thing is to remember to use xmlns to
+</I>designate
+&gt;<i> tags outside of the scope of jabber:iq:browse.  While we're loose as far
+</I>as
+&gt;<i> validation is concerned, it'd be nice to at least TRY to stay within the
+</I>&gt;<i> rules..  8-P
+</I>&gt;<i>
+</I>&gt;<i>   Now, as far as data is concerned, IQ isn't *really* the mechanism to do
+</I>this
+&gt;<i> with.  The &lt;message&gt; tag is.  Perhaps use IQ to 'negotiate' a session, but
+</I>then
+&gt;<i> use the &lt;thread&gt; tag within a message to handle a logical stream:
+</I>&gt;<i>
+</I>&gt;<i> &lt;message id='i3Con_1' to='jid1' from='jid2'&gt;
+</I>&gt;<i> &lt;thread&gt;Game19274&lt;/thread&gt;
+</I>&gt;<i> &lt;x xmlns='i3connect:games:chess&gt;
+</I>&gt;<i>   &lt;move From='D7' To='D5'&gt;
+</I>&gt;<i> &lt;/x&gt;
+</I>&gt;<i> &lt;/message&gt;
+</I>&gt;<i>
+</I>&gt;<i>   Think of Info/Query as an RPC mechanism.  You make a call, and get a
+</I>&gt;<i> response.  There is no logical 'stream' beyond the response to a get/set.
+</I>&gt;<i> Messages, on the other hand, have threads, which logically group messages
+</I>&gt;<i> together.
+</I>&gt;<i>
+</I>&gt;<i>   You also may want to take into consideration message confirmation.
+</I>Using the
+&gt;<i> message and thread tags, you can:
+</I>&gt;<i>
+</I>&gt;<i> A) Numerically keep track of messages associated with a game, ensuring you
+</I>&gt;<i> didn't miss anything
+</I>&gt;<i> B) Provide recipt messages, so ya don't have any 'moves' get lost.
+</I>&gt;<i> C) Log the logical progression of the game.
+</I>&gt;<i>
+</I>&gt;<i>   By providing valid recipt, you also gain the ability to play with games
+</I>being
+&gt;<i> interupted, and provide for a game transport that keeps track of games FOR
+</I>you,
+&gt;<i> allowing for non-interactive play, aka, users wouldn't have to BOTH be
+</I>online..
+&gt;<i>
+</I>&gt;<i>   Anyway, overall, it looks really good, and is a good start to a decent
+</I>use of
+&gt;<i> the protocol system.  Others onlist may disagree, if so, speak up, I'm not
+</I>&gt;<i> afraid to be called an idiot..  8-P
+</I>&gt;<i>
+</I>&gt;<i> ---
+</I>&gt;<i> Thomas Charron
+</I>&gt;<i> &lt;&lt; Wanted: One decent sig &gt;&gt;
+</I>&gt;<i> &lt;&lt; Preferably litle used  &gt;&gt;
+</I>&gt;<i>
+</I>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="009067.html">[JDEV] Sparse considerations about server status
+</A></li>
+	<LI>Next message: <A HREF="008934.html">[JDEV] reason for dual message delivery?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8931">[ date ]</a>
+              <a href="thread.html#8931">[ thread ]</a>
+              <a href="subject.html#8931">[ subject ]</a>
+              <a href="author.html#8931">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

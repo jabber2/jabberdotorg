@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Bug in jabberd2 (2.1.13) on win32
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Bug%20in%20jabberd2%20%282.1.13%29%20on%20win32&In-Reply-To=%3C35d657240801300817x4c7812ccn128113aec552ecc4%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="085601.html">
+   <LINK REL="Next"  HREF="085603.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Bug in jabberd2 (2.1.13) on win32</H1>
+    <B>Dan Hulme</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20Bug%20in%20jabberd2%20%282.1.13%29%20on%20win32&In-Reply-To=%3C35d657240801300817x4c7812ccn128113aec552ecc4%40mail.gmail.com%3E"
+       TITLE="[jdev] Bug in jabberd2 (2.1.13) on win32">dhulme at gmail.com
+       </A><BR>
+    <I>Wed Jan 30 10:17:40 CST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="085601.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+        <LI>Next message: <A HREF="085603.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85602">[ date ]</a>
+              <a href="thread.html#85602">[ thread ]</a>
+              <a href="subject.html#85602">[ subject ]</a>
+              <a href="author.html#85602">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks for all your work on this.  Regarding gsasl, I currently am not
+compiling myself because I had not converted my build environment to
+use the latest build and the library versions that would be required
+(i.e., gsasl vs cyrus and whatever else is different).  I am using the
+build found on nanoant.
+
+I am already using plain instead of digest-md5.  The authentication,
+according to the logs, is working.  However, no session ever shows up
+in the sm.log, and the client just hangs while connecting.  As soon as
+I switch sasl off in the client, I can connect normally.
+
+So, I don't know if the build on nanoant uses the patches, but I would
+hope that it did.  In any case, it appears that the encryption works
+somewhat, but that the session cannot be started.  Hopefully this
+information helps.
+
+Thanks,
+
+Dan
+
+On Jan 30, 2008 2:15 AM, Adam Strzelecki &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">ono at java.pl</A>&gt; wrote:
+&gt;<i> Hi Dan,
+</I>&gt;<i>
+</I>&gt;<i> Finally it is me. Yup, I deserve a spanking for not reading the list,
+</I>&gt;<i> especially those posts related to me. Sorry bout that.
+</I>&gt;<i> I've moved to Mac platform and got slight mental and physical disorder
+</I>&gt;<i> regarding Windows ;)
+</I>&gt;<i>
+</I>&gt;<i> First of all, huge thanks for this patch regarding MIO_WSASYNC!
+</I>&gt;<i>
+</I>&gt;<i> &gt;&gt;&gt; I installed the new build over my compiled version and I've run in
+</I>&gt;<i> &gt;&gt;&gt; to
+</I>&gt;<i> &gt;&gt;&gt; two snags.  First, the database between the two versions is not
+</I>&gt;<i> &gt;&gt;&gt; compatible.  I used the installed database and it worked fine.
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i> &gt;&gt; Well...
+</I>&gt;<i> &gt;&gt; $ head tools/db-update.sqlite
+</I>&gt;<i> &gt;&gt;
+</I>&gt;<i>
+</I>&gt;<i> Yup this is something I found missing in the SVN, added it looking at
+</I>&gt;<i> the db-setup.sqlite differences from times of my last commit and
+</I>&gt;<i> todays. It won't hurt if you run it twice, it will report errors on
+</I>&gt;<i> fields that are already updated in the database.
+</I>&gt;<i>
+</I>&gt;<i> &gt;&gt;&gt; The
+</I>&gt;<i> &gt;&gt;&gt; next problem is that SASL no longer seems to work.  I don't know
+</I>&gt;<i> &gt;&gt;&gt; what
+</I>&gt;<i> &gt;&gt;&gt; the problem is, but an 'internal server error' is being returned to
+</I>&gt;<i> &gt;&gt;&gt; the client.  Any idea what this could be?  Logging in with no
+</I>&gt;<i> &gt;&gt;&gt; encryption works.  When logging in with SASL the c2s server log
+</I>&gt;<i> &gt;&gt;&gt; shows
+</I>&gt;<i> &gt;&gt;&gt; I have authenticated, but the session manager shows nothing.
+</I>&gt;<i>
+</I>&gt;<i> &gt; When it installs, it installs libgsasl.dll.  Is this what you mean?
+</I>&gt;<i>
+</I>&gt;<i> This is major change in comparison to previous win32 builds, we use
+</I>&gt;<i> now GSASL also for win32. I did one try to port GSASL to win32 last
+</I>&gt;<i> year, but I've surrendered.
+</I>&gt;<i> Once Tomasz deprecated Cyrus SASL for good, I did try once again
+</I>&gt;<i> yesterday. This time I found the reason it wasn't working, it was
+</I>&gt;<i> using /dev/random and having minor problems in other functions. Also
+</I>&gt;<i> those Vortex builds for win32 have the same problems... and simply
+</I>&gt;<i> don't work, reporting stupid error
+</I>&gt;<i> GSASL_MECHANISM_CALLED_TOO_MANY_TIMES, while the problem was gc_nonce
+</I>&gt;<i> function that was returning 3 ==
+</I>&gt;<i> GSASL_MECHANISM_CALLED_TOO_MANY_TIMES, but the error was out of gsasl
+</I>&gt;<i> scope (different library).
+</I>&gt;<i>
+</I>&gt;<i> So, do you use, DIGEST-MD5? Do you build libgsasl it yourself? If yes,
+</I>&gt;<i> do you use the patches for libgsasl I've posted on my site at:
+</I>&gt;<i> <A HREF="http://www.nanoant.com/projects/jabberd2-win32#download">http://www.nanoant.com/projects/jabberd2-win32#download</A>
+</I>&gt;<i>
+</I>&gt;<i> Because without them especially without patch file, libgsasl will
+</I>&gt;<i> compile on win32, but simply won't work, as it is trying use /dev/
+</I>&gt;<i> random, and etc.
+</I>&gt;<i>
+</I>&gt;<i> But then if you use my patch, then it must be again some other problem
+</I>&gt;<i> with libgsasl I haven't encountered yet.
+</I>&gt;<i> Please post me details about the auth method you're using, and maybe
+</I>&gt;<i> try disabling DIGEST-MD5 for user auth, and try PLAIN &lt;-
+</I>&gt;<i>
+</I>&gt;<i> Cheers,
+</I>&gt;<i> --
+</I>&gt;<i> Adam Strzelecki |: nanoant.com :|
+</I>&gt;<i>
+</I>&gt;<i>
+</I>
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="085601.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+	<LI>Next message: <A HREF="085603.html">[jdev] Bug in jabberd2 (2.1.13) on win32
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85602">[ date ]</a>
+              <a href="thread.html#85602">[ thread ]</a>
+              <a href="subject.html#85602">[ subject ]</a>
+              <a href="author.html#85602">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

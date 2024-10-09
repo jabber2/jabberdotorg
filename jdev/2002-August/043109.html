@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Re: Help with Jabber-1.4.2 and MySQL backend
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Help%20with%20Jabber-1.4.2%20and%20MySQL%20backend&In-Reply-To=%3CA0982A9E90839843BE0D180F6DC17F4101A797%40ecimail.eci.corp%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="043133.html">
+   <LINK REL="Next"  HREF="043111.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Re: Help with Jabber-1.4.2 and MySQL backend</H1>
+    <B>Menzi, Hans</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Re%3A%20Help%20with%20Jabber-1.4.2%20and%20MySQL%20backend&In-Reply-To=%3CA0982A9E90839843BE0D180F6DC17F4101A797%40ecimail.eci.corp%3E"
+       TITLE="[JDEV] Re: Help with Jabber-1.4.2 and MySQL backend">HMenzi at eci.com
+       </A><BR>
+    <I>Wed Aug  7 08:50:03 CDT 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="043133.html">[JDEV] Java JabberBeans and SSL certificates
+</A></li>
+        <LI>Next message: <A HREF="043111.html">[JDEV] Re: Java Jabberbeans and SSL certificates
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43109">[ date ]</a>
+              <a href="thread.html#43109">[ thread ]</a>
+              <a href="subject.html#43109">[ subject ]</a>
+              <a href="author.html#43109">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thank you for pointing out what I missed, I still have something wrong though.
+
+I get the following error when I do a make clean and then a make:
+
+/usr/bin/ld : cannot find -lmysqlclient
+Collect2: ls returned 1 exit status
+Make: *** [xdb_sql.so] Error 1
+
+So I did a locate of mysqlclient and it returned the following:
+
+/usr/lib/mysql/mysqlclient.so.10.0.0
+/usr/lib/mysql/mysqlclient.so.10
+/usr/lib/mysql/mysqlclient.so.9.0.0
+/usr/lib/mysql/mysqlclient.a
+/usr/lib/mysql/mysqlclient.so
+/usr/lib/mysql/mysqlclient.so.9
+
+
+I then tried substituting -lmysqlclient for -l/usr/lib/mysql/mysqlclient and I still got the same error.
+
+Any suggestions?
+
+Thanks,
+-Hans
+
+-----Original Message-----
+From: Benoit Decaudin [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">benoit.decaudin at terravirtual.net</A>] 
+Sent: Wednesday, August 07, 2002 4:24 AM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: [JDEV] Re: Help with Jabber-1.4.2 and MySQL backend
+
+
+Did you compile xdb_sql with the proper parameters in the Makefile ?
+I had the same error until I modify the Makefile :
+
+. Use this for CPPFLAGS :
+    CPPFLAGS= -DMYSQL_BACKEND
+
+. Add xdb_sql_mysql.o to the xdb_sql_OBJECTS list
+
+. Change the following line as below (with no carriage return) :
+    xdb_sql.so: $(xdb_sql_OBJECTS)
+    $(CC) $(CFLAGS) $(MCFLAGS) -o xdb_sql.so $(xdb_sql_OBJECTS)
+    $(LDFLAGS)  $(LIBS) -static -lmysqlclient
+
+Then make clean and make.
+
+Hope this helps.
+Beno&#238;t
+
+&gt;<i> De&#160;: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-request at jabber.org</A>
+</I>&gt;<i> R&#233;pondre &#224;&#160;: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Date&#160;: Tue, 6 Aug 2002 20:17:08 -0500
+</I>&gt;<i> &#192;&#160;: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> Objet&#160;: jdev digest, Vol 1 #1573 - 13 msgs
+</I>&gt;<i> 
+</I>&gt;<i> Date: Tue, 6 Aug 2002 15:01:06 -0400
+</I>&gt;<i> From: &quot;Menzi, Hans&quot; &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">HMenzi at eci.com</A>&gt;
+</I>&gt;<i> To: &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>&gt;
+</I>&gt;<i> Subject: [JDEV] Help with Jabber-1.4.2 and MySQL backend
+</I>&gt;<i> Reply-To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> 
+</I>&gt;<i> Thought I would also post this on jdev....
+</I>&gt;<i> 
+</I>&gt;<i> Hello all,
+</I>&gt;<i> 
+</I>&gt;<i> Question I am trying to get MySQL backend running with jabber.
+</I>&gt;<i> 
+</I>&gt;<i> When I try to start jabber I get the following error messages.
+</I>&gt;<i> 
+</I>&gt;<i> [alert] (-internal) :[xdbsql_config_init] cannot load backend 'mysql'
+</I>&gt;<i> [alert] (-internal) :[xdb_sql] configuration failed
+</I>&gt;<i> 
+</I>&gt;<i> I have my server configured according to the document at this URL:
+</I>&gt;<i> 
+</I>&gt;<i> <A HREF="http://nuthole.homeip.net/files/how-to-xdb_sql.txt">http://nuthole.homeip.net/files/how-to-xdb_sql.txt</A>
+</I>&gt;<i> 
+</I>&gt;<i> Please Help!
+</I>&gt;<i> 
+</I>&gt;<i> Thanks,
+</I>&gt;<i> Hans Menzi
+</I>
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="043133.html">[JDEV] Java JabberBeans and SSL certificates
+</A></li>
+	<LI>Next message: <A HREF="043111.html">[JDEV] Re: Java Jabberbeans and SSL certificates
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43109">[ date ]</a>
+              <a href="thread.html#43109">[ thread ]</a>
+              <a href="subject.html#43109">[ subject ]</a>
+              <a href="author.html#43109">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

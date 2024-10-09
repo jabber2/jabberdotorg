@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] parsing xml (xmpp) with ruby
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20parsing%20xml%20%28xmpp%29%20with%20ruby&In-Reply-To=%3C1ce38ef40810011117v5d89ee1dq5f501d04a0243bc2%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="086936.html">
+   <LINK REL="Next"  HREF="086938.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] parsing xml (xmpp) with ruby</H1>
+    <B>Eric Will</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5Bjdev%5D%20parsing%20xml%20%28xmpp%29%20with%20ruby&In-Reply-To=%3C1ce38ef40810011117v5d89ee1dq5f501d04a0243bc2%40mail.gmail.com%3E"
+       TITLE="[jdev] parsing xml (xmpp) with ruby">rakaur at malkier.net
+       </A><BR>
+    <I>Wed Oct  1 13:17:19 CDT 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="086936.html">[jdev] parsing xml (xmpp) with ruby
+</A></li>
+        <LI>Next message: <A HREF="086938.html">[jdev] parsing xml (xmpp) with ruby
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86937">[ date ]</a>
+              <a href="thread.html#86937">[ thread ]</a>
+              <a href="subject.html#86937">[ subject ]</a>
+              <a href="author.html#86937">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>On Wed, Oct 1, 2008 at 11:49 AM, Michal 'vorner' Vaner &lt;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">vorner at ucw.cz</A>&gt; wrote:
+&gt;<i> You don't get it. Sax does not need to load the whole document in
+</I>&gt;<i> memory. But it needs some information from the parent nodes (like depth,
+</I>&gt;<i> namespace declarations, etc). You can't start parsing from the middle.
+</I>
+It was working just fine this way. I changed it though. See below.
+
+&gt;<i> That is the &#8222;more mess&quot; I talk about. You need to set up the parser so
+</I>&gt;<i> it does not expect to reach the end of document and will wait for next
+</I>&gt;<i> data feed.
+</I>
+I could not do this. I had to change the REXML classes to allow me to
+change their source (well, add to the same source). These methods did
+not exist, so I extended their classes. Now each stream only creates
+one parser ever, and adds on to it's internal buffer. The buffer
+contains the items that haven't been processed (i.e., it removes them
+from the buffer as it consumes them). If there's something already in
+the buffer, I add to it.
+
+&gt;<i> If your parser can not do something like this, then you are doomed and
+</I>&gt;<i> it won't work. At all (if it sometimes pretends to work, you are unlucky
+</I>&gt;<i> enough not to give you straight evidence it is broken).
+</I>
+This was exactly the case, however with my hack above in place, it
+works fine. However, I still have an issue. Now when a stanza is
+incomplete but well formed (i.e.: a missing end tag, or something) the
+parser leaves it in its buffer, and waits for it to be added on to.
+This works if the next read() (or read()s) finish that stanza. If
+someone is manually sending XML, and never sends an end tag, it will
+keep on adding to the buffer forever. What should I do about this? Set
+a limit on the buffer? If I limit my read()s to 8192 bytes, should I
+limit my parser's buffer to four or five times that? I'm not sure.
+Just letting it add forever is a bad thing, as in, DoS.
+
+The problem of receiving a half-stanza that's not well formed is still
+here. In that case, it raises an exception. I only have two options,
+it seems to me. One is to kick off the client, and one is to ignore
+the exception and save the bad xml to the buffer and hope the next
+read() fixes it. This is also a DoS problem, if that stanza never gets
+fixed it'll keep raising the exception which will keep adding onto the
+buffer, which will keep raising the exception...
+
+&gt;<i> --
+</I>&gt;<i> If it works, fix it.
+</I>&gt;<i>
+</I>&gt;<i> Michal 'vorner' Vaner
+</I>
+-- Eric Will // rakaur --
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="086936.html">[jdev] parsing xml (xmpp) with ruby
+</A></li>
+	<LI>Next message: <A HREF="086938.html">[jdev] parsing xml (xmpp) with ruby
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86937">[ date ]</a>
+              <a href="thread.html#86937">[ thread ]</a>
+              <a href="subject.html#86937">[ subject ]</a>
+              <a href="author.html#86937">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

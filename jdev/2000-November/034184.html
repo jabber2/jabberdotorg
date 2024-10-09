@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabbers disappointment !!
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabbers%20disappointment%20%21%21&In-Reply-To=%3C20001128082707.A16991%40dizzyd.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="034208.html">
+   <LINK REL="Next"  HREF="034178.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabbers disappointment !!</H1>
+    <B>Dave Smith</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabbers%20disappointment%20%21%21&In-Reply-To=%3C20001128082707.A16991%40dizzyd.com%3E"
+       TITLE="[JDEV] Jabbers disappointment !!">dizzyd at dizzyd.com
+       </A><BR>
+    <I>Tue Nov 28 09:27:07 CST 2000</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="034208.html">[JDEV] Jabbers disappointment !!
+</A></li>
+        <LI>Next message: <A HREF="034178.html">[JDEV] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34184">[ date ]</a>
+              <a href="thread.html#34184">[ thread ]</a>
+              <a href="subject.html#34184">[ subject ]</a>
+              <a href="author.html#34184">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi Vijay..
+
+Just to address some of your problems..
+
+1.) Memory usage - the 1.2 server no longer uses a thread per user, opting 
+instead for a thread pool approach. What this means is that at any given time, 
+for any # of users there is a fixed # of threads running (the default is 
+~20 IIRC). Having a thread per user is not an efficient approach for high-end 
+scalability -- the O/S would spend more time context switching than it would 
+letting a thread run. The implications of this approach means that in 1GB of 
+memory, the server can handle ~120k users (or so).
+
+2.) Using multiple processors - Jabber.com is currently in the process of 
+refitting the server to support pthreads so that the jabber server can make 
+use of multiple processors. This is expected to be complete in late January or early Feburary. Note that while j.com is doing the work, the modified code will
+be merged back into j.org's CVS and made available under standard OpenSource
+licensing.
+
+3.) TCP connections - You can modify some setting in Linux's /proc filesystem
+to make it support more than 1024 connections. Jabber.com has managed to get 
+24k simultaneous connections being managed on single Linux box at this time. 
+It's possible to do more (prolly up to ~40k) but it becomes very inefficient,
+due to the fact that the Linux kernel is not optimized for such large amounts
+of I/O and latency is introduced into the entire system. In fact, I would
+recommend that a Sun box is used to act as the connection manager as it has
+noticeably better performance when it comes to handling huge amounts of I/O.
+
+4.) Distributed approach - In order to attain the numbers I have been talking
+about, you definately need a farm of machines. For instance, to handle ~30k 
+users you will want to have 2 boxes (or so). One box will run jabberd (the
+component hub) which will load JSM (Jabber Session Manager) -- this box tracks
+individual user session and the logic associated with knowing when a user is
+on/offline. The second box will run a series of jpollds, with multiple virtual
+IPs mapped to each. The #2 box will be handling all those thousands of conns
+and multiplexing them back to the JSM for processing. Now that only gets you up
+to ~30k users or so with a fairly low sustained message throughput 
+(~500 msgs/sec). Once a pthread version of the server is out, we expect the 
+sustained msg throughput to double or even triple -- note that the # of users
+is no longer directly related to message throughput..you _could_ stack 100k
+users on a single JSM so long as there where &lt; 500 msgs/sec the server would
+be able to keep up with no major problems.
+
+I hope this info helps. 
+
+D.
+
+On Tue, Nov 28, 2000 at 06:45:51PM +0530, Vijay Kumar wrote:
+&gt;<i>  Hi!!  all
+</I>&gt;<i>         for last couple of days I was figuring out whats the upper limit of
+</I>&gt;<i> no of users jabber can support
+</I>&gt;<i> concurrently. what I can figure out is that jabber as a server can be used
+</I>&gt;<i> for small no of clients only .
+</I>&gt;<i> 
+</I>&gt;<i> 1) memorey diappointment .
+</I>&gt;<i>     With pth, the individual user threads get 32k (correct me pease if I'm
+</I>&gt;<i> wrong) so 10,000 users would use up 320MB.
+</I>&gt;<i>     if we are having 1GB of RAM then atmost 30,000 user will be supported
+</I>&gt;<i> concurrently.
+</I>&gt;<i>     beside this pth is not kernel based so if dual propressor is used its of
+</I>&gt;<i> no use to jabber .
+</I>&gt;<i> 2)TCP connection :
+</I>&gt;<i> It should also be noted that by default, Linux will only accept 1024 TCP
+</I>&gt;<i> connections. Adding more simo connections requires a kernel patch to
+</I>&gt;<i> increase
+</I>&gt;<i> this limit. to what limit we can increase this ?? If I am not wrong then one
+</I>&gt;<i> connection will be dedicated to one user
+</I>&gt;<i> ,I meant each tread will be revoling around one connection . will it means
+</I>&gt;<i> maximum atmost 1024 will be online at a time .
+</I>&gt;<i> but its also known that :
+</I>&gt;<i> sockets absolute limitation is 64k since the port value is 2 bytes wide. So,
+</I>&gt;<i> with
+</I>&gt;<i> TCP/IP you cannot have more then 64k connections (this is a theoretical
+</I>&gt;<i> maximum, in reality more limitations apply) even if you have a
+</I>&gt;<i> server-machine that can handle the load
+</I>&gt;<i> 
+</I>&gt;<i> 3)Distributed approach.
+</I>&gt;<i>      well 1st &amp; 2nd point is true for any server which is based on Pth &amp; TCP
+</I>&gt;<i>  .
+</I>&gt;<i>      but agin Lot is taked about distributed approch in jabber .but how to
+</I>&gt;<i> implement it practically is no where written neither
+</I>&gt;<i> in jabber docs nor in mailling archives . suppose if I am running 3 jabber
+</I>&gt;<i> servers in 3 different machines then how to
+</I>&gt;<i> syncronize them or co-relate them .
+</I>&gt;<i> or how to install one master jabber server
+</I>&gt;<i>   with 3-4 salve servers distributed .
+</I>&gt;<i> 
+</I>&gt;<i> mine whole aim is to use jabber at very high end of user numbers.
+</I>&gt;<i> 
+</I>&gt;<i> thanks in advance !!
+</I>&gt;<i> 
+</I>&gt;<i> vijay
+</I>&gt;<i> 
+</I>&gt;<i> 
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> jdev mailing list
+</I>&gt;<i> <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+</I>
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="034208.html">[JDEV] Jabbers disappointment !!
+</A></li>
+	<LI>Next message: <A HREF="034178.html">[JDEV] (no subject)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34184">[ date ]</a>
+              <a href="thread.html#34184">[ thread ]</a>
+              <a href="subject.html#34184">[ subject ]</a>
+              <a href="author.html#34184">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

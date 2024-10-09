@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Avatar: no per-resource public XML storage in 1.4.1
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Avatar%3A%20no%20per-resource%20public%20XML%20storage%20in%201.4.1&In-Reply-To=%3CB4BE278B-A324-11D5-B784-003065ABC052%40mac.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="038636.html">
+   <LINK REL="Next"  HREF="038634.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Avatar: no per-resource public XML storage in 1.4.1</H1>
+    <B>Jens Alfke</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Avatar%3A%20no%20per-resource%20public%20XML%20storage%20in%201.4.1&In-Reply-To=%3CB4BE278B-A324-11D5-B784-003065ABC052%40mac.com%3E"
+       TITLE="[JDEV] Avatar: no per-resource public XML storage in 1.4.1">jens at mac.com
+       </A><BR>
+    <I>Thu Sep  6 19:10:12 CDT 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="038636.html">[JDEV] Presence question
+</A></li>
+        <LI>Next message: <A HREF="038634.html">[JDEV] Avatar: no per-resource public XML storage in 1.4.1
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38633">[ date ]</a>
+              <a href="thread.html#38633">[ thread ]</a>
+              <a href="subject.html#38633">[ subject ]</a>
+              <a href="author.html#38633">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Looks like Jeremie was a bit off base in his description of public XML 
+storage; or it wasn't implemented correctly. When I tried to store the 
+avatar picture data on my own resource, the server (1.4.1 Solaris) just 
+bounced it back to me as it would any regular IQ query.
+
+I sent:
+&lt;iq type=&quot;set&quot; id=&quot;00000003&quot; to=&quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jens at myserver</A>/myRsrc&quot;&gt;
+&lt;query xmlns=&quot;jabber-storage:iq:avatar&quot;&gt;
+&lt;data mimetype=&quot;image/jpeg&quot;&gt;
+/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkz 
+.......
+&lt;/data&gt;&lt;/query&gt;&lt;/iq&gt;
+
+and I promptly got back:
+
+&lt;iq type='set' id='00000003' to='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jens at myserver</A>/myRsrc' 
+from='<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jens at myserver</A>/myRsrc'&gt;
+&lt;query xmlns='jabber-storage:iq:avatar'&gt;
+&lt;data mimetype='image/tiff'&gt;
+/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkz 
+......
+&lt;/data&gt;&lt;/query&gt;&lt;/iq&gt;
+
+I'm assuming from this that the data didn't get stored on the server. :-(
+
+Looks as though our options are:
+(1) Don't use server-side storage for avatar pictures; the client has to 
+respond to the queries. This is the way it was in the original spec. 
+It's flexible but causes bandwidth problems for dial-up clients and 
+doesn't allow you to get the picture of an offline user.
+(2) Make avatar pictures per-account, not per-resource, and gain 
+server-side storage but lose interesting features.
+(3) Fix the server's public XML storage implementation to store resource 
+data (and make it nonpersistent as temas suggested)
+(4) Add a server module specifically for storing avatar pictures.
+
+For now I'm going to implement according to (1) or (2) since I have no 
+desire personally to muck with the server code! In the long run I guess 
+I would prefer (3) to (4) because I would rather see an existing generic 
+facility improved rather than add Yet Another Special Purpose Hack to 
+the server.
+
+--Jens
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="038636.html">[JDEV] Presence question
+</A></li>
+	<LI>Next message: <A HREF="038634.html">[JDEV] Avatar: no per-resource public XML storage in 1.4.1
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#38633">[ date ]</a>
+              <a href="thread.html#38633">[ thread ]</a>
+              <a href="subject.html#38633">[ subject ]</a>
+              <a href="author.html#38633">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Jabber message delivered to wrong recipient
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20message%20delivered%20to%20wrong%20recipient&In-Reply-To=%3C20031011135540.GA3508%40hermes.muc.charente.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="047120.html">
+   <LINK REL="Next"  HREF="047115.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Jabber message delivered to wrong recipient</H1>
+    <B>Matthias Wimmer</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Jabber%20message%20delivered%20to%20wrong%20recipient&In-Reply-To=%3C20031011135540.GA3508%40hermes.muc.charente.de%3E"
+       TITLE="[JDEV] Jabber message delivered to wrong recipient">m at tthias.net
+       </A><BR>
+    <I>Sat Oct 11 08:55:41 CDT 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="047120.html">[JDEV] Jabber message delivered to wrong recipient
+</A></li>
+        <LI>Next message: <A HREF="047115.html">[JDEV] Jabber message delivered to wrong recipient
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47125">[ date ]</a>
+              <a href="thread.html#47125">[ thread ]</a>
+              <a href="subject.html#47125">[ subject ]</a>
+              <a href="author.html#47125">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi List!
+
+Matthias Wimmer schrieb am 2003-10-10 22:45:23:
+&gt;<i> I am aware of this problem for some time, as it can happen on my server
+</I>&gt;<i> (amessage) as well. I described the cause for this problem in:
+</I>&gt;<i> 
+</I>&gt;<i> <A HREF="http://mailman.jabber.org/pipermail/jdev/2003-August/016267.html">http://mailman.jabber.org/pipermail/jdev/2003-August/016267.html</A>
+</I>&gt;<i> 
+</I>&gt;<i> Just yesterday I had the time to search for a solution of this problem
+</I>&gt;<i> and have written some code that detects missdirected packets so they are
+</I>&gt;<i> not delivered to wrong users. I'll publish this patch soon to be
+</I>&gt;<i> discussed.
+</I>
+Actually the fix for this problem is very small, just one line in jadc2s
+has to be changed. With this patch jadc2s (the client connection manager
+used at jabber.org as well as on some other bigger servers) checks if a
+connection is owned by the user that is the expected receipient of a
+packet. If not its bounced to the session manager that than knows that
+the connection of the former user does not longer exist.
+
+
+Tot kijk
+    Matthias
+
+
+--- jadc2s/connect.c	2003-09-23 00:28:16.000000000 +0200
++++ jadc2s-fromcheck/connect.c	2003-10-11 15:42:33.000000000 +0200
+@@ -246,7 +246,7 @@
+     log_debug(ZONE,&quot;sm sent us a chunk for %s&quot;, cid);
+ 
+     /* either bounce or send the chunk to the client */
+-    if(target-&gt;fd &gt;= 0)
++    if(target-&gt;fd &gt;= 0 &amp;&amp; j_strcmp(jid_full(target-&gt;smid), str) == 0)
+         chunk_write(target, chunk, NULL, NULL, NULL);
+     else
+         chunk_write(c, chunk, str, cid, &quot;error&quot;);
+
+-- 
+For kibibytes see:
+<A HREF="http://www.iec.ch/online_news/etech/arch_2003/etech_0503/focus.htm">http://www.iec.ch/online_news/etech/arch_2003/etech_0503/focus.htm</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: Digital signature
+URL: &lt;<A HREF="https://www.jabber.org/jdev/attachments/20031011/8c01e339/attachment-0001.pgp">https://www.jabber.org/jdev/attachments/20031011/8c01e339/attachment-0001.pgp</A>&gt;
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="047120.html">[JDEV] Jabber message delivered to wrong recipient
+</A></li>
+	<LI>Next message: <A HREF="047115.html">[JDEV] Jabber message delivered to wrong recipient
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47125">[ date ]</a>
+              <a href="thread.html#47125">[ thread ]</a>
+              <a href="subject.html#47125">[ subject ]</a>
+              <a href="author.html#47125">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] MUC and creating rooms
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20MUC%20and%20creating%20rooms&In-Reply-To=A5671CC6D3B5D4119D5400010233D38402253EB6%40BUGBEAR">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="015366.html">
+   <LINK REL="Next"  HREF="015374.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] MUC and creating rooms</H1>
+    <B>David Sutton</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20MUC%20and%20creating%20rooms&In-Reply-To=A5671CC6D3B5D4119D5400010233D38402253EB6%40BUGBEAR"
+       TITLE="[JDEV] MUC and creating rooms">jabber at dsutton.legend.uk.com
+       </A><BR>
+    <I>Thu Jan  2 23:33:39 CST 2003</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="015366.html">[JDEV] MUC and creating rooms
+</A></li>
+        <LI>Next message: <A HREF="015374.html">[JDEV] cygwin transport survey
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#15369">[ date ]</a>
+              <a href="thread.html#15369">[ thread ]</a>
+              <a href="subject.html#15369">[ subject ]</a>
+              <a href="author.html#15369">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Hi there,
+
+  Ok, its only one field that its really looking for, and its the config
+  field. This was originally used when the service could receive a
+  number of different x:data forms, and I needed a simple way to
+  differiciate between them. I'm currently working on removing the
+  dependancy in the CVS version, so that an empty form will suffice.
+
+Regards,
+
+  David
+
+On Thu, Jan 02, 2003 at 04:47:16PM -0500, Vincent Dibartolo wrote:
+&gt;<i>    All,
+</I>&gt;<i> 
+</I>&gt;<i>            I'm sure I'm doing something wrong, but I've been banging up
+</I>&gt;<i>    against the most frustrating problem having a bot create a chat room,
+</I>&gt;<i>    and I've found some unusual behavior by looking at debugging output
+</I>&gt;<i>    from the Exodus client.  To begin with, I know that MUC is properly
+</I>&gt;<i>    installed on my server because I can create conference rooms on the
+</I>&gt;<i>    fly using Exodus.
+</I>&gt;<i> 
+</I>&gt;<i>            I've been using the Net::Jabber Perl library to have a bot
+</I>&gt;<i>    connect using MUCJoin (I have v1.28).  The following is an outline of
+</I>&gt;<i>    my code:
+</I>&gt;<i> 
+</I>&gt;<i>                            $jabber = new Net::Jabber::Client();
+</I>&gt;<i>                            my ($status) =
+</I>&gt;<i>    $jabber-&gt;Connect(hostname=&gt;$j_server,  port=&gt;$j_port);
+</I>&gt;<i>                            my (@result) =
+</I>&gt;<i>    $jabber-&gt;AuthSend(username=&gt;$user,  password=&gt;$pass,
+</I>&gt;<i>    resource=&gt;$resource);
+</I>&gt;<i>                            $jabber-&gt;MUCJoin(room=&gt;$room_name,
+</I>&gt;<i>    server=&gt;$j_chat_server, nick=&gt;$chat_nickname);
+</I>&gt;<i> 
+</I>&gt;<i>            If I look in the &quot;.../jabber/spool/&lt;chat server name&gt;/&quot;
+</I>&gt;<i>    directory I don't see any files created, and I can't get another
+</I>&gt;<i>    client to connect to that room (keep getting a &quot;Forbidden&quot; message in
+</I>&gt;<i>    Exodus).  Frustratingly, I have to restart the Jabber server before I
+</I>&gt;<i>    can try to create this room with Exodus, which is annoying but not
+</I>&gt;<i>    necessary for my project.  I assume this is because the room is in
+</I>&gt;<i>    some half-created state and the server is not allowing anyone else to
+</I>&gt;<i>    create a room with the same name.
+</I>&gt;<i> 
+</I>&gt;<i>            So I looked at the debug output from the Exodus
+</I>&gt;<i>    connection/creation of the conference room and found that if I do what
+</I>&gt;<i>    it does everything works fine.  This amounts to the following, which
+</I>&gt;<i>    as you can see is ugly and undesirable:
+</I>&gt;<i> 
+</I>&gt;<i>                            $jabber = new Net::Jabber::Client();
+</I>&gt;<i>                            my ($status) =
+</I>&gt;<i>    $jabber-&gt;Connect(hostname=&gt;$j_server,  port=&gt;$j_port);
+</I>&gt;<i>                            my (@result) =
+</I>&gt;<i>    $jabber-&gt;AuthSend(username=&gt;$user,  password=&gt;$pass,
+</I>&gt;<i>    resource=&gt;$resource);
+</I>&gt;<i>                            $jabber-&gt;MUCJoin(room=&gt;$room_name,
+</I>&gt;<i>    server=&gt;$j_chat_server, nick=&gt;$chat_nickname);
+</I>&gt;<i> 
+</I>&gt;<i>                             # this is the first part of the hack
+</I>&gt;<i>    protocol, which will send back a config &quot;form&quot;,
+</I>&gt;<i>                            # which describes the room's settings
+</I>&gt;<i>                            my ($iq) = new Net::Jabber::IQ();
+</I>&gt;<i>                            $iq-&gt;SetIQ(to=&gt;$room_name.'@'.$j_chat_server,
+</I>&gt;<i>    type=&gt;&quot;get&quot;);
+</I>&gt;<i>                            my ($iq_type) = $iq-&gt;NewQuery();
+</I>&gt;<i> 
+</I>&gt;<i>    $iq_type-&gt;SetXMLNS(&quot;<A HREF="http://jabber.org/protocol/muc#owner&quot;">http://jabber.org/protocol/muc#owner&quot;</A>);
+</I>&gt;<i>                            $jabber-&gt;Send($iq, 1);
+</I>&gt;<i> 
+</I>&gt;<i>                            # this is the second part of the hack that
+</I>&gt;<i>    just accepts the default settings
+</I>&gt;<i>    my ($msg) =&lt;&lt;EOL;
+</I>&gt;<i>    &lt;iq to=&quot;$room_name\@$j_chat_server&quot; type=&quot;set&quot;&gt;&lt;query
+</I>&gt;<i>    xmlns=&quot;<A HREF="http://jabber.org/protocol/muc#owner&quot;">http://jabber.org/protocol/muc#owner&quot;</A>&gt;&lt;x type=&quot;submit&quot;
+</I>&gt;<i>    xmlns=&quot;jabber:x:data&quot;&gt;&lt;title&gt;Room configuration&lt;/title&gt;&lt;field
+</I>&gt;<i>    var=&quot;logformat&quot;&gt;&lt;value&gt;text&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;logging&quot;&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;whois&quot;&gt;&lt;value&gt;admins&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;password&quot;&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;invites&quot;&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;invitation&quot;&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;privmsg&quot;&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;defaulttype&quot;&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;moderated&quot;&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;legacy&quot;&gt;&lt;value&gt;1&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;persistant&quot;&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;public&quot;&gt;&lt;value&gt;1&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;privacy&quot;&gt;&lt;value&gt;1&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;participants&quot;&gt;&lt;value&gt;30&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;subject&quot;&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;&lt;field var=&quot;rename&quot;&gt;&lt;value&gt;is
+</I>&gt;<i>    now known as&lt;/value&gt;&lt;/field&gt;&lt;field var=&quot;join&quot;&gt;&lt;value&gt;has become
+</I>&gt;<i>    available&lt;/value&gt;&lt;/field&gt;&lt;field var=&quot;leave&quot;&gt;&lt;value&gt;has
+</I>&gt;<i>    left&lt;/value&gt;&lt;/field&gt;&lt;field var=&quot;title&quot;&gt;&lt;value&gt;t1&lt;/value&gt;&lt;/field&gt;&lt;field
+</I>&gt;<i>    var=&quot;form&quot;&gt;&lt;value&gt;config&lt;/value&gt;&lt;/field&gt;&lt;/x&gt;&lt;/query&gt;&lt;/iq&gt;
+</I>&gt;<i> 
+</I>&gt;<i>    EOL
+</I>&gt;<i> 
+</I>&gt;<i>                            $jabber-&gt;Send($msg);
+</I>&gt;<i> 
+</I>&gt;<i>            Now, this creates the room (by which I mean I see a file in
+</I>&gt;<i>    &quot;.../jabber/spool/&lt;chat server name&gt;/&quot;) which other clients can
+</I>&gt;<i>    connect to.  There are a couple of things I don't understand:
+</I>&gt;<i> 
+</I>&gt;<i>            1) If I send any less than the complete registration form
+</I>&gt;<i>    (&quot;$msg&quot; above) it doesn't work
+</I>&gt;<i>            2) Why do I have to take those extra steps at all?  Shouldn't
+</I>&gt;<i>    MUCJoin take care of all this for me?  Does this imply a problem or is
+</I>&gt;<i>    this expected behavior?
+</I>&gt;<i> 
+</I>&gt;<i>            I've seen some unrelated posts about joining a MUC so my
+</I>&gt;<i>    apologies if this is a known problem that I wasn't able to find.
+</I>&gt;<i> 
+</I>&gt;<i>            -Vinny
+</I>
+-- 
+David Sutton
+Email: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dsutton at legend.co.uk</A>
+Jabber: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">peregrine at legend.net.uk</A>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 232 bytes
+Desc: not available
+Url : <A HREF="https://www.jabber.org/jdev/attachments/20030102/ba68a473/attachment.pgp">https://www.jabber.org/jdev/attachments/20030102/ba68a473/attachment.pgp</A> 
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="015366.html">[JDEV] MUC and creating rooms
+</A></li>
+	<LI>Next message: <A HREF="015374.html">[JDEV] cygwin transport survey
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#15369">[ date ]</a>
+              <a href="thread.html#15369">[ thread ]</a>
+              <a href="subject.html#15369">[ subject ]</a>
+              <a href="author.html#15369">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

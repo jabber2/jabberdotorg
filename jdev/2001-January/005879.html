@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] how configurate msn-trans?
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20how%20configurate%20msn-trans%3F&In-Reply-To=">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="005877.html">
+   <LINK REL="Next"  HREF="005887.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] how configurate msn-trans?</H1>
+    <B>Brazell, Bill</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20how%20configurate%20msn-trans%3F&In-Reply-To="
+       TITLE="[JDEV] how configurate msn-trans?">bill.brazell at attws.com
+       </A><BR>
+    <I>Tue Jan 30 08:49:27 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="005877.html">[JDEV] MSN transport
+</A></li>
+        <LI>Next message: <A HREF="005887.html">[JDEV] how configurate msn-trans?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5879">[ date ]</a>
+              <a href="thread.html#5879">[ thread ]</a>
+              <a href="subject.html#5879">[ subject ]</a>
+              <a href="author.html#5879">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>It looks like there is a typo in the README file under /cvs/msn-transport.
+The line that reads:
+
+&lt;msntrans xmlns=&quot;jabber:config:msntrans&quot;&gt;
+
+should read:
+
+&lt;msntrans xmlns=&quot;jabber:msntrans:config&quot;&gt;
+
+Here are the additions to the jabber.xml that I used:
+
+Browse Section
+
+&lt;service type=&quot;msn&quot; jid=&quot;msn.hostname&quot; name=&quot;MSN Transport&quot;&gt;
+  &lt;ns&gt;jabber:iq:gateway&lt;/ns&gt;
+  &lt;ns&gt;jabber:iq:register&lt;/ns&gt;
+&lt;/service&gt;
+
+Additional Services Section
+
+&lt;service id=&quot;msn.domain&quot;&gt;
+  &lt;load&gt;&lt;msntrans&gt;./jabber2/msn-transport/msntrans.so&lt;/msntrans&gt;&lt;/load&gt;
+  &lt;msntrans xmlns=&quot;jabber:msntrans:config&quot;&gt;
+    &lt;instructions&gt;Enter your MSN Messenger account and password. Example:
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">user1 at hotmail.com.</A>&lt;/instructions&gt;
+  &lt;/msntrans&gt;
+&lt;/service&gt;
+
+Perhaps Schuyler can explain what these other entries do:
+
+&lt;service id=&quot;msnlinker&quot;&gt;
+    &lt;uplink/&gt;
+    &lt;connect&gt;
+      &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+      &lt;port&gt;1234&lt;/port&gt;
+      &lt;secret&gt;test&lt;/secret&gt;
+    &lt;/connect&gt;
+  &lt;/service&gt;
+
+_____
+
+&lt;vCard&gt;
+        &lt;FN&gt;MSN Transport&lt;/FN&gt;
+        &lt;DESC&gt;This is MSN Transport&lt;/DESC&gt;
+        &lt;URL&gt;<A HREF="http://foo.bar/&lt;/URL">http://foo.bar/&lt;/URL</A>&gt;
+      &lt;/vCard&gt;
+
+      &lt;!-- &lt;prime&gt;501&lt;/prime&gt; --&gt;
+      &lt;!-- &lt;server-ip&gt;64.4.13.57&lt;/server-ip/&gt; --&gt;
+
+_____
+
+&lt;log id=&quot;msn_log&quot;&gt;
+    &lt;file&gt;./msnlog&lt;/file&gt;
+  &lt;/log&gt;
+
+  &lt;xdb id=&quot;xdb&quot;&gt;
+    &lt;host&gt;msn.mydomain&lt;/host&gt;
+    &lt;load&gt;&lt;xdb_file&gt;./xdb_file/xdb_file.so&lt;/xdb_file&gt;&lt;/load&gt;
+    &lt;xdb_file
+xmlns=&quot;jabber:config:xdb_file&quot;&gt;&lt;spool&gt;/home/sheath/jabber/jabber2/spool&lt;/spo
+ol&gt;&lt;/xdb_file&gt;
+  &lt;/xdb&gt;
+
+_____
+
+
+  &lt;service id=&quot;msnlinker&quot;&gt;
+    &lt;host&gt;msn.mydomain&lt;/host&gt;
+    &lt;accept&gt;
+      &lt;ip&gt;127.0.0.1&lt;/ip&gt;
+      &lt;port&gt;1234&lt;/port&gt;
+      &lt;secret&gt;test&lt;/secret&gt;
+    &lt;/accept&gt;
+  &lt;/service&gt;
+
+_____
+
+I can guess what some of them do, but it doesn't appear that they are
+mandatory.  Looks like Schuyler already has rewriting the README file on his
+TODO list.  I'm sure he'll come through for us.
+
+Thanks,
+
+Bill Brazell
+
+-----Original Message-----
+From: Jonathan McDowell [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">noodles at earth.li</A>]
+Sent: Tuesday, January 30, 2001 2:32 AM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: Re: [JDEV] how configurate msn-trans?
+
+
+On Tue, Jan 30, 2001 at 04:45:03PM +0900, Kim, Yoong-Young wrote:
+&gt;<i> Now. I want to using msn-transport with Jabber 1.2pre2,
+</I>&gt;<i> 
+</I>&gt;<i> I don't know how to configure msn-transport(CVS version).
+</I> 
+I'd this problem too. Go to:
+
+<A HREF="http://download.jabber.org/cvs/msn-transport/">http://download.jabber.org/cvs/msn-transport/</A>
+
+and read the bottom of the page under the directory listing. Worked for
+me.
+
+J.
+
+-- 
+              RAM disk is *not* an installation procedure.
+      Ask me about server collocation - <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">info at blackcatnetworks.co.uk</A>
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="005877.html">[JDEV] MSN transport
+</A></li>
+	<LI>Next message: <A HREF="005887.html">[JDEV] how configurate msn-trans?
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5879">[ date ]</a>
+              <a href="thread.html#5879">[ thread ]</a>
+              <a href="subject.html#5879">[ subject ]</a>
+              <a href="author.html#5879">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

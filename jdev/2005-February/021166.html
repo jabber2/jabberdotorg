@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [jdev] Regarding JSO and Threads
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Regarding%20JSO%20and%20Threads&In-Reply-To=20050218135713.4782.qmail%40webmail47.rediffmail.com">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="021164.html">
+   <LINK REL="Next"  HREF="021167.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[jdev] Regarding JSO and Threads</H1>
+    <B>Matthew A. Miller</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5Bjdev%5D%20Regarding%20JSO%20and%20Threads&In-Reply-To=20050218135713.4782.qmail%40webmail47.rediffmail.com"
+       TITLE="[jdev] Regarding JSO and Threads">linuxwolf at outer-planes.net
+       </A><BR>
+    <I>Fri Feb 18 09:14:41 CST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="021164.html">[jdev] Regarding JSO and Threads 
+</A></li>
+        <LI>Next message: <A HREF="021167.html">[jdev] Re: Regarding JSO and Threads
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#21166">[ date ]</a>
+              <a href="thread.html#21166">[ thread ]</a>
+              <a href="subject.html#21166">[ subject ]</a>
+              <a href="author.html#21166">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I'll try to answer for first question. I'm sure others with come forth 
+with the answers to the second.
+
+To have a single thread handle more clients depends on if you need SSL 
+or not[1].
+
+JSO was designed so that a single thread could indeed handle the 
+processing of multiple sessions (or at least appear that way). If you 
+use the ChannelStreamSource, then all processing is done on the thread 
+that calls Stream.process(). If you use the SocketStreamSource (or its 
+derivatives), then there is actually another thread running to handle 
+the I/O.
+
+Assuming there are no SSL requirements, you could do this using the 
+ChannelStreamSource and a java.nio.channels.Selector. Just ensure the 
+selectable channel for the source is set to non-blocking and register it 
+with the Selector (preferrably passing along the Stream that will be 
+using it for the attachment):
+
+conn = JSOImplementation.getInstance().createStream(&quot;jabber:client&quot;);
+src = ChannelStreamSource.createSocket(host, port);
+
+conn.connect(src);
+conn.open();
+src.register(selector, SelectionKey.OP_READ, conn);
+
+Then call Selector.select() to retrieve the available selection keys, 
+and process the attached Streams:
+
+while (selector.select() &gt; 0) {
+Iterator itr = selector.selectedKeys().iterator();
+SelectionKey key;
+Stream conn;
+
+while (itr.hasNext()) {
+key = (SelectionKey)itr.next();
+conn = (Stream)key.attachment();
+
+conn.process();
+if (!conn.getCurrentStatus().isConnected())
+key.cancel(); //Stream disconnected; remove from selector
+}
+}
+
+I believe there is an example to this effect in example/EchoServer.java.
+
+Hope this helps.
+
+
+
+[1] With J2SE 1.4, there is no open implementation of TLS that works 
+with non-blocking I/O (that I am aware of). With J2SE 5, there is, but 
+no work as been done with it in JSO (although it is fairly easy to 
+implement, I believe).
+
+-- 
+-  LW
+
+GOT JABBER&#8482;? &lt;<A HREF="http://www.jabber.org/">http://www.jabber.org/</A>&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="021164.html">[jdev] Regarding JSO and Threads 
+</A></li>
+	<LI>Next message: <A HREF="021167.html">[jdev] Re: Regarding JSO and Threads
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#21166">[ date ]</a>
+              <a href="thread.html#21166">[ thread ]</a>
+              <a href="subject.html#21166">[ subject ]</a>
+              <a href="author.html#21166">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

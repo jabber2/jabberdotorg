@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] AIM away messages. (was: AIM-t crashes)
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20AIM%20away%20messages.%20%28was%3A%20AIM-t%20crashes%29&In-Reply-To=1017680776.660.2.camel%40corrosion">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="011957.html">
+   <LINK REL="Next"  HREF="012000.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] AIM away messages. (was: AIM-t crashes)</H1>
+    <B>dman</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=%5BJDEV%5D%20AIM%20away%20messages.%20%28was%3A%20AIM-t%20crashes%29&In-Reply-To=1017680776.660.2.camel%40corrosion"
+       TITLE="[JDEV] AIM away messages. (was: AIM-t crashes)">dman at dman.ddts.net
+       </A><BR>
+    <I>Mon Apr  1 18:14:36 CST 2002</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="011957.html">[JDEV] AIM away messages. (was: AIM-t crashes)
+</A></li>
+        <LI>Next message: <A HREF="012000.html">[JDEV] AIM away messages. (was: AIM-t crashes)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11965">[ date ]</a>
+              <a href="thread.html#11965">[ thread ]</a>
+              <a href="subject.html#11965">[ subject ]</a>
+              <a href="author.html#11965">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>
+(temas, I can't find an A or MX record for your email domain, thus
+sending on-list)
+
+
+On Mon, Apr 01, 2002 at 11:06:15AM -0600, Thomas Muldowney wrote:
+|<i> Pres handling is a bit borked in cvs.  I'm working on it.
+</I>
+I've been doing some testing of it (-latest, actually).  Yesterday I
+finally got a core dump from the intermitten segfaults I've seen, so I
+sent the backtrace and a tentative patch to maqi.  If you want I can
+host a poor-man's mailing list for aim-t development.  Anyways, here's
+the message I sent him.
+
+~~~~~~~~~~~~~~~~~~
+(gdb) bt
+#0  0x402ad7e5 in at_parse_incoming_im (ass=0x8277a78, command=0x823ca00)
+    at messages.c:34
+#1  0x402a80be in incomingim_ch1 (sess=0x8277a78, mod=0x8277d50, rx=0x823ca00,
+    snac=0x830e2f0, channel=1, userinfo=0x830e1f0, bs=0x823ca10,
+    cookie=0x830e260 &quot;&#195;&#186;ak&#165;\230B4&quot;) at im.c:1053
+#2  0x402a8e80 in incomingim (sess=0x8277a78, mod=0x8277d50, rx=0x823ca00,
+    snac=0x830e2f0, bs=0x823ca10) at im.c:1577
+#3  0x402a9746 in snachandler (sess=0x8277a78, mod=0x8277d50, rx=0x823ca00,
+    snac=0x830e2f0, bs=0x823ca10) at im.c:1787
+#4  0x402b1e07 in consumesnac (sess=0x8277a78, rx=0x823ca00)
+    at rxhandlers.c:117
+#5  0x402b2849 in aim_rxdispatch (sess=0x8277a78) at rxhandlers.c:571
+#6  0x402b837f in at_session_main (arg=0x82780a8) at sessions.c:1012
+#7  0x4011579e in pth_ctrl () from /usr/lib/libpth.so.14
+#8  0x40183914 in makecontext () from /lib/libc.so.6
+#9  0x40115c0a in pth_spawn () from /usr/lib/libpth.so.14
+#10 0x4011579e in pth_ctrl () from /usr/lib/libpth.so.14
+#11 0x40183914 in makecontext () from /lib/libc.so.6
+#12 0x401172d9 in pth_wait () from /usr/lib/libpth.so.14
+#13 0x40119825 in pth_sleep () from /usr/lib/libpth.so.14
+#14 0x08055d67 in main ()
+#15 0x401546cf in __libc_start_main () from /lib/libc.so.6
+(gdb)
+
+
+This was with version &quot;stable-2002.03.15&quot;.  Ooh, I see the problem :
+
+    buddy = xhash_get(s-&gt;buddies, at_normalize(userinfo-&gt;sn));
+
+    //how long since buddy sent an im?
+    idle = ((unsigned int)time(NULL) - (unsigned int)buddy-&gt;lastactivity);
+
+
+You never check to see if 'buddy' is NULL or not.
+
+Attached is the patch I'm now trying.  I imagine it would be helpful
+to see the actual packets the server sent.  Do you have any
+recommendations on how to get a log of those?
+~~~~~~~~~~~~
+
+-D
+
+-- 
+
+If we claim we have not sinned, we make Him out to be a liar and His
+Word has no place in our lives.
+        I John 1:10
+
+-------------- next part --------------
+--- messages.c.orig	Sun Mar 31 14:19:20 2002
++++ messages.c	Sun Mar 31 14:18:10 2002
+@@ -30,6 +30,12 @@
+ 
+     buddy = xhash_get(s-&gt;buddies, at_normalize(userinfo-&gt;sn));
+ 
++    // DSH
++    if ( buddy == NULL )
++    {
++        goto bug_out ;
++    }
++
+     //how long since buddy sent an im?
+     idle = ((unsigned int)time(NULL) - (unsigned int)buddy-&gt;lastactivity);
+ 
+@@ -187,6 +193,8 @@
+     }
+ 
+ 
++// DSH
++bug_out:
+     // free!
+     free(utf8_str);
+     free(msg_plain);
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="011957.html">[JDEV] AIM away messages. (was: AIM-t crashes)
+</A></li>
+	<LI>Next message: <A HREF="012000.html">[JDEV] AIM away messages. (was: AIM-t crashes)
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11965">[ date ]</a>
+              <a href="thread.html#11965">[ thread ]</a>
+              <a href="subject.html#11965">[ subject ]</a>
+              <a href="author.html#11965">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

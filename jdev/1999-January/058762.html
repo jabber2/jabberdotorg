@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Here's how ICQ would work.
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Here%27s%20how%20ICQ%20would%20work.&In-Reply-To=%3CPine.LNX.3.96.990120011649.9172A-100000%40mondo.eppg.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="058751.html">
+   <LINK REL="Next"  HREF="058773.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Here's how ICQ would work.</H1>
+    <B>Jeremie</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Here%27s%20how%20ICQ%20would%20work.&In-Reply-To=%3CPine.LNX.3.96.990120011649.9172A-100000%40mondo.eppg.com%3E"
+       TITLE="[JDEV] Here's how ICQ would work.">jeremie at jabber.org
+       </A><BR>
+    <I>Wed Jan 20 01:39:39 CST 1999</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="058751.html">[JDEV] Here's how ICQ would work.
+</A></li>
+        <LI>Next message: <A HREF="058773.html">[JDEV] Here's how ICQ would work.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58762">[ date ]</a>
+              <a href="thread.html#58762">[ thread ]</a>
+              <a href="subject.html#58762">[ subject ]</a>
+              <a href="author.html#58762">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>&gt;<i> I like the idea of 'distributed' transports (i.e. my server doesn't support
+</I>&gt;<i> pagers, so I offload that to somebody else.) My thoughts:
+</I>
+So do I, it's always been part of the model Jabber is working towards.
+
+&gt;<i> 
+</I>&gt;<i> - Clients should connect to their 'home' server only. Remember, they may be
+</I>&gt;<i> behind a firewall, etc. This keeps the client simple.
+</I>
+Yup.
+
+&gt;<i> - Imagine getting a jabber account at public.org, then later, your work
+</I>&gt;<i> sets up a jabber server and gives you an account.  You don't want to check
+</I>&gt;<i> both, so you could have your work jabber account forward to your original
+</I>&gt;<i> account.  There are some strange issues, like how does the client know I
+</I>&gt;<i> can send a message from &quot;<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmag at work.com</A>&quot; even though I'm connected to
+</I>&gt;<i> public.org?
+</I>
+Well, I guess I consider whatever server you are currently connected to as
+your base server and all outgoing messages from that connection are from
+that base server.  You should be able to easily configure any other server
+that you have an account on to forward messages to your base server.
+
+There are quite a few hairy issues that can creep in here in relation to
+multiple accounts across multiple servers, and honestly I'd like to leave
+most of this for a V2 thing, keeping V1(the first real public distro)
+functional but simple and building on it from there with many of the less
+popular but still important features like this, just MHO of course.
+
+&gt;<i> - There are 2 ways to handle a distributed transport: 1) Server-Server
+</I>&gt;<i> communication 2) Client-Server communication (a transport on my home server
+</I>&gt;<i> pretends to be a 'client' and logs into the remote server.). I'm not sure
+</I>&gt;<i> which is better. #2 looks like it wouldn't require any modifications to the
+</I>&gt;<i> protocol. But #1 would be more elegant.
+</I>
+Actually, #1 is exactly how it works and it can already work that way!
+All you have to do is configure the transport to identify itself as a real
+DNS name &quot;publicicq.server.com&quot; and anyone in the world can connect to it
+via <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">346234 at publicicq.server.com</A> easily :)
+
+&gt;<i> - I like the &quot;@ICQ&quot; -&gt; &quot;@pubICQ.server.com&quot;, but how does pubICQ.server.com
+</I>&gt;<i> know which transport it's supposed to route the message to? And how does
+</I>&gt;<i> one configure the mappings? Especially since this looks like it needs to be
+</I>&gt;<i> a per-user configuration to me.
+</I>
+Oh, ok, yes... this is where the JabberBox steps in.  Since the JabberBox
+recieves all incoming/outgoing messages for any server, the ICQ transport
+on that server just needs to send it's DNS alias to the JabberBox when it
+starts up:
+
+JabberBox Running
+ICQ Transport starts
+ICQ Transport sends local JabberBox &lt;alias&gt;pubicq.server.com&lt;/alias&gt;
+JabberBox accepts incoming packets and routes them to the ICQ transport
+
+Actually, this is one of the most important features of even having the
+JabberBox, local &quot;virtual host&quot; transport name resolution/routing, all
+transparently to the other servers and local transports.
+
+&gt;<i> - The clients might want to know the above mappings, so they can have a
+</I>&gt;<i> pull-down listbox when sending a message.
+</I>
+This is something I think a little real world testing might help us find
+out... maybe we can better answer it after we are all using Jabber daily
+:<i>)
+</I>
+&gt;<i> Maybe we could do a URL like scheme like this:
+</I>&gt;<i> 
+</I>&gt;<i> - icq:9999
+</I>&gt;<i> - icq:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">9999 at pubicq.server.com</A>
+</I>&gt;<i> - save:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">dmag at server.org</A>
+</I>&gt;<i> [etc comments compressed]
+</I>
+Well, again, I think the already simple scheme is built to handle all of
+these, just using regular DNS names or transport names... the user id is
+on the left of the &quot;@&quot; and the right side represents either a local
+transport(typically uppercase one word) like ICQ or AIM or JABBER, a dns
+name(which can ALSO be local) like myserver.com or icq.myserver.com, or a
+remote dns name which maps to an IP of the JabberBox but the actual dns
+name maps to a transport within that JabberBox.  
+
+To simplify, the &quot;server&quot; address on the right is really the actual name
+of a transport, but the resolved IP for that name is the real &quot;server&quot; 
+that the named transport lives on.  All names are checked on the local
+JabberBox first which lets you get away with non-legal DNS names like
+&quot;ICQ&quot; or &quot;AIM&quot; for shorthand aliases to those transports.
+
+Make sense?
+
+Jer
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="058751.html">[JDEV] Here's how ICQ would work.
+</A></li>
+	<LI>Next message: <A HREF="058773.html">[JDEV] Here's how ICQ would work.
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#58762">[ date ]</a>
+              <a href="thread.html#58762">[ thread ]</a>
+              <a href="subject.html#58762">[ subject ]</a>
+              <a href="author.html#58762">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [JDEV] Parent PID changed, exiting...
+   </TITLE>
+   <LINK REL="Index" HREF="index.html" >
+   <LINK REL="made" HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Parent%20PID%20changed%2C%20exiting...&In-Reply-To=%3CJPEIKJCHPIFINPNLJPCEIEBDCAAA.vkrishna%40vayusphere.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="064750.html">
+   <LINK REL="Next"  HREF="064753.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[JDEV] Parent PID changed, exiting...</H1>
+    <B>Vimal Krishnan</B> 
+    <A HREF="mailto:jdev%40jabber.org?Subject=Re%3A%20%5BJDEV%5D%20Parent%20PID%20changed%2C%20exiting...&In-Reply-To=%3CJPEIKJCHPIFINPNLJPCEIEBDCAAA.vkrishna%40vayusphere.com%3E"
+       TITLE="[JDEV] Parent PID changed, exiting...">vkrishna at vayusphere.com
+       </A><BR>
+    <I>Mon Feb 12 12:20:18 CST 2001</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="064750.html">[JDEV] Parent PID changed, exiting...
+</A></li>
+        <LI>Next message: <A HREF="064753.html">[JDEV] Parent PID changed, exiting...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64752">[ date ]</a>
+              <a href="thread.html#64752">[ thread ]</a>
+              <a href="subject.html#64752">[ subject ]</a>
+              <a href="author.html#64752">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Thanks, this fixed my problem of exiting server after closing the shell.
+
+Vimal
+
+-----Original Message-----
+From: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A> [mailto:<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev-admin at jabber.org</A>]On Behalf Of
+james rogers
+Sent: Monday, February 12, 2001 9:34 AM
+To: <A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+Subject: [JDEV] Parent PID changed, exiting...
+
+
+In the jabber-1.4RC/jabberd/base direcrtory in a file called base_stdout.c
+on line 51 is the function that was added for jabberd version 1.4 (i.e. not
+found in jabberd 1.2).  This is the function that is needless and causing
+the server to exit when it's parent process is changed.o
+
+Here it is:
+
+result base_stdout_heartbeat(void *arg)
+{
+    static int parent = 0;
+
+    if(parent == 0) parent = getppid();
+
+    if(parent != getppid())
+    {
+        /* parent pid has changed, bail */
+        log_alert(&quot;stdout&quot;,&quot;Parent PID has changed, Server Exiting&quot;);
+        exit(1);
+    }
+
+    return r_DONE;
+}
+
+I am guessing that if we change it to the following that we will keep
+running when we logout of the shell...
+
+result base_stdout_heartbeat(void *arg)
+{
+    return r_DONE;
+}
+
+But before I do this in my own installation...  Why was this check added?
+What are we actually checking for here and is there another way to do the
+same check?
+
+
+___________________________________________________
+GO.com Mail
+Get Your Free, Private E-mail at <A HREF="http://mail.go.com">http://mail.go.com</A>
+
+
+
+_______________________________________________
+jdev mailing list
+<A HREF="http://mail.jabber.org/mailman/listinfo/jdev">jdev at jabber.org</A>
+<A HREF="http://mailman.jabber.org/listinfo/jdev">http://mailman.jabber.org/listinfo/jdev</A>
+
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="064750.html">[JDEV] Parent PID changed, exiting...
+</A></li>
+	<LI>Next message: <A HREF="064753.html">[JDEV] Parent PID changed, exiting...
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64752">[ date ]</a>
+              <a href="thread.html#64752">[ thread ]</a>
+              <a href="subject.html#64752">[ subject ]</a>
+              <a href="author.html#64752">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="http://mail.jabber.org/mailman/listinfo/jdev">More information about the JDev
+mailing list</a><br>
+</body></html>
